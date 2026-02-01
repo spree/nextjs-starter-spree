@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
 import { CountrySwitcher } from './CountrySwitcher'
+import { SearchBar } from '@/components/search/SearchBar'
 
 function extractBasePath(pathname: string): string {
   // Extract /country/locale from pathname
@@ -28,14 +29,13 @@ export function Header() {
             <span className="text-xl font-bold text-gray-900">Spree Store</span>
           </Link>
 
+          {/* Search */}
+          <div className="hidden md:block flex-1 max-w-md mx-8">
+            <SearchBar basePath={basePath} />
+          </div>
+
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href={`${basePath}/products`}
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Products
-            </Link>
             <Link
               href={`${basePath}/taxonomies`}
               className="text-gray-600 hover:text-gray-900 transition-colors"

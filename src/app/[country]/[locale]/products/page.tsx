@@ -5,13 +5,11 @@ interface ProductsPageProps {
     country: string
     locale: string
   }>
-  searchParams: Promise<{ q?: string }>
 }
 
-export default async function ProductsPage({ params, searchParams }: ProductsPageProps) {
+export default async function ProductsPage({ params }: ProductsPageProps) {
   const { country, locale } = await params
-  const { q: query } = await searchParams
   const basePath = `/${country}/${locale}`
 
-  return <ProductsContent basePath={basePath} initialQuery={query || ''} />
+  return <ProductsContent basePath={basePath} />
 }
