@@ -1,0 +1,101 @@
+import Link from 'next/link'
+import { FeaturedProducts } from './FeaturedProducts'
+
+interface HomePageProps {
+  params: Promise<{
+    country: string
+    locale: string
+  }>
+}
+
+export default async function HomePage({ params }: HomePageProps) {
+  const { country, locale } = await params
+  const basePath = `/${country}/${locale}`
+
+  return (
+    <div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Welcome to Spree Store
+            </h1>
+            <p className="mt-4 text-xl text-indigo-100 max-w-2xl mx-auto">
+              Discover amazing products with our modern e-commerce experience powered by Spree Commerce.
+            </p>
+            <div className="mt-8 flex justify-center gap-4">
+              <Link
+                href={`${basePath}/products`}
+                className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-colors"
+              >
+                Shop Now
+              </Link>
+              <Link
+                href={`${basePath}/taxonomies`}
+                className="border border-white text-white px-6 py-3 rounded-lg font-medium hover:bg-white/10 transition-colors"
+              >
+                Browse Categories
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
+          <Link
+            href={`${basePath}/products`}
+            className="text-indigo-600 hover:text-indigo-700 font-medium"
+          >
+            View all &rarr;
+          </Link>
+        </div>
+        <FeaturedProducts basePath={basePath} />
+      </section>
+
+      {/* Features Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Quality Products</h3>
+              <p className="mt-2 text-gray-500">
+                Carefully curated selection of the best products.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Fast Shipping</h3>
+              <p className="mt-2 text-gray-500">
+                Quick and reliable delivery to your doorstep.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">24/7 Support</h3>
+              <p className="mt-2 text-gray-500">
+                Our team is here to help you anytime.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
