@@ -1,6 +1,14 @@
 # Spree Next.js Storefront
 
-A modern, headless e-commerce storefront built with Next.js 15 and the Spree Commerce API v3.
+A modern, headless e-commerce storefront built with Next.js 16, React 19, and the Spree Commerce API v3.
+
+## Tech Stack
+
+- **Next.js 16** - App Router, Server Actions, Turbopack
+- **React 19** - Latest React with improved Server Components
+- **Tailwind CSS 4** - Utility-first styling
+- **TypeScript 5** - Full type safety
+- **@spree/sdk** - Official Spree Commerce SDK
 
 ## Features
 
@@ -36,7 +44,7 @@ Browser → Server Action → Spree API
 
 ### Prerequisites
 
-- Node.js 18+ (Node.js 20+ recommended)
+- Node.js 20+ (required for Next.js 16)
 - A running Spree Commerce backend with API v3 enabled
 
 ### Installation
