@@ -78,7 +78,7 @@ export default function CartPage() {
                 {/* Image */}
                 <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                   <Image
-                    src={item.images?.[0]?.original_url || '/placeholder.svg'}
+                    src={item.thumbnail_url || '/placeholder.svg'}
                     alt={item.name}
                     fill
                     className="object-cover"

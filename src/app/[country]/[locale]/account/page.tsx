@@ -17,7 +17,7 @@ export default function AccountPage() {
   const router = useRouter()
   const pathname = usePathname()
   const basePath = extractBasePath(pathname)
-  const { user, login, logout, isAuthenticated, loading: authLoading } = useAuth()
+  const { user, login, isAuthenticated, loading: authLoading } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,10 +34,6 @@ export default function AccountPage() {
       setError(result.error || 'Invalid email or password')
     }
     setLoading(false)
-  }
-
-  const handleLogout = async () => {
-    await logout()
   }
 
   // Show loading state while auth is initializing
@@ -122,25 +118,10 @@ export default function AccountPage() {
 
   // Show account dashboard if authenticated
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Account</h1>
-          {user && (
-            <p className="mt-1 text-gray-500">
-              Welcome back, {user.first_name || user.email}
-            </p>
-          )}
-        </div>
-        <button
-          onClick={handleLogout}
-          className="text-sm text-gray-600 hover:text-gray-900"
-        >
-          Sign out
-        </button>
-      </div>
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Account Overview</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           href={`${basePath}/account/orders`}
           className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
@@ -153,7 +134,7 @@ export default function AccountPage() {
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Order History</h2>
-              <p className="mt-1 text-sm text-gray-500">View your past orders</p>
+              <p className="mt-1 text-sm text-gray-500">View your past orders and track shipments</p>
             </div>
           </div>
         </Link>
@@ -171,7 +152,24 @@ export default function AccountPage() {
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
-              <p className="mt-1 text-sm text-gray-500">Manage your addresses</p>
+              <p className="mt-1 text-sm text-gray-500">Manage your shipping and billing addresses</p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href={`${basePath}/account/credit-cards`}
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Payment Methods</h2>
+              <p className="mt-1 text-sm text-gray-500">Manage your saved credit cards</p>
             </div>
           </div>
         </Link>
@@ -188,7 +186,7 @@ export default function AccountPage() {
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Profile</h2>
-              <p className="mt-1 text-sm text-gray-500">Update your information</p>
+              <p className="mt-1 text-sm text-gray-500">Update your personal information</p>
             </div>
           </div>
         </Link>
