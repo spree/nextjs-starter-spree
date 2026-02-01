@@ -235,7 +235,7 @@ export function CartDrawer() {
             {/* Actions */}
             <div className="space-y-2">
               <Link
-                href={`${basePath}/checkout`}
+                href={`${basePath}/checkout/${cart?.id}`}
                 className="block w-full bg-indigo-600 text-white text-center py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
                 onClick={closeCart}
               >

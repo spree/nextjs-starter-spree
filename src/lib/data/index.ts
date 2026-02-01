@@ -1,6 +1,7 @@
 // Re-export all data functions for easy importing
 export * from "./addresses"
 export * from "./cart"
+export * from "./checkout"
 export * from "./cookies"
 export * from "./countries"
 export * from "./credit-cards"

@@ -165,7 +165,7 @@ export default function CartPage() {
             </dl>
 
             <Link
-              href={`${basePath}/checkout`}
+              href={`${basePath}/checkout/${cart.id}`}
               className="mt-6 block w-full bg-indigo-600 text-white text-center py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
             >
               Proceed to Checkout
