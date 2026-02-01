@@ -13,7 +13,11 @@ import {
 interface CartContextType {
   cart: StoreOrder | null
   loading: boolean
+  updating: boolean
   itemCount: number
+  isOpen: boolean
+  openCart: () => void
+  closeCart: () => void
   addItem: (variantId: string, quantity?: number) => Promise<void>
   updateItem: (lineItemId: string, quantity: number) => Promise<void>
   removeItem: (lineItemId: string) => Promise<void>
@@ -25,7 +29,12 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<StoreOrder | null>(null)
   const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+
+  const openCart = useCallback(() => setIsOpen(true), [])
+  const closeCart = useCallback(() => setIsOpen(false), [])
 
   const refreshCart = useCallback(async () => {
     try {
@@ -39,17 +48,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addItem = useCallback(async (variantId: string, quantity = 1) => {
+    setUpdating(true)
     try {
       const updatedCart = await addToCartAction(variantId, quantity)
       setCart(updatedCart)
+      setIsOpen(true) // Open cart drawer after adding
       router.refresh()
     } catch (error) {
       console.error('Failed to add item to cart:', error)
       throw error
+    } finally {
+      setUpdating(false)
     }
   }, [router])
 
   const updateItem = useCallback(async (lineItemId: string, quantity: number) => {
+    setUpdating(true)
     try {
       const updatedCart = await updateCartItemAction(lineItemId, quantity)
       setCart(updatedCart)
@@ -57,10 +71,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to update cart item:', error)
       throw error
+    } finally {
+      setUpdating(false)
     }
   }, [router])
 
   const removeItem = useCallback(async (lineItemId: string) => {
+    setUpdating(true)
     try {
       const updatedCart = await removeCartItemAction(lineItemId)
       setCart(updatedCart)
@@ -68,6 +85,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to remove cart item:', error)
       throw error
+    } finally {
+      setUpdating(false)
     }
   }, [router])
 
@@ -85,7 +104,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         cart,
         loading,
+        updating,
         itemCount,
+        isOpen,
+        openCart,
+        closeCart,
         addItem,
         updateItem,
         removeItem,

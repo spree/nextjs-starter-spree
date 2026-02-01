@@ -16,7 +16,7 @@ function extractBasePath(pathname: string): string {
 }
 
 export function Header() {
-  const { itemCount } = useCart()
+  const { itemCount, openCart } = useCart()
   const pathname = usePathname()
   const basePath = extractBasePath(pathname)
 
@@ -50,9 +50,10 @@ export function Header() {
             <CountrySwitcher />
 
             {/* Cart */}
-            <Link
-              href={`${basePath}/cart`}
+            <button
+              onClick={openCart}
               className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              aria-label="Open cart"
             >
               <svg
                 className="w-6 h-6"
@@ -72,7 +73,7 @@ export function Header() {
                   {itemCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* Account */}
             <Link
