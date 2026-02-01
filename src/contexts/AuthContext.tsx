@@ -7,8 +7,8 @@ import type { AuthTokens } from '@spree/sdk'
 interface User {
   id: string
   email: string
-  first_name?: string
-  last_name?: string
+  first_name?: string | null
+  last_name?: string | null
 }
 
 interface AuthContextType {
