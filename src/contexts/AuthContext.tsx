@@ -24,29 +24,32 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const TOKEN_KEY = 'spree_auth_token'
-const REFRESH_TOKEN_KEY = 'spree_refresh_token'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Save tokens to localStorage
-  const saveTokens = useCallback((tokens: AuthTokens) => {
-    localStorage.setItem(TOKEN_KEY, tokens.access_token)
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token)
-    setToken(tokens.access_token)
+  // Save auth response to state and localStorage
+  const saveAuth = useCallback((response: AuthTokens) => {
+    localStorage.setItem(TOKEN_KEY, response.token)
+    setToken(response.token)
+    setUser({
+      id: response.user.id,
+      email: response.user.email,
+      first_name: response.user.first_name,
+      last_name: response.user.last_name,
+    })
   }, [])
 
-  // Clear tokens from localStorage
-  const clearTokens = useCallback(() => {
+  // Clear auth from localStorage
+  const clearAuth = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
     setToken(null)
     setUser(null)
   }, [])
 
-  // Fetch current user
+  // Fetch current user (for restoring session)
   const fetchUser = useCallback(async (accessToken: string) => {
     try {
       const client = getSpreeClient()
@@ -73,19 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const success = await fetchUser(storedToken)
 
         if (!success) {
-          // Token might be expired, try to refresh
-          const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
-          if (refreshToken) {
-            try {
-              const client = getSpreeClient()
-              const tokens = await client.auth.refresh(refreshToken)
-              saveTokens(tokens)
-              await fetchUser(tokens.access_token)
-            } catch {
-              clearTokens()
-            }
-          } else {
-            clearTokens()
+          // Token is expired or invalid, try to refresh
+          try {
+            const client = getSpreeClient()
+            const response = await client.auth.refresh({ token: storedToken })
+            saveAuth(response)
+          } catch {
+            clearAuth()
           }
         }
       }
@@ -94,32 +91,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     initAuth()
-  }, [fetchUser, saveTokens, clearTokens])
+  }, [fetchUser, saveAuth, clearAuth])
 
   // Login
   const login = useCallback(async (email: string, password: string) => {
     const client = getSpreeClient()
-    const tokens = await client.auth.login({ email, password })
-    saveTokens(tokens)
-    await fetchUser(tokens.access_token)
-  }, [saveTokens, fetchUser])
+    const response = await client.auth.login({ email, password })
+    saveAuth(response)
+  }, [saveAuth])
 
   // Register
   const register = useCallback(async (email: string, password: string, passwordConfirmation: string) => {
     const client = getSpreeClient()
-    const tokens = await client.auth.register({
+    const response = await client.auth.register({
       email,
       password,
       password_confirmation: passwordConfirmation,
     })
-    saveTokens(tokens)
-    await fetchUser(tokens.access_token)
-  }, [saveTokens, fetchUser])
+    saveAuth(response)
+  }, [saveAuth])
 
   // Logout
   const logout = useCallback(() => {
-    clearTokens()
-  }, [clearTokens])
+    clearAuth()
+  }, [clearAuth])
 
   return (
     <AuthContext.Provider
