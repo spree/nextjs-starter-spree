@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { getSpreeClient } from '@/lib/spree'
+import { getTaxonProducts, getProductFilters } from '@/lib/data/products'
 import { ProductGrid } from '@/components/products/ProductGrid'
 import { ProductFilters, type ActiveFilters } from '@/components/products/ProductFilters'
 import type { StoreProduct, ProductFiltersResponse } from '@spree/sdk'
@@ -83,10 +83,9 @@ export function CategoryProductsContent({ taxonPermalink, taxonId, basePath }: C
 
   const fetchProducts = useCallback(async (page: number = 1, filters?: ActiveFilters) => {
     try {
-      const client = getSpreeClient()
       const queryParams = filters ? buildQueryParams(filters) : {}
 
-      return await client.taxons.products.list(
+      return await getTaxonProducts(
         taxonPermalink,
         {
           page,
@@ -128,8 +127,7 @@ export function CategoryProductsContent({ taxonPermalink, taxonId, basePath }: C
     const fetchFilters = async () => {
       setFiltersLoading(true)
       try {
-        const client = getSpreeClient()
-        const response = await client.products.filters(
+        const response = await getProductFilters(
           { taxon_id: taxonId },
           { currency, locale }
         )

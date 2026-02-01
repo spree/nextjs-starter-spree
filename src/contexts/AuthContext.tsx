@@ -1,8 +1,13 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import { getSpreeClient } from '@/lib/spree'
-import type { AuthTokens } from '@spree/sdk'
+import { useRouter } from 'next/navigation'
+import {
+  getCustomer,
+  login as loginAction,
+  register as registerAction,
+  logout as logoutAction
+} from '@/lib/data/customer'
 
 interface User {
   id: string
@@ -13,118 +18,99 @@ interface User {
 
 interface AuthContextType {
   user: User | null
-  token: string | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, passwordConfirmation: string) => Promise<void>
-  logout: () => void
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  register: (email: string, password: string, passwordConfirmation: string) => Promise<{ success: boolean; error?: string }>
+  logout: () => Promise<void>
+  refreshUser: () => Promise<void>
   isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const TOKEN_KEY = 'spree_auth_token'
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-  // Save auth response to state and localStorage
-  const saveAuth = useCallback((response: AuthTokens) => {
-    localStorage.setItem(TOKEN_KEY, response.token)
-    setToken(response.token)
-    setUser({
-      id: response.user.id,
-      email: response.user.email,
-      first_name: response.user.first_name,
-      last_name: response.user.last_name,
-    })
-  }, [])
-
-  // Clear auth from localStorage
-  const clearAuth = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY)
-    setToken(null)
-    setUser(null)
-  }, [])
-
-  // Fetch current user (for restoring session)
-  const fetchUser = useCallback(async (accessToken: string) => {
+  // Fetch current user from server
+  const refreshUser = useCallback(async () => {
     try {
-      const client = getSpreeClient()
-      const response = await client.customer.get({ token: accessToken })
-      setUser({
-        id: response.id,
-        email: response.email,
-        first_name: response.first_name,
-        last_name: response.last_name,
-      })
-      return true
+      const customer = await getCustomer()
+      if (customer) {
+        setUser({
+          id: customer.id,
+          email: customer.email,
+          first_name: customer.first_name,
+          last_name: customer.last_name,
+        })
+      } else {
+        setUser(null)
+      }
     } catch {
-      return false
+      setUser(null)
     }
   }, [])
 
-  // Initialize auth state from localStorage
+  // Initialize auth state
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem(TOKEN_KEY)
-
-      if (storedToken) {
-        setToken(storedToken)
-        const success = await fetchUser(storedToken)
-
-        if (!success) {
-          // Token is expired or invalid, try to refresh
-          try {
-            const client = getSpreeClient()
-            const response = await client.auth.refresh({ token: storedToken })
-            saveAuth(response)
-          } catch {
-            clearAuth()
-          }
-        }
-      }
-
+      await refreshUser()
       setLoading(false)
     }
-
     initAuth()
-  }, [fetchUser, saveAuth, clearAuth])
+  }, [refreshUser])
 
   // Login
   const login = useCallback(async (email: string, password: string) => {
-    const client = getSpreeClient()
-    const response = await client.auth.login({ email, password })
-    saveAuth(response)
-  }, [saveAuth])
+    const result = await loginAction(email, password)
+    if (result.success && result.user) {
+      setUser({
+        id: result.user.id,
+        email: result.user.email,
+        first_name: result.user.first_name,
+        last_name: result.user.last_name,
+      })
+      router.refresh()
+    }
+    return result
+  }, [router])
 
   // Register
-  const register = useCallback(async (email: string, password: string, passwordConfirmation: string) => {
-    const client = getSpreeClient()
-    const response = await client.auth.register({
-      email,
-      password,
-      password_confirmation: passwordConfirmation,
-    })
-    saveAuth(response)
-  }, [saveAuth])
+  const register = useCallback(async (
+    email: string,
+    password: string,
+    passwordConfirmation: string
+  ) => {
+    const result = await registerAction(email, password, passwordConfirmation)
+    if (result.success && result.user) {
+      setUser({
+        id: result.user.id,
+        email: result.user.email,
+        first_name: result.user.first_name,
+        last_name: result.user.last_name,
+      })
+      router.refresh()
+    }
+    return result
+  }, [router])
 
   // Logout
-  const logout = useCallback(() => {
-    clearAuth()
-  }, [clearAuth])
+  const logout = useCallback(async () => {
+    await logoutAction()
+    setUser(null)
+    router.refresh()
+  }, [router])
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         loading,
         login,
         register,
         logout,
+        refreshUser,
         isAuthenticated: !!user,
       }}
     >

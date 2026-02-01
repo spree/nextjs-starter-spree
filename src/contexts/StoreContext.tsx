@@ -2,8 +2,9 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { getSpreeClient } from '@/lib/spree'
 import type { StoreStore, StoreCountry } from '@spree/sdk'
+import { getStore as getStoreAction } from '@/lib/data/store'
+import { getCountries as getCountriesAction } from '@/lib/data/countries'
 
 interface StoreContextValue {
   country: string
@@ -44,10 +45,9 @@ export function StoreProvider({ children, initialCountry, initialLocale }: Store
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const client = getSpreeClient()
         const [storeData, countriesData] = await Promise.all([
-          client.store.get(),
-          client.countries.list(),
+          getStoreAction(),
+          getCountriesAction(),
         ])
 
         setStore(storeData)

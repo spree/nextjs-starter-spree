@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getSpreeClient } from '@/lib/spree'
+import { getProductFilters } from '@/lib/data/products'
 import { useStore } from '@/contexts/StoreContext'
 import type {
   ProductFiltersResponse,
@@ -53,8 +53,7 @@ export function ProductFilters({
     const fetchFilters = async () => {
       setInternalLoading(true)
       try {
-        const client = getSpreeClient()
-        const response = await client.products.filters(
+        const response = await getProductFilters(
           { taxon_id: taxonId },
           { currency, locale }
         )

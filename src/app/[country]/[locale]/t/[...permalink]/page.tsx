@@ -1,8 +1,7 @@
-import { getSpreeClient } from '@/lib/spree'
+import { getTaxon } from '@/lib/data/taxonomies'
 import { notFound } from 'next/navigation'
 import { CategoryProductsContent } from './CategoryProductsContent'
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
-import type { StoreTaxon } from '@spree/sdk'
 
 export const revalidate = 60
 
@@ -14,22 +13,18 @@ interface CategoryPageProps {
   }>
 }
 
-async function getTaxon(permalink: string): Promise<StoreTaxon | null> {
-  try {
-    const client = getSpreeClient()
-    return await client.taxons.get(permalink, { includes: 'ancestors,children' })
-  } catch (error) {
-    console.error('Failed to fetch taxon:', error)
-    return null
-  }
-}
-
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { country, locale, permalink } = await params
   const fullPermalink = permalink.join('/')
   const basePath = `/${country}/${locale}`
 
-  const taxon = await getTaxon(fullPermalink)
+  let taxon
+  try {
+    taxon = await getTaxon(fullPermalink, { includes: 'ancestors,children' })
+  } catch (error) {
+    console.error('Failed to fetch taxon:', error)
+    notFound()
+  }
 
   if (!taxon) {
     notFound()

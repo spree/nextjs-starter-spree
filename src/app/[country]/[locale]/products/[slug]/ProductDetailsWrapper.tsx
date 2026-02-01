@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getSpreeClient } from '@/lib/spree'
+import { getProduct } from '@/lib/data/products'
 import { useStore } from '@/contexts/StoreContext'
 import { ProductDetails } from './ProductDetails'
 import type { StoreProduct } from '@spree/sdk'
@@ -27,8 +27,7 @@ export function ProductDetailsWrapper({ slug, basePath }: ProductDetailsWrapperP
     const fetchProduct = async () => {
       setLoading(true)
       try {
-        const client = getSpreeClient()
-        const data = await client.products.get(
+        const data = await getProduct(
           slug,
           { includes: 'variants,images,option_types' },
           { currency, locale }

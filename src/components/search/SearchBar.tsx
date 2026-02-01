@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { getSpreeClient } from '@/lib/spree'
 import { useStore } from '@/contexts/StoreContext'
+import { getProducts } from '@/lib/data/products'
 import type { StoreProduct } from '@spree/sdk'
 
 interface SearchBarProps {
@@ -32,12 +32,11 @@ export function SearchBar({ basePath }: SearchBarProps) {
 
     setLoading(true)
     try {
-      const client = getSpreeClient()
-      const response = await client.products.list(
+      const response = await getProducts(
         {
           'q[multi_search]': searchQuery,
           per_page: 6,
-        } as Record<string, unknown>,
+        },
         { currency, locale }
       )
       setSuggestions(response.data)

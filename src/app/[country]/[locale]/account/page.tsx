@@ -29,19 +29,15 @@ export default function AccountPage() {
     setError('')
     setLoading(true)
 
-    try {
-      await login(email, password)
-    } catch (err) {
-      console.error('Login failed:', err)
-      setError('Invalid email or password')
-    } finally {
-      setLoading(false)
+    const result = await login(email, password)
+    if (!result.success) {
+      setError(result.error || 'Invalid email or password')
     }
+    setLoading(false)
   }
 
-  const handleLogout = () => {
-    logout()
-    router.refresh()
+  const handleLogout = async () => {
+    await logout()
   }
 
   // Show loading state while auth is initializing

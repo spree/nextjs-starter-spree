@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getSpreeClient } from '@/lib/spree'
+import { getProducts } from '@/lib/data/products'
 import { useStore } from '@/contexts/StoreContext'
 import { ProductGrid } from '@/components/products/ProductGrid'
 import type { StoreProduct } from '@spree/sdk'
@@ -24,11 +24,8 @@ export function FeaturedProducts({ basePath }: FeaturedProductsProps) {
     const fetchProducts = async () => {
       setLoading(true)
       try {
-        const client = getSpreeClient()
-        const response = await client.products.list(
-          {
-            per_page: 8,
-          },
+        const response = await getProducts(
+          { per_page: 8 },
           { currency, locale }
         )
         if (!cancelled) {

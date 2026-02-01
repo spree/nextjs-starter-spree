@@ -1,4 +1,4 @@
-import { getSpreeClient } from '@/lib/spree'
+import { getTaxonomies } from '@/lib/data/taxonomies'
 import Link from 'next/link'
 import type { StoreTaxon, StoreTaxonomy } from '@spree/sdk'
 
@@ -11,20 +11,6 @@ interface CategoriesPageProps {
   }>
 }
 
-async function getTaxonomies(): Promise<StoreTaxonomy[]> {
-  try {
-    const client = getSpreeClient()
-    const response = await client.taxonomies.list({
-      per_page: 100,
-      includes: 'taxons',
-    })
-    return response.data
-  } catch (error) {
-    console.error('Failed to fetch taxonomies:', error)
-    return []
-  }
-}
-
 function getTopLevelTaxons(taxons: StoreTaxon[] | undefined): StoreTaxon[] {
   if (!taxons) return []
   // Filter to only show depth 1 taxons (direct children of root)
@@ -33,8 +19,19 @@ function getTopLevelTaxons(taxons: StoreTaxon[] | undefined): StoreTaxon[] {
 
 export default async function CategoriesPage({ params }: CategoriesPageProps) {
   const { country, locale } = await params
-  const taxonomies = await getTaxonomies()
   const basePath = `/${country}/${locale}`
+
+  let taxonomies: StoreTaxonomy[] = []
+  try {
+    const response = await getTaxonomies({
+      per_page: 100,
+      includes: 'taxons',
+    })
+    taxonomies = response.data
+  } catch (error) {
+    console.error('Failed to fetch taxonomies:', error)
+    taxonomies = []
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -66,7 +63,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                         <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-indigo-500 transition-all">
                           {taxon.square_image_url || taxon.image_url ? (
                             <img
-                              src={taxon.square_image_url || taxon.image_url}
+                              src={taxon.square_image_url ?? taxon.image_url ?? undefined}
                               alt={taxon.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />

@@ -47,15 +47,13 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    try {
-      await register(email, password, passwordConfirmation)
+    const result = await register(email, password, passwordConfirmation)
+    if (result.success) {
       router.push(`${basePath}/account`)
-    } catch (err) {
-      console.error('Registration failed:', err)
-      setError('Registration failed. Please try again.')
-    } finally {
-      setLoading(false)
+    } else {
+      setError(result.error || 'Registration failed. Please try again.')
     }
+    setLoading(false)
   }
 
   return (
