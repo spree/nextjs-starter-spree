@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 
 function extractBasePath(pathname: string): string {
   const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i)
@@ -12,12 +14,50 @@ function extractBasePath(pathname: string): string {
 }
 
 export default function AccountPage() {
+  const router = useRouter()
   const pathname = usePathname()
   const basePath = extractBasePath(pathname)
+  const { user, login, logout, isAuthenticated, loading: authLoading } = useAuth()
 
-  // TODO: Implement authentication
-  const isAuthenticated = false
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      await login(email, password)
+    } catch (err) {
+      console.error('Login failed:', err)
+      setError('Invalid email or password')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.refresh()
+  }
+
+  // Show loading state while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto" />
+          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto" />
+          <div className="h-48 bg-gray-200 rounded" />
+        </div>
+      </div>
+    )
+  }
+
+  // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -29,7 +69,13 @@ export default function AccountPage() {
         </div>
 
         <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -37,6 +83,9 @@ export default function AccountPage() {
               <input
                 type="email"
                 id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="you@example.com"
               />
@@ -48,15 +97,19 @@ export default function AccountPage() {
               <input
                 type="password"
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
@@ -71,33 +124,77 @@ export default function AccountPage() {
     )
   }
 
+  // Show account dashboard if authenticated
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">My Account</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">My Account</h1>
+          {user && (
+            <p className="mt-1 text-gray-500">
+              Welcome back, {user.first_name || user.email}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          className="text-sm text-gray-600 hover:text-gray-900"
+        >
+          Sign out
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
           href={`${basePath}/account/orders`}
           className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
-          <h2 className="text-lg font-medium text-gray-900">Order History</h2>
-          <p className="mt-2 text-gray-500">View your past orders and track shipments.</p>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Order History</h2>
+              <p className="mt-1 text-sm text-gray-500">View your past orders</p>
+            </div>
+          </div>
         </Link>
 
         <Link
           href={`${basePath}/account/addresses`}
           className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
-          <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
-          <p className="mt-2 text-gray-500">Manage your shipping and billing addresses.</p>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
+              <p className="mt-1 text-sm text-gray-500">Manage your addresses</p>
+            </div>
+          </div>
         </Link>
 
         <Link
           href={`${basePath}/account/profile`}
           className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
-          <h2 className="text-lg font-medium text-gray-900">Profile</h2>
-          <p className="mt-2 text-gray-500">Update your account information.</p>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-100 rounded-lg">
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Profile</h2>
+              <p className="mt-1 text-sm text-gray-500">Update your information</p>
+            </div>
+          </div>
         </Link>
       </div>
     </div>

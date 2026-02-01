@@ -1,4 +1,5 @@
 import { StoreProvider } from '@/contexts/StoreContext'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 
@@ -18,9 +19,11 @@ export default async function CountryLocaleLayout({
 
   return (
     <StoreProvider initialCountry={country} initialLocale={locale}>
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
+      <AuthProvider>
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </AuthProvider>
     </StoreProvider>
   )
 }
