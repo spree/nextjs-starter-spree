@@ -3,6 +3,7 @@
 import { cookies } from "next/headers"
 import { getSpreeClient } from "@/lib/spree"
 import { updateTag } from "next/cache"
+import { getAuthHeaders } from "./cookies"
 
 const CART_TOKEN_KEY = "_spree_cart_token"
 
@@ -157,4 +158,42 @@ export async function removeCartItem(
 export async function clearCart() {
   await removeCartToken()
   updateTag("cart")
+}
+
+/**
+ * Associate guest cart with the currently authenticated user
+ * Should be called after login/register when user has a guest cart
+ *
+ * If association fails (e.g., cart belongs to another user), the cart token
+ * is cleared so the user starts fresh with their authenticated account.
+ */
+export async function associateCartWithUser() {
+  const orderToken = await getCartToken()
+  if (!orderToken) {
+    // No guest cart to associate
+    return { success: true }
+  }
+
+  const authHeaders = await getAuthHeaders()
+  if (!authHeaders.token) {
+    // Not authenticated
+    return { success: false, error: "Not authenticated" }
+  }
+
+  try {
+    const client = getSpreeClient()
+    await client.cart.associate({ orderToken, token: authHeaders.token })
+    updateTag("cart")
+    return { success: true }
+  } catch (error) {
+    // Cart might already be associated or belong to another user
+    // Clear the invalid cart token so user doesn't get stuck with inaccessible cart
+    console.error("Failed to associate cart, clearing cart token:", error)
+    await removeCartToken()
+    updateTag("cart")
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to associate cart"
+    }
+  }
 }

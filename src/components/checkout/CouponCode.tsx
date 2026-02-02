@@ -48,11 +48,12 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
     setRemoving(null)
   }
 
+  // Check if there's already an applied code (only show one input at a time)
+  const hasAppliedCode = couponPromotions.length > 0
+
   return (
     <div>
-      <h3 className="text-sm font-medium text-gray-900 mb-3">Discount Code</h3>
-
-      {/* Applied coupon codes */}
+      {/* Applied discount codes / gift cards */}
       {couponPromotions.length > 0 && (
         <div className="space-y-2 mb-4">
           {couponPromotions.map((promotion) => (
@@ -96,26 +97,28 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
         </div>
       )}
 
-      {/* Apply new coupon code */}
-      <form onSubmit={handleApply} className="flex gap-2">
-        <input
-          type="text"
-          value={code}
-          onChange={(e) => {
-            setCode(e.target.value)
-            setError(null)
-          }}
-          placeholder="Enter code"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-        <button
-          type="submit"
-          disabled={applying || !code.trim()}
-          className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {applying ? "..." : "Apply"}
-        </button>
-      </form>
+      {/* Apply new code - hidden when a code is already applied */}
+      {!hasAppliedCode && (
+        <form onSubmit={handleApply} className="flex gap-2">
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => {
+              setCode(e.target.value)
+              setError(null)
+            }}
+            placeholder="Gift card or discount code"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            disabled={applying || !code.trim()}
+            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {applying ? "..." : "Apply"}
+          </button>
+        </form>
+      )}
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

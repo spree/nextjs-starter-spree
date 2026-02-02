@@ -2,6 +2,7 @@
 
 import { getSpreeClient } from "@/lib/spree"
 import { getAuthHeaders, setAuthToken, removeAuthToken } from "./cookies"
+import { associateCartWithUser } from "./cart"
 import { updateTag } from "next/cache"
 
 export async function getCustomer() {
@@ -28,6 +29,10 @@ export async function login(email: string, password: string) {
   try {
     const response = await client.auth.login({ email, password })
     await setAuthToken(response.token)
+
+    // Associate any guest cart with the newly authenticated user
+    await associateCartWithUser()
+
     updateTag("customer")
     return { success: true, user: response.user }
   } catch (error) {
@@ -52,6 +57,10 @@ export async function register(
       password_confirmation: passwordConfirmation,
     })
     await setAuthToken(response.token)
+
+    // Associate any guest cart with the newly registered user
+    await associateCartWithUser()
+
     updateTag("customer")
     return { success: true, user: response.user }
   } catch (error) {

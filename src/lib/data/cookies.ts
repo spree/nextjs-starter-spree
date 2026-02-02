@@ -36,3 +36,8 @@ export async function getAuthHeaders(): Promise<{ token?: string }> {
   }
   return { token }
 }
+
+export async function isAuthenticated(): Promise<boolean> {
+  const token = await getAuthToken()
+  return !!token
+}

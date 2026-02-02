@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
-import type { StoreOrder, StoreShipment, StoreCountry } from "@spree/sdk"
+import type { StoreOrder, StoreShipment, StoreCountry, StoreAddress, AddressParams } from "@spree/sdk"
 import {
   getCheckoutOrder,
   updateOrderAddresses,
@@ -12,10 +12,14 @@ import {
   selectShippingRate,
   applyCouponCode,
   removeCouponCode,
+  completeOrder,
 } from "@/lib/data/checkout"
 import { getCountries, getCountry } from "@/lib/data/countries"
+import { getAddresses } from "@/lib/data/addresses"
+import { isAuthenticated as checkAuth } from "@/lib/data/cookies"
 import { AddressStep } from "@/components/checkout/AddressStep"
 import { DeliveryStep } from "@/components/checkout/DeliveryStep"
+import { PaymentStep } from "@/components/checkout/PaymentStep"
 import { CouponCode } from "@/components/checkout/CouponCode"
 import { OrderSummary } from "@/components/checkout/OrderSummary"
 
@@ -29,7 +33,7 @@ function extractBasePath(pathname: string): string {
 }
 
 // Checkout steps
-type CheckoutStep = "address" | "delivery" | "complete"
+type CheckoutStep = "address" | "delivery" | "payment"
 
 // Map Spree order state to checkout step
 function getCheckoutStep(orderState: string): CheckoutStep {
@@ -38,11 +42,10 @@ function getCheckoutStep(orderState: string): CheckoutStep {
     case "address":
       return "address"
     case "delivery":
+      return "delivery"
     case "payment":
     case "confirm":
-      return "delivery"
-    case "complete":
-      return "complete"
+      return "payment"
     default:
       return "address"
   }
@@ -64,6 +67,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [order, setOrder] = useState<StoreOrder | null>(null)
   const [shipments, setShipments] = useState<StoreShipment[]>([])
   const [countries, setCountries] = useState<StoreCountry[]>([])
+  const [savedAddresses, setSavedAddresses] = useState<StoreAddress[]>([])
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
@@ -83,9 +88,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(null)
 
     try {
-      const [orderData, countriesData] = await Promise.all([
+      const [orderData, countriesData, addressesData, authStatus] = await Promise.all([
         getCheckoutOrder(orderId),
         getCountries(),
+        getAddresses(),
+        checkAuth(),
       ])
 
       if (!orderData) {
@@ -102,10 +109,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       setOrder(orderData)
       setCountries(countriesData.data)
+      setSavedAddresses(addressesData.data)
+      setIsAuthenticated(authStatus)
       setCurrentStep(getCheckoutStep(orderData.state))
 
-      // Load shipments if in delivery state
-      if (orderData.state === "delivery" || orderData.state === "payment") {
+      // Load shipments if in delivery or payment state
+      if (orderData.state === "delivery" || orderData.state === "payment" || orderData.state === "confirm") {
         const shipmentsData = await getShipments(orderId)
         setShipments(shipmentsData)
       }
@@ -120,12 +129,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     loadOrder()
   }, [loadOrder])
 
-  // Handle address submission
+  // Handle address submission (shipping address only)
   const handleAddressSubmit = async (addressData: {
     email: string
-    ship_address: Parameters<typeof updateOrderAddresses>[1]["ship_address_attributes"]
-    bill_address?: Parameters<typeof updateOrderAddresses>[1]["bill_address_attributes"]
-    use_shipping_for_billing: boolean
+    ship_address: AddressParams
   }) => {
     if (!order) return
 
@@ -133,22 +140,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(null)
 
     try {
-      // Update order with addresses
+      // Update order with shipping address and email
       const updateResult = await updateOrderAddresses(order.id, {
         email: addressData.email,
         ship_address_attributes: addressData.ship_address,
-        bill_address_attributes: addressData.use_shipping_for_billing
-          ? addressData.ship_address
-          : addressData.bill_address,
       })
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save addresses")
+        setError(updateResult.error || "Failed to save address")
         setProcessing(false)
         return
       }
 
-      // Advance to next step
+      // Advance to delivery step
       const advanceResult = await advanceCheckout(order.id)
       if (!advanceResult.success) {
         setError(advanceResult.error || "Failed to proceed to next step")
@@ -190,7 +194,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   }
 
-  // Handle delivery confirmation (advance to payment/confirm)
+  // Handle delivery confirmation (advance to payment step)
   const handleDeliveryConfirm = async () => {
     if (!order) return
 
@@ -198,7 +202,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(null)
 
     try {
-      // Advance to next step
+      // Advance to payment step
       const advanceResult = await advanceCheckout(order.id)
       if (!advanceResult.success) {
         setError(advanceResult.error || "Failed to proceed")
@@ -206,15 +210,49 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         return
       }
 
-      // For now, we skip payment step - complete the order
-      // In a real implementation, you would handle payment here
-      // const completeResult = await completeOrder(order.id)
-      // if (completeResult.success && completeResult.order) {
-      //   router.push(`${basePath}/account/orders/${completeResult.order.id}`)
-      // }
-
       // Reload order
       await loadOrder()
+    } catch {
+      setError("An error occurred. Please try again.")
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Handle payment submission (billing address + complete order)
+  const handlePaymentSubmit = async (paymentData: {
+    bill_address: AddressParams
+    use_shipping_for_billing: boolean
+  }) => {
+    if (!order) return
+
+    setProcessing(true)
+    setError(null)
+
+    try {
+      // Update billing address
+      const updateResult = await updateOrderAddresses(order.id, {
+        bill_address_attributes: paymentData.bill_address,
+      })
+
+      if (!updateResult.success) {
+        setError(updateResult.error || "Failed to save billing address")
+        setProcessing(false)
+        return
+      }
+
+      // Complete the order (skip actual payment for now)
+      const completeResult = await completeOrder(order.id)
+      if (!completeResult.success) {
+        setError(completeResult.error || "Failed to complete order")
+        setProcessing(false)
+        return
+      }
+
+      // Redirect to order confirmation
+      if (completeResult.order) {
+        router.push(`${basePath}/account/orders/${completeResult.order.id}`)
+      }
     } catch {
       setError("An error occurred. Please try again.")
     } finally {
@@ -252,6 +290,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     } catch {
       return []
     }
+  }
+
+  // Navigate back to a previous step
+  const goToStep = (step: CheckoutStep) => {
+    setCurrentStep(step)
   }
 
   // Loading state
@@ -309,6 +352,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     )
   }
 
+  const steps = [
+    { id: "address", label: "Shipping" },
+    { id: "delivery", label: "Delivery" },
+    { id: "payment", label: "Payment" },
+  ]
+
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -321,60 +372,42 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       <div className="mb-8">
         <nav aria-label="Progress">
           <ol className="flex items-center">
-            <li className="relative pr-8 sm:pr-20">
-              <div className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep === "address"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-indigo-600 text-white"
-                  }`}
-                >
-                  {currentStep === "address" ? "1" : "✓"}
+            {steps.map((step, index) => (
+              <li key={step.id} className={`relative ${index < steps.length - 1 ? "pr-8 sm:pr-20" : ""}`}>
+                <div className="flex items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                      index < currentStepIndex
+                        ? "bg-indigo-600 text-white"
+                        : index === currentStepIndex
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-500"
+                    }`}
+                  >
+                    {index < currentStepIndex ? "✓" : index + 1}
+                  </div>
+                  <span
+                    className={`ml-4 text-sm font-medium ${
+                      index === currentStepIndex
+                        ? "text-indigo-600"
+                        : index < currentStepIndex
+                        ? "text-gray-900"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
                 </div>
-                <span
-                  className={`ml-4 text-sm font-medium ${
-                    currentStep === "address" ? "text-indigo-600" : "text-gray-900"
-                  }`}
-                >
-                  Address
-                </span>
-              </div>
-              <div className="absolute top-4 left-8 w-full h-0.5 bg-gray-200">
-                <div
-                  className={`h-full ${
-                    currentStep !== "address" ? "bg-indigo-600" : "bg-gray-200"
-                  }`}
-                  style={{ width: currentStep !== "address" ? "100%" : "0%" }}
-                />
-              </div>
-            </li>
-            <li className="relative">
-              <div className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep === "delivery"
-                      ? "bg-indigo-600 text-white"
-                      : currentStep === "complete"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  {currentStep === "complete" ? "✓" : "2"}
-                </div>
-                <span
-                  className={`ml-4 text-sm font-medium ${
-                    currentStep === "delivery"
-                      ? "text-indigo-600"
-                      : currentStep === "complete"
-                      ? "text-gray-900"
-                      : "text-gray-500"
-                  }`}
-                >
-                  Delivery
-                </span>
-              </div>
-            </li>
+                {index < steps.length - 1 && (
+                  <div className="absolute top-4 left-8 w-full h-0.5 bg-gray-200">
+                    <div
+                      className={`h-full ${index < currentStepIndex ? "bg-indigo-600" : "bg-gray-200"}`}
+                      style={{ width: index < currentStepIndex ? "100%" : "0%" }}
+                    />
+                  </div>
+                )}
+              </li>
+            ))}
           </ol>
         </nav>
       </div>
@@ -393,6 +426,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             <AddressStep
               order={order}
               countries={countries}
+              savedAddresses={savedAddresses}
+              isAuthenticated={isAuthenticated}
+              signInUrl={`${basePath}/account/login?redirect=${encodeURIComponent(pathname)}`}
               fetchStates={fetchStates}
               onSubmit={handleAddressSubmit}
               processing={processing}
@@ -405,7 +441,18 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               shipments={shipments}
               onShippingRateSelect={handleShippingRateSelect}
               onConfirm={handleDeliveryConfirm}
-              onBack={() => setCurrentStep("address")}
+              onBack={() => goToStep("address")}
+              processing={processing}
+            />
+          )}
+
+          {currentStep === "payment" && (
+            <PaymentStep
+              order={order}
+              countries={countries}
+              fetchStates={fetchStates}
+              onSubmit={handlePaymentSubmit}
+              onBack={() => goToStep("delivery")}
               processing={processing}
             />
           )}

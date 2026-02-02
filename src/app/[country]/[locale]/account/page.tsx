@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
 function extractBasePath(pathname: string): string {
@@ -16,8 +16,12 @@ function extractBasePath(pathname: string): string {
 export default function AccountPage() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const basePath = extractBasePath(pathname)
   const { user, login, isAuthenticated, loading: authLoading } = useAuth()
+
+  // Get redirect URL from query params (e.g., from checkout)
+  const redirectUrl = searchParams.get('redirect')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,7 +34,12 @@ export default function AccountPage() {
     setLoading(true)
 
     const result = await login(email, password)
-    if (!result.success) {
+    if (result.success) {
+      // Redirect to the specified URL or stay on account page
+      if (redirectUrl) {
+        router.push(redirectUrl)
+      }
+    } else {
       setError(result.error || 'Invalid email or password')
     }
     setLoading(false)
