@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 function extractBasePath(pathname: string): string {
@@ -130,22 +131,34 @@ function NavIcon({ icon }: { icon: string }) {
   }
 }
 
-export default function AccountLayout({
-  children,
-}: {
+function ContentSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-8 bg-gray-200 rounded w-1/3" />
+      <div className="h-4 bg-gray-200 rounded w-2/3" />
+      <div className="h-32 bg-gray-200 rounded" />
+      <div className="h-32 bg-gray-200 rounded" />
+    </div>
+  );
+}
+
+interface AccountShellProps {
   children: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const basePath = extractBasePath(pathname);
-  const { user, logout, isAuthenticated, loading } = useAuth();
+  basePath: string;
+  pathname: string;
+  user?: { first_name?: string; last_name?: string; email?: string } | null;
+  onLogout?: () => void;
+  isLoading?: boolean;
+}
 
-  // Don't show nav for login/register pages
-  const isAuthPage = pathname.includes("/register");
-
-  if (isAuthPage || loading || !isAuthenticated) {
-    return <>{children}</>;
-  }
-
+function AccountShell({
+  children,
+  basePath,
+  pathname,
+  user,
+  onLogout,
+  isLoading,
+}: AccountShellProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -154,12 +167,23 @@ export default function AccountLayout({
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {/* User Info */}
             <div className="p-4 border-b border-gray-200">
-              <p className="font-medium text-gray-900">
-                {user?.first_name
-                  ? `${user.first_name} ${user.last_name || ""}`.trim()
-                  : "My Account"}
-              </p>
-              <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+              {isLoading ? (
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-24" />
+                  <div className="h-3 bg-gray-200 rounded w-32" />
+                </div>
+              ) : (
+                <>
+                  <p className="font-medium text-gray-900">
+                    {user?.first_name
+                      ? `${user.first_name} ${user.last_name || ""}`.trim()
+                      : "My Account"}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {user?.email}
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Navigation */}
@@ -193,8 +217,9 @@ export default function AccountLayout({
             {/* Logout */}
             <div className="p-2 border-t border-gray-200">
               <button
-                onClick={logout}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={onLogout}
+                disabled={isLoading}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <svg
                   className="w-5 h-5"
@@ -219,5 +244,81 @@ export default function AccountLayout({
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
+  );
+}
+
+export default function AccountLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const basePath = extractBasePath(pathname);
+  const { user, logout, isAuthenticated, loading } = useAuth();
+
+  // Pages that don't require authentication
+  const isAuthPage = pathname.includes("/register");
+  const isMainAccountPage = pathname === `${basePath}/account`;
+
+  // Redirect to login if not authenticated and trying to access protected sub-pages
+  useEffect(() => {
+    if (!loading && !isAuthenticated && !isAuthPage && !isMainAccountPage) {
+      router.replace(`${basePath}/account`);
+    }
+  }, [
+    loading,
+    isAuthenticated,
+    isAuthPage,
+    isMainAccountPage,
+    basePath,
+    router,
+  ]);
+
+  // Show loading state with full layout shell while checking auth
+  if (loading) {
+    // For auth pages or main account page, show simple skeleton
+    if (isAuthPage || isMainAccountPage) {
+      return (
+        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto" />
+            <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto" />
+            <div className="h-48 bg-gray-200 rounded" />
+          </div>
+        </div>
+      );
+    }
+    // For protected pages, show full layout with content skeleton
+    return (
+      <AccountShell basePath={basePath} pathname={pathname} isLoading={true}>
+        <ContentSkeleton />
+      </AccountShell>
+    );
+  }
+
+  // Redirect in progress for unauthenticated users on protected pages
+  if (!isAuthenticated && !isAuthPage && !isMainAccountPage) {
+    return (
+      <AccountShell basePath={basePath} pathname={pathname} isLoading={true}>
+        <ContentSkeleton />
+      </AccountShell>
+    );
+  }
+
+  // Don't show nav for login/register pages
+  if (isAuthPage || !isAuthenticated) {
+    return <>{children}</>;
+  }
+
+  return (
+    <AccountShell
+      basePath={basePath}
+      pathname={pathname}
+      user={user}
+      onLogout={logout}
+    >
+      {children}
+    </AccountShell>
   );
 }
