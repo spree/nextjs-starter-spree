@@ -1,29 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { updateCustomer } from '@/lib/data/customer'
 
-export default function ProfilePage() {
-  const { user, refreshUser } = useAuth()
+// Inner form component that resets when user changes (via key prop)
+function ProfileForm({ user, refreshUser }: {
+  user: { id: string; email: string; first_name?: string | null; last_name?: string | null }
+  refreshUser: () => Promise<void>
+}) {
+  // Initialize form data from user props - no useEffect needed
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
+    first_name: user.first_name || '',
+    last_name: user.last_name || '',
+    email: user.email || '',
   })
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        first_name: user.first_name || '',
-        last_name: user.last_name || '',
-        email: user.email || '',
-      })
-    }
-  }, [user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,15 +121,31 @@ export default function ProfilePage() {
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm font-medium text-gray-500">Account ID</dt>
-              <dd className="mt-1 text-sm text-gray-900">{user?.id}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{user.id}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Email</dt>
-              <dd className="mt-1 text-sm text-gray-900">{user?.email}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
             </div>
           </dl>
         </div>
       </div>
     </div>
   )
+}
+
+// Main page component - uses key prop to reset form when user changes
+export default function ProfilePage() {
+  const { user, refreshUser } = useAuth()
+
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">Loading profile...</p>
+      </div>
+    )
+  }
+
+  // Use key={user.id} to reset the form component when user changes
+  return <ProfileForm key={user.id} user={user} refreshUser={refreshUser} />
 }

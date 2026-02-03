@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import type { StoreProduct, StoreVariant, StoreImage } from '@spree/sdk'
 import { MediaGallery } from '@/components/products/MediaGallery'
 import { VariantPicker } from '@/components/products/VariantPicker'
@@ -92,16 +92,6 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
       setLoading(false)
     }
   }
-
-  // Update selected variant when option changes - also select first matching options if none selected
-  useEffect(() => {
-    if (hasVariants && !selectedVariant && optionTypes.length > 0) {
-      const firstPurchasable = variants.find(v => v.purchasable)
-      if (firstPurchasable) {
-        setSelectedVariant(firstPurchasable)
-      }
-    }
-  }, [hasVariants, selectedVariant, variants, optionTypes.length])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

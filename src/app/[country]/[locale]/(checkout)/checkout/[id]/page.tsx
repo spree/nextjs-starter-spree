@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, use, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import type { StoreOrder, StoreShipment, StoreCountry, StoreAddress, AddressParams } from "@spree/sdk"
@@ -8,7 +8,6 @@ import {
   getCheckoutOrder,
   updateOrderAddresses,
   advanceCheckout,
-  getShipments,
   selectShippingRate,
   applyCouponCode,
   removeCouponCode,
@@ -90,6 +89,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const basePath = extractBasePath(pathname)
   const { setSummaryContent } = useCheckout()
 
+  // Use React 19's use() hook to unwrap the params Promise
+  const { id: orderId } = use(params)
+
   const [order, setOrder] = useState<StoreOrder | null>(null)
   const [shipments, setShipments] = useState<StoreShipment[]>([])
   const [countries, setCountries] = useState<StoreCountry[]>([])
@@ -99,37 +101,47 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("address")
-  const [orderId, setOrderId] = useState<string | null>(null)
 
-  // Load params
-  useEffect(() => {
-    params.then((p) => setOrderId(p.id))
-  }, [params])
+  // Use ref to store the current order for stable callback references
+  const orderRef = useRef(order)
+  orderRef.current = order
 
-  // Handle coupon code application
+  // Handle coupon code application - uses ref to avoid stale closures
   const handleApplyCoupon = useCallback(async (code: string) => {
-    if (!order) return { success: false, error: "No order" }
+    const currentOrder = orderRef.current
+    if (!currentOrder) return { success: false, error: "No order" }
 
-    const result = await applyCouponCode(order.id, code)
+    const result = await applyCouponCode(currentOrder.id, code)
     if (result.success && result.order) {
       setOrder(result.order)
     }
     return result
-  }, [order])
+  }, []) // No dependencies - uses ref
 
   // Handle coupon code removal
   const handleRemoveCoupon = useCallback(async (promotionId: string) => {
-    if (!order) return { success: false, error: "No order" }
+    const currentOrder = orderRef.current
+    if (!currentOrder) return { success: false, error: "No order" }
 
-    const result = await removeCouponCode(order.id, promotionId)
+    const result = await removeCouponCode(currentOrder.id, promotionId)
     if (result.success && result.order) {
       setOrder(result.order)
     }
     return result
-  }, [order])
+  }, []) // No dependencies - uses ref
 
-  // Update sidebar content when order changes
+  // Track order key for sidebar updates (only update when order changes meaningfully)
+  const orderKey = order ? `${order.id}-${order.updated_at}` : null
+  const prevOrderKeyRef = useRef(orderKey)
+
+  // Update sidebar content when order changes meaningfully
   useEffect(() => {
+    // Skip if order key hasn't changed
+    if (orderKey === prevOrderKeyRef.current && prevOrderKeyRef.current !== null) {
+      return
+    }
+    prevOrderKeyRef.current = orderKey
+
     if (order) {
       setSummaryContent(
         <CheckoutSidebar
@@ -141,12 +153,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     } else {
       setSummaryContent(null)
     }
-  }, [order, setSummaryContent, handleApplyCoupon, handleRemoveCoupon])
+  }, [order, orderKey, setSummaryContent, handleApplyCoupon, handleRemoveCoupon])
 
   // Load order and countries
   const loadOrder = useCallback(async () => {
-    if (!orderId) return
-
     setLoading(true)
     setError(null)
 
@@ -176,10 +186,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setIsAuthenticated(authStatus)
       setCurrentStep(getCheckoutStep(orderData.state))
 
-      // Load shipments if in delivery or payment state
+      // Set shipments from order data (already included via getCheckoutOrder)
       if (orderData.state === "delivery" || orderData.state === "payment" || orderData.state === "confirm") {
-        const shipmentsData = await getShipments(orderId)
-        setShipments(shipmentsData)
+        setShipments(orderData.shipments || [])
       }
     } catch {
       setError("Failed to load checkout. Please try again.")
@@ -195,7 +204,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Handle address submission (shipping address only)
   const handleAddressSubmit = async (addressData: {
     email: string
-    ship_address: AddressParams
+    ship_address?: AddressParams
+    ship_address_id?: string
   }) => {
     if (!order) return
 
@@ -206,7 +216,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Update order with shipping address and email
       const updateResult = await updateOrderAddresses(order.id, {
         email: addressData.email,
-        ship_address: addressData.ship_address,
+        ...(addressData.ship_address && { ship_address: addressData.ship_address }),
+        ...(addressData.ship_address_id && { ship_address_id: addressData.ship_address_id }),
       })
 
       if (!updateResult.success) {
@@ -244,12 +255,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       if (!result.success) {
         setError(result.error || "Failed to select shipping rate")
       }
-      // Reload shipments
-      const shipmentsData = await getShipments(order.id)
-      setShipments(shipmentsData)
-      // Reload order to get updated totals
+      // Reload order to get updated totals (includes shipments)
       const orderData = await getCheckoutOrder(order.id)
-      if (orderData) setOrder(orderData)
+      if (orderData) {
+        setOrder(orderData)
+        setShipments(orderData.shipments || [])
+      }
     } catch {
       setError("An error occurred. Please try again.")
     } finally {
