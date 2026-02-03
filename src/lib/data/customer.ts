@@ -1,23 +1,25 @@
 "use server"
 
 import { getSpreeClient } from "@/lib/spree"
-import { getAuthHeaders, setAuthToken, removeAuthToken } from "./cookies"
+import { getAuthHeadersWithRefresh, setAuthToken, removeAuthToken } from "./cookies"
+import { withAuthRefresh } from "./auth-request"
 import { associateCartWithUser } from "./cart"
 import { updateTag } from "next/cache"
 
 export async function getCustomer() {
-  const authHeaders = await getAuthHeaders()
+  const authHeaders = await getAuthHeadersWithRefresh()
 
   if (!authHeaders.token) {
     return null
   }
 
   try {
-    const client = getSpreeClient()
-    const customer = await client.customer.get(authHeaders)
-    return customer
+    return await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.get(headers)
+    })
   } catch {
-    // Token is invalid or expired
+    // Any error means we can't get customer - clear token and return null
     await removeAuthToken()
     return null
   }
@@ -81,15 +83,11 @@ export async function updateCustomer(data: {
   last_name?: string
   email?: string
 }) {
-  const authHeaders = await getAuthHeaders()
-
-  if (!authHeaders.token) {
-    return { success: false, error: "Not authenticated" }
-  }
-
   try {
-    const client = getSpreeClient()
-    const customer = await client.customer.update(data, authHeaders)
+    const customer = await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.update(data, headers)
+    })
     updateTag("customer")
     return { success: true, customer }
   } catch (error) {

@@ -1,4 +1,4 @@
-import { createSpreeClient, SpreeClient } from '@spree/sdk'
+import { createSpreeClient, SpreeClient, SpreeError } from '@spree/sdk'
 
 // Server-side only Spree client
 // No NEXT_PUBLIC_ prefix means these env vars are NOT exposed to the browser
@@ -14,4 +14,4 @@ export function getSpreeClient(): SpreeClient {
   return client
 }
 
-export { SpreeClient }
+export { SpreeClient, SpreeError }

@@ -56,8 +56,8 @@ export async function getCheckoutOrder(orderId: string, options?: CheckoutOption
 export async function updateOrderAddresses(
   orderId: string,
   addresses: {
-    ship_address_attributes?: AddressParams
-    bill_address_attributes?: AddressParams
+    ship_address?: AddressParams
+    bill_address?: AddressParams
     email?: string
   },
   options?: CheckoutOptions

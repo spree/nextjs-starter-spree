@@ -354,11 +354,6 @@ export default function AddressesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(null)
 
-  const loadAddresses = async () => {
-    const response = await getAddresses()
-    setAddresses(response.data)
-  }
-
   useEffect(() => {
     async function loadData() {
       const [addressResponse, countriesResponse] = await Promise.all([
@@ -388,19 +383,29 @@ export default function AddressesPage() {
       if (!result.success) {
         throw new Error(result.error)
       }
+      // Update just the one address in state
+      if (result.address) {
+        setAddresses(prev => prev.map(addr =>
+          addr.id === id ? result.address! : addr
+        ))
+      }
     } else {
       const result = await createAddress(data)
       if (!result.success) {
         throw new Error(result.error)
       }
+      // Append the new address
+      if (result.address) {
+        setAddresses(prev => [...prev, result.address!])
+      }
     }
-    await loadAddresses()
   }
 
   const handleDelete = async (id: string) => {
     const result = await deleteAddress(id)
     if (result.success) {
-      await loadAddresses()
+      // Remove the address from state
+      setAddresses(prev => prev.filter(addr => addr.id !== id))
     }
   }
 

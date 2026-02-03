@@ -15,8 +15,9 @@ import {
   completeOrder,
 } from "@/lib/data/checkout"
 import { getCountries, getCountry } from "@/lib/data/countries"
-import { getAddresses } from "@/lib/data/addresses"
+import { getAddresses, updateAddress } from "@/lib/data/addresses"
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies"
+import { useCheckout } from "@/contexts/CheckoutContext"
 import { AddressStep } from "@/components/checkout/AddressStep"
 import { DeliveryStep } from "@/components/checkout/DeliveryStep"
 import { PaymentStep } from "@/components/checkout/PaymentStep"
@@ -59,10 +60,35 @@ interface CheckoutPageProps {
   }>
 }
 
+// Sidebar summary component
+function CheckoutSidebar({
+  order,
+  onApplyCoupon,
+  onRemoveCoupon,
+}: {
+  order: StoreOrder
+  onApplyCoupon: (code: string) => Promise<{ success: boolean; error?: string }>
+  onRemoveCoupon: (promotionId: string) => Promise<{ success: boolean; error?: string }>
+}) {
+  return (
+    <>
+      <OrderSummary order={order} />
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <CouponCode
+          order={order}
+          onApply={onApplyCoupon}
+          onRemove={onRemoveCoupon}
+        />
+      </div>
+    </>
+  )
+}
+
 export default function CheckoutPage({ params }: CheckoutPageProps) {
   const router = useRouter()
   const pathname = usePathname()
   const basePath = extractBasePath(pathname)
+  const { setSummaryContent } = useCheckout()
 
   const [order, setOrder] = useState<StoreOrder | null>(null)
   const [shipments, setShipments] = useState<StoreShipment[]>([])
@@ -79,6 +105,43 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   useEffect(() => {
     params.then((p) => setOrderId(p.id))
   }, [params])
+
+  // Handle coupon code application
+  const handleApplyCoupon = useCallback(async (code: string) => {
+    if (!order) return { success: false, error: "No order" }
+
+    const result = await applyCouponCode(order.id, code)
+    if (result.success && result.order) {
+      setOrder(result.order)
+    }
+    return result
+  }, [order])
+
+  // Handle coupon code removal
+  const handleRemoveCoupon = useCallback(async (promotionId: string) => {
+    if (!order) return { success: false, error: "No order" }
+
+    const result = await removeCouponCode(order.id, promotionId)
+    if (result.success && result.order) {
+      setOrder(result.order)
+    }
+    return result
+  }, [order])
+
+  // Update sidebar content when order changes
+  useEffect(() => {
+    if (order) {
+      setSummaryContent(
+        <CheckoutSidebar
+          order={order}
+          onApplyCoupon={handleApplyCoupon}
+          onRemoveCoupon={handleRemoveCoupon}
+        />
+      )
+    } else {
+      setSummaryContent(null)
+    }
+  }, [order, setSummaryContent, handleApplyCoupon, handleRemoveCoupon])
 
   // Load order and countries
   const loadOrder = useCallback(async () => {
@@ -143,7 +206,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Update order with shipping address and email
       const updateResult = await updateOrderAddresses(order.id, {
         email: addressData.email,
-        ship_address_attributes: addressData.ship_address,
+        ship_address: addressData.ship_address,
       })
 
       if (!updateResult.success) {
@@ -232,7 +295,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     try {
       // Update billing address
       const updateResult = await updateOrderAddresses(order.id, {
-        bill_address_attributes: paymentData.bill_address,
+        bill_address: paymentData.bill_address,
       })
 
       if (!updateResult.success) {
@@ -260,28 +323,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   }
 
-  // Handle coupon code application
-  const handleApplyCoupon = async (code: string) => {
-    if (!order) return { success: false, error: "No order" }
-
-    const result = await applyCouponCode(order.id, code)
-    if (result.success && result.order) {
-      setOrder(result.order)
-    }
-    return result
-  }
-
-  // Handle coupon code removal
-  const handleRemoveCoupon = async (promotionId: string) => {
-    if (!order) return { success: false, error: "No order" }
-
-    const result = await removeCouponCode(order.id, promotionId)
-    if (result.success && result.order) {
-      setOrder(result.order)
-    }
-    return result
-  }
-
   // Fetch states for a country
   const fetchStates = async (countryIso: string) => {
     try {
@@ -292,6 +333,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   }
 
+  // Update a saved address
+  const handleUpdateSavedAddress = async (id: string, data: AddressParams) => {
+    const result = await updateAddress(id, data)
+    if (result.success && result.address) {
+      // Update local state
+      setSavedAddresses(prev =>
+        prev.map(addr => addr.id === id ? result.address! : addr)
+      )
+      return result.address
+    }
+    throw new Error(result.error || "Failed to update address")
+  }
+
   // Navigate back to a previous step
   const goToStep = (step: CheckoutStep) => {
     setCurrentStep(step)
@@ -300,15 +354,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Loading state
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              <div className="h-64 bg-gray-200 rounded" />
-            </div>
-            <div className="h-96 bg-gray-200 rounded" />
-          </div>
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-1/3" />
+        <div className="h-4 bg-gray-200 rounded w-1/4" />
+        <div className="space-y-4 mt-8">
+          <div className="h-12 bg-gray-200 rounded" />
+          <div className="h-12 bg-gray-200 rounded" />
+          <div className="h-12 bg-gray-200 rounded" />
         </div>
       </div>
     )
@@ -317,17 +369,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Error state
   if (error && !order) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Checkout Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Link
-            href={`${basePath}/cart`}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Return to Cart
-          </Link>
-        </div>
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Checkout Error</h1>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <Link
+          href={`${basePath}/cart`}
+          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Return to Cart
+        </Link>
       </div>
     )
   }
@@ -337,17 +387,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Check if order has items
   if (!order.line_items || order.line_items.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-6">Add some items to your cart before checking out.</p>
-          <Link
-            href={`${basePath}/products`}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            Continue Shopping
-          </Link>
-        </div>
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
+        <p className="text-gray-600 mb-6">Add some items to your cart before checking out.</p>
+        <Link
+          href={`${basePath}/products`}
+          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Continue Shopping
+        </Link>
       </div>
     )
   }
@@ -361,9 +409,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
         <p className="text-gray-500 mt-1">Order #{order.number}</p>
       </div>
@@ -419,59 +467,42 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main content */}
-        <div className="lg:col-span-2">
-          {currentStep === "address" && (
-            <AddressStep
-              order={order}
-              countries={countries}
-              savedAddresses={savedAddresses}
-              isAuthenticated={isAuthenticated}
-              signInUrl={`${basePath}/account/login?redirect=${encodeURIComponent(pathname)}`}
-              fetchStates={fetchStates}
-              onSubmit={handleAddressSubmit}
-              processing={processing}
-            />
-          )}
+      {/* Main content */}
+      {currentStep === "address" && (
+        <AddressStep
+          order={order}
+          countries={countries}
+          savedAddresses={savedAddresses}
+          isAuthenticated={isAuthenticated}
+          signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
+          fetchStates={fetchStates}
+          onSubmit={handleAddressSubmit}
+          onUpdateSavedAddress={isAuthenticated ? handleUpdateSavedAddress : undefined}
+          processing={processing}
+        />
+      )}
 
-          {currentStep === "delivery" && (
-            <DeliveryStep
-              order={order}
-              shipments={shipments}
-              onShippingRateSelect={handleShippingRateSelect}
-              onConfirm={handleDeliveryConfirm}
-              onBack={() => goToStep("address")}
-              processing={processing}
-            />
-          )}
+      {currentStep === "delivery" && (
+        <DeliveryStep
+          order={order}
+          shipments={shipments}
+          onShippingRateSelect={handleShippingRateSelect}
+          onConfirm={handleDeliveryConfirm}
+          onBack={() => goToStep("address")}
+          processing={processing}
+        />
+      )}
 
-          {currentStep === "payment" && (
-            <PaymentStep
-              order={order}
-              countries={countries}
-              fetchStates={fetchStates}
-              onSubmit={handlePaymentSubmit}
-              onBack={() => goToStep("delivery")}
-              processing={processing}
-            />
-          )}
-        </div>
-
-        {/* Order summary sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-gray-50 rounded-lg p-6 sticky top-4">
-            <OrderSummary order={order} />
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <CouponCode
-                order={order}
-                onApply={handleApplyCoupon}
-                onRemove={handleRemoveCoupon}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      {currentStep === "payment" && (
+        <PaymentStep
+          order={order}
+          countries={countries}
+          fetchStates={fetchStates}
+          onSubmit={handlePaymentSubmit}
+          onBack={() => goToStep("delivery")}
+          processing={processing}
+        />
+      )}
+    </>
   )
 }

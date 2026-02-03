@@ -25,6 +25,7 @@ interface AddressSelectorProps {
   loadingStates: boolean
   onChange: (field: keyof AddressFormData, value: string) => void
   onSelectSavedAddress: (address: StoreAddress) => void
+  onEditAddress?: (address: StoreAddress) => void
   idPrefix: string
 }
 
@@ -36,6 +37,7 @@ export function AddressSelector({
   loadingStates,
   onChange,
   onSelectSavedAddress,
+  onEditAddress,
   idPrefix,
 }: AddressSelectorProps) {
   const [selectedAddressId, setSelectedAddressId] = useState<string | "new">("new")
@@ -95,37 +97,51 @@ export function AddressSelector({
           <p className="text-sm font-medium text-gray-700">Select an address</p>
           <div className="grid gap-3">
             {savedAddresses.map((address) => (
-              <label
+              <div
                 key={address.id}
-                className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${
+                className={`flex items-start p-4 border rounded-lg transition-colors ${
                   selectedAddressId === address.id
                     ? "border-indigo-600 bg-indigo-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <input
-                  type="radio"
-                  name={`${idPrefix}-address-selection`}
-                  value={address.id}
-                  checked={selectedAddressId === address.id}
-                  onChange={() => handleSelectAddress(address.id)}
-                  className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                />
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">{address.full_name}</p>
-                  {address.company && (
-                    <p className="text-sm text-gray-500">{address.company}</p>
-                  )}
-                  <p className="text-sm text-gray-500">{address.address1}</p>
-                  {address.address2 && (
-                    <p className="text-sm text-gray-500">{address.address2}</p>
-                  )}
-                  <p className="text-sm text-gray-500">
-                    {address.city}, {address.state_text || address.state_name} {address.zipcode}
-                  </p>
-                  <p className="text-sm text-gray-500">{address.country_name}</p>
-                </div>
-              </label>
+                <label className="flex items-start flex-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`${idPrefix}-address-selection`}
+                    value={address.id}
+                    checked={selectedAddressId === address.id}
+                    onChange={() => handleSelectAddress(address.id)}
+                    className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                  />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-900">{address.full_name}</p>
+                    {address.company && (
+                      <p className="text-sm text-gray-500">{address.company}</p>
+                    )}
+                    <p className="text-sm text-gray-500">{address.address1}</p>
+                    {address.address2 && (
+                      <p className="text-sm text-gray-500">{address.address2}</p>
+                    )}
+                    <p className="text-sm text-gray-500">
+                      {address.city}, {address.state_text || address.state_name} {address.zipcode}
+                    </p>
+                    <p className="text-sm text-gray-500">{address.country_name}</p>
+                  </div>
+                </label>
+                {onEditAddress && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      onEditAddress(address)
+                    }}
+                    className="ml-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
             ))}
             <label
               className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${

@@ -1,7 +1,8 @@
 "use server"
 
 import { getSpreeClient } from "@/lib/spree"
-import { getAuthHeaders } from "./cookies"
+import { getAuthHeadersWithRefresh } from "./cookies"
+import { withAuthRefresh } from "./auth-request"
 
 interface OrderListParams {
   page?: number
@@ -10,30 +11,34 @@ interface OrderListParams {
 }
 
 export async function getOrders(params?: OrderListParams) {
-  const authHeaders = await getAuthHeaders()
+  const authHeaders = await getAuthHeadersWithRefresh()
 
   if (!authHeaders.token) {
     return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } }
   }
 
   try {
-    const client = getSpreeClient()
-    return await client.orders.list(params, authHeaders)
+    return await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.orders.list(params, headers)
+    })
   } catch {
     return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } }
   }
 }
 
 export async function getOrder(id: string, params?: { includes?: string }) {
-  const authHeaders = await getAuthHeaders()
+  const authHeaders = await getAuthHeadersWithRefresh()
 
   if (!authHeaders.token) {
     return null
   }
 
   try {
-    const client = getSpreeClient()
-    return await client.orders.get(id, params, authHeaders)
+    return await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.orders.get(id, params, headers)
+    })
   } catch {
     return null
   }

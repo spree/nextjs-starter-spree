@@ -1,7 +1,5 @@
 import { StoreProvider } from '@/contexts/StoreContext'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
 
 interface CountryLocaleLayoutProps {
   children: React.ReactNode
@@ -20,9 +18,7 @@ export default async function CountryLocaleLayout({
   return (
     <StoreProvider initialCountry={country} initialLocale={locale}>
       <AuthProvider>
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
       </AuthProvider>
     </StoreProvider>
   )

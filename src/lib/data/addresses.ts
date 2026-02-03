@@ -1,7 +1,8 @@
 "use server"
 
 import { getSpreeClient } from "@/lib/spree"
-import { getAuthHeaders } from "./cookies"
+import { getAuthHeadersWithRefresh } from "./cookies"
+import { withAuthRefresh } from "./auth-request"
 import { updateTag } from "next/cache"
 
 // Address params for creating/updating addresses
@@ -20,45 +21,45 @@ export interface AddressParams {
 }
 
 export async function getAddresses() {
-  const authHeaders = await getAuthHeaders()
+  const authHeaders = await getAuthHeadersWithRefresh()
 
   if (!authHeaders.token) {
     return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } }
   }
 
   try {
-    const client = getSpreeClient()
-    return await client.customer.addresses.list(undefined, authHeaders)
+    return await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.addresses.list(undefined, headers)
+    })
   } catch {
     return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } }
   }
 }
 
 export async function getAddress(id: string) {
-  const authHeaders = await getAuthHeaders()
+  const authHeaders = await getAuthHeadersWithRefresh()
 
   if (!authHeaders.token) {
     return null
   }
 
   try {
-    const client = getSpreeClient()
-    return await client.customer.addresses.get(id, authHeaders)
+    return await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.addresses.get(id, headers)
+    })
   } catch {
     return null
   }
 }
 
 export async function createAddress(address: AddressParams) {
-  const authHeaders = await getAuthHeaders()
-
-  if (!authHeaders.token) {
-    return { success: false, error: "Not authenticated" }
-  }
-
   try {
-    const client = getSpreeClient()
-    const result = await client.customer.addresses.create(address as never, authHeaders)
+    const result = await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.addresses.create(address as never, headers)
+    })
     updateTag("addresses")
     return { success: true, address: result }
   } catch (error) {
@@ -70,15 +71,11 @@ export async function createAddress(address: AddressParams) {
 }
 
 export async function updateAddress(id: string, address: Partial<AddressParams>) {
-  const authHeaders = await getAuthHeaders()
-
-  if (!authHeaders.token) {
-    return { success: false, error: "Not authenticated" }
-  }
-
   try {
-    const client = getSpreeClient()
-    const result = await client.customer.addresses.update(id, address as never, authHeaders)
+    const result = await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.addresses.update(id, address as never, headers)
+    })
     updateTag("addresses")
     return { success: true, address: result }
   } catch (error) {
@@ -90,15 +87,11 @@ export async function updateAddress(id: string, address: Partial<AddressParams>)
 }
 
 export async function deleteAddress(id: string) {
-  const authHeaders = await getAuthHeaders()
-
-  if (!authHeaders.token) {
-    return { success: false, error: "Not authenticated" }
-  }
-
   try {
-    const client = getSpreeClient()
-    await client.customer.addresses.delete(id, authHeaders)
+    await withAuthRefresh(async (headers) => {
+      const client = getSpreeClient()
+      return await client.customer.addresses.delete(id, headers)
+    })
     updateTag("addresses")
     return { success: true }
   } catch (error) {
