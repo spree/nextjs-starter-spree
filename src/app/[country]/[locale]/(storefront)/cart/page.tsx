@@ -1,22 +1,22 @@
-'use client'
+"use client";
 
-import { useCart } from '@/contexts/CartContext'
-import Image from 'next/image'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCart } from "@/contexts/CartContext";
 
 function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i)
+  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
   if (match) {
-    return `/${match[1]}/${match[2]}`
+    return `/${match[1]}/${match[2]}`;
   }
-  return ''
+  return "";
 }
 
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem } = useCart()
-  const pathname = usePathname()
-  const basePath = extractBasePath(pathname)
+  const { cart, loading, updateItem, removeItem } = useCart();
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
 
   if (loading) {
     return (
@@ -30,7 +30,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!cart || !cart.line_items || cart.line_items.length === 0) {
@@ -50,7 +50,9 @@ export default function CartPage() {
               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             />
           </svg>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Your cart is empty</h1>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900">
+            Your cart is empty
+          </h1>
           <p className="mt-2 text-gray-500">
             Looks like you haven&apos;t added anything to your cart yet.
           </p>
@@ -62,7 +64,7 @@ export default function CartPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -78,7 +80,7 @@ export default function CartPage() {
                 {/* Image */}
                 <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                   <Image
-                    src={item.thumbnail_url || '/placeholder.svg'}
+                    src={item.thumbnail_url || "/placeholder.svg"}
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -92,7 +94,9 @@ export default function CartPage() {
                     {item.name}
                   </h3>
                   {item.options_text && (
-                    <p className="mt-1 text-sm text-gray-500">{item.options_text}</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {item.options_text}
+                    </p>
                   )}
                   <p className="mt-2 text-lg font-semibold text-gray-900">
                     {item.display_price}
@@ -103,12 +107,16 @@ export default function CartPage() {
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center border border-gray-300 rounded">
                     <button
-                      onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))}
+                      onClick={() =>
+                        updateItem(item.id, Math.max(1, item.quantity - 1))
+                      }
                       className="px-3 py-1 text-gray-600 hover:text-gray-900"
                     >
                       -
                     </button>
-                    <span className="px-3 py-1 font-medium">{item.quantity}</span>
+                    <span className="px-3 py-1 font-medium">
+                      {item.quantity}
+                    </span>
                     <button
                       onClick={() => updateItem(item.id, item.quantity + 1)}
                       className="px-3 py-1 text-gray-600 hover:text-gray-900"
@@ -181,5 +189,5 @@ export default function CartPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

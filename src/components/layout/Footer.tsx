@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -9,7 +9,8 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <span className="text-xl font-bold text-white">Spree Store</span>
             <p className="mt-4 text-sm">
-              A modern e-commerce storefront powered by Spree Commerce and Next.js.
+              A modern e-commerce storefront powered by Spree Commerce and
+              Next.js.
             </p>
           </div>
 
@@ -20,12 +21,18 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <Link href="/products" className="hover:text-white transition-colors">
+                <Link
+                  href="/products"
+                  className="hover:text-white transition-colors"
+                >
                   All Products
                 </Link>
               </li>
               <li>
-                <Link href="/taxonomies" className="hover:text-white transition-colors">
+                <Link
+                  href="/taxonomies"
+                  className="hover:text-white transition-colors"
+                >
                   Categories
                 </Link>
               </li>
@@ -39,17 +46,26 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <Link href="/account" className="hover:text-white transition-colors">
+                <Link
+                  href="/account"
+                  className="hover:text-white transition-colors"
+                >
                   My Account
                 </Link>
               </li>
               <li>
-                <Link href="/account/orders" className="hover:text-white transition-colors">
+                <Link
+                  href="/account/orders"
+                  className="hover:text-white transition-colors"
+                >
                   Order History
                 </Link>
               </li>
               <li>
-                <Link href="/cart" className="hover:text-white transition-colors">
+                <Link
+                  href="/cart"
+                  className="hover:text-white transition-colors"
+                >
                   Cart
                 </Link>
               </li>
@@ -58,9 +74,12 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-800 text-sm text-center">
-          <p>&copy; {new Date().getFullYear()} Spree Store. Powered by Spree Commerce.</p>
+          <p>
+            &copy; {new Date().getFullYear()} Spree Store. Powered by Spree
+            Commerce.
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

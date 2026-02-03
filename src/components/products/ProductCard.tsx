@@ -1,13 +1,13 @@
-import Link from "next/link";
-import Image from "next/image";
 import type { StoreProduct } from "@spree/sdk";
+import Image from "next/image";
+import Link from "next/link";
 
 interface ProductCardProps {
   product: StoreProduct;
   basePath?: string;
 }
 
-export function ProductCard({ product, basePath = '' }: ProductCardProps) {
+export function ProductCard({ product, basePath = "" }: ProductCardProps) {
   const imageUrl = product.thumbnail_url || null;
 
   // Current display price
@@ -19,14 +19,19 @@ export function ProductCard({ product, basePath = '' }: ProductCardProps) {
   const currentAmountCents = product.price?.amount_in_cents;
   const originalAmountCents = product.original_price?.amount_in_cents;
   const compareAtAmountCents = product.price?.compare_at_amount_in_cents;
-  const onSale = (currentAmountCents != null && originalAmountCents != null && currentAmountCents < originalAmountCents) ||
-                 (compareAtAmountCents != null && currentAmountCents != null && currentAmountCents < compareAtAmountCents);
+  const onSale =
+    (currentAmountCents != null &&
+      originalAmountCents != null &&
+      currentAmountCents < originalAmountCents) ||
+    (compareAtAmountCents != null &&
+      currentAmountCents != null &&
+      currentAmountCents < compareAtAmountCents);
 
   // Strikethrough price: show original_price if different from current, or compare_at_amount for manual markdowns
   const strikethroughPrice = onSale
-    ? (product.original_price?.display_amount !== displayPrice
-        ? product.original_price?.display_amount
-        : product.price?.display_compare_at_amount)
+    ? product.original_price?.display_amount !== displayPrice
+      ? product.original_price?.display_amount
+      : product.price?.display_compare_at_amount
     : null;
 
   return (

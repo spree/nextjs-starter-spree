@@ -1,31 +1,31 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useCart } from '@/contexts/CartContext'
-import { CountrySwitcher } from './CountrySwitcher'
-import { SearchBar } from '@/components/search/SearchBar'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { SearchBar } from "@/components/search/SearchBar";
+import { useCart } from "@/contexts/CartContext";
+import { CountrySwitcher } from "./CountrySwitcher";
 
 function extractBasePath(pathname: string): string {
   // Extract /country/locale from pathname
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i)
+  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
   if (match) {
-    return `/${match[1]}/${match[2]}`
+    return `/${match[1]}/${match[2]}`;
   }
-  return ''
+  return "";
 }
 
 export function Header() {
-  const { itemCount, openCart } = useCart()
-  const pathname = usePathname()
-  const basePath = extractBasePath(pathname)
+  const { itemCount, openCart } = useCart();
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={basePath || '/'} className="flex items-center space-x-2">
+          <Link href={basePath || "/"} className="flex items-center space-x-2">
             <span className="text-xl font-bold text-gray-900">Spree Store</span>
           </Link>
 
@@ -98,5 +98,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

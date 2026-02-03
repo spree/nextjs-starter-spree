@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import type { StoreImage } from "@spree/sdk";
+import Image from "next/image";
+import { useState } from "react";
 
 interface MediaGalleryProps {
   images: StoreImage[];

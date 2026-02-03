@@ -1,59 +1,62 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { getProduct } from '@/lib/data/products'
-import { useStore } from '@/contexts/StoreContext'
-import { ProductDetails } from './ProductDetails'
-import type { StoreProduct } from '@spree/sdk'
-import { notFound } from 'next/navigation'
+import type { StoreProduct } from "@spree/sdk";
+import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useStore } from "@/contexts/StoreContext";
+import { getProduct } from "@/lib/data/products";
+import { ProductDetails } from "./ProductDetails";
 
 interface ProductDetailsWrapperProps {
-  slug: string
-  basePath: string
+  slug: string;
+  basePath: string;
 }
 
-export function ProductDetailsWrapper({ slug, basePath }: ProductDetailsWrapperProps) {
-  const { currency, locale, loading: storeLoading } = useStore()
-  const [product, setProduct] = useState<StoreProduct | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
+export function ProductDetailsWrapper({
+  slug,
+  basePath,
+}: ProductDetailsWrapperProps) {
+  const { currency, locale, loading: storeLoading } = useStore();
+  const [product, setProduct] = useState<StoreProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     // Wait for store context to load (to get correct currency)
-    if (storeLoading) return
+    if (storeLoading) return;
 
-    let cancelled = false
+    let cancelled = false;
 
     const fetchProduct = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
         const data = await getProduct(
           slug,
-          { includes: 'variants,images,option_types' },
-          { currency, locale }
-        )
+          { includes: "variants,images,option_types" },
+          { currency, locale },
+        );
         if (!cancelled) {
-          setProduct(data)
-          setError(false)
+          setProduct(data);
+          setError(false);
         }
       } catch (err) {
-        console.error('Failed to fetch product:', err)
+        console.error("Failed to fetch product:", err);
         if (!cancelled) {
-          setError(true)
+          setError(true);
         }
       } finally {
         if (!cancelled) {
-          setLoading(false)
+          setLoading(false);
         }
       }
-    }
+    };
 
-    fetchProduct()
+    fetchProduct();
 
     return () => {
-      cancelled = true
-    }
-  }, [slug, currency, locale, storeLoading])
+      cancelled = true;
+    };
+  }, [slug, currency, locale, storeLoading]);
 
   if (loading || storeLoading) {
     return (
@@ -75,12 +78,12 @@ export function ProductDetailsWrapper({ slug, basePath }: ProductDetailsWrapperP
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !product) {
-    notFound()
+    notFound();
   }
 
-  return <ProductDetails product={product} basePath={basePath} />
+  return <ProductDetails product={product} basePath={basePath} />;
 }

@@ -1,18 +1,20 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import type { StoreOrder } from "@spree/sdk"
+import type { StoreOrder } from "@spree/sdk";
+import Image from "next/image";
 
 interface OrderSummaryProps {
-  order: StoreOrder
+  order: StoreOrder;
 }
 
 export function OrderSummary({ order }: OrderSummaryProps) {
-  const lineItems = order.line_items || []
+  const lineItems = order.line_items || [];
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        Order Summary
+      </h3>
 
       {/* Line items */}
       <div className="space-y-4 mb-6">
@@ -48,12 +50,18 @@ export function OrderSummary({ order }: OrderSummaryProps) {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {item.name}
+              </p>
               {item.options_text && (
-                <p className="text-xs text-gray-500 mt-0.5">{item.options_text}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {item.options_text}
+                </p>
               )}
             </div>
-            <div className="text-sm font-medium text-gray-900">{item.display_total}</div>
+            <div className="text-sm font-medium text-gray-900">
+              {item.display_total}
+            </div>
           </div>
         ))}
       </div>
@@ -75,7 +83,13 @@ export function OrderSummary({ order }: OrderSummaryProps) {
         {parseFloat(order.adjustment_total) !== 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Adjustments</span>
-            <span className={parseFloat(order.adjustment_total) < 0 ? "text-green-600" : "text-gray-900"}>
+            <span
+              className={
+                parseFloat(order.adjustment_total) < 0
+                  ? "text-green-600"
+                  : "text-gray-900"
+              }
+            >
               {order.display_adjustment_total}
             </span>
           </div>
@@ -101,5 +115,5 @@ export function OrderSummary({ order }: OrderSummaryProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

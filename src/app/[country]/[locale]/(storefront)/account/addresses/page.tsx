@@ -1,69 +1,81 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { getAddresses, createAddress, updateAddress, deleteAddress, type AddressParams } from '@/lib/data/addresses'
-import { getCountries, getCountry } from '@/lib/data/countries'
-import type { StoreAddress, StoreCountry, StoreState } from '@spree/sdk'
+import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk";
+import { useEffect, useState } from "react";
+import {
+  type AddressParams,
+  createAddress,
+  deleteAddress,
+  getAddresses,
+  updateAddress,
+} from "@/lib/data/addresses";
+import { getCountries, getCountry } from "@/lib/data/countries";
 
 interface AddressFormData {
-  firstname: string
-  lastname: string
-  address1: string
-  address2: string
-  city: string
-  zipcode: string
-  phone: string
-  company: string
-  country_iso: string
-  state_abbr: string
-  state_name: string
+  firstname: string;
+  lastname: string;
+  address1: string;
+  address2: string;
+  city: string;
+  zipcode: string;
+  phone: string;
+  company: string;
+  country_iso: string;
+  state_abbr: string;
+  state_name: string;
 }
 
 const emptyFormData: AddressFormData = {
-  firstname: '',
-  lastname: '',
-  address1: '',
-  address2: '',
-  city: '',
-  zipcode: '',
-  phone: '',
-  company: '',
-  country_iso: '',
-  state_abbr: '',
-  state_name: '',
-}
+  firstname: "",
+  lastname: "",
+  address1: "",
+  address2: "",
+  city: "",
+  zipcode: "",
+  phone: "",
+  company: "",
+  country_iso: "",
+  state_abbr: "",
+  state_name: "",
+};
 
 function AddressCard({
   address,
   onEdit,
   onDelete,
 }: {
-  address: StoreAddress
-  onEdit: () => void
-  onDelete: () => void
+  address: StoreAddress;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
-  const [deleting, setDeleting] = useState(false)
+  const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this address?')) return
-    setDeleting(true)
-    await onDelete()
-    setDeleting(false)
-  }
+    if (!confirm("Are you sure you want to delete this address?")) return;
+    setDeleting(true);
+    await onDelete();
+    setDeleting(false);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex justify-between items-start">
         <div>
           <p className="font-medium text-gray-900">{address.full_name}</p>
-          {address.company && <p className="text-sm text-gray-500">{address.company}</p>}
+          {address.company && (
+            <p className="text-sm text-gray-500">{address.company}</p>
+          )}
           <p className="text-sm text-gray-500 mt-1">{address.address1}</p>
-          {address.address2 && <p className="text-sm text-gray-500">{address.address2}</p>}
+          {address.address2 && (
+            <p className="text-sm text-gray-500">{address.address2}</p>
+          )}
           <p className="text-sm text-gray-500">
             {address.city}, {address.state_text} {address.zipcode}
           </p>
           <p className="text-sm text-gray-500">{address.country_name}</p>
-          {address.phone && <p className="text-sm text-gray-500 mt-2">{address.phone}</p>}
+          {address.phone && (
+            <p className="text-sm text-gray-500 mt-2">{address.phone}</p>
+          )}
         </div>
         <div className="flex gap-2">
           <button
@@ -77,12 +89,12 @@ function AddressCard({
             disabled={deleting}
             className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
           >
-            {deleting ? 'Deleting...' : 'Delete'}
+            {deleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function AddressModal({
@@ -92,60 +104,60 @@ function AddressModal({
   countries,
   onSave,
 }: {
-  isOpen: boolean
-  onClose: () => void
-  address: StoreAddress | null
-  countries: StoreCountry[]
-  onSave: (data: AddressParams, id?: string) => Promise<void>
+  isOpen: boolean;
+  onClose: () => void;
+  address: StoreAddress | null;
+  countries: StoreCountry[];
+  onSave: (data: AddressParams, id?: string) => Promise<void>;
 }) {
-  const [formData, setFormData] = useState<AddressFormData>(emptyFormData)
-  const [states, setStates] = useState<StoreState[]>([])
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
+  const [formData, setFormData] = useState<AddressFormData>(emptyFormData);
+  const [states, setStates] = useState<StoreState[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   // Initialize form data when address changes
   useEffect(() => {
     if (address) {
       setFormData({
-        firstname: address.firstname || '',
-        lastname: address.lastname || '',
-        address1: address.address1 || '',
-        address2: address.address2 || '',
-        city: address.city || '',
-        zipcode: address.zipcode || '',
-        phone: address.phone || '',
-        company: address.company || '',
-        country_iso: address.country_iso || '',
-        state_abbr: address.state_abbr || '',
-        state_name: address.state_name || '',
-      })
+        firstname: address.firstname || "",
+        lastname: address.lastname || "",
+        address1: address.address1 || "",
+        address2: address.address2 || "",
+        city: address.city || "",
+        zipcode: address.zipcode || "",
+        phone: address.phone || "",
+        company: address.company || "",
+        country_iso: address.country_iso || "",
+        state_abbr: address.state_abbr || "",
+        state_name: address.state_name || "",
+      });
     } else {
-      setFormData(emptyFormData)
+      setFormData(emptyFormData);
     }
-    setError('')
-  }, [address, isOpen])
+    setError("");
+  }, [address, isOpen]);
 
   // Load states when country changes
   useEffect(() => {
     async function loadStates() {
       if (!formData.country_iso) {
-        setStates([])
-        return
+        setStates([]);
+        return;
       }
-      const country = await getCountry(formData.country_iso)
+      const country = await getCountry(formData.country_iso);
       if (country?.states) {
-        setStates(country.states)
+        setStates(country.states);
       } else {
-        setStates([])
+        setStates([]);
       }
     }
-    loadStates()
-  }, [formData.country_iso])
+    loadStates();
+  }, [formData.country_iso]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSaving(true)
+    e.preventDefault();
+    setError("");
+    setSaving(true);
 
     try {
       const addressData: AddressParams = {
@@ -160,29 +172,32 @@ function AddressModal({
         country_iso: formData.country_iso,
         state_abbr: formData.state_abbr || undefined,
         state_name: formData.state_name || undefined,
-      }
+      };
 
-      await onSave(addressData, address?.id)
-      onClose()
+      await onSave(addressData, address?.id);
+      onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save address')
+      setError(err instanceof Error ? err.message : "Failed to save address");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
+        <div
+          className="fixed inset-0 bg-gray-500 opacity-50 transition-opacity"
+          onClick={onClose}
+        />
 
         <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form onSubmit={handleSubmit}>
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {address ? 'Edit Address' : 'Add New Address'}
+                {address ? "Edit Address" : "Add New Address"}
               </h3>
 
               {error && (
@@ -194,64 +209,93 @@ function AddressModal({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">First Name</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      First Name
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.firstname}
-                      onChange={(e) => setFormData({ ...formData, firstname: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, firstname: e.target.value })
+                      }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Last Name
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.lastname}
-                      onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lastname: e.target.value })
+                      }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Company (optional)
+                  </label>
                   <input
                     type="text"
                     value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, company: e.target.value })
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Address Line 1</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Address Line 1
+                  </label>
                   <input
                     type="text"
                     required
                     value={formData.address1}
-                    onChange={(e) => setFormData({ ...formData, address1: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address1: e.target.value })
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Address Line 2 (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Address Line 2 (optional)
+                  </label>
                   <input
                     type="text"
                     value={formData.address2}
-                    onChange={(e) => setFormData({ ...formData, address2: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address2: e.target.value })
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Country</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Country
+                  </label>
                   <select
                     required
                     value={formData.country_iso}
-                    onChange={(e) => setFormData({ ...formData, country_iso: e.target.value, state_abbr: '', state_name: '' })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        country_iso: e.target.value,
+                        state_abbr: "",
+                        state_name: "",
+                      })
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   >
                     <option value="">Select a country</option>
@@ -265,23 +309,32 @@ function AddressModal({
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">City</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      City
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      {states.length > 0 ? 'State' : 'State/Region'}
+                      {states.length > 0 ? "State" : "State/Region"}
                     </label>
                     {states.length > 0 ? (
                       <select
                         value={formData.state_abbr}
-                        onChange={(e) => setFormData({ ...formData, state_abbr: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            state_abbr: e.target.value,
+                          })
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       >
                         <option value="">Select state</option>
@@ -295,29 +348,42 @@ function AddressModal({
                       <input
                         type="text"
                         value={formData.state_name}
-                        onChange={(e) => setFormData({ ...formData, state_name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            state_name: e.target.value,
+                          })
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       />
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">ZIP Code</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      ZIP Code
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.zipcode}
-                      onChange={(e) => setFormData({ ...formData, zipcode: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, zipcode: e.target.value })
+                      }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone (optional)
+                  </label>
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                   />
                 </div>
@@ -330,7 +396,7 @@ function AddressModal({
                 disabled={saving}
                 className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save Address'}
+                {saving ? "Saving..." : "Save Address"}
               </button>
               <button
                 type="button"
@@ -344,70 +410,72 @@ function AddressModal({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function AddressesPage() {
-  const [addresses, setAddresses] = useState<StoreAddress[]>([])
-  const [countries, setCountries] = useState<StoreCountry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(null)
+  const [addresses, setAddresses] = useState<StoreAddress[]>([]);
+  const [countries, setCountries] = useState<StoreCountry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
+    null,
+  );
 
   useEffect(() => {
     async function loadData() {
       const [addressResponse, countriesResponse] = await Promise.all([
         getAddresses(),
         getCountries(),
-      ])
-      setAddresses(addressResponse.data)
-      setCountries(countriesResponse.data)
-      setLoading(false)
+      ]);
+      setAddresses(addressResponse.data);
+      setCountries(countriesResponse.data);
+      setLoading(false);
     }
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   const handleEdit = (address: StoreAddress) => {
-    setEditingAddress(address)
-    setModalOpen(true)
-  }
+    setEditingAddress(address);
+    setModalOpen(true);
+  };
 
   const handleAdd = () => {
-    setEditingAddress(null)
-    setModalOpen(true)
-  }
+    setEditingAddress(null);
+    setModalOpen(true);
+  };
 
   const handleSave = async (data: AddressParams, id?: string) => {
     if (id) {
-      const result = await updateAddress(id, data)
+      const result = await updateAddress(id, data);
       if (!result.success) {
-        throw new Error(result.error)
+        throw new Error(result.error);
       }
       // Update just the one address in state
       if (result.address) {
-        setAddresses(prev => prev.map(addr =>
-          addr.id === id ? result.address! : addr
-        ))
+        setAddresses((prev) =>
+          prev.map((addr) => (addr.id === id ? result.address! : addr)),
+        );
       }
     } else {
-      const result = await createAddress(data)
+      const result = await createAddress(data);
       if (!result.success) {
-        throw new Error(result.error)
+        throw new Error(result.error);
       }
       // Append the new address
       if (result.address) {
-        setAddresses(prev => [...prev, result.address!])
+        setAddresses((prev) => [...prev, result.address!]);
       }
     }
-  }
+  };
 
   const handleDelete = async (id: string) => {
-    const result = await deleteAddress(id)
+    const result = await deleteAddress(id);
     if (result.success) {
       // Remove the address from state
-      setAddresses(prev => prev.filter(addr => addr.id !== id))
+      setAddresses((prev) => prev.filter((addr) => addr.id !== id));
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -415,14 +483,17 @@ export default function AddressesPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Addresses</h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+            >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
             </div>
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -433,8 +504,18 @@ export default function AddressesPage() {
           onClick={handleAdd}
           className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors text-sm"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Add Address
         </button>
@@ -461,8 +542,12 @@ export default function AddressesPage() {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses saved</h3>
-          <p className="text-gray-500 mb-6">Add an address for faster checkout.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No addresses saved
+          </h3>
+          <p className="text-gray-500 mb-6">
+            Add an address for faster checkout.
+          </p>
           <button
             onClick={handleAdd}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -491,5 +576,5 @@ export default function AddressesPage() {
         onSave={handleSave}
       />
     </div>
-  )
+  );
 }

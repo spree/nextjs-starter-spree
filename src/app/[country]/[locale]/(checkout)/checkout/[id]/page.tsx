@@ -1,62 +1,68 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, use, useRef } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import Link from "next/link"
-import type { StoreOrder, StoreShipment, StoreCountry, StoreAddress, AddressParams } from "@spree/sdk"
+import type {
+  AddressParams,
+  StoreAddress,
+  StoreCountry,
+  StoreOrder,
+  StoreShipment,
+} from "@spree/sdk";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { use, useCallback, useEffect, useRef, useState } from "react";
+import { AddressStep } from "@/components/checkout/AddressStep";
+import { CouponCode } from "@/components/checkout/CouponCode";
+import { DeliveryStep } from "@/components/checkout/DeliveryStep";
+import { OrderSummary } from "@/components/checkout/OrderSummary";
+import { PaymentStep } from "@/components/checkout/PaymentStep";
+import { useCheckout } from "@/contexts/CheckoutContext";
+import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
-  getCheckoutOrder,
-  updateOrderAddresses,
   advanceCheckout,
-  selectShippingRate,
   applyCouponCode,
-  removeCouponCode,
   completeOrder,
-} from "@/lib/data/checkout"
-import { getCountries, getCountry } from "@/lib/data/countries"
-import { getAddresses, updateAddress } from "@/lib/data/addresses"
-import { isAuthenticated as checkAuth } from "@/lib/data/cookies"
-import { useCheckout } from "@/contexts/CheckoutContext"
-import { AddressStep } from "@/components/checkout/AddressStep"
-import { DeliveryStep } from "@/components/checkout/DeliveryStep"
-import { PaymentStep } from "@/components/checkout/PaymentStep"
-import { CouponCode } from "@/components/checkout/CouponCode"
-import { OrderSummary } from "@/components/checkout/OrderSummary"
+  getCheckoutOrder,
+  removeCouponCode,
+  selectShippingRate,
+  updateOrderAddresses,
+} from "@/lib/data/checkout";
+import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
+import { getCountries, getCountry } from "@/lib/data/countries";
 
 // Extract base path from pathname (e.g., /us/en from /us/en/checkout/123)
 function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i)
+  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
   if (match) {
-    return `/${match[1]}/${match[2]}`
+    return `/${match[1]}/${match[2]}`;
   }
-  return ""
+  return "";
 }
 
 // Checkout steps
-type CheckoutStep = "address" | "delivery" | "payment"
+type CheckoutStep = "address" | "delivery" | "payment";
 
 // Map Spree order state to checkout step
 function getCheckoutStep(orderState: string): CheckoutStep {
   switch (orderState) {
     case "cart":
     case "address":
-      return "address"
+      return "address";
     case "delivery":
-      return "delivery"
+      return "delivery";
     case "payment":
     case "confirm":
-      return "payment"
+      return "payment";
     default:
-      return "address"
+      return "address";
   }
 }
 
 interface CheckoutPageProps {
   params: Promise<{
-    id: string
-    country: string
-    locale: string
-  }>
+    id: string;
+    country: string;
+    locale: string;
+  }>;
 }
 
 // Sidebar summary component
@@ -65,9 +71,13 @@ function CheckoutSidebar({
   onApplyCoupon,
   onRemoveCoupon,
 }: {
-  order: StoreOrder
-  onApplyCoupon: (code: string) => Promise<{ success: boolean; error?: string }>
-  onRemoveCoupon: (promotionId: string) => Promise<{ success: boolean; error?: string }>
+  order: StoreOrder;
+  onApplyCoupon: (
+    code: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onRemoveCoupon: (
+    promotionId: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }) {
   return (
     <>
@@ -80,67 +90,70 @@ function CheckoutSidebar({
         />
       </div>
     </>
-  )
+  );
 }
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const basePath = extractBasePath(pathname)
-  const { setSummaryContent } = useCheckout()
+  const router = useRouter();
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
+  const { setSummaryContent } = useCheckout();
 
   // Use React 19's use() hook to unwrap the params Promise
-  const { id: orderId } = use(params)
+  const { id: orderId } = use(params);
 
-  const [order, setOrder] = useState<StoreOrder | null>(null)
-  const [shipments, setShipments] = useState<StoreShipment[]>([])
-  const [countries, setCountries] = useState<StoreCountry[]>([])
-  const [savedAddresses, setSavedAddresses] = useState<StoreAddress[]>([])
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [processing, setProcessing] = useState(false)
-  const [currentStep, setCurrentStep] = useState<CheckoutStep>("address")
+  const [order, setOrder] = useState<StoreOrder | null>(null);
+  const [shipments, setShipments] = useState<StoreShipment[]>([]);
+  const [countries, setCountries] = useState<StoreCountry[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<StoreAddress[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState<CheckoutStep>("address");
 
   // Use ref to store the current order for stable callback references
-  const orderRef = useRef(order)
-  orderRef.current = order
+  const orderRef = useRef(order);
+  orderRef.current = order;
 
   // Handle coupon code application - uses ref to avoid stale closures
   const handleApplyCoupon = useCallback(async (code: string) => {
-    const currentOrder = orderRef.current
-    if (!currentOrder) return { success: false, error: "No order" }
+    const currentOrder = orderRef.current;
+    if (!currentOrder) return { success: false, error: "No order" };
 
-    const result = await applyCouponCode(currentOrder.id, code)
+    const result = await applyCouponCode(currentOrder.id, code);
     if (result.success && result.order) {
-      setOrder(result.order)
+      setOrder(result.order);
     }
-    return result
-  }, []) // No dependencies - uses ref
+    return result;
+  }, []); // No dependencies - uses ref
 
   // Handle coupon code removal
   const handleRemoveCoupon = useCallback(async (promotionId: string) => {
-    const currentOrder = orderRef.current
-    if (!currentOrder) return { success: false, error: "No order" }
+    const currentOrder = orderRef.current;
+    if (!currentOrder) return { success: false, error: "No order" };
 
-    const result = await removeCouponCode(currentOrder.id, promotionId)
+    const result = await removeCouponCode(currentOrder.id, promotionId);
     if (result.success && result.order) {
-      setOrder(result.order)
+      setOrder(result.order);
     }
-    return result
-  }, []) // No dependencies - uses ref
+    return result;
+  }, []); // No dependencies - uses ref
 
   // Track order key for sidebar updates (only update when order changes meaningfully)
-  const orderKey = order ? `${order.id}-${order.updated_at}` : null
-  const prevOrderKeyRef = useRef(orderKey)
+  const orderKey = order ? `${order.id}-${order.updated_at}` : null;
+  const prevOrderKeyRef = useRef(orderKey);
 
   // Update sidebar content when order changes meaningfully
   useEffect(() => {
     // Skip if order key hasn't changed
-    if (orderKey === prevOrderKeyRef.current && prevOrderKeyRef.current !== null) {
-      return
+    if (
+      orderKey === prevOrderKeyRef.current &&
+      prevOrderKeyRef.current !== null
+    ) {
+      return;
     }
-    prevOrderKeyRef.current = orderKey
+    prevOrderKeyRef.current = orderKey;
 
     if (order) {
       setSummaryContent(
@@ -148,219 +161,237 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           order={order}
           onApplyCoupon={handleApplyCoupon}
           onRemoveCoupon={handleRemoveCoupon}
-        />
-      )
+        />,
+      );
     } else {
-      setSummaryContent(null)
+      setSummaryContent(null);
     }
-  }, [order, orderKey, setSummaryContent, handleApplyCoupon, handleRemoveCoupon])
+  }, [
+    order,
+    orderKey,
+    setSummaryContent,
+    handleApplyCoupon,
+    handleRemoveCoupon,
+  ]);
 
   // Load order and countries
   const loadOrder = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const [orderData, countriesData, addressesData, authStatus] = await Promise.all([
-        getCheckoutOrder(orderId),
-        getCountries(),
-        getAddresses(),
-        checkAuth(),
-      ])
+      const [orderData, countriesData, addressesData, authStatus] =
+        await Promise.all([
+          getCheckoutOrder(orderId),
+          getCountries(),
+          getAddresses(),
+          checkAuth(),
+        ]);
 
       if (!orderData) {
-        setError("Order not found or you don't have access to it.")
-        setLoading(false)
-        return
+        setError("Order not found or you don't have access to it.");
+        setLoading(false);
+        return;
       }
 
       // Check if order is already complete
       if (orderData.state === "complete") {
-        router.push(`${basePath}/account/orders/${orderId}`)
-        return
+        router.push(`${basePath}/account/orders/${orderId}`);
+        return;
       }
 
-      setOrder(orderData)
-      setCountries(countriesData.data)
-      setSavedAddresses(addressesData.data)
-      setIsAuthenticated(authStatus)
-      setCurrentStep(getCheckoutStep(orderData.state))
+      setOrder(orderData);
+      setCountries(countriesData.data);
+      setSavedAddresses(addressesData.data);
+      setIsAuthenticated(authStatus);
+      setCurrentStep(getCheckoutStep(orderData.state));
 
       // Set shipments from order data (already included via getCheckoutOrder)
-      if (orderData.state === "delivery" || orderData.state === "payment" || orderData.state === "confirm") {
-        setShipments(orderData.shipments || [])
+      if (
+        orderData.state === "delivery" ||
+        orderData.state === "payment" ||
+        orderData.state === "confirm"
+      ) {
+        setShipments(orderData.shipments || []);
       }
     } catch {
-      setError("Failed to load checkout. Please try again.")
+      setError("Failed to load checkout. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [orderId, basePath, router])
+  }, [orderId, basePath, router]);
 
   useEffect(() => {
-    loadOrder()
-  }, [loadOrder])
+    loadOrder();
+  }, [loadOrder]);
 
   // Handle address submission (shipping address only)
   const handleAddressSubmit = async (addressData: {
-    email: string
-    ship_address?: AddressParams
-    ship_address_id?: string
+    email: string;
+    ship_address?: AddressParams;
+    ship_address_id?: string;
   }) => {
-    if (!order) return
+    if (!order) return;
 
-    setProcessing(true)
-    setError(null)
+    setProcessing(true);
+    setError(null);
 
     try {
       // Update order with shipping address and email
       const updateResult = await updateOrderAddresses(order.id, {
         email: addressData.email,
-        ...(addressData.ship_address && { ship_address: addressData.ship_address }),
-        ...(addressData.ship_address_id && { ship_address_id: addressData.ship_address_id }),
-      })
+        ...(addressData.ship_address && {
+          ship_address: addressData.ship_address,
+        }),
+        ...(addressData.ship_address_id && {
+          ship_address_id: addressData.ship_address_id,
+        }),
+      });
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save address")
-        setProcessing(false)
-        return
+        setError(updateResult.error || "Failed to save address");
+        setProcessing(false);
+        return;
       }
 
       // Advance to delivery step
-      const advanceResult = await advanceCheckout(order.id)
+      const advanceResult = await advanceCheckout(order.id);
       if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed to next step")
-        setProcessing(false)
-        return
+        setError(advanceResult.error || "Failed to proceed to next step");
+        setProcessing(false);
+        return;
       }
 
       // Reload order to get updated state
-      await loadOrder()
+      await loadOrder();
     } catch {
-      setError("An error occurred. Please try again.")
+      setError("An error occurred. Please try again.");
     } finally {
-      setProcessing(false)
+      setProcessing(false);
     }
-  }
+  };
 
   // Handle shipping rate selection
-  const handleShippingRateSelect = async (shipmentId: string, rateId: string) => {
-    if (!order) return
+  const handleShippingRateSelect = async (
+    shipmentId: string,
+    rateId: string,
+  ) => {
+    if (!order) return;
 
-    setProcessing(true)
-    setError(null)
+    setProcessing(true);
+    setError(null);
 
     try {
-      const result = await selectShippingRate(order.id, shipmentId, rateId)
+      const result = await selectShippingRate(order.id, shipmentId, rateId);
       if (!result.success) {
-        setError(result.error || "Failed to select shipping rate")
+        setError(result.error || "Failed to select shipping rate");
       }
       // Reload order to get updated totals (includes shipments)
-      const orderData = await getCheckoutOrder(order.id)
+      const orderData = await getCheckoutOrder(order.id);
       if (orderData) {
-        setOrder(orderData)
-        setShipments(orderData.shipments || [])
+        setOrder(orderData);
+        setShipments(orderData.shipments || []);
       }
     } catch {
-      setError("An error occurred. Please try again.")
+      setError("An error occurred. Please try again.");
     } finally {
-      setProcessing(false)
+      setProcessing(false);
     }
-  }
+  };
 
   // Handle delivery confirmation (advance to payment step)
   const handleDeliveryConfirm = async () => {
-    if (!order) return
+    if (!order) return;
 
-    setProcessing(true)
-    setError(null)
+    setProcessing(true);
+    setError(null);
 
     try {
       // Advance to payment step
-      const advanceResult = await advanceCheckout(order.id)
+      const advanceResult = await advanceCheckout(order.id);
       if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed")
-        setProcessing(false)
-        return
+        setError(advanceResult.error || "Failed to proceed");
+        setProcessing(false);
+        return;
       }
 
       // Reload order
-      await loadOrder()
+      await loadOrder();
     } catch {
-      setError("An error occurred. Please try again.")
+      setError("An error occurred. Please try again.");
     } finally {
-      setProcessing(false)
+      setProcessing(false);
     }
-  }
+  };
 
   // Handle payment submission (billing address + complete order)
   const handlePaymentSubmit = async (paymentData: {
-    bill_address: AddressParams
-    use_shipping_for_billing: boolean
+    bill_address: AddressParams;
+    use_shipping_for_billing: boolean;
   }) => {
-    if (!order) return
+    if (!order) return;
 
-    setProcessing(true)
-    setError(null)
+    setProcessing(true);
+    setError(null);
 
     try {
       // Update billing address
       const updateResult = await updateOrderAddresses(order.id, {
         bill_address: paymentData.bill_address,
-      })
+      });
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save billing address")
-        setProcessing(false)
-        return
+        setError(updateResult.error || "Failed to save billing address");
+        setProcessing(false);
+        return;
       }
 
       // Complete the order (skip actual payment for now)
-      const completeResult = await completeOrder(order.id)
+      const completeResult = await completeOrder(order.id);
       if (!completeResult.success) {
-        setError(completeResult.error || "Failed to complete order")
-        setProcessing(false)
-        return
+        setError(completeResult.error || "Failed to complete order");
+        setProcessing(false);
+        return;
       }
 
       // Redirect to order confirmation
       if (completeResult.order) {
-        router.push(`${basePath}/account/orders/${completeResult.order.id}`)
+        router.push(`${basePath}/account/orders/${completeResult.order.id}`);
       }
     } catch {
-      setError("An error occurred. Please try again.")
+      setError("An error occurred. Please try again.");
     } finally {
-      setProcessing(false)
+      setProcessing(false);
     }
-  }
+  };
 
   // Fetch states for a country
   const fetchStates = async (countryIso: string) => {
     try {
-      const country = await getCountry(countryIso)
-      return country.states || []
+      const country = await getCountry(countryIso);
+      return country.states || [];
     } catch {
-      return []
+      return [];
     }
-  }
+  };
 
   // Update a saved address
   const handleUpdateSavedAddress = async (id: string, data: AddressParams) => {
-    const result = await updateAddress(id, data)
+    const result = await updateAddress(id, data);
     if (result.success && result.address) {
       // Update local state
-      setSavedAddresses(prev =>
-        prev.map(addr => addr.id === id ? result.address! : addr)
-      )
-      return result.address
+      setSavedAddresses((prev) =>
+        prev.map((addr) => (addr.id === id ? result.address! : addr)),
+      );
+      return result.address;
     }
-    throw new Error(result.error || "Failed to update address")
-  }
+    throw new Error(result.error || "Failed to update address");
+  };
 
   // Navigate back to a previous step
   const goToStep = (step: CheckoutStep) => {
-    setCurrentStep(step)
-  }
+    setCurrentStep(step);
+  };
 
   // Loading state
   if (loading) {
@@ -374,14 +405,16 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           <div className="h-12 bg-gray-200 rounded" />
         </div>
       </div>
-    )
+    );
   }
 
   // Error state
   if (error && !order) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Checkout Error</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Checkout Error
+        </h1>
         <p className="text-gray-600 mb-6">{error}</p>
         <Link
           href={`${basePath}/cart`}
@@ -390,17 +423,21 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           Return to Cart
         </Link>
       </div>
-    )
+    );
   }
 
-  if (!order) return null
+  if (!order) return null;
 
   // Check if order has items
   if (!order.line_items || order.line_items.length === 0) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-        <p className="text-gray-600 mb-6">Add some items to your cart before checking out.</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Your Cart is Empty
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Add some items to your cart before checking out.
+        </p>
         <Link
           href={`${basePath}/products`}
           className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -408,16 +445,16 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           Continue Shopping
         </Link>
       </div>
-    )
+    );
   }
 
   const steps = [
     { id: "address", label: "Shipping" },
     { id: "delivery", label: "Delivery" },
     { id: "payment", label: "Payment" },
-  ]
+  ];
 
-  const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
 
   return (
     <>
@@ -432,15 +469,18 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <nav aria-label="Progress">
           <ol className="flex items-center">
             {steps.map((step, index) => (
-              <li key={step.id} className={`relative ${index < steps.length - 1 ? "pr-8 sm:pr-20" : ""}`}>
+              <li
+                key={step.id}
+                className={`relative ${index < steps.length - 1 ? "pr-8 sm:pr-20" : ""}`}
+              >
                 <div className="flex items-center">
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       index < currentStepIndex
                         ? "bg-indigo-600 text-white"
                         : index === currentStepIndex
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-500"
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 text-gray-500"
                     }`}
                   >
                     {index < currentStepIndex ? "✓" : index + 1}
@@ -450,8 +490,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                       index === currentStepIndex
                         ? "text-indigo-600"
                         : index < currentStepIndex
-                        ? "text-gray-900"
-                        : "text-gray-500"
+                          ? "text-gray-900"
+                          : "text-gray-500"
                     }`}
                   >
                     {step.label}
@@ -461,7 +501,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <div className="absolute top-4 left-8 w-full h-0.5 bg-gray-200">
                     <div
                       className={`h-full ${index < currentStepIndex ? "bg-indigo-600" : "bg-gray-200"}`}
-                      style={{ width: index < currentStepIndex ? "100%" : "0%" }}
+                      style={{
+                        width: index < currentStepIndex ? "100%" : "0%",
+                      }}
                     />
                   </div>
                 )}
@@ -488,7 +530,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
           fetchStates={fetchStates}
           onSubmit={handleAddressSubmit}
-          onUpdateSavedAddress={isAuthenticated ? handleUpdateSavedAddress : undefined}
+          onUpdateSavedAddress={
+            isAuthenticated ? handleUpdateSavedAddress : undefined
+          }
           processing={processing}
         />
       )}
@@ -515,5 +559,5 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         />
       )}
     </>
-  )
+  );
 }

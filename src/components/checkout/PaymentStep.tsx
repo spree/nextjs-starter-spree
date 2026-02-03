@@ -1,32 +1,37 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useTransition } from "react"
-import type { StoreOrder, StoreCountry, StoreState, AddressParams } from "@spree/sdk"
+import type {
+  AddressParams,
+  StoreCountry,
+  StoreOrder,
+  StoreState,
+} from "@spree/sdk";
+import { useEffect, useState, useTransition } from "react";
 
 interface PaymentStepProps {
-  order: StoreOrder
-  countries: StoreCountry[]
-  fetchStates: (countryIso: string) => Promise<StoreState[]>
+  order: StoreOrder;
+  countries: StoreCountry[];
+  fetchStates: (countryIso: string) => Promise<StoreState[]>;
   onSubmit: (data: {
-    bill_address: AddressParams
-    use_shipping_for_billing: boolean
-  }) => Promise<void>
-  onBack: () => void
-  processing: boolean
+    bill_address: AddressParams;
+    use_shipping_for_billing: boolean;
+  }) => Promise<void>;
+  onBack: () => void;
+  processing: boolean;
 }
 
 interface AddressFormData {
-  firstname: string
-  lastname: string
-  address1: string
-  address2: string
-  city: string
-  zipcode: string
-  phone: string
-  company: string
-  country_iso: string
-  state_abbr: string
-  state_name: string
+  firstname: string;
+  lastname: string;
+  address1: string;
+  address2: string;
+  city: string;
+  zipcode: string;
+  phone: string;
+  company: string;
+  country_iso: string;
+  state_abbr: string;
+  state_name: string;
 }
 
 const emptyAddress: AddressFormData = {
@@ -41,22 +46,22 @@ const emptyAddress: AddressFormData = {
   country_iso: "",
   state_abbr: "",
   state_name: "",
-}
+};
 
 function addressToFormData(address?: {
-  firstname: string | null
-  lastname: string | null
-  address1: string | null
-  address2: string | null
-  city: string | null
-  zipcode: string | null
-  phone: string | null
-  company: string | null
-  country_iso: string
-  state_abbr: string | null
-  state_name: string | null
+  firstname: string | null;
+  lastname: string | null;
+  address1: string | null;
+  address2: string | null;
+  city: string | null;
+  zipcode: string | null;
+  phone: string | null;
+  company: string | null;
+  country_iso: string;
+  state_abbr: string | null;
+  state_name: string | null;
 }): AddressFormData {
-  if (!address) return emptyAddress
+  if (!address) return emptyAddress;
   return {
     firstname: address.firstname || "",
     lastname: address.lastname || "",
@@ -69,7 +74,7 @@ function addressToFormData(address?: {
     country_iso: address.country_iso || "",
     state_abbr: address.state_abbr || "",
     state_name: address.state_name || "",
-  }
+  };
 }
 
 function formDataToAddress(data: AddressFormData): AddressParams {
@@ -85,15 +90,24 @@ function formDataToAddress(data: AddressFormData): AddressParams {
     country_iso: data.country_iso,
     state_abbr: data.state_abbr || undefined,
     state_name: data.state_name || undefined,
-  }
+  };
 }
 
 // Check if two addresses are the same
 function addressesMatch(
   a: AddressFormData | undefined,
-  b: { firstname: string | null; lastname: string | null; address1: string | null; city: string | null; zipcode: string | null; country_iso: string } | undefined
+  b:
+    | {
+        firstname: string | null;
+        lastname: string | null;
+        address1: string | null;
+        city: string | null;
+        zipcode: string | null;
+        country_iso: string;
+      }
+    | undefined,
 ): boolean {
-  if (!a || !b) return false
+  if (!a || !b) return false;
   return (
     a.firstname === (b.firstname || "") &&
     a.lastname === (b.lastname || "") &&
@@ -101,7 +115,7 @@ function addressesMatch(
     a.city === (b.city || "") &&
     a.zipcode === (b.zipcode || "") &&
     a.country_iso === b.country_iso
-  )
+  );
 }
 
 export function PaymentStep({
@@ -113,64 +127,68 @@ export function PaymentStep({
   processing,
 }: PaymentStepProps) {
   // Initialize billing address from order, check if it matches shipping
-  const shipAddressData = addressToFormData(order.ship_address)
-  const billAddressData = addressToFormData(order.bill_address)
-  const initialUseShipping = !order.bill_address || addressesMatch(shipAddressData, order.bill_address)
+  const shipAddressData = addressToFormData(order.ship_address);
+  const billAddressData = addressToFormData(order.bill_address);
+  const initialUseShipping =
+    !order.bill_address || addressesMatch(shipAddressData, order.bill_address);
 
   const [billAddress, setBillAddress] = useState<AddressFormData>(
-    initialUseShipping ? shipAddressData : billAddressData
-  )
-  const [useShippingForBilling, setUseShippingForBilling] = useState(initialUseShipping)
-  const [billStates, setBillStates] = useState<StoreState[]>([])
-  const [isPendingBill, startTransitionBill] = useTransition()
+    initialUseShipping ? shipAddressData : billAddressData,
+  );
+  const [useShippingForBilling, setUseShippingForBilling] =
+    useState(initialUseShipping);
+  const [billStates, setBillStates] = useState<StoreState[]>([]);
+  const [isPendingBill, startTransitionBill] = useTransition();
 
   // Load states when billing country changes
   useEffect(() => {
     if (useShippingForBilling || !billAddress.country_iso) {
-      setBillStates([])
-      return
+      setBillStates([]);
+      return;
     }
 
-    let cancelled = false
+    let cancelled = false;
 
     startTransitionBill(() => {
       fetchStates(billAddress.country_iso).then((states) => {
         if (!cancelled) {
-          setBillStates(states)
+          setBillStates(states);
         }
-      })
-    })
+      });
+    });
 
     return () => {
-      cancelled = true
-    }
-  }, [billAddress.country_iso, useShippingForBilling, fetchStates])
+      cancelled = true;
+    };
+  }, [billAddress.country_iso, useShippingForBilling, fetchStates]);
 
   // When "use shipping" changes, reset billing address
   useEffect(() => {
     if (useShippingForBilling) {
-      setBillAddress(shipAddressData)
+      setBillAddress(shipAddressData);
     }
-  }, [useShippingForBilling]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [useShippingForBilling]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSubmit({
-      bill_address: formDataToAddress(useShippingForBilling ? shipAddressData : billAddress),
+      bill_address: formDataToAddress(
+        useShippingForBilling ? shipAddressData : billAddress,
+      ),
       use_shipping_for_billing: useShippingForBilling,
-    })
-  }
+    });
+  };
 
   const updateBillAddress = (field: keyof AddressFormData, value: string) => {
     setBillAddress((prev) => {
-      const updated = { ...prev, [field]: value }
+      const updated = { ...prev, [field]: value };
       if (field === "country_iso") {
-        updated.state_abbr = ""
-        updated.state_name = ""
+        updated.state_abbr = "";
+        updated.state_name = "";
       }
-      return updated
-    })
-  }
+      return updated;
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -178,7 +196,9 @@ export function PaymentStep({
       {order.ship_address && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Shipping Address
+            </h2>
             <button
               type="button"
               onClick={onBack}
@@ -188,12 +208,17 @@ export function PaymentStep({
             </button>
           </div>
           <div className="text-sm text-gray-600">
-            <p className="font-medium text-gray-900">{order.ship_address.full_name}</p>
+            <p className="font-medium text-gray-900">
+              {order.ship_address.full_name}
+            </p>
             {order.ship_address.company && <p>{order.ship_address.company}</p>}
             <p>{order.ship_address.address1}</p>
-            {order.ship_address.address2 && <p>{order.ship_address.address2}</p>}
+            {order.ship_address.address2 && (
+              <p>{order.ship_address.address2}</p>
+            )}
             <p>
-              {order.ship_address.city}, {order.ship_address.state_text || order.ship_address.state_name}{" "}
+              {order.ship_address.city},{" "}
+              {order.ship_address.state_text || order.ship_address.state_name}{" "}
               {order.ship_address.zipcode}
             </p>
             <p>{order.ship_address.country_name}</p>
@@ -203,7 +228,9 @@ export function PaymentStep({
 
       {/* Billing Address */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Billing Address</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Billing Address
+        </h2>
         <div className="mb-4">
           <label className="flex items-center">
             <input
@@ -212,7 +239,9 @@ export function PaymentStep({
               onChange={(e) => setUseShippingForBilling(e.target.checked)}
               className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
             />
-            <span className="ml-2 text-sm text-gray-600">Same as shipping address</span>
+            <span className="ml-2 text-sm text-gray-600">
+              Same as shipping address
+            </span>
           </label>
         </div>
 
@@ -229,7 +258,9 @@ export function PaymentStep({
 
       {/* Payment Methods - Placeholder */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Payment Method
+        </h2>
         <div className="bg-gray-50 rounded-lg p-8 text-center">
           <svg
             className="w-12 h-12 text-gray-400 mx-auto mb-4"
@@ -244,7 +275,9 @@ export function PaymentStep({
               d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
             />
           </svg>
-          <p className="text-gray-500">Payment methods will be available soon.</p>
+          <p className="text-gray-500">
+            Payment methods will be available soon.
+          </p>
           <p className="text-sm text-gray-400 mt-2">
             For now, orders can be completed without payment.
           </p>
@@ -270,15 +303,15 @@ export function PaymentStep({
         </button>
       </div>
     </form>
-  )
+  );
 }
 
 interface BillingAddressFormProps {
-  address: AddressFormData
-  countries: StoreCountry[]
-  states: StoreState[]
-  loadingStates: boolean
-  onChange: (field: keyof AddressFormData, value: string) => void
+  address: AddressFormData;
+  countries: StoreCountry[];
+  states: StoreState[];
+  loadingStates: boolean;
+  onChange: (field: keyof AddressFormData, value: string) => void;
 }
 
 function BillingAddressForm({
@@ -288,12 +321,15 @@ function BillingAddressForm({
   loadingStates,
   onChange,
 }: BillingAddressFormProps) {
-  const hasStates = states.length > 0
+  const hasStates = states.length > 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label htmlFor="bill-firstname" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-firstname"
+          className="block text-sm font-medium text-gray-700"
+        >
           First name
         </label>
         <input
@@ -307,7 +343,10 @@ function BillingAddressForm({
       </div>
 
       <div>
-        <label htmlFor="bill-lastname" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-lastname"
+          className="block text-sm font-medium text-gray-700"
+        >
           Last name
         </label>
         <input
@@ -321,7 +360,10 @@ function BillingAddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor="bill-company" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-company"
+          className="block text-sm font-medium text-gray-700"
+        >
           Company (optional)
         </label>
         <input
@@ -334,7 +376,10 @@ function BillingAddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor="bill-address1" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-address1"
+          className="block text-sm font-medium text-gray-700"
+        >
           Address
         </label>
         <input
@@ -349,7 +394,10 @@ function BillingAddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor="bill-address2" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-address2"
+          className="block text-sm font-medium text-gray-700"
+        >
           Apartment, suite, etc. (optional)
         </label>
         <input
@@ -362,7 +410,10 @@ function BillingAddressForm({
       </div>
 
       <div>
-        <label htmlFor="bill-city" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-city"
+          className="block text-sm font-medium text-gray-700"
+        >
           City
         </label>
         <input
@@ -376,7 +427,10 @@ function BillingAddressForm({
       </div>
 
       <div>
-        <label htmlFor="bill-country" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-country"
+          className="block text-sm font-medium text-gray-700"
+        >
           Country
         </label>
         <select
@@ -396,7 +450,10 @@ function BillingAddressForm({
       </div>
 
       <div>
-        <label htmlFor="bill-state" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-state"
+          className="block text-sm font-medium text-gray-700"
+        >
           State / Province
         </label>
         {loadingStates ? (
@@ -431,7 +488,10 @@ function BillingAddressForm({
       </div>
 
       <div>
-        <label htmlFor="bill-zipcode" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-zipcode"
+          className="block text-sm font-medium text-gray-700"
+        >
           ZIP / Postal code
         </label>
         <input
@@ -445,7 +505,10 @@ function BillingAddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor="bill-phone" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="bill-phone"
+          className="block text-sm font-medium text-gray-700"
+        >
           Phone (optional)
         </label>
         <input
@@ -457,5 +520,5 @@ function BillingAddressForm({
         />
       </div>
     </div>
-  )
+  );
 }

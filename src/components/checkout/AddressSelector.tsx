@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk"
+import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk";
+import { useEffect, useState } from "react";
 
 interface AddressFormData {
-  firstname: string
-  lastname: string
-  address1: string
-  address2: string
-  city: string
-  zipcode: string
-  phone: string
-  company: string
-  country_iso: string
-  state_abbr: string
-  state_name: string
+  firstname: string;
+  lastname: string;
+  address1: string;
+  address2: string;
+  city: string;
+  zipcode: string;
+  phone: string;
+  company: string;
+  country_iso: string;
+  state_abbr: string;
+  state_name: string;
 }
 
 interface AddressSelectorProps {
-  savedAddresses: StoreAddress[]
-  currentAddress: AddressFormData
-  countries: StoreCountry[]
-  states: StoreState[]
-  loadingStates: boolean
-  onChange: (field: keyof AddressFormData, value: string) => void
-  onSelectSavedAddress: (address: StoreAddress) => void
-  onEditAddress?: (address: StoreAddress) => void
-  idPrefix: string
+  savedAddresses: StoreAddress[];
+  currentAddress: AddressFormData;
+  countries: StoreCountry[];
+  states: StoreState[];
+  loadingStates: boolean;
+  onChange: (field: keyof AddressFormData, value: string) => void;
+  onSelectSavedAddress: (address: StoreAddress) => void;
+  onEditAddress?: (address: StoreAddress) => void;
+  idPrefix: string;
 }
 
 export function AddressSelector({
@@ -40,54 +40,56 @@ export function AddressSelector({
   onEditAddress,
   idPrefix,
 }: AddressSelectorProps) {
-  const [selectedAddressId, setSelectedAddressId] = useState<string | "new">("new")
+  const [selectedAddressId, setSelectedAddressId] = useState<string | "new">(
+    "new",
+  );
 
   // Check if current address matches a saved address
   useEffect(() => {
-    if (savedAddresses.length === 0) return
+    if (savedAddresses.length === 0) return;
 
     const matchingAddress = savedAddresses.find(
       (addr) =>
         addr.address1 === currentAddress.address1 &&
         addr.city === currentAddress.city &&
         addr.zipcode === currentAddress.zipcode &&
-        addr.country_iso === currentAddress.country_iso
-    )
+        addr.country_iso === currentAddress.country_iso,
+    );
 
     if (matchingAddress) {
-      setSelectedAddressId(matchingAddress.id)
+      setSelectedAddressId(matchingAddress.id);
     } else if (currentAddress.address1) {
       // If there's an address but it doesn't match saved ones, show as new
-      setSelectedAddressId("new")
+      setSelectedAddressId("new");
     }
-  }, [savedAddresses]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [savedAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectAddress = (addressId: string) => {
-    setSelectedAddressId(addressId)
+    setSelectedAddressId(addressId);
 
     if (addressId === "new") {
       // Clear form for new address
-      onChange("firstname", "")
-      onChange("lastname", "")
-      onChange("address1", "")
-      onChange("address2", "")
-      onChange("city", "")
-      onChange("zipcode", "")
-      onChange("phone", "")
-      onChange("company", "")
-      onChange("country_iso", "")
-      onChange("state_abbr", "")
-      onChange("state_name", "")
+      onChange("firstname", "");
+      onChange("lastname", "");
+      onChange("address1", "");
+      onChange("address2", "");
+      onChange("city", "");
+      onChange("zipcode", "");
+      onChange("phone", "");
+      onChange("company", "");
+      onChange("country_iso", "");
+      onChange("state_abbr", "");
+      onChange("state_name", "");
     } else {
-      const selectedAddress = savedAddresses.find((a) => a.id === addressId)
+      const selectedAddress = savedAddresses.find((a) => a.id === addressId);
       if (selectedAddress) {
-        onSelectSavedAddress(selectedAddress)
+        onSelectSavedAddress(selectedAddress);
       }
     }
-  }
+  };
 
-  const hasStates = states.length > 0
-  const showForm = selectedAddressId === "new" || savedAddresses.length === 0
+  const hasStates = states.length > 0;
+  const showForm = selectedAddressId === "new" || savedAddresses.length === 0;
 
   return (
     <div className="space-y-4">
@@ -115,26 +117,33 @@ export function AddressSelector({
                     className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                   />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">{address.full_name}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {address.full_name}
+                    </p>
                     {address.company && (
                       <p className="text-sm text-gray-500">{address.company}</p>
                     )}
                     <p className="text-sm text-gray-500">{address.address1}</p>
                     {address.address2 && (
-                      <p className="text-sm text-gray-500">{address.address2}</p>
+                      <p className="text-sm text-gray-500">
+                        {address.address2}
+                      </p>
                     )}
                     <p className="text-sm text-gray-500">
-                      {address.city}, {address.state_text || address.state_name} {address.zipcode}
+                      {address.city}, {address.state_text || address.state_name}{" "}
+                      {address.zipcode}
                     </p>
-                    <p className="text-sm text-gray-500">{address.country_name}</p>
+                    <p className="text-sm text-gray-500">
+                      {address.country_name}
+                    </p>
                   </div>
                 </label>
                 {onEditAddress && (
                   <button
                     type="button"
                     onClick={(e) => {
-                      e.preventDefault()
-                      onEditAddress(address)
+                      e.preventDefault();
+                      onEditAddress(address);
                     }}
                     className="ml-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                   >
@@ -168,9 +177,14 @@ export function AddressSelector({
 
       {/* Address form (shown when "new" is selected or no saved addresses) */}
       {showForm && (
-        <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${savedAddresses.length > 0 ? "pt-4 border-t border-gray-200" : ""}`}>
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${savedAddresses.length > 0 ? "pt-4 border-t border-gray-200" : ""}`}
+        >
           <div>
-            <label htmlFor={`${idPrefix}-firstname`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-firstname`}
+              className="block text-sm font-medium text-gray-700"
+            >
               First name
             </label>
             <input
@@ -184,7 +198,10 @@ export function AddressSelector({
           </div>
 
           <div>
-            <label htmlFor={`${idPrefix}-lastname`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-lastname`}
+              className="block text-sm font-medium text-gray-700"
+            >
               Last name
             </label>
             <input
@@ -198,7 +215,10 @@ export function AddressSelector({
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor={`${idPrefix}-company`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-company`}
+              className="block text-sm font-medium text-gray-700"
+            >
               Company (optional)
             </label>
             <input
@@ -211,7 +231,10 @@ export function AddressSelector({
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor={`${idPrefix}-address1`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-address1`}
+              className="block text-sm font-medium text-gray-700"
+            >
               Address
             </label>
             <input
@@ -226,7 +249,10 @@ export function AddressSelector({
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor={`${idPrefix}-address2`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-address2`}
+              className="block text-sm font-medium text-gray-700"
+            >
               Apartment, suite, etc. (optional)
             </label>
             <input
@@ -239,7 +265,10 @@ export function AddressSelector({
           </div>
 
           <div>
-            <label htmlFor={`${idPrefix}-city`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-city`}
+              className="block text-sm font-medium text-gray-700"
+            >
               City
             </label>
             <input
@@ -253,7 +282,10 @@ export function AddressSelector({
           </div>
 
           <div>
-            <label htmlFor={`${idPrefix}-country`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-country`}
+              className="block text-sm font-medium text-gray-700"
+            >
               Country
             </label>
             <select
@@ -273,7 +305,10 @@ export function AddressSelector({
           </div>
 
           <div>
-            <label htmlFor={`${idPrefix}-state`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-state`}
+              className="block text-sm font-medium text-gray-700"
+            >
               State / Province
             </label>
             {loadingStates ? (
@@ -308,7 +343,10 @@ export function AddressSelector({
           </div>
 
           <div>
-            <label htmlFor={`${idPrefix}-zipcode`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-zipcode`}
+              className="block text-sm font-medium text-gray-700"
+            >
               ZIP / Postal code
             </label>
             <input
@@ -322,7 +360,10 @@ export function AddressSelector({
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor={`${idPrefix}-phone`} className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor={`${idPrefix}-phone`}
+              className="block text-sm font-medium text-gray-700"
+            >
               Phone (optional)
             </label>
             <input
@@ -336,5 +377,5 @@ export function AddressSelector({
         </div>
       )}
     </div>
-  )
+  );
 }

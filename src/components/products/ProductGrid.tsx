@@ -1,18 +1,18 @@
-import type { StoreProduct } from '@spree/sdk'
-import { ProductCard } from './ProductCard'
+import type { StoreProduct } from "@spree/sdk";
+import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {
-  products: StoreProduct[]
-  basePath?: string
+  products: StoreProduct[];
+  basePath?: string;
 }
 
-export function ProductGrid({ products, basePath = '' }: ProductGridProps) {
+export function ProductGrid({ products, basePath = "" }: ProductGridProps) {
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">No products found.</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -21,5 +21,5 @@ export function ProductGrid({ products, basePath = '' }: ProductGridProps) {
         <ProductCard key={product.id} product={product} basePath={basePath} />
       ))}
     </div>
-  )
+  );
 }

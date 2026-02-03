@@ -1,92 +1,92 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { getGiftCards } from '@/lib/data/gift-cards'
+import { useEffect, useState } from "react";
+import { getGiftCards } from "@/lib/data/gift-cards";
 
 // Gift card type (matches SDK StoreGiftCard)
 interface GiftCard {
-  id: string
-  code: string
-  state: string
-  currency: string
-  amount: number
-  amount_used: number
-  amount_authorized: number
-  amount_remaining: number
-  display_amount: string
-  display_amount_used: string
-  display_amount_remaining: string
-  expires_at: string | null
-  redeemed_at: string | null
-  expired: boolean
-  active: boolean
-  created_at: string
-  updated_at: string
+  id: string;
+  code: string;
+  state: string;
+  currency: string;
+  amount: number;
+  amount_used: number;
+  amount_authorized: number;
+  amount_remaining: number;
+  display_amount: string;
+  display_amount_used: string;
+  display_amount_remaining: string;
+  expires_at: string | null;
+  redeemed_at: string | null;
+  expired: boolean;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 function getStateColor(state: string, expired: boolean): string {
-  if (expired) return 'bg-gray-100 text-gray-800'
+  if (expired) return "bg-gray-100 text-gray-800";
   switch (state) {
-    case 'active':
-      return 'bg-green-100 text-green-800'
-    case 'partially_redeemed':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'redeemed':
-      return 'bg-gray-100 text-gray-800'
-    case 'canceled':
-      return 'bg-red-100 text-red-800'
+    case "active":
+      return "bg-green-100 text-green-800";
+    case "partially_redeemed":
+      return "bg-yellow-100 text-yellow-800";
+    case "redeemed":
+      return "bg-gray-100 text-gray-800";
+    case "canceled":
+      return "bg-red-100 text-red-800";
     default:
-      return 'bg-gray-100 text-gray-800'
+      return "bg-gray-100 text-gray-800";
   }
 }
 
 function getStateLabel(state: string): string {
   switch (state) {
-    case 'active':
-      return 'Active'
-    case 'partially_redeemed':
-      return 'Partially Used'
-    case 'redeemed':
-      return 'Fully Redeemed'
-    case 'canceled':
-      return 'Canceled'
-    case 'expired':
-      return 'Expired'
+    case "active":
+      return "Active";
+    case "partially_redeemed":
+      return "Partially Used";
+    case "redeemed":
+      return "Fully Redeemed";
+    case "canceled":
+      return "Canceled";
+    case "expired":
+      return "Expired";
     default:
-      return state
+      return state;
   }
 }
 
 function formatDate(dateString: string | null): string {
-  if (!dateString) return 'No expiration'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  if (!dateString) return "No expiration";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function CopyButton({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
-      const textArea = document.createElement('textarea')
-      textArea.value = code
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      const textArea = document.createElement("textarea");
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
-  }
+  };
 
   return (
     <button
@@ -96,27 +96,46 @@ function CopyButton({ code }: { code: string }) {
     >
       {copied ? (
         <>
-          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <svg
+            className="w-4 h-4 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
           </svg>
           <span className="text-green-600">Copied!</span>
         </>
       ) : (
         <>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
           </svg>
           <span>Copy</span>
         </>
       )}
     </button>
-  )
+  );
 }
 
 function GiftCardItem({ card }: { card: GiftCard }) {
-  const usagePercentage = card.amount > 0
-    ? Math.round((card.amount_used / card.amount) * 100)
-    : 0
+  const usagePercentage =
+    card.amount > 0 ? Math.round((card.amount_used / card.amount) * 100) : 0;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -127,12 +146,16 @@ function GiftCardItem({ card }: { card: GiftCard }) {
               {card.code}
             </span>
             <CopyButton code={card.code} />
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStateColor(card.state, card.expired)}`}>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStateColor(card.state, card.expired)}`}
+            >
               {getStateLabel(card.state)}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            {card.expires_at ? `Expires ${formatDate(card.expires_at)}` : 'No expiration date'}
+            {card.expires_at
+              ? `Expires ${formatDate(card.expires_at)}`
+              : "No expiration date"}
           </p>
         </div>
         <div className="text-right">
@@ -149,21 +172,17 @@ function GiftCardItem({ card }: { card: GiftCard }) {
           <span className="text-gray-600">
             Used: {card.display_amount_used}
           </span>
-          <span className="text-gray-600">
-            Total: {card.display_amount}
-          </span>
+          <span className="text-gray-600">Total: {card.display_amount}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
             className={`h-2 rounded-full transition-all ${
-              usagePercentage >= 100 ? 'bg-gray-400' : 'bg-indigo-600'
+              usagePercentage >= 100 ? "bg-gray-400" : "bg-indigo-600"
             }`}
             style={{ width: `${Math.min(usagePercentage, 100)}%` }}
           />
         </div>
-        <p className="text-xs text-gray-500 mt-1">
-          {usagePercentage}% used
-        </p>
+        <p className="text-xs text-gray-500 mt-1">{usagePercentage}% used</p>
       </div>
 
       {/* Additional info */}
@@ -176,21 +195,21 @@ function GiftCardItem({ card }: { card: GiftCard }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function GiftCardsPage() {
-  const [cards, setCards] = useState<GiftCard[]>([])
-  const [loading, setLoading] = useState(true)
+  const [cards, setCards] = useState<GiftCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      const response = await getGiftCards()
-      setCards(response.data)
-      setLoading(false)
+      const response = await getGiftCards();
+      setCards(response.data);
+      setLoading(false);
     }
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   if (loading) {
     return (
@@ -198,7 +217,10 @@ export default function GiftCardsPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Gift Cards</h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+            >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
               <div className="h-2 bg-gray-200 rounded w-full" />
@@ -206,12 +228,12 @@ export default function GiftCardsPage() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   // Separate active and inactive cards
-  const activeCards = cards.filter(c => c.active && !c.expired)
-  const inactiveCards = cards.filter(c => !c.active || c.expired)
+  const activeCards = cards.filter((c) => c.active && !c.expired);
+  const inactiveCards = cards.filter((c) => !c.active || c.expired);
 
   return (
     <div>
@@ -232,7 +254,9 @@ export default function GiftCardsPage() {
               d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No gift cards</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No gift cards
+          </h3>
           <p className="text-gray-500">
             You don&apos;t have any gift cards associated with your account yet.
           </p>
@@ -271,12 +295,23 @@ export default function GiftCardsPage() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="w-4 h-4 inline mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
-          Gift cards can be used during checkout to pay for your orders. The remaining balance will be saved for future purchases.
+          Gift cards can be used during checkout to pay for your orders. The
+          remaining balance will be saved for future purchases.
         </p>
       </div>
     </div>
-  )
+  );
 }

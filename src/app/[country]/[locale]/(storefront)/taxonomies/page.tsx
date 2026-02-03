@@ -1,36 +1,36 @@
-import { getTaxonomies } from '@/lib/data/taxonomies'
-import Link from 'next/link'
-import type { StoreTaxon, StoreTaxonomy } from '@spree/sdk'
+import type { StoreTaxon, StoreTaxonomy } from "@spree/sdk";
+import Link from "next/link";
+import { getTaxonomies } from "@/lib/data/taxonomies";
 
-export const revalidate = 60
+export const revalidate = 60;
 
 interface CategoriesPageProps {
   params: Promise<{
-    country: string
-    locale: string
-  }>
+    country: string;
+    locale: string;
+  }>;
 }
 
 function getTopLevelTaxons(taxons: StoreTaxon[] | undefined): StoreTaxon[] {
-  if (!taxons) return []
+  if (!taxons) return [];
   // Filter to only show depth 1 taxons (direct children of root)
-  return taxons.filter((taxon) => taxon.depth === 1)
+  return taxons.filter((taxon) => taxon.depth === 1);
 }
 
 export default async function CategoriesPage({ params }: CategoriesPageProps) {
-  const { country, locale } = await params
-  const basePath = `/${country}/${locale}`
+  const { country, locale } = await params;
+  const basePath = `/${country}/${locale}`;
 
-  let taxonomies: StoreTaxonomy[] = []
+  let taxonomies: StoreTaxonomy[] = [];
   try {
     const response = await getTaxonomies({
       per_page: 100,
-      includes: 'taxons',
-    })
-    taxonomies = response.data
+      includes: "taxons",
+    });
+    taxonomies = response.data;
   } catch (error) {
-    console.error('Failed to fetch taxonomies:', error)
-    taxonomies = []
+    console.error("Failed to fetch taxonomies:", error);
+    taxonomies = [];
   }
 
   return (
@@ -44,7 +44,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
       ) : (
         <div className="space-y-12">
           {taxonomies.map((taxonomy) => {
-            const topLevelTaxons = getTopLevelTaxons(taxonomy.taxons)
+            const topLevelTaxons = getTopLevelTaxons(taxonomy.taxons);
 
             return (
               <div key={taxonomy.id}>
@@ -63,7 +63,11 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                         <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-indigo-500 transition-all">
                           {taxon.square_image_url || taxon.image_url ? (
                             <img
-                              src={taxon.square_image_url ?? taxon.image_url ?? undefined}
+                              src={
+                                taxon.square_image_url ??
+                                taxon.image_url ??
+                                undefined
+                              }
                               alt={taxon.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
@@ -100,10 +104,10 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                   <p className="text-gray-500">No categories in this group.</p>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }

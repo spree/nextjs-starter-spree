@@ -38,75 +38,76 @@ React 19 provides better patterns for many cases where `useEffect` was previousl
 **1. Transforming data for rendering**
 ```typescript
 // ❌ Bad - useEffect for derived state
-const [fullName, setFullName] = useState('')
+const [fullName, setFullName] = useState("");
 useEffect(() => {
-  setFullName(`${firstName} ${lastName}`)
-}, [firstName, lastName])
+  setFullName(`${firstName} ${lastName}`);
+}, [firstName, lastName]);
 
 // ✅ Good - compute during render
-const fullName = `${firstName} ${lastName}`
+const fullName = `${firstName} ${lastName}`;
 
 // ✅ Good - useMemo for expensive calculations
-const sortedProducts = useMemo(() =>
-  products.sort((a, b) => a.price - b.price),
+const sortedProducts = useMemo(
+  () => products.sort((a, b) => a.price - b.price),
   [products]
-)
+);
 ```
 
 **2. Resetting state when props change**
 ```typescript
 // ❌ Bad - useEffect to reset state
 useEffect(() => {
-  setSelectedVariant(null)
-}, [productId])
+  setSelectedVariant(null);
+}, [productId]);
 
 // ✅ Good - use key to reset component state
 <ProductDetails key={productId} product={product} />
 
 // ✅ Good - compute initial state from props
 const [selectedVariant, setSelectedVariant] = useState(() => {
-  return product.default_variant || product.variants[0]
-})
+  return product.default_variant || product.variants[0];
+});
 ```
 
 **3. Fetching data in response to user events**
 ```typescript
 // ❌ Bad - useEffect triggered by state
-const [query, setQuery] = useState('')
+const [query, setQuery] = useState("");
 useEffect(() => {
-  fetchResults(query)
-}, [query])
+  fetchResults(query);
+}, [query]);
 
 // ✅ Good - fetch in event handler
-const handleSearch = async (query: string) => {
-  setQuery(query)
-  const results = await fetchResults(query)
-  setResults(results)
-}
+const handleSearch = async (searchQuery: string) => {
+  setQuery(searchQuery);
+  const results = await fetchResults(searchQuery);
+  setResults(results);
+};
 
 // ✅ Better - use Server Actions
-const [results, searchAction] = useActionState(searchProducts, [])
+const [results, searchAction] = useActionState(searchProducts, []);
 ```
 
 **4. Initializing the application**
 ```typescript
 // ❌ Bad - useEffect for one-time init
 useEffect(() => {
-  loadAnalytics()
-}, [])
+  loadAnalytics();
+}, []);
 
 // ✅ Good - module-level initialization
-if (typeof window !== 'undefined') {
-  loadAnalytics()
+if (typeof window !== "undefined") {
+  loadAnalytics();
 }
 
 // ✅ Good - check if already initialized
-let didInit = false
+let didInit = false;
 function App() {
   if (!didInit) {
-    didInit = true
-    loadAnalytics()
+    didInit = true;
+    loadAnalytics();
   }
+  return null;
 }
 ```
 
@@ -120,17 +121,17 @@ function App() {
 ### Use Server Components by Default
 
 ```typescript
-// ✅ Good - Server Component (default, no 'use client')
+// ✅ Good - Server Component (default, no "use client")
 // src/app/[country]/[locale]/(storefront)/products/page.tsx
-import { getProducts } from '@/lib/data/products'
+import { getProducts } from "@/lib/data/products";
 
 export default async function ProductsPage() {
-  const products = await getProducts()
-  return <ProductList products={products} />
+  const products = await getProducts();
+  return <ProductList products={products} />;
 }
 ```
 
-Only add `'use client'` when you need:
+Only add `"use client"` when you need:
 - Event handlers (onClick, onChange, etc.)
 - useState, useReducer, useEffect, useContext
 - Browser-only APIs
@@ -140,35 +141,36 @@ Only add `'use client'` when you need:
 
 ```typescript
 // src/lib/data/cart.ts
-'use server'
+"use server";
 
 export async function addToCart(variantId: string, quantity: number) {
-  const cart = await getOrCreateCart()
-  const client = await getSpreeClient()
+  const cart = await getOrCreateCart();
+  const client = await getSpreeClient();
 
-  return client.orders.lineItems.create(cart.id, {
-    variant_id: variantId,
-    quantity,
-  }, { orderToken: cart.token })
+  return client.orders.lineItems.create(
+    cart.id,
+    { variant_id: variantId, quantity },
+    { orderToken: cart.token }
+  );
 }
 
 // Component usage
-import { addToCart } from '@/lib/data/cart'
+import { addToCart } from "@/lib/data/cart";
 
 function AddToCartButton({ variantId }: { variantId: string }) {
-  const [isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition();
 
   const handleClick = () => {
     startTransition(async () => {
-      await addToCart(variantId, 1)
-    })
-  }
+      await addToCart(variantId, 1);
+    });
+  };
 
   return (
     <button onClick={handleClick} disabled={isPending}>
-      {isPending ? 'Adding...' : 'Add to Cart'}
+      {isPending ? "Adding..." : "Add to Cart"}
     </button>
-  )
+  );
 }
 ```
 
@@ -176,22 +178,26 @@ function AddToCartButton({ variantId }: { variantId: string }) {
 
 ```typescript
 // ✅ Good - use() with Suspense
-import { use, Suspense } from 'react'
+import { use, Suspense } from "react";
 
-function ProductDetails({ productPromise }: { productPromise: Promise<Product> }) {
-  const product = use(productPromise)
-  return <div>{product.name}</div>
+interface ProductDetailsProps {
+  productPromise: Promise<Product>;
+}
+
+function ProductDetails({ productPromise }: ProductDetailsProps) {
+  const product = use(productPromise);
+  return <div>{product.name}</div>;
 }
 
 // Parent component
 function ProductPage({ id }: { id: string }) {
-  const productPromise = getProduct(id) // Don't await here
+  const productPromise = getProduct(id); // Don't await here
 
   return (
     <Suspense fallback={<ProductSkeleton />}>
       <ProductDetails productPromise={productPromise} />
     </Suspense>
-  )
+  );
 }
 ```
 
@@ -199,27 +205,27 @@ function ProductPage({ id }: { id: string }) {
 
 ```typescript
 // ✅ Good - useActionState for form handling
-'use client'
+"use client";
 
-import { useActionState } from 'react'
-import { updateProfile } from '@/lib/data/customer'
+import { useActionState } from "react";
+import { updateProfile } from "@/lib/data/customer";
 
 function ProfileForm({ user }: { user: User }) {
   const [state, formAction, isPending] = useActionState(updateProfile, {
     error: null,
     success: false,
-  })
+  });
 
   return (
     <form action={formAction}>
       <input name="firstName" defaultValue={user.first_name} />
       <input name="lastName" defaultValue={user.last_name} />
       <button disabled={isPending}>
-        {isPending ? 'Saving...' : 'Save'}
+        {isPending ? "Saving..." : "Save"}
       </button>
       {state.error && <p className="text-red-500">{state.error}</p>}
     </form>
-  )
+  );
 }
 ```
 
@@ -227,15 +233,20 @@ function ProfileForm({ user }: { user: User }) {
 
 ```typescript
 // ✅ Good - optimistic updates
-import { useOptimistic } from 'react'
+import { useOptimistic } from "react";
 
-function CartItem({ item, onUpdate }: Props) {
-  const [optimisticQuantity, setOptimisticQuantity] = useOptimistic(item.quantity)
+interface CartItemProps {
+  item: LineItem;
+  onUpdate: (id: string, quantity: number) => Promise<void>;
+}
+
+function CartItem({ item, onUpdate }: CartItemProps) {
+  const [optimisticQuantity, setOptimisticQuantity] = useOptimistic(item.quantity);
 
   const handleQuantityChange = async (newQuantity: number) => {
-    setOptimisticQuantity(newQuantity)
-    await onUpdate(item.id, newQuantity)
-  }
+    setOptimisticQuantity(newQuantity);
+    await onUpdate(item.id, newQuantity);
+  };
 
   return (
     <div>
@@ -243,7 +254,7 @@ function CartItem({ item, onUpdate }: Props) {
       <span>Qty: {optimisticQuantity}</span>
       <button onClick={() => handleQuantityChange(optimisticQuantity + 1)}>+</button>
     </div>
-  )
+  );
 }
 ```
 
@@ -267,12 +278,17 @@ app/[country]/[locale]/
 
 ```typescript
 // ✅ Good - parallel fetches
-export default async function ProductPage({ params }: Props) {
+interface ProductPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
   const [product, relatedProducts, reviews] = await Promise.all([
-    getProduct(params.slug),
-    getRelatedProducts(params.slug),
-    getProductReviews(params.slug),
-  ])
+    getProduct(slug),
+    getRelatedProducts(slug),
+    getProductReviews(slug),
+  ]);
 
   return (
     <>
@@ -280,7 +296,7 @@ export default async function ProductPage({ params }: Props) {
       <RelatedProducts products={relatedProducts} />
       <Reviews reviews={reviews} />
     </>
-  )
+  );
 }
 ```
 
@@ -289,7 +305,7 @@ export default async function ProductPage({ params }: Props) {
 ```typescript
 // app/products/loading.tsx
 export default function Loading() {
-  return <ProductGridSkeleton />
+  return <ProductGridSkeleton />;
 }
 
 // Or use Suspense boundaries for more granular loading
@@ -303,7 +319,7 @@ export default async function Page() {
         <Reviews />
       </Suspense>
     </div>
-  )
+  );
 }
 ```
 
@@ -312,33 +328,36 @@ export default async function Page() {
 ```typescript
 // For static generation with dynamic routes
 export async function generateStaticParams() {
-  const products = await getAllProducts()
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
+  const products = await getAllProducts();
+  return products.map((product) => ({ slug: product.slug }));
 }
 
 // For dynamic rendering when needed
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 // or
-export const revalidate = 60 // ISR every 60 seconds
+export const revalidate = 60;
 ```
 
 ### Metadata API
 
 ```typescript
-import { Metadata } from 'next'
+import type { Metadata } from "next";
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await getProduct(params.slug)
+interface MetadataProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
 
   return {
     title: product.meta_title || product.name,
     description: product.meta_description,
     openGraph: {
-      images: product.images.map(img => img.url),
+      images: product.images.map((img) => img.url),
     },
-  }
+  };
 }
 ```
 
@@ -348,18 +367,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 ```typescript
 // src/lib/data/products.ts
-'use server'
+"use server";
 
-import { getSpreeClient } from '@/lib/spree'
+import { getSpreeClient } from "@/lib/spree";
 
 export async function getProducts(params?: ProductListParams) {
-  const client = await getSpreeClient()
+  const client = await getSpreeClient();
 
   return client.products.list({
     per_page: 12,
-    includes: 'images,default_variant',
+    includes: "images,default_variant",
     ...params,
-  })
+  });
 }
 ```
 
@@ -367,29 +386,31 @@ export async function getProducts(params?: ProductListParams) {
 
 ```typescript
 // src/lib/data/auth.ts
-'use server'
+"use server";
 
-import { cookies } from 'next/headers'
-import { getSpreeClient } from '@/lib/spree'
+import { cookies } from "next/headers";
+import { getSpreeClient } from "@/lib/spree";
+
+const SEVEN_DAYS = 60 * 60 * 24 * 7;
 
 export async function login(email: string, password: string) {
-  const client = await getSpreeClient()
-  const { token, user } = await client.auth.login({ email, password })
+  const client = await getSpreeClient();
+  const { token, user } = await client.auth.login({ email, password });
 
-  const cookieStore = await cookies()
-  cookieStore.set('spree_token', token, {
+  const cookieStore = await cookies();
+  cookieStore.set("spree_token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  })
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: SEVEN_DAYS,
+  });
 
-  return user
+  return user;
 }
 
 export async function getAuthToken() {
-  const cookieStore = await cookies()
-  return cookieStore.get('spree_token')?.value
+  const cookieStore = await cookies();
+  return cookieStore.get("spree_token")?.value;
 }
 ```
 
@@ -397,19 +418,21 @@ export async function getAuthToken() {
 
 ```typescript
 // Guest carts use order tokens stored in cookies
+const THIRTY_DAYS = 60 * 60 * 24 * 30;
+
 export async function getCartToken() {
-  const cookieStore = await cookies()
-  return cookieStore.get('spree_cart_token')?.value
+  const cookieStore = await cookies();
+  return cookieStore.get("spree_cart_token")?.value;
 }
 
 export async function setCartToken(token: string) {
-  const cookieStore = await cookies()
-  cookieStore.set('spree_cart_token', token, {
+  const cookieStore = await cookies();
+  cookieStore.set("spree_cart_token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  })
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: THIRTY_DAYS,
+  });
 }
 ```
 
@@ -431,34 +454,34 @@ For component-local state, prefer:
 
 ```typescript
 // ✅ Good - filters in URL
-'use client'
+"use client";
 
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter } from "next/navigation";
 
 function ProductFilters() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const updateFilter = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams)
+    const params = new URLSearchParams(searchParams);
     if (value) {
-      params.set(key, value)
+      params.set(key, value);
     } else {
-      params.delete(key)
+      params.delete(key);
     }
-    router.push(`?${params.toString()}`)
-  }
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <select
-      value={searchParams.get('sort') || ''}
-      onChange={(e) => updateFilter('sort', e.target.value)}
+      value={searchParams.get("sort") || ""}
+      onChange={(e) => updateFilter("sort", e.target.value)}
     >
       <option value="">Default</option>
       <option value="price-asc">Price: Low to High</option>
       <option value="price-desc">Price: High to Low</option>
     </select>
-  )
+  );
 }
 ```
 
@@ -473,11 +496,11 @@ import type {
   StoreOrder,
   StoreLineItem,
   PaginatedResponse,
-} from '@spree/sdk'
+} from "@spree/sdk";
 
 interface ProductCardProps {
-  product: StoreProduct
-  basePath: string
+  product: StoreProduct;
+  basePath: string;
 }
 ```
 
@@ -493,32 +516,37 @@ The project uses strict TypeScript. Always:
 ### Image Optimization
 
 ```typescript
-import Image from 'next/image'
+import Image from "next/image";
 
-function ProductImage({ image }: { image: StoreImage }) {
+interface ProductImageProps {
+  image: StoreImage;
+}
+
+function ProductImage({ image }: ProductImageProps) {
   return (
     <Image
       src={image.url}
-      alt={image.alt || ''}
+      alt={image.alt || ""}
       width={800}
       height={800}
       className="object-cover"
-      priority={false} // Set true for above-fold images
+      priority={false}
       placeholder="blur"
       blurDataURL={image.thumbnail_url}
     />
-  )
+  );
 }
 ```
 
 ### Lazy Loading Components
 
 ```typescript
-import dynamic from 'next/dynamic'
+import dynamic from "next/dynamic";
 
-const ProductReviews = dynamic(() => import('./ProductReviews'), {
-  loading: () => <ReviewsSkeleton />,
-})
+const ProductReviews = dynamic(
+  () => import("./ProductReviews"),
+  { loading: () => <ReviewsSkeleton /> }
+);
 ```
 
 ## Testing
@@ -534,3 +562,58 @@ const ProductReviews = dynamic(() => import('./ProductReviews'), {
 - Use absolute imports (`@/components/...`)
 - Follow Tailwind CSS conventions for styling
 - Keep components small and focused
+
+## Code Quality with Biome
+
+This project uses [Biome](https://biomejs.dev/) for linting and formatting (not ESLint).
+
+### Available Commands
+
+```bash
+# Lint the codebase
+npm run lint
+
+# Format all files
+npm run format
+
+# Run both lint and format checks
+npm run check
+```
+
+Always use `npm run check` before committing changes and fix any issues with `npm run format`.
+
+### Configuration
+
+Biome is configured in `biome.json` using default formatting rules:
+
+- **Formatter:** 2-space indentation, double quotes, semicolons
+- **Linter:** Recommended rules with project-specific adjustments
+
+### Template Literals
+
+```typescript
+// ✅ Good - use template literals for string interpolation
+const message = `Hello, ${name}!`;
+const path = `${basePath}/products/${slug}`;
+
+// ❌ Bad - string concatenation
+const message = "Hello, " + name + "!";
+const path = basePath + "/products/" + slug;
+```
+
+### Unused Variables
+
+Biome warns about unused variables and imports. Remove them or prefix with underscore if intentionally unused:
+
+```typescript
+// ✅ Good - remove unused imports
+import { useState } from "react";
+
+// ✅ Good - prefix intentionally unused params
+const handleClick = (_event: MouseEvent) => {
+  // event not needed but required by type
+};
+
+// ❌ Bad - unused import
+import { useState, useEffect } from "react"; // useEffect not used
+```

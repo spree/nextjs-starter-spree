@@ -1,28 +1,28 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { getProductFilters } from '@/lib/data/products'
-import { useStore } from '@/contexts/StoreContext'
 import type {
-  ProductFiltersResponse,
+  AvailabilityFilter,
   OptionFilter,
   PriceRangeFilter,
-  AvailabilityFilter,
-} from '@spree/sdk'
+  ProductFiltersResponse,
+} from "@spree/sdk";
+import { useEffect, useState } from "react";
+import { useStore } from "@/contexts/StoreContext";
+import { getProductFilters } from "@/lib/data/products";
 
 interface ProductFiltersProps {
-  taxonId?: string
-  filtersData?: ProductFiltersResponse | null
-  loading?: boolean
-  onFilterChange: (filters: ActiveFilters) => void
+  taxonId?: string;
+  filtersData?: ProductFiltersResponse | null;
+  loading?: boolean;
+  onFilterChange: (filters: ActiveFilters) => void;
 }
 
 export interface ActiveFilters {
-  priceMin?: number
-  priceMax?: number
-  optionValues: string[] // option value IDs
-  availability?: 'in_stock' | 'out_of_stock'
-  sortBy?: string
+  priceMin?: number;
+  priceMax?: number;
+  optionValues: string[]; // option value IDs
+  availability?: "in_stock" | "out_of_stock";
+  sortBy?: string;
 }
 
 export function ProductFilters({
@@ -31,92 +31,101 @@ export function ProductFilters({
   loading: externalLoading,
   onFilterChange,
 }: ProductFiltersProps) {
-  const { currency, locale, loading: storeLoading } = useStore()
+  const { currency, locale, loading: storeLoading } = useStore();
 
-  const [internalFiltersData, setInternalFiltersData] = useState<ProductFiltersResponse | null>(null)
-  const [internalLoading, setInternalLoading] = useState(true)
+  const [internalFiltersData, setInternalFiltersData] =
+    useState<ProductFiltersResponse | null>(null);
+  const [internalLoading, setInternalLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     optionValues: [],
-  })
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['price']))
+  });
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(["price"]),
+  );
 
   // Use external data if provided, otherwise fetch internally
-  const filtersData = externalFiltersData !== undefined ? externalFiltersData : internalFiltersData
-  const loading = externalLoading !== undefined ? externalLoading : internalLoading
+  const filtersData =
+    externalFiltersData !== undefined
+      ? externalFiltersData
+      : internalFiltersData;
+  const loading =
+    externalLoading !== undefined ? externalLoading : internalLoading;
 
   // Only fetch internally if no external data provided
   useEffect(() => {
-    if (externalFiltersData !== undefined || storeLoading) return
+    if (externalFiltersData !== undefined || storeLoading) return;
 
-    let cancelled = false
+    let cancelled = false;
 
     const fetchFilters = async () => {
-      setInternalLoading(true)
+      setInternalLoading(true);
       try {
         const response = await getProductFilters(
           { taxon_id: taxonId },
-          { currency, locale }
-        )
+          { currency, locale },
+        );
         if (!cancelled) {
-          setInternalFiltersData(response)
+          setInternalFiltersData(response);
         }
       } catch (error) {
-        console.error('Failed to fetch filters:', error)
+        console.error("Failed to fetch filters:", error);
       } finally {
         if (!cancelled) {
-          setInternalLoading(false)
+          setInternalLoading(false);
         }
       }
-    }
+    };
 
-    fetchFilters()
+    fetchFilters();
 
     return () => {
-      cancelled = true
-    }
-  }, [taxonId, currency, locale, storeLoading, externalFiltersData])
+      cancelled = true;
+    };
+  }, [taxonId, currency, locale, storeLoading, externalFiltersData]);
 
   // Notify parent of filter changes
   useEffect(() => {
-    onFilterChange(activeFilters)
-  }, [activeFilters, onFilterChange])
+    onFilterChange(activeFilters);
+  }, [activeFilters, onFilterChange]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => {
-      const next = new Set(prev)
+      const next = new Set(prev);
       if (next.has(sectionId)) {
-        next.delete(sectionId)
+        next.delete(sectionId);
       } else {
-        next.add(sectionId)
+        next.add(sectionId);
       }
-      return next
-    })
-  }
+      return next;
+    });
+  };
 
   const handleOptionValueToggle = (optionValueId: string) => {
     setActiveFilters((prev) => {
       const newOptionValues = prev.optionValues.includes(optionValueId)
         ? prev.optionValues.filter((id) => id !== optionValueId)
-        : [...prev.optionValues, optionValueId]
-      return { ...prev, optionValues: newOptionValues }
-    })
-  }
+        : [...prev.optionValues, optionValueId];
+      return { ...prev, optionValues: newOptionValues };
+    });
+  };
 
   const handlePriceChange = (min?: number, max?: number) => {
-    setActiveFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }))
-  }
+    setActiveFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }));
+  };
 
-  const handleAvailabilityChange = (availability?: 'in_stock' | 'out_of_stock') => {
-    setActiveFilters((prev) => ({ ...prev, availability }))
-  }
+  const handleAvailabilityChange = (
+    availability?: "in_stock" | "out_of_stock",
+  ) => {
+    setActiveFilters((prev) => ({ ...prev, availability }));
+  };
 
   const handleSortChange = (sortBy: string) => {
-    setActiveFilters((prev) => ({ ...prev, sortBy }))
-  }
+    setActiveFilters((prev) => ({ ...prev, sortBy }));
+  };
 
   const clearFilters = () => {
-    setActiveFilters({ optionValues: [] })
-  }
+    setActiveFilters({ optionValues: [] });
+  };
 
   if (loading) {
     return (
@@ -126,24 +135,26 @@ export function ProductFilters({
         <div className="h-6 bg-gray-200 rounded w-1/2" />
         <div className="h-10 bg-gray-200 rounded" />
       </div>
-    )
+    );
   }
 
   if (!filtersData) {
-    return null
+    return null;
   }
 
   const hasActiveFilters =
     activeFilters.priceMin !== undefined ||
     activeFilters.priceMax !== undefined ||
     activeFilters.optionValues.length > 0 ||
-    activeFilters.availability !== undefined
+    activeFilters.availability !== undefined;
 
   return (
     <div className="space-y-6">
       {/* Sort */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Sort by
+        </label>
         <select
           value={activeFilters.sortBy || filtersData.default_sort}
           onChange={(e) => handleSortChange(e.target.value)}
@@ -170,7 +181,7 @@ export function ProductFilters({
       {/* Filters */}
       {filtersData.filters.map((filter) => {
         switch (filter.type) {
-          case 'price_range':
+          case "price_range":
             return (
               <FilterSection
                 key={filter.id}
@@ -185,8 +196,8 @@ export function ProductFilters({
                   onChange={handlePriceChange}
                 />
               </FilterSection>
-            )
-          case 'availability':
+            );
+          case "availability":
             return (
               <FilterSection
                 key={filter.id}
@@ -200,8 +211,8 @@ export function ProductFilters({
                   onChange={handleAvailabilityChange}
                 />
               </FilterSection>
-            )
-          case 'option':
+            );
+          case "option":
             return (
               <FilterSection
                 key={filter.id}
@@ -215,9 +226,9 @@ export function ProductFilters({
                   onToggle={handleOptionValueToggle}
                 />
               </FilterSection>
-            )
+            );
           default:
-            return null
+            return null;
         }
       })}
 
@@ -226,7 +237,7 @@ export function ProductFilters({
         {filtersData.total_count} products
       </div>
     </div>
-  )
+  );
 }
 
 // Filter Section wrapper with expand/collapse
@@ -236,10 +247,10 @@ function FilterSection({
   onToggle,
   children,
 }: {
-  title: string
-  expanded: boolean
-  onToggle: () => void
-  children: React.ReactNode
+  title: string;
+  expanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
 }) {
   return (
     <div className="border-b border-gray-200 pb-4">
@@ -249,17 +260,22 @@ function FilterSection({
       >
         <span className="text-sm font-medium text-gray-900">{title}</span>
         <svg
-          className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       {expanded && <div className="mt-4">{children}</div>}
     </div>
-  )
+  );
 }
 
 // Price Range Filter
@@ -269,25 +285,26 @@ function PriceFilter({
   maxValue,
   onChange,
 }: {
-  filter: PriceRangeFilter
-  minValue?: number
-  maxValue?: number
-  onChange: (min?: number, max?: number) => void
+  filter: PriceRangeFilter;
+  minValue?: number;
+  maxValue?: number;
+  onChange: (min?: number, max?: number) => void;
 }) {
-  const [localMin, setLocalMin] = useState(minValue?.toString() || '')
-  const [localMax, setLocalMax] = useState(maxValue?.toString() || '')
+  const [localMin, setLocalMin] = useState(minValue?.toString() || "");
+  const [localMax, setLocalMax] = useState(maxValue?.toString() || "");
 
   const handleApply = () => {
     onChange(
       localMin ? parseFloat(localMin) : undefined,
-      localMax ? parseFloat(localMax) : undefined
-    )
-  }
+      localMax ? parseFloat(localMax) : undefined,
+    );
+  };
 
   return (
     <div className="space-y-3">
       <div className="text-xs text-gray-500">
-        Range: {filter.currency} {filter.min.toFixed(2)} - {filter.max.toFixed(2)}
+        Range: {filter.currency} {filter.min.toFixed(2)} -{" "}
+        {filter.max.toFixed(2)}
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -313,7 +330,7 @@ function PriceFilter({
         Apply
       </button>
     </div>
-  )
+  );
 }
 
 // Availability Filter
@@ -322,19 +339,22 @@ function AvailabilityFilterSection({
   selected,
   onChange,
 }: {
-  filter: AvailabilityFilter
-  selected?: 'in_stock' | 'out_of_stock'
-  onChange: (value?: 'in_stock' | 'out_of_stock') => void
+  filter: AvailabilityFilter;
+  selected?: "in_stock" | "out_of_stock";
+  onChange: (value?: "in_stock" | "out_of_stock") => void;
 }) {
   return (
     <div className="space-y-2">
       {filter.options.map((option) => (
-        <label key={option.id} className="flex items-center gap-2 cursor-pointer">
+        <label
+          key={option.id}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <input
             type="radio"
             name="availability"
             checked={selected === option.id}
-            onChange={() => onChange(option.id as 'in_stock' | 'out_of_stock')}
+            onChange={() => onChange(option.id as "in_stock" | "out_of_stock")}
             className="text-indigo-600"
           />
           <span className="text-sm text-gray-700">{option.label}</span>
@@ -350,7 +370,7 @@ function AvailabilityFilterSection({
         </button>
       )}
     </div>
-  )
+  );
 }
 
 // Option Filter (Size, Color, etc.)
@@ -359,14 +379,17 @@ function OptionFilterSection({
   selectedValues,
   onToggle,
 }: {
-  filter: OptionFilter
-  selectedValues: string[]
-  onToggle: (id: string) => void
+  filter: OptionFilter;
+  selectedValues: string[];
+  onToggle: (id: string) => void;
 }) {
   return (
     <div className="space-y-2 max-h-48 overflow-y-auto">
       {filter.options.map((option) => (
-        <label key={option.id} className="flex items-center gap-2 cursor-pointer">
+        <label
+          key={option.id}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <input
             type="checkbox"
             checked={selectedValues.includes(option.id)}
@@ -378,5 +401,5 @@ function OptionFilterSection({
         </label>
       ))}
     </div>
-  )
+  );
 }

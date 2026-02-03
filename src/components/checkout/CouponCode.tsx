@@ -1,55 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { StoreOrder } from "@spree/sdk"
+import type { StoreOrder } from "@spree/sdk";
+import { useState } from "react";
 
 interface CouponCodeProps {
-  order: StoreOrder
-  onApply: (code: string) => Promise<{ success: boolean; error?: string }>
-  onRemove: (promotionId: string) => Promise<{ success: boolean; error?: string }>
+  order: StoreOrder;
+  onApply: (code: string) => Promise<{ success: boolean; error?: string }>;
+  onRemove: (
+    promotionId: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
-  const [code, setCode] = useState("")
-  const [applying, setApplying] = useState(false)
-  const [removing, setRemoving] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [code, setCode] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const appliedPromotions = order.order_promotions || []
+  const appliedPromotions = order.order_promotions || [];
   // Filter to only show promotions with codes (coupon codes)
-  const couponPromotions = appliedPromotions.filter((p) => p.code)
+  const couponPromotions = appliedPromotions.filter((p) => p.code);
 
   const handleApply = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!code.trim()) return
+    e.preventDefault();
+    if (!code.trim()) return;
 
-    setApplying(true)
-    setError(null)
+    setApplying(true);
+    setError(null);
 
-    const result = await onApply(code.trim())
+    const result = await onApply(code.trim());
     if (result.success) {
-      setCode("")
+      setCode("");
     } else {
-      setError(result.error || "Invalid coupon code")
+      setError(result.error || "Invalid coupon code");
     }
 
-    setApplying(false)
-  }
+    setApplying(false);
+  };
 
   const handleRemove = async (promotionId: string) => {
-    setRemoving(promotionId)
-    setError(null)
+    setRemoving(promotionId);
+    setError(null);
 
-    const result = await onRemove(promotionId)
+    const result = await onRemove(promotionId);
     if (!result.success) {
-      setError(result.error || "Failed to remove coupon code")
+      setError(result.error || "Failed to remove coupon code");
     }
 
-    setRemoving(null)
-  }
+    setRemoving(null);
+  };
 
   // Check if there's already an applied code (only show one input at a time)
-  const hasAppliedCode = couponPromotions.length > 0
+  const hasAppliedCode = couponPromotions.length > 0;
 
   return (
     <div>
@@ -104,8 +106,8 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
             type="text"
             value={code}
             onChange={(e) => {
-              setCode(e.target.value)
-              setError(null)
+              setCode(e.target.value);
+              setError(null);
             }}
             placeholder="Gift card or discount code"
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -122,5 +124,5 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
-  )
+  );
 }

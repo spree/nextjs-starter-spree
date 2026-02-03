@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { getCreditCards, deleteCreditCard } from '@/lib/data/credit-cards'
+import { useEffect, useState } from "react";
+import { deleteCreditCard, getCreditCards } from "@/lib/data/credit-cards";
 
 // Credit card type (matches SDK StoreCreditCard)
 interface CreditCard {
-  id: string
-  cc_type: string
-  last_digits: string
-  month: number
-  year: number
-  name: string | null
-  default: boolean
+  id: string;
+  cc_type: string;
+  last_digits: string;
+  month: number;
+  year: number;
+  name: string | null;
+  default: boolean;
 }
 
 function getCardIcon(ccType: string): string {
   switch (ccType.toLowerCase()) {
-    case 'visa':
-      return '💳 Visa'
-    case 'mastercard':
-    case 'master':
-      return '💳 Mastercard'
-    case 'american_express':
-    case 'amex':
-      return '💳 Amex'
-    case 'discover':
-      return '💳 Discover'
+    case "visa":
+      return "💳 Visa";
+    case "mastercard":
+    case "master":
+      return "💳 Mastercard";
+    case "american_express":
+    case "amex":
+      return "💳 Amex";
+    case "discover":
+      return "💳 Discover";
     default:
-      return '💳 ' + ccType
+      return "💳 " + ccType;
   }
 }
 
@@ -35,17 +35,17 @@ function CreditCardItem({
   card,
   onDelete,
 }: {
-  card: CreditCard
-  onDelete: () => void
+  card: CreditCard;
+  onDelete: () => void;
 }) {
-  const [deleting, setDeleting] = useState(false)
+  const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to remove this card?')) return
-    setDeleting(true)
-    await onDelete()
-    setDeleting(false)
-  }
+    if (!confirm("Are you sure you want to remove this card?")) return;
+    setDeleting(true);
+    await onDelete();
+    setDeleting(false);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -53,14 +53,16 @@ function CreditCardItem({
         <div className="flex items-center gap-4">
           <div className="w-12 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded flex items-center justify-center">
             <span className="text-white text-xs font-bold">
-              {card.cc_type?.slice(0, 4).toUpperCase() || 'CARD'}
+              {card.cc_type?.slice(0, 4).toUpperCase() || "CARD"}
             </span>
           </div>
           <div>
             <p className="font-medium text-gray-900">
-              {getCardIcon(card.cc_type || 'Card')}
+              {getCardIcon(card.cc_type || "Card")}
             </p>
-            <p className="text-sm text-gray-500">•••• •••• •••• {card.last_digits}</p>
+            <p className="text-sm text-gray-500">
+              •••• •••• •••• {card.last_digits}
+            </p>
             <p className="text-sm text-gray-500">
               Expires {card.month}/{card.year}
             </p>
@@ -80,52 +82,57 @@ function CreditCardItem({
             disabled={deleting}
             className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
           >
-            {deleting ? 'Removing...' : 'Remove'}
+            {deleting ? "Removing..." : "Remove"}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function CreditCardsPage() {
-  const [cards, setCards] = useState<CreditCard[]>([])
-  const [loading, setLoading] = useState(true)
+  const [cards, setCards] = useState<CreditCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const loadCards = async () => {
-    const response = await getCreditCards()
-    setCards(response.data)
-  }
+    const response = await getCreditCards();
+    setCards(response.data);
+  };
 
   useEffect(() => {
     async function loadData() {
-      await loadCards()
-      setLoading(false)
+      await loadCards();
+      setLoading(false);
     }
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   const handleDelete = async (id: string) => {
-    const result = await deleteCreditCard(id)
+    const result = await deleteCreditCard(id);
     if (result.success) {
-      await loadCards()
+      await loadCards();
     }
-  }
+  };
 
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Payment Methods
+        </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+            >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
             </div>
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -147,7 +154,9 @@ export default function CreditCardsPage() {
               d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
             />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No payment methods saved</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No payment methods saved
+          </h3>
           <p className="text-gray-500">
             Payment methods are saved automatically when you make a purchase.
           </p>
@@ -166,12 +175,23 @@ export default function CreditCardsPage() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <svg
+            className="w-4 h-4 inline mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
           </svg>
-          Your payment information is securely stored and encrypted. We never store your full card number.
+          Your payment information is securely stored and encrypted. We never
+          store your full card number.
         </p>
       </div>
     </div>
-  )
+  );
 }

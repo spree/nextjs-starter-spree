@@ -1,30 +1,30 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useStore } from '@/contexts/StoreContext'
-import { CheckoutProvider, CheckoutSummary } from '@/contexts/CheckoutContext'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
+import { useStore } from "@/contexts/StoreContext";
 
 function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i)
+  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
   if (match) {
-    return `/${match[1]}/${match[2]}`
+    return `/${match[1]}/${match[2]}`;
   }
-  return ''
+  return "";
 }
 
 function CheckoutHeader() {
-  const pathname = usePathname()
-  const basePath = extractBasePath(pathname)
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
 
   return (
     <header className="py-4 lg:py-6 flex items-center justify-between">
-      <Link href={basePath || '/'} className="inline-flex items-center">
+      <Link href={basePath || "/"} className="inline-flex items-center">
         <span className="text-xl font-bold text-gray-900">Spree Store</span>
       </Link>
       <Link
-        href={basePath || '/'}
+        href={basePath || "/"}
         className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
       >
         <svg
@@ -43,22 +43,25 @@ function CheckoutHeader() {
         <span className="hidden sm:inline">Back to store</span>
       </Link>
     </header>
-  )
+  );
 }
 
 function CheckoutFooter() {
-  const { store } = useStore()
-  const currentYear = new Date().getFullYear()
+  const { store } = useStore();
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="py-4 text-sm text-gray-500 border-t border-gray-200 mt-auto">
-      <p>&copy; {currentYear} {store?.name || 'Spree Store'}. All rights reserved.</p>
+      <p>
+        &copy; {currentYear} {store?.name || "Spree Store"}. All rights
+        reserved.
+      </p>
     </footer>
-  )
+  );
 }
 
 function MobileSummaryToggle() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="lg:hidden bg-gray-50 border-b border-gray-200">
@@ -81,15 +84,20 @@ function MobileSummaryToggle() {
               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             />
           </svg>
-          {isOpen ? 'Hide order summary' : 'Show order summary'}
+          {isOpen ? "Hide order summary" : "Show order summary"}
         </span>
         <svg
-          className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       {isOpen && (
@@ -98,11 +106,11 @@ function MobileSummaryToggle() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface CheckoutLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
@@ -142,7 +150,7 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function CheckoutLayout({ children }: CheckoutLayoutProps) {
@@ -150,5 +158,5 @@ export default function CheckoutLayout({ children }: CheckoutLayoutProps) {
     <CheckoutProvider>
       <CheckoutLayoutContent>{children}</CheckoutLayoutContent>
     </CheckoutProvider>
-  )
+  );
 }

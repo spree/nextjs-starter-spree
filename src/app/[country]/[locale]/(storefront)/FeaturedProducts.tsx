@@ -1,51 +1,51 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { getProducts } from '@/lib/data/products'
-import { useStore } from '@/contexts/StoreContext'
-import { ProductGrid } from '@/components/products/ProductGrid'
-import type { StoreProduct } from '@spree/sdk'
+import type { StoreProduct } from "@spree/sdk";
+import { useEffect, useState } from "react";
+import { ProductGrid } from "@/components/products/ProductGrid";
+import { useStore } from "@/contexts/StoreContext";
+import { getProducts } from "@/lib/data/products";
 
 interface FeaturedProductsProps {
-  basePath: string
+  basePath: string;
 }
 
 export function FeaturedProducts({ basePath }: FeaturedProductsProps) {
-  const { currency, locale, loading: storeLoading } = useStore()
-  const [products, setProducts] = useState<StoreProduct[]>([])
-  const [loading, setLoading] = useState(true)
+  const { currency, locale, loading: storeLoading } = useStore();
+  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Wait for store context to load (to get correct currency)
-    if (storeLoading) return
+    if (storeLoading) return;
 
-    let cancelled = false
+    let cancelled = false;
 
     const fetchProducts = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
         const response = await getProducts(
           { per_page: 8 },
-          { currency, locale }
-        )
+          { currency, locale },
+        );
         if (!cancelled) {
-          setProducts(response.data)
+          setProducts(response.data);
         }
       } catch (error) {
-        console.error('Failed to fetch featured products:', error)
+        console.error("Failed to fetch featured products:", error);
       } finally {
         if (!cancelled) {
-          setLoading(false)
+          setLoading(false);
         }
       }
-    }
+    };
 
-    fetchProducts()
+    fetchProducts();
 
     return () => {
-      cancelled = true
-    }
-  }, [currency, locale, storeLoading])
+      cancelled = true;
+    };
+  }, [currency, locale, storeLoading]);
 
   if (loading || storeLoading) {
     return (
@@ -58,8 +58,8 @@ export function FeaturedProducts({ basePath }: FeaturedProductsProps) {
           </div>
         ))}
       </div>
-    )
+    );
   }
 
-  return <ProductGrid products={products} basePath={basePath} />
+  return <ProductGrid products={products} basePath={basePath} />;
 }

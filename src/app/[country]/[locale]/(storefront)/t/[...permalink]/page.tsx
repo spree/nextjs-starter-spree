@@ -1,33 +1,33 @@
-import { getTaxon } from '@/lib/data/taxonomies'
-import { notFound } from 'next/navigation'
-import { CategoryProductsContent } from './CategoryProductsContent'
-import { Breadcrumbs } from '@/components/navigation/Breadcrumbs'
+import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
+import { getTaxon } from "@/lib/data/taxonomies";
+import { CategoryProductsContent } from "./CategoryProductsContent";
 
-export const revalidate = 60
+export const revalidate = 60;
 
 interface CategoryPageProps {
   params: Promise<{
-    country: string
-    locale: string
-    permalink: string[]
-  }>
+    country: string;
+    locale: string;
+    permalink: string[];
+  }>;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { country, locale, permalink } = await params
-  const fullPermalink = permalink.join('/')
-  const basePath = `/${country}/${locale}`
+  const { country, locale, permalink } = await params;
+  const fullPermalink = permalink.join("/");
+  const basePath = `/${country}/${locale}`;
 
-  let taxon
+  let taxon;
   try {
-    taxon = await getTaxon(fullPermalink, { includes: 'ancestors,children' })
+    taxon = await getTaxon(fullPermalink, { includes: "ancestors,children" });
   } catch (error) {
-    console.error('Failed to fetch taxon:', error)
-    notFound()
+    console.error("Failed to fetch taxon:", error);
+    notFound();
   }
 
   if (!taxon) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -67,7 +67,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Subcategories */}
         {taxon.children && taxon.children.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Subcategories</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Subcategories
+            </h2>
             <div className="flex flex-wrap gap-2">
               {taxon.children.map((child) => (
                 <a
@@ -77,7 +79,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 >
                   {child.name}
                   {child.children_count > 0 && (
-                    <span className="ml-1 text-gray-400">({child.children_count})</span>
+                    <span className="ml-1 text-gray-400">
+                      ({child.children_count})
+                    </span>
                   )}
                 </a>
               ))}
@@ -93,5 +97,5 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         />
       </div>
     </div>
-  )
+  );
 }

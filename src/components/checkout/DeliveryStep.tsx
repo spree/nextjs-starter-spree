@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import type { StoreOrder, StoreShipment } from "@spree/sdk"
+import type { StoreOrder, StoreShipment } from "@spree/sdk";
 
 interface DeliveryStepProps {
-  order: StoreOrder
-  shipments: StoreShipment[]
-  onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>
-  onConfirm: () => Promise<void>
-  onBack: () => void
-  processing: boolean
+  order: StoreOrder;
+  shipments: StoreShipment[];
+  onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>;
+  onConfirm: () => Promise<void>;
+  onBack: () => void;
+  processing: boolean;
 }
 
 export function DeliveryStep({
@@ -21,12 +21,12 @@ export function DeliveryStep({
 }: DeliveryStepProps) {
   // Check if all shipments have a selected rate
   const allRatesSelected = shipments.every((shipment) =>
-    shipment.shipping_rates.some((rate) => rate.selected)
-  )
+    shipment.shipping_rates.some((rate) => rate.selected),
+  );
 
   const handleRateChange = async (shipmentId: string, rateId: string) => {
-    await onShippingRateSelect(shipmentId, rateId)
-  }
+    await onShippingRateSelect(shipmentId, rateId);
+  };
 
   return (
     <div className="space-y-8">
@@ -34,7 +34,9 @@ export function DeliveryStep({
       {order.ship_address && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Shipping Address
+            </h2>
             <button
               type="button"
               onClick={onBack}
@@ -44,23 +46,32 @@ export function DeliveryStep({
             </button>
           </div>
           <div className="text-sm text-gray-600">
-            <p className="font-medium text-gray-900">{order.ship_address.full_name}</p>
+            <p className="font-medium text-gray-900">
+              {order.ship_address.full_name}
+            </p>
             {order.ship_address.company && <p>{order.ship_address.company}</p>}
             <p>{order.ship_address.address1}</p>
-            {order.ship_address.address2 && <p>{order.ship_address.address2}</p>}
+            {order.ship_address.address2 && (
+              <p>{order.ship_address.address2}</p>
+            )}
             <p>
-              {order.ship_address.city}, {order.ship_address.state_text || order.ship_address.state_name}{" "}
+              {order.ship_address.city},{" "}
+              {order.ship_address.state_text || order.ship_address.state_name}{" "}
               {order.ship_address.zipcode}
             </p>
             <p>{order.ship_address.country_name}</p>
-            {order.ship_address.phone && <p className="mt-2">Phone: {order.ship_address.phone}</p>}
+            {order.ship_address.phone && (
+              <p className="mt-2">Phone: {order.ship_address.phone}</p>
+            )}
           </div>
         </div>
       )}
 
       {/* Shipping Methods */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipping Method</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Shipping Method
+        </h2>
 
         {shipments.length === 0 ? (
           <p className="text-gray-500">Loading shipping options...</p>
@@ -94,7 +105,9 @@ export function DeliveryStep({
                           type="radio"
                           name={`shipping-rate-${shipment.id}`}
                           checked={rate.selected}
-                          onChange={() => handleRateChange(shipment.id, rate.id)}
+                          onChange={() =>
+                            handleRateChange(shipment.id, rate.id)
+                          }
                           disabled={processing}
                           className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                         />
@@ -136,5 +149,5 @@ export function DeliveryStep({
         </button>
       </div>
     </div>
-  )
+  );
 }

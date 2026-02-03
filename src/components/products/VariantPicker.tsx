@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { useMemo } from 'react'
-import type { StoreVariant, StoreOptionType } from '@spree/sdk'
+import type { StoreOptionType, StoreVariant } from "@spree/sdk";
+import { useMemo } from "react";
 
 interface VariantPickerProps {
-  variants: StoreVariant[]
-  optionTypes: StoreOptionType[]
-  selectedVariant: StoreVariant | null
-  onVariantChange: (variant: StoreVariant | null) => void
+  variants: StoreVariant[];
+  optionTypes: StoreOptionType[];
+  selectedVariant: StoreVariant | null;
+  onVariantChange: (variant: StoreVariant | null) => void;
 }
 
 export function VariantPicker({
@@ -18,106 +18,122 @@ export function VariantPicker({
 }: VariantPickerProps) {
   // Build option values map by option type
   const optionValuesMap = useMemo(() => {
-    const map: Record<string, Set<string>> = {}
+    const map: Record<string, Set<string>> = {};
 
     optionTypes.forEach((optionType) => {
-      map[optionType.id] = new Set()
-    })
+      map[optionType.id] = new Set();
+    });
 
     variants.forEach((variant) => {
       variant.option_values.forEach((optionValue) => {
         if (map[optionValue.option_type_id]) {
-          map[optionValue.option_type_id].add(optionValue.name)
+          map[optionValue.option_type_id].add(optionValue.name);
         }
-      })
-    })
+      });
+    });
 
-    return map
-  }, [variants, optionTypes])
+    return map;
+  }, [variants, optionTypes]);
 
   // Get selected options from current variant
   const selectedOptions = useMemo(() => {
-    const options: Record<string, string> = {}
+    const options: Record<string, string> = {};
     if (selectedVariant) {
       selectedVariant.option_values.forEach((ov) => {
-        options[ov.option_type_id] = ov.name
-      })
+        options[ov.option_type_id] = ov.name;
+      });
     }
-    return options
-  }, [selectedVariant])
+    return options;
+  }, [selectedVariant]);
 
   // Find variant matching selected options
-  const findVariant = (newOptions: Record<string, string>): StoreVariant | null => {
-    return variants.find((variant) => {
-      return variant.option_values.every((ov) => {
-        return newOptions[ov.option_type_id] === ov.name
-      }) && variant.option_values.length === Object.keys(newOptions).length
-    }) || null
-  }
+  const findVariant = (
+    newOptions: Record<string, string>,
+  ): StoreVariant | null => {
+    return (
+      variants.find((variant) => {
+        return (
+          variant.option_values.every((ov) => {
+            return newOptions[ov.option_type_id] === ov.name;
+          }) && variant.option_values.length === Object.keys(newOptions).length
+        );
+      }) || null
+    );
+  };
 
   // Check if an option value is available given current selections
-  const isOptionAvailable = (optionTypeId: string, optionValue: string): boolean => {
-    const testOptions = { ...selectedOptions, [optionTypeId]: optionValue }
+  const isOptionAvailable = (
+    optionTypeId: string,
+    optionValue: string,
+  ): boolean => {
+    const testOptions = { ...selectedOptions, [optionTypeId]: optionValue };
 
     // Check if any variant matches these options
     return variants.some((variant) => {
-      const variantOptions: Record<string, string> = {}
+      const variantOptions: Record<string, string> = {};
       variant.option_values.forEach((ov) => {
-        variantOptions[ov.option_type_id] = ov.name
-      })
+        variantOptions[ov.option_type_id] = ov.name;
+      });
 
       // Check if all selected options match this variant
       return Object.entries(testOptions).every(([typeId, value]) => {
-        return variantOptions[typeId] === value
-      })
-    })
-  }
+        return variantOptions[typeId] === value;
+      });
+    });
+  };
 
   // Check if a variant with these options is purchasable
-  const isOptionPurchasable = (optionTypeId: string, optionValue: string): boolean => {
-    const testOptions = { ...selectedOptions, [optionTypeId]: optionValue }
+  const isOptionPurchasable = (
+    optionTypeId: string,
+    optionValue: string,
+  ): boolean => {
+    const testOptions = { ...selectedOptions, [optionTypeId]: optionValue };
 
     return variants.some((variant) => {
-      if (!variant.purchasable) return false
+      if (!variant.purchasable) return false;
 
-      const variantOptions: Record<string, string> = {}
+      const variantOptions: Record<string, string> = {};
       variant.option_values.forEach((ov) => {
-        variantOptions[ov.option_type_id] = ov.name
-      })
+        variantOptions[ov.option_type_id] = ov.name;
+      });
 
       return Object.entries(testOptions).every(([typeId, value]) => {
-        return variantOptions[typeId] === value
-      })
-    })
-  }
+        return variantOptions[typeId] === value;
+      });
+    });
+  };
 
   const handleOptionSelect = (optionTypeId: string, optionValue: string) => {
-    const newOptions = { ...selectedOptions, [optionTypeId]: optionValue }
-    const newVariant = findVariant(newOptions)
-    onVariantChange(newVariant)
-  }
+    const newOptions = { ...selectedOptions, [optionTypeId]: optionValue };
+    const newVariant = findVariant(newOptions);
+    onVariantChange(newVariant);
+  };
 
   // Get option value details from variants
-  const getOptionValueDetails = (optionTypeId: string, optionValueName: string) => {
+  const getOptionValueDetails = (
+    optionTypeId: string,
+    optionValueName: string,
+  ) => {
     for (const variant of variants) {
       const optionValue = variant.option_values.find(
-        (ov) => ov.option_type_id === optionTypeId && ov.name === optionValueName
-      )
-      if (optionValue) return optionValue
+        (ov) =>
+          ov.option_type_id === optionTypeId && ov.name === optionValueName,
+      );
+      if (optionValue) return optionValue;
     }
-    return null
-  }
+    return null;
+  };
 
   if (optionTypes.length === 0) {
-    return null
+    return null;
   }
 
   return (
     <div className="space-y-6">
       {optionTypes.map((optionType) => {
-        const values = Array.from(optionValuesMap[optionType.id] || [])
-        const selectedValue = selectedOptions[optionType.id]
-        const isColorOption = optionType.name.toLowerCase() === 'color'
+        const values = Array.from(optionValuesMap[optionType.id] || []);
+        const selectedValue = selectedOptions[optionType.id];
+        const isColorOption = optionType.name.toLowerCase() === "color";
 
         return (
           <div key={optionType.id}>
@@ -127,7 +143,8 @@ export function VariantPicker({
               </span>
               {selectedValue && (
                 <span className="text-sm text-gray-500">
-                  {getOptionValueDetails(optionType.id, selectedValue)?.presentation || selectedValue}
+                  {getOptionValueDetails(optionType.id, selectedValue)
+                    ?.presentation || selectedValue}
                 </span>
               )}
             </div>
@@ -136,10 +153,16 @@ export function VariantPicker({
               // Color swatches
               <div className="flex flex-wrap gap-2">
                 {values.map((value) => {
-                  const optionValue = getOptionValueDetails(optionType.id, value)
-                  const isSelected = selectedValue === value
-                  const isAvailable = isOptionAvailable(optionType.id, value)
-                  const isPurchasable = isOptionPurchasable(optionType.id, value)
+                  const optionValue = getOptionValueDetails(
+                    optionType.id,
+                    value,
+                  );
+                  const isSelected = selectedValue === value;
+                  const isAvailable = isOptionAvailable(optionType.id, value);
+                  const isPurchasable = isOptionPurchasable(
+                    optionType.id,
+                    value,
+                  );
 
                   return (
                     <button
@@ -149,12 +172,14 @@ export function VariantPicker({
                       title={optionValue?.presentation || value}
                       className={`
                         w-10 h-10 rounded-full border-2 transition-all relative
-                        ${isSelected ? 'border-indigo-600 ring-2 ring-indigo-600 ring-offset-2' : 'border-gray-200'}
-                        ${!isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'}
-                        ${!isPurchasable && isAvailable ? 'opacity-50' : ''}
+                        ${isSelected ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2" : "border-gray-200"}
+                        ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}
+                        ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
                       style={{
-                        backgroundColor: value.toLowerCase().replace(/\s+/g, ''),
+                        backgroundColor: value
+                          .toLowerCase()
+                          .replace(/\s+/g, ""),
                       }}
                     >
                       {!isPurchasable && isAvailable && (
@@ -163,17 +188,23 @@ export function VariantPicker({
                         </span>
                       )}
                     </button>
-                  )
+                  );
                 })}
               </div>
             ) : (
               // Regular option buttons
               <div className="flex flex-wrap gap-2">
                 {values.map((value) => {
-                  const optionValue = getOptionValueDetails(optionType.id, value)
-                  const isSelected = selectedValue === value
-                  const isAvailable = isOptionAvailable(optionType.id, value)
-                  const isPurchasable = isOptionPurchasable(optionType.id, value)
+                  const optionValue = getOptionValueDetails(
+                    optionType.id,
+                    value,
+                  );
+                  const isSelected = selectedValue === value;
+                  const isAvailable = isOptionAvailable(optionType.id, value);
+                  const isPurchasable = isOptionPurchasable(
+                    optionType.id,
+                    value,
+                  );
 
                   return (
                     <button
@@ -182,26 +213,29 @@ export function VariantPicker({
                       disabled={!isAvailable}
                       className={`
                         px-4 py-2 text-sm font-medium rounded-lg border transition-all relative
-                        ${isSelected
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
-                          : 'border-gray-200 text-gray-700 hover:border-gray-400'
+                        ${
+                          isSelected
+                            ? "border-indigo-600 bg-indigo-50 text-indigo-600"
+                            : "border-gray-200 text-gray-700 hover:border-gray-400"
                         }
-                        ${!isAvailable ? 'opacity-30 cursor-not-allowed line-through' : 'cursor-pointer'}
-                        ${!isPurchasable && isAvailable ? 'opacity-50' : ''}
+                        ${!isAvailable ? "opacity-30 cursor-not-allowed line-through" : "cursor-pointer"}
+                        ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
                     >
                       {optionValue?.presentation || value}
                       {!isPurchasable && isAvailable && (
-                        <span className="ml-1 text-xs text-gray-400">(Out of stock)</span>
+                        <span className="ml-1 text-xs text-gray-400">
+                          (Out of stock)
+                        </span>
                       )}
                     </button>
-                  )
+                  );
                 })}
               </div>
             )}
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

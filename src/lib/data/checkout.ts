@@ -1,52 +1,58 @@
-"use server"
+"use server";
 
-import { getSpreeClient } from "@/lib/spree"
-import { getAuthHeaders } from "./cookies"
-import { getCartToken } from "./cart"
-import { updateTag } from "next/cache"
-import type { AddressParams } from "@spree/sdk"
+import type { AddressParams } from "@spree/sdk";
+import { updateTag } from "next/cache";
+import { getSpreeClient } from "@/lib/spree";
+import { getCartToken } from "./cart";
+import { getAuthHeaders } from "./cookies";
 
 interface CheckoutOptions {
-  currency?: string
-  locale?: string
+  currency?: string;
+  locale?: string;
 }
 
 /**
  * Get checkout auth options - uses JWT for authenticated users, order token for guests
  */
 async function getCheckoutAuth() {
-  const authHeaders = await getAuthHeaders()
-  const orderToken = await getCartToken()
+  const authHeaders = await getAuthHeaders();
+  const orderToken = await getCartToken();
 
   // JWT takes precedence over order token
   if (authHeaders.token) {
-    return { token: authHeaders.token }
+    return { token: authHeaders.token };
   }
 
   // Fall back to order token for guest checkout
   if (orderToken) {
-    return { orderToken }
+    return { orderToken };
   }
 
-  return {}
+  return {};
 }
 
 /**
  * Get order for checkout - validates access permissions
  */
-export async function getCheckoutOrder(orderId: string, options?: CheckoutOptions) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+export async function getCheckoutOrder(
+  orderId: string,
+  options?: CheckoutOptions,
+) {
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
     const order = await client.orders.get(
       orderId,
-      { includes: "line_items,shipments,order_promotions,bill_address,ship_address" },
-      { ...auth, ...options }
-    )
-    return order
+      {
+        includes:
+          "line_items,shipments,order_promotions,bill_address,ship_address",
+      },
+      { ...auth, ...options },
+    );
+    return order;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -56,44 +62,52 @@ export async function getCheckoutOrder(orderId: string, options?: CheckoutOption
 export async function updateOrderAddresses(
   orderId: string,
   addresses: {
-    ship_address?: AddressParams
-    bill_address?: AddressParams
-    email?: string
+    ship_address?: AddressParams;
+    bill_address?: AddressParams;
+    email?: string;
   },
-  options?: CheckoutOptions
+  options?: CheckoutOptions,
 ) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
-    const order = await client.orders.update(orderId, addresses, { ...auth, ...options })
-    updateTag("checkout")
-    return { success: true, order }
+    const order = await client.orders.update(orderId, addresses, {
+      ...auth,
+      ...options,
+    });
+    updateTag("checkout");
+    return { success: true, order };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update addresses",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to update addresses",
+    };
   }
 }
 
 /**
  * Advance order to next checkout step
  */
-export async function advanceCheckout(orderId: string, options?: CheckoutOptions) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+export async function advanceCheckout(
+  orderId: string,
+  options?: CheckoutOptions,
+) {
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
-    const order = await client.orders.next(orderId, { ...auth, ...options })
-    updateTag("checkout")
-    updateTag("cart")
-    return { success: true, order }
+    const order = await client.orders.next(orderId, { ...auth, ...options });
+    updateTag("checkout");
+    updateTag("cart");
+    return { success: true, order };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to advance checkout",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to advance checkout",
+    };
   }
 }
 
@@ -101,14 +115,17 @@ export async function advanceCheckout(orderId: string, options?: CheckoutOptions
  * Get shipments for order
  */
 export async function getShipments(orderId: string, options?: CheckoutOptions) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
-    const response = await client.orders.shipments.list(orderId, { ...auth, ...options })
-    return response.data
+    const response = await client.orders.shipments.list(orderId, {
+      ...auth,
+      ...options,
+    });
+    return response.data;
   } catch {
-    return []
+    return [];
   }
 }
 
@@ -119,25 +136,28 @@ export async function selectShippingRate(
   orderId: string,
   shipmentId: string,
   shippingRateId: string,
-  options?: CheckoutOptions
+  options?: CheckoutOptions,
 ) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
     await client.orders.shipments.update(
       orderId,
       shipmentId,
       { selected_shipping_rate_id: shippingRateId },
-      { ...auth, ...options }
-    )
-    updateTag("checkout")
-    return { success: true }
+      { ...auth, ...options },
+    );
+    updateTag("checkout");
+    return { success: true };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to select shipping rate",
-    }
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to select shipping rate",
+    };
   }
 }
 
@@ -147,24 +167,24 @@ export async function selectShippingRate(
 export async function applyCouponCode(
   orderId: string,
   couponCode: string,
-  options?: CheckoutOptions
+  options?: CheckoutOptions,
 ) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
     const order = await client.orders.couponCodes.apply(orderId, couponCode, {
       ...auth,
       ...options,
-    })
-    updateTag("checkout")
-    updateTag("cart")
-    return { success: true, order }
+    });
+    updateTag("checkout");
+    updateTag("cart");
+    return { success: true, order };
   } catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Invalid coupon code",
-    }
+    };
   }
 }
 
@@ -174,43 +194,51 @@ export async function applyCouponCode(
 export async function removeCouponCode(
   orderId: string,
   promotionId: string,
-  options?: CheckoutOptions
+  options?: CheckoutOptions,
 ) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
     const order = await client.orders.couponCodes.remove(orderId, promotionId, {
       ...auth,
       ...options,
-    })
-    updateTag("checkout")
-    updateTag("cart")
-    return { success: true, order }
+    });
+    updateTag("checkout");
+    updateTag("cart");
+    return { success: true, order };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to remove coupon code",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to remove coupon code",
+    };
   }
 }
 
 /**
  * Complete the order (skip payment for now)
  */
-export async function completeOrder(orderId: string, options?: CheckoutOptions) {
-  const client = getSpreeClient()
-  const auth = await getCheckoutAuth()
+export async function completeOrder(
+  orderId: string,
+  options?: CheckoutOptions,
+) {
+  const client = getSpreeClient();
+  const auth = await getCheckoutAuth();
 
   try {
-    const order = await client.orders.complete(orderId, { ...auth, ...options })
-    updateTag("checkout")
-    updateTag("cart")
-    return { success: true, order }
+    const order = await client.orders.complete(orderId, {
+      ...auth,
+      ...options,
+    });
+    updateTag("checkout");
+    updateTag("cart");
+    return { success: true, order };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to complete order",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to complete order",
+    };
   }
 }

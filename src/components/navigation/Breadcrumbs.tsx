@@ -1,17 +1,17 @@
-import Link from 'next/link'
-import type { StoreTaxon } from '@spree/sdk'
+import type { StoreTaxon } from "@spree/sdk";
+import Link from "next/link";
 
 interface BreadcrumbsProps {
-  taxon: StoreTaxon
-  basePath: string
+  taxon: StoreTaxon;
+  basePath: string;
 }
 
 export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
   // Build breadcrumb items from ancestors + current taxon
   const items = [
-    { name: 'Home', href: basePath },
-    { name: 'Categories', href: `${basePath}/taxonomies` },
-  ]
+    { name: "Home", href: basePath },
+    { name: "Categories", href: `${basePath}/taxonomies` },
+  ];
 
   // Add ancestors (they come from the API in order from root to parent)
   if (taxon.ancestors && taxon.ancestors.length > 0) {
@@ -21,19 +21,19 @@ export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
         items.push({
           name: ancestor.name,
           href: `${basePath}/t/${ancestor.permalink}`,
-        })
+        });
       }
-    })
+    });
   }
 
   // Add current taxon (not a link)
-  items.push({ name: taxon.name, href: '' })
+  items.push({ name: taxon.name, href: "" });
 
   return (
     <nav aria-label="Breadcrumb" className="mb-6">
       <ol className="flex items-center space-x-2 text-sm">
         {items.map((item, index) => {
-          const isLast = index === items.length - 1
+          const isLast = index === items.length - 1;
 
           return (
             <li key={index} className="flex items-center">
@@ -65,9 +65,9 @@ export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
                 </Link>
               )}
             </li>
-          )
+          );
         })}
       </ol>
     </nav>
-  )
+  );
 }

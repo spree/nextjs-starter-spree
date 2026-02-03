@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@spree/sdk'],
+  transpilePackages: ["@spree/sdk"],
   images: {
     qualities: [25, 50, 75, 100],
     dangerouslyAllowLocalIP: true, // Allow localhost images in development
@@ -9,28 +9,28 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
+        protocol: "http",
+        hostname: "localhost",
       },
       {
-        protocol: 'http',
-        hostname: '127.0.0.1',
+        protocol: "http",
+        hostname: "127.0.0.1",
       },
       {
-        protocol: 'https',
-        hostname: '**.amazonaws.com',
+        protocol: "https",
+        hostname: "**.amazonaws.com",
       },
       {
-        protocol: 'https',
-        hostname: '**.cloudfront.net',
+        protocol: "https",
+        hostname: "**.cloudfront.net",
       },
       {
-        protocol: 'https',
-        hostname: '**.digitaloceanspaces.com',
+        protocol: "https",
+        hostname: "**.digitaloceanspaces.com",
       },
       {
-        protocol: 'https',
-        hostname: '**.blob.core.windows.net',
+        protocol: "https",
+        hostname: "**.blob.core.windows.net",
       },
     ],
   },

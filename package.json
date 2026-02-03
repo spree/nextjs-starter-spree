@@ -6,7 +6,9 @@
     "dev": "next dev -p 3001 --webpack",
     "build": "next build --webpack",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "biome lint .",
+    "format": "biome format . --write",
+    "check": "biome check ."
   },
   "dependencies": {
     "@spree/sdk": "file:../spree/sdk",
@@ -15,12 +17,11 @@
     "react-dom": "^19"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

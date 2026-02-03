@@ -1,42 +1,50 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { updateCustomer } from '@/lib/data/customer'
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { updateCustomer } from "@/lib/data/customer";
 
 // Inner form component that resets when user changes (via key prop)
-function ProfileForm({ user, refreshUser }: {
-  user: { id: string; email: string; first_name?: string | null; last_name?: string | null }
-  refreshUser: () => Promise<void>
+function ProfileForm({
+  user,
+  refreshUser,
+}: {
+  user: {
+    id: string;
+    email: string;
+    first_name?: string | null;
+    last_name?: string | null;
+  };
+  refreshUser: () => Promise<void>;
 }) {
   // Initialize form data from user props - no useEffect needed
   const [formData, setFormData] = useState({
-    first_name: user.first_name || '',
-    last_name: user.last_name || '',
-    email: user.email || '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
+    first_name: user.first_name || "",
+    last_name: user.last_name || "",
+    email: user.email || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSuccess(false)
-    setSaving(true)
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+    setSaving(true);
 
-    const result = await updateCustomer(formData)
+    const result = await updateCustomer(formData);
 
     if (result.success) {
-      setSuccess(true)
-      await refreshUser()
-      setTimeout(() => setSuccess(false), 3000)
+      setSuccess(true);
+      await refreshUser();
+      setTimeout(() => setSuccess(false), 3000);
     } else {
-      setError(result.error || 'Failed to update profile')
+      setError(result.error || "Failed to update profile");
     }
 
-    setSaving(false)
-  }
+    setSaving(false);
+  };
 
   return (
     <div>
@@ -59,34 +67,47 @@ function ProfileForm({ user, refreshUser }: {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="first_name"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   First Name
                 </label>
                 <input
                   type="text"
                   id="first_name"
                   value={formData.first_name}
-                  onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, first_name: e.target.value })
+                  }
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="last_name"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Last Name
                 </label>
                 <input
                   type="text"
                   id="last_name"
                   value={formData.last_name}
-                  onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, last_name: e.target.value })
+                  }
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <input
@@ -94,7 +115,9 @@ function ProfileForm({ user, refreshUser }: {
                 id="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
@@ -106,7 +129,7 @@ function ProfileForm({ user, refreshUser }: {
               disabled={saving}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>
@@ -115,7 +138,9 @@ function ProfileForm({ user, refreshUser }: {
       {/* Account Info */}
       <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Account Information</h2>
+          <h2 className="text-lg font-medium text-gray-900">
+            Account Information
+          </h2>
         </div>
         <div className="p-6">
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -131,21 +156,21 @@ function ProfileForm({ user, refreshUser }: {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Main page component - uses key prop to reset form when user changes
 export default function ProfilePage() {
-  const { user, refreshUser } = useAuth()
+  const { user, refreshUser } = useAuth();
 
   if (!user) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">Loading profile...</p>
       </div>
-    )
+    );
   }
 
   // Use key={user.id} to reset the form component when user changes
-  return <ProfileForm key={user.id} user={user} refreshUser={refreshUser} />
+  return <ProfileForm key={user.id} user={user} refreshUser={refreshUser} />;
 }

@@ -1,38 +1,47 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useTransition } from "react"
-import Link from "next/link"
-import type { StoreOrder, StoreCountry, StoreState, StoreAddress, AddressParams } from "@spree/sdk"
-import { AddressSelector } from "./AddressSelector"
+import type {
+  AddressParams,
+  StoreAddress,
+  StoreCountry,
+  StoreOrder,
+  StoreState,
+} from "@spree/sdk";
+import Link from "next/link";
+import { useEffect, useState, useTransition } from "react";
+import { AddressSelector } from "./AddressSelector";
 
 interface AddressStepProps {
-  order: StoreOrder
-  countries: StoreCountry[]
-  savedAddresses: StoreAddress[]
-  isAuthenticated: boolean
-  signInUrl: string
-  fetchStates: (countryIso: string) => Promise<StoreState[]>
+  order: StoreOrder;
+  countries: StoreCountry[];
+  savedAddresses: StoreAddress[];
+  isAuthenticated: boolean;
+  signInUrl: string;
+  fetchStates: (countryIso: string) => Promise<StoreState[]>;
   onSubmit: (data: {
-    email: string
-    ship_address?: AddressParams
-    ship_address_id?: string
-  }) => Promise<void>
-  onUpdateSavedAddress?: (id: string, data: AddressParams) => Promise<StoreAddress | null>
-  processing: boolean
+    email: string;
+    ship_address?: AddressParams;
+    ship_address_id?: string;
+  }) => Promise<void>;
+  onUpdateSavedAddress?: (
+    id: string,
+    data: AddressParams,
+  ) => Promise<StoreAddress | null>;
+  processing: boolean;
 }
 
 interface AddressFormData {
-  firstname: string
-  lastname: string
-  address1: string
-  address2: string
-  city: string
-  zipcode: string
-  phone: string
-  company: string
-  country_iso: string
-  state_abbr: string
-  state_name: string
+  firstname: string;
+  lastname: string;
+  address1: string;
+  address2: string;
+  city: string;
+  zipcode: string;
+  phone: string;
+  company: string;
+  country_iso: string;
+  state_abbr: string;
+  state_name: string;
 }
 
 const emptyAddress: AddressFormData = {
@@ -47,22 +56,22 @@ const emptyAddress: AddressFormData = {
   country_iso: "",
   state_abbr: "",
   state_name: "",
-}
+};
 
 function addressToFormData(address?: {
-  firstname: string | null
-  lastname: string | null
-  address1: string | null
-  address2: string | null
-  city: string | null
-  zipcode: string | null
-  phone: string | null
-  company: string | null
-  country_iso: string
-  state_abbr: string | null
-  state_name: string | null
+  firstname: string | null;
+  lastname: string | null;
+  address1: string | null;
+  address2: string | null;
+  city: string | null;
+  zipcode: string | null;
+  phone: string | null;
+  company: string | null;
+  country_iso: string;
+  state_abbr: string | null;
+  state_name: string | null;
 }): AddressFormData {
-  if (!address) return emptyAddress
+  if (!address) return emptyAddress;
   return {
     firstname: address.firstname || "",
     lastname: address.lastname || "",
@@ -75,7 +84,7 @@ function addressToFormData(address?: {
     country_iso: address.country_iso || "",
     state_abbr: address.state_abbr || "",
     state_name: address.state_name || "",
-  }
+  };
 }
 
 function formDataToAddress(data: AddressFormData): AddressParams {
@@ -91,7 +100,7 @@ function formDataToAddress(data: AddressFormData): AddressParams {
     country_iso: data.country_iso,
     state_abbr: data.state_abbr || undefined,
     state_name: data.state_name || undefined,
-  }
+  };
 }
 
 export function AddressStep({
@@ -105,61 +114,63 @@ export function AddressStep({
   onUpdateSavedAddress,
   processing,
 }: AddressStepProps) {
-  const [email, setEmail] = useState(order.email || "")
+  const [email, setEmail] = useState(order.email || "");
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
-    addressToFormData(order.ship_address)
-  )
-  const [shipStates, setShipStates] = useState<StoreState[]>([])
-  const [isPendingShip, startTransitionShip] = useTransition()
-  const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses)
-  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(null)
-  const [editModalStates, setEditModalStates] = useState<StoreState[]>([])
-  const [editModalLoading, setEditModalLoading] = useState(false)
-  const [editModalSaving, setEditModalSaving] = useState(false)
-  const [editModalError, setEditModalError] = useState("")
+    addressToFormData(order.ship_address),
+  );
+  const [shipStates, setShipStates] = useState<StoreState[]>([]);
+  const [isPendingShip, startTransitionShip] = useTransition();
+  const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
+  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
+    null,
+  );
+  const [editModalStates, setEditModalStates] = useState<StoreState[]>([]);
+  const [editModalLoading, setEditModalLoading] = useState(false);
+  const [editModalSaving, setEditModalSaving] = useState(false);
+  const [editModalError, setEditModalError] = useState("");
 
   // Load states when shipping country changes
   useEffect(() => {
     if (!shipAddress.country_iso) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShipStates([])
-      return
+      setShipStates([]);
+      return;
     }
 
-    let cancelled = false
+    let cancelled = false;
 
     startTransitionShip(() => {
       fetchStates(shipAddress.country_iso).then((states) => {
         if (!cancelled) {
-          setShipStates(states)
+          setShipStates(states);
         }
-      })
-    })
+      });
+    });
 
     return () => {
-      cancelled = true
-    }
-  }, [shipAddress.country_iso, fetchStates])
+      cancelled = true;
+    };
+  }, [shipAddress.country_iso, fetchStates]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSubmit({
       email,
       ship_address: formDataToAddress(shipAddress),
-    })
-  }
+    });
+  };
 
   const updateShipAddress = (field: keyof AddressFormData, value: string) => {
     setShipAddress((prev) => {
-      const updated = { ...prev, [field]: value }
+      const updated = { ...prev, [field]: value };
       // Clear state when country changes
       if (field === "country_iso") {
-        updated.state_abbr = ""
-        updated.state_name = ""
+        updated.state_abbr = "";
+        updated.state_name = "";
       }
-      return updated
-    })
-  }
+      return updated;
+    });
+  };
 
   const handleSelectSavedAddress = (address: StoreAddress) => {
     setShipAddress({
@@ -174,54 +185,54 @@ export function AddressStep({
       country_iso: address.country_iso || "",
       state_abbr: address.state_abbr || "",
       state_name: address.state_name || "",
-    })
-  }
+    });
+  };
 
   const handleEditAddress = async (address: StoreAddress) => {
-    setEditingAddress(address)
-    setEditModalError("")
-    setEditModalStates([])
+    setEditingAddress(address);
+    setEditModalError("");
+    setEditModalStates([]);
 
     if (address.country_iso) {
-      setEditModalLoading(true)
+      setEditModalLoading(true);
       try {
-        const states = await fetchStates(address.country_iso)
-        setEditModalStates(states)
+        const states = await fetchStates(address.country_iso);
+        setEditModalStates(states);
       } finally {
-        setEditModalLoading(false)
+        setEditModalLoading(false);
       }
     }
-  }
+  };
 
   const handleEditModalCountryChange = async (countryIso: string) => {
-    if (!editingAddress) return
+    if (!editingAddress) return;
 
     setEditingAddress({
       ...editingAddress,
       country_iso: countryIso,
       state_abbr: null,
       state_name: null,
-    })
+    });
 
     if (countryIso) {
-      setEditModalLoading(true)
+      setEditModalLoading(true);
       try {
-        const states = await fetchStates(countryIso)
-        setEditModalStates(states)
+        const states = await fetchStates(countryIso);
+        setEditModalStates(states);
       } finally {
-        setEditModalLoading(false)
+        setEditModalLoading(false);
       }
     } else {
-      setEditModalStates([])
+      setEditModalStates([]);
     }
-  }
+  };
 
   const handleSaveEditedAddress = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!editingAddress || !onUpdateSavedAddress) return
+    e.preventDefault();
+    if (!editingAddress || !onUpdateSavedAddress) return;
 
-    setEditModalSaving(true)
-    setEditModalError("")
+    setEditModalSaving(true);
+    setEditModalError("");
 
     try {
       const addressData: AddressParams = {
@@ -236,24 +247,31 @@ export function AddressStep({
         country_iso: editingAddress.country_iso,
         state_abbr: editingAddress.state_abbr || undefined,
         state_name: editingAddress.state_name || undefined,
-      }
+      };
 
-      const updatedAddress = await onUpdateSavedAddress(editingAddress.id, addressData)
+      const updatedAddress = await onUpdateSavedAddress(
+        editingAddress.id,
+        addressData,
+      );
       if (updatedAddress) {
         // Update local state with the returned address
-        setSavedAddresses(prev =>
-          prev.map(addr => addr.id === editingAddress.id ? updatedAddress : addr)
-        )
+        setSavedAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === editingAddress.id ? updatedAddress : addr,
+          ),
+        );
         // Also update the form if this address was selected
-        handleSelectSavedAddress(updatedAddress)
-        setEditingAddress(null)
+        handleSelectSavedAddress(updatedAddress);
+        setEditingAddress(null);
       }
     } catch (err) {
-      setEditModalError(err instanceof Error ? err.message : "Failed to update address")
+      setEditModalError(
+        err instanceof Error ? err.message : "Failed to update address",
+      );
     } finally {
-      setEditModalSaving(false)
+      setEditModalSaving(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -267,17 +285,22 @@ export function AddressStep({
               className="font-medium text-blue-600 hover:text-blue-700 underline"
             >
               Sign in
-            </Link>
-            {" "}to access your saved addresses and order history.
+            </Link>{" "}
+            to access your saved addresses and order history.
           </p>
         </div>
       )}
 
       {/* Contact Information */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Contact Information
+        </h2>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
             Email address
           </label>
           <input
@@ -300,7 +323,9 @@ export function AddressStep({
 
       {/* Shipping Address */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Shipping Address
+        </h2>
         {isAuthenticated && savedAddresses.length > 0 ? (
           <AddressSelector
             savedAddresses={savedAddresses}
@@ -341,14 +366,16 @@ export function AddressStep({
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
             <div
-              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              className="fixed inset-0 bg-gray-500 opacity-50 transition-opacity"
               onClick={() => setEditingAddress(null)}
             />
 
             <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <form onSubmit={handleSaveEditedAddress}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Address</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Edit Address
+                  </h3>
 
                   {editModalError && (
                     <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -359,64 +386,103 @@ export function AddressStep({
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">First Name</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          First Name
+                        </label>
                         <input
                           type="text"
                           required
                           value={editingAddress.firstname || ""}
-                          onChange={(e) => setEditingAddress({ ...editingAddress, firstname: e.target.value })}
+                          onChange={(e) =>
+                            setEditingAddress({
+                              ...editingAddress,
+                              firstname: e.target.value,
+                            })
+                          }
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Last Name
+                        </label>
                         <input
                           type="text"
                           required
                           value={editingAddress.lastname || ""}
-                          onChange={(e) => setEditingAddress({ ...editingAddress, lastname: e.target.value })}
+                          onChange={(e) =>
+                            setEditingAddress({
+                              ...editingAddress,
+                              lastname: e.target.value,
+                            })
+                          }
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Company (optional)</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Company (optional)
+                      </label>
                       <input
                         type="text"
                         value={editingAddress.company || ""}
-                        onChange={(e) => setEditingAddress({ ...editingAddress, company: e.target.value })}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            company: e.target.value,
+                          })
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Address Line 1</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Address Line 1
+                      </label>
                       <input
                         type="text"
                         required
                         value={editingAddress.address1 || ""}
-                        onChange={(e) => setEditingAddress({ ...editingAddress, address1: e.target.value })}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            address1: e.target.value,
+                          })
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Address Line 2 (optional)</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Address Line 2 (optional)
+                      </label>
                       <input
                         type="text"
                         value={editingAddress.address2 || ""}
-                        onChange={(e) => setEditingAddress({ ...editingAddress, address2: e.target.value })}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            address2: e.target.value,
+                          })
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Country</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Country
+                      </label>
                       <select
                         required
                         value={editingAddress.country_iso}
-                        onChange={(e) => handleEditModalCountryChange(e.target.value)}
+                        onChange={(e) =>
+                          handleEditModalCountryChange(e.target.value)
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       >
                         <option value="">Select a country</option>
@@ -430,18 +496,27 @@ export function AddressStep({
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">City</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          City
+                        </label>
                         <input
                           type="text"
                           required
                           value={editingAddress.city || ""}
-                          onChange={(e) => setEditingAddress({ ...editingAddress, city: e.target.value })}
+                          onChange={(e) =>
+                            setEditingAddress({
+                              ...editingAddress,
+                              city: e.target.value,
+                            })
+                          }
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
-                          {editModalStates.length > 0 ? "State" : "State/Region"}
+                          {editModalStates.length > 0
+                            ? "State"
+                            : "State/Region"}
                         </label>
                         {editModalLoading ? (
                           <div className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400 text-sm">
@@ -450,7 +525,12 @@ export function AddressStep({
                         ) : editModalStates.length > 0 ? (
                           <select
                             value={editingAddress.state_abbr || ""}
-                            onChange={(e) => setEditingAddress({ ...editingAddress, state_abbr: e.target.value })}
+                            onChange={(e) =>
+                              setEditingAddress({
+                                ...editingAddress,
+                                state_abbr: e.target.value,
+                              })
+                            }
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                           >
                             <option value="">Select state</option>
@@ -464,29 +544,48 @@ export function AddressStep({
                           <input
                             type="text"
                             value={editingAddress.state_name || ""}
-                            onChange={(e) => setEditingAddress({ ...editingAddress, state_name: e.target.value })}
+                            onChange={(e) =>
+                              setEditingAddress({
+                                ...editingAddress,
+                                state_name: e.target.value,
+                              })
+                            }
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                           />
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">ZIP Code</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          ZIP Code
+                        </label>
                         <input
                           type="text"
                           required
                           value={editingAddress.zipcode || ""}
-                          onChange={(e) => setEditingAddress({ ...editingAddress, zipcode: e.target.value })}
+                          onChange={(e) =>
+                            setEditingAddress({
+                              ...editingAddress,
+                              zipcode: e.target.value,
+                            })
+                          }
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Phone (optional)</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Phone (optional)
+                      </label>
                       <input
                         type="tel"
                         value={editingAddress.phone || ""}
-                        onChange={(e) => setEditingAddress({ ...editingAddress, phone: e.target.value })}
+                        onChange={(e) =>
+                          setEditingAddress({
+                            ...editingAddress,
+                            phone: e.target.value,
+                          })
+                        }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                       />
                     </div>
@@ -515,16 +614,16 @@ export function AddressStep({
         </div>
       )}
     </form>
-  )
+  );
 }
 
 interface AddressFormProps {
-  address: AddressFormData
-  countries: StoreCountry[]
-  states: StoreState[]
-  loadingStates: boolean
-  onChange: (field: keyof AddressFormData, value: string) => void
-  idPrefix: string
+  address: AddressFormData;
+  countries: StoreCountry[];
+  states: StoreState[];
+  loadingStates: boolean;
+  onChange: (field: keyof AddressFormData, value: string) => void;
+  idPrefix: string;
 }
 
 function AddressForm({
@@ -535,12 +634,15 @@ function AddressForm({
   onChange,
   idPrefix,
 }: AddressFormProps) {
-  const hasStates = states.length > 0
+  const hasStates = states.length > 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label htmlFor={`${idPrefix}-firstname`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-firstname`}
+          className="block text-sm font-medium text-gray-700"
+        >
           First name
         </label>
         <input
@@ -554,7 +656,10 @@ function AddressForm({
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-lastname`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-lastname`}
+          className="block text-sm font-medium text-gray-700"
+        >
           Last name
         </label>
         <input
@@ -568,7 +673,10 @@ function AddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor={`${idPrefix}-company`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-company`}
+          className="block text-sm font-medium text-gray-700"
+        >
           Company (optional)
         </label>
         <input
@@ -581,7 +689,10 @@ function AddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor={`${idPrefix}-address1`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-address1`}
+          className="block text-sm font-medium text-gray-700"
+        >
           Address
         </label>
         <input
@@ -596,7 +707,10 @@ function AddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor={`${idPrefix}-address2`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-address2`}
+          className="block text-sm font-medium text-gray-700"
+        >
           Apartment, suite, etc. (optional)
         </label>
         <input
@@ -609,7 +723,10 @@ function AddressForm({
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-city`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-city`}
+          className="block text-sm font-medium text-gray-700"
+        >
           City
         </label>
         <input
@@ -623,7 +740,10 @@ function AddressForm({
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-country`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-country`}
+          className="block text-sm font-medium text-gray-700"
+        >
           Country
         </label>
         <select
@@ -643,7 +763,10 @@ function AddressForm({
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-state`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-state`}
+          className="block text-sm font-medium text-gray-700"
+        >
           State / Province
         </label>
         {loadingStates ? (
@@ -678,7 +801,10 @@ function AddressForm({
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-zipcode`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-zipcode`}
+          className="block text-sm font-medium text-gray-700"
+        >
           ZIP / Postal code
         </label>
         <input
@@ -692,7 +818,10 @@ function AddressForm({
       </div>
 
       <div className="sm:col-span-2">
-        <label htmlFor={`${idPrefix}-phone`} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={`${idPrefix}-phone`}
+          className="block text-sm font-medium text-gray-700"
+        >
           Phone (optional)
         </label>
         <input
@@ -704,5 +833,5 @@ function AddressForm({
         />
       </div>
     </div>
-  )
+  );
 }

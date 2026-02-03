@@ -1,54 +1,63 @@
-'use client'
+"use client";
 
-import { useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { useCart } from '@/contexts/CartContext'
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { useCart } from "@/contexts/CartContext";
 
 function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i)
+  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
   if (match) {
-    return `/${match[1]}/${match[2]}`
+    return `/${match[1]}/${match[2]}`;
   }
-  return ''
+  return "";
 }
 
 export function CartDrawer() {
-  const { cart, loading, updating, isOpen, closeCart, updateItem, removeItem, itemCount } = useCart()
-  const pathname = usePathname()
-  const basePath = extractBasePath(pathname)
-  const drawerRef = useRef<HTMLDivElement>(null)
+  const {
+    cart,
+    loading,
+    updating,
+    isOpen,
+    closeCart,
+    updateItem,
+    removeItem,
+    itemCount,
+  } = useCart();
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeCart()
-    }
+      if (e.key === "Escape") closeCart();
+    };
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'hidden'
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
     return () => {
-      document.removeEventListener('keydown', handleEscape)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, closeCart])
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, closeCart]);
 
   // Close when clicking outside
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) closeCart()
-  }
+    if (e.target === e.currentTarget) closeCart();
+  };
 
   // Close when navigating
   useEffect(() => {
-    closeCart()
-  }, [pathname, closeCart])
+    closeCart();
+  }, [pathname, closeCart]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  const lineItems = cart?.line_items || []
-  const isEmpty = lineItems.length === 0
+  const lineItems = cart?.line_items || [];
+  const isEmpty = lineItems.length === 0;
 
   return (
     <div
@@ -70,14 +79,34 @@ export function CartDrawer() {
             className="p-2 -ml-2 text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Close cart"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
           <h2 className="text-lg font-semibold uppercase">Cart</h2>
           <div className="relative w-6 h-6">
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="w-6 h-6 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
             </svg>
             {itemCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
@@ -103,8 +132,18 @@ export function CartDrawer() {
             </div>
           ) : isEmpty ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              <svg
+                className="w-16 h-16 text-gray-300 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
               </svg>
               <p className="text-gray-500 mb-4">Your cart is empty</p>
               <Link
@@ -127,7 +166,7 @@ export function CartDrawer() {
                       onClick={closeCart}
                     >
                       <Image
-                        src={item.thumbnail_url || '/placeholder.svg'}
+                        src={item.thumbnail_url || "/placeholder.svg"}
                         alt={item.name}
                         fill
                         className="object-cover"
@@ -151,55 +190,100 @@ export function CartDrawer() {
                           className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                           aria-label="Remove item"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       </div>
 
                       {/* Price */}
                       <div className="mt-1 text-sm">
-                        {item.compare_at_amount && parseFloat(item.compare_at_amount) > parseFloat(item.price) ? (
+                        {item.compare_at_amount &&
+                        parseFloat(item.compare_at_amount) >
+                          parseFloat(item.price) ? (
                           <>
                             <span className="text-gray-400 line-through mr-2">
                               {item.display_compare_at_amount}
                             </span>
-                            <span className="text-red-600 font-medium">{item.display_price}</span>
+                            <span className="text-red-600 font-medium">
+                              {item.display_price}
+                            </span>
                           </>
                         ) : (
-                          <span className="text-gray-900">{item.display_price}</span>
+                          <span className="text-gray-900">
+                            {item.display_price}
+                          </span>
                         )}
                       </div>
 
                       {/* Options */}
                       {item.options_text && (
-                        <p className="mt-1 text-sm text-gray-500">{item.options_text}</p>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {item.options_text}
+                        </p>
                       )}
 
                       {/* Quantity */}
                       <div className="mt-3 flex items-center">
                         <div className="flex items-center border border-gray-300 rounded">
                           <button
-                            onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))}
+                            onClick={() =>
+                              updateItem(
+                                item.id,
+                                Math.max(1, item.quantity - 1),
+                              )
+                            }
                             disabled={updating || item.quantity <= 1}
                             className="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label="Decrease quantity"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M20 12H4"
+                              />
                             </svg>
                           </button>
                           <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateItem(item.id, item.quantity + 1)}
+                            onClick={() =>
+                              updateItem(item.id, item.quantity + 1)
+                            }
                             disabled={updating}
                             className="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
                             aria-label="Increase quantity"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v16m8-8H4"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -274,5 +358,5 @@ export function CartDrawer() {
         }
       `}</style>
     </div>
-  )
+  );
 }
