@@ -54,10 +54,13 @@ export async function getCart(options?: CartOptions) {
 
 /**
  * Create a new cart
+ * If user is authenticated, cart will be associated with their account
  */
 export async function createCart(options?: CartOptions) {
   const client = getSpreeClient();
-  const cart = await client.cart.create(options);
+  const authHeaders = await getAuthHeaders();
+
+  const cart = await client.cart.create({ ...options, ...authHeaders });
 
   // Store the token for future requests
   if (cart.token) {
