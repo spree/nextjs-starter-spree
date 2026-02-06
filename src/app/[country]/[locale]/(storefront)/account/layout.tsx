@@ -146,7 +146,11 @@ interface AccountShellProps {
   children: React.ReactNode;
   basePath: string;
   pathname: string;
-  user?: { first_name?: string; last_name?: string; email?: string } | null;
+  user?: {
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string;
+  } | null;
   onLogout?: () => void;
   isLoading?: boolean;
 }

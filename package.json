@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001 --webpack",
-    "build": "next build --webpack",
+    "dev": "next dev -p 3001 --turbopack",
+    "build": "next build",
     "start": "next start -p 3001",
     "lint": "biome lint .",
     "format": "biome format . --write",
     "check": "biome check ."
   },
   "dependencies": {
-    "@spree/sdk": "file:../spree/sdk",
+    "@spree/sdk": "^0.1.4",
     "next": "^16",
     "react": "^19",
     "react-dom": "^19"
