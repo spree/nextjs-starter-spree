@@ -1,44 +1,18 @@
 "use server";
 
-import { getSpreeClient } from "@/lib/spree";
-import { withAuthRefresh } from "./auth-request";
-import { getAuthHeadersWithRefresh } from "./cookies";
+import { getOrder as _getOrder, listOrders } from "@spree/next";
 
-interface OrderListParams {
-  page?: number;
-  per_page?: number;
-  includes?: string;
-}
-
-export async function getOrders(params?: OrderListParams) {
-  const authHeaders = await getAuthHeadersWithRefresh();
-
-  if (!authHeaders.token) {
-    return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } };
-  }
-
+export async function getOrders(params?: Record<string, unknown>) {
   try {
-    return await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.orders.list(params, headers);
-    });
+    return await listOrders(params);
   } catch {
-    return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } };
+    return { data: [] };
   }
 }
 
-export async function getOrder(id: string, params?: { includes?: string }) {
-  const authHeaders = await getAuthHeadersWithRefresh();
-
-  if (!authHeaders.token) {
-    return null;
-  }
-
+export async function getOrder(id: string, params?: Record<string, unknown>) {
   try {
-    return await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.orders.get(id, params, headers);
-    });
+    return await _getOrder(id, params);
   } catch {
     return null;
   }

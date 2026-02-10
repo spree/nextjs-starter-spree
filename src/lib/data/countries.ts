@@ -1,18 +1,17 @@
 "use server";
 
-import { getSpreeClient } from "@/lib/spree";
+import { getCountry as _getCountry, listCountries } from "@spree/next";
 
-interface ListOptions {
-  currency?: string;
+export async function getCountries(options?: {
   locale?: string;
+  currency?: string;
+}) {
+  return listCountries(options);
 }
 
-export async function getCountries(options?: ListOptions) {
-  const client = getSpreeClient();
-  return client.countries.list(options);
-}
-
-export async function getCountry(isoCode: string, options?: ListOptions) {
-  const client = getSpreeClient();
-  return client.countries.get(isoCode, options);
+export async function getCountry(
+  iso: string,
+  options?: { locale?: string; currency?: string },
+) {
+  return _getCountry(iso, options);
 }
