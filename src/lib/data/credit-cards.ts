@@ -4,8 +4,9 @@ import {
   deleteCreditCard as _deleteCreditCard,
   listCreditCards,
 } from "@spree/next";
+import type { StoreCreditCard } from "@spree/sdk";
 
-export async function getCreditCards() {
+export async function getCreditCards(): Promise<{ data: StoreCreditCard[] }> {
   try {
     return await listCreditCards();
   } catch {

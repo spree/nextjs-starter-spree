@@ -58,13 +58,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (variantId: string, quantity = 1) => {
       setUpdating(true);
       try {
-        const updatedCart = await addToCartAction(variantId, quantity);
-        setCart(updatedCart);
-        setIsOpen(true); // Open cart drawer after adding
-        router.refresh();
-      } catch (error) {
-        console.error("Failed to add item to cart:", error);
-        throw error;
+        const result = await addToCartAction(variantId, quantity);
+        if (result.success) {
+          setCart(result.cart);
+          setIsOpen(true); // Open cart drawer after adding
+          router.refresh();
+        } else {
+          console.error("Failed to add item to cart:", result.error);
+        }
       } finally {
         setUpdating(false);
       }
@@ -76,12 +77,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (lineItemId: string, quantity: number) => {
       setUpdating(true);
       try {
-        const updatedCart = await updateCartItemAction(lineItemId, quantity);
-        setCart(updatedCart);
-        router.refresh();
-      } catch (error) {
-        console.error("Failed to update cart item:", error);
-        throw error;
+        const result = await updateCartItemAction(lineItemId, quantity);
+        if (result.success) {
+          setCart(result.cart);
+          router.refresh();
+        } else {
+          console.error("Failed to update cart item:", result.error);
+        }
       } finally {
         setUpdating(false);
       }
@@ -93,12 +95,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (lineItemId: string) => {
       setUpdating(true);
       try {
-        const updatedCart = await removeCartItemAction(lineItemId);
-        setCart(updatedCart);
-        router.refresh();
-      } catch (error) {
-        console.error("Failed to remove cart item:", error);
-        throw error;
+        const result = await removeCartItemAction(lineItemId);
+        if (result.success) {
+          setCart(result.cart);
+          router.refresh();
+        } else {
+          console.error("Failed to remove cart item:", result.error);
+        }
       } finally {
         setUpdating(false);
       }
