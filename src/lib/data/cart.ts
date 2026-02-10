@@ -19,7 +19,16 @@ export async function getOrCreateCart() {
 }
 
 export async function clearCart() {
-  return _clearCart();
+  try {
+    await _clearCart();
+    return { success: true as const };
+  } catch (error) {
+    return {
+      success: false as const,
+      error:
+        error instanceof Error ? error.message : "Failed to clear cart",
+    };
+  }
 }
 
 export async function addToCart(variantId: string, quantity: number) {
