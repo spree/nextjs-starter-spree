@@ -1,11 +1,13 @@
 "use server";
 
-import { updateTag } from "next/cache";
-import { getSpreeClient } from "@/lib/spree";
-import { withAuthRefresh } from "./auth-request";
-import { getAuthHeadersWithRefresh } from "./cookies";
+import {
+  listAddresses as _listAddresses,
+  getAddress as _getAddress,
+  createAddress as _createAddress,
+  updateAddress as _updateAddress,
+  deleteAddress as _deleteAddress,
+} from "@spree/next";
 
-// Address params for creating/updating addresses
 export interface AddressParams {
   firstname: string;
   lastname: string;
@@ -21,34 +23,16 @@ export interface AddressParams {
 }
 
 export async function getAddresses() {
-  const authHeaders = await getAuthHeadersWithRefresh();
-
-  if (!authHeaders.token) {
-    return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } };
-  }
-
   try {
-    return await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.list(undefined, headers);
-    });
+    return await _listAddresses();
   } catch {
-    return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } };
+    return { data: [] };
   }
 }
 
 export async function getAddress(id: string) {
-  const authHeaders = await getAuthHeadersWithRefresh();
-
-  if (!authHeaders.token) {
-    return null;
-  }
-
   try {
-    return await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.get(id, headers);
-    });
+    return await _getAddress(id);
   } catch {
     return null;
   }
@@ -56,58 +40,36 @@ export async function getAddress(id: string) {
 
 export async function createAddress(address: AddressParams) {
   try {
-    const result = await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.create(address as never, headers);
-    });
-    updateTag("addresses");
+    const result = await _createAddress(address);
     return { success: true, address: result };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to create address",
+      error: error instanceof Error ? error.message : "Failed to create address",
     };
   }
 }
 
-export async function updateAddress(
-  id: string,
-  address: Partial<AddressParams>,
-) {
+export async function updateAddress(id: string, address: Partial<AddressParams>) {
   try {
-    const result = await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.update(
-        id,
-        address as never,
-        headers,
-      );
-    });
-    updateTag("addresses");
+    const result = await _updateAddress(id, address);
     return { success: true, address: result };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to update address",
+      error: error instanceof Error ? error.message : "Failed to update address",
     };
   }
 }
 
 export async function deleteAddress(id: string) {
   try {
-    await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.delete(id, headers);
-    });
-    updateTag("addresses");
+    await _deleteAddress(id);
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to delete address",
+      error: error instanceof Error ? error.message : "Failed to delete address",
     };
   }
 }

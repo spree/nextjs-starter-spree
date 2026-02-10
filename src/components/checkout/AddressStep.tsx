@@ -274,6 +274,7 @@ export function AddressStep({
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Sign-in prompt for guests */}
       {!isAuthenticated && (
@@ -360,6 +361,8 @@ export function AddressStep({
           {processing ? "Saving..." : "Continue to Delivery"}
         </button>
       </div>
+
+    </form>
 
       {/* Edit Address Modal */}
       {editingAddress && (
@@ -613,7 +616,7 @@ export function AddressStep({
           </div>
         </div>
       )}
-    </form>
+    </>
   );
 }
 

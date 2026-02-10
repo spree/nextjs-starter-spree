@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@spree/next", "@spree/sdk"],
   images: {
     qualities: [25, 50, 75, 100],
     dangerouslyAllowLocalIP: true, // Allow localhost images in development

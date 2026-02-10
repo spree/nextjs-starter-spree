@@ -1,8 +1,7 @@
 "use server";
 
-import { getSpreeClient } from "@/lib/spree";
+import { getStore as _getStore } from "@spree/next";
 
-export async function getStore() {
-  const client = getSpreeClient();
-  return client.store.get();
+export async function getStore(options?: { locale?: string; currency?: string }) {
+  return _getStore(options);
 }

@@ -94,13 +94,12 @@ function CheckoutSidebar({
 }
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
+  // use() must be called before all other hooks to avoid hook order issues
+  const { id: orderId } = use(params);
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
-
-  // Use React 19's use() hook to unwrap the params Promise
-  const { id: orderId } = use(params);
 
   const [order, setOrder] = useState<StoreOrder | null>(null);
   const [shipments, setShipments] = useState<StoreShipment[]>([]);

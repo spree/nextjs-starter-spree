@@ -11,7 +11,8 @@
     "check": "biome check ."
   },
   "dependencies": {
-    "@spree/sdk": "^0.1.4",
+    "@spree/next": "file:../../conductor/workspaces/spree/sofia/packages/next",
+    "@spree/sdk": "file:../../conductor/workspaces/spree/sofia/packages/sdk",
     "next": "^16",
     "react": "^19",
     "react-dom": "^19"

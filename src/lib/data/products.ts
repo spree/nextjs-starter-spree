@@ -1,63 +1,38 @@
 "use server";
 
-import type { ProductFiltersResponse, StoreProduct } from "@spree/sdk";
-import { getSpreeClient } from "@/lib/spree";
-
-interface ProductListOptions {
-  currency?: string;
-  locale?: string;
-}
-
-interface ProductListParams {
-  page?: number;
-  per_page?: number;
-  "q[multi_search]"?: string;
-  "q[in_taxon]"?: string;
-  "q[price_between][]"?: number[];
-  "q[with_option_value][]"?: string[];
-  "q[in_stock]"?: boolean;
-  "q[s]"?: string;
-  [key: string]: unknown;
-}
+import {
+  listProducts,
+  getProduct as _getProduct,
+  getProductFilters as _getProductFilters,
+  listTaxonProducts,
+} from "@spree/next";
 
 export async function getProducts(
-  params?: ProductListParams,
-  options?: ProductListOptions,
+  params?: Record<string, unknown>,
+  options?: { locale?: string; currency?: string },
 ) {
-  const client = getSpreeClient();
-  return client.products.list(params as Record<string, unknown>, options);
+  return listProducts(params, options);
 }
 
 export async function getProduct(
-  slug: string,
+  slugOrId: string,
   params?: { includes?: string },
-  options?: ProductListOptions,
-): Promise<StoreProduct> {
-  const client = getSpreeClient();
-  return client.products.get(slug, params, options);
+  options?: { locale?: string; currency?: string },
+) {
+  return _getProduct(slugOrId, params, options);
 }
 
 export async function getProductFilters(
-  params?: {
-    taxon_id?: string;
-    "q[multi_search]"?: string;
-    [key: string]: unknown;
-  },
-  options?: ProductListOptions,
-): Promise<ProductFiltersResponse> {
-  const client = getSpreeClient();
-  return client.products.filters(params, options);
+  params?: Record<string, unknown>,
+  options?: { locale?: string; currency?: string },
+) {
+  return _getProductFilters(params, options);
 }
 
 export async function getTaxonProducts(
-  taxonPermalink: string,
-  params?: ProductListParams,
-  options?: ProductListOptions,
+  taxonId: string,
+  params?: Record<string, unknown>,
+  options?: { locale?: string; currency?: string },
 ) {
-  const client = getSpreeClient();
-  return client.taxons.products.list(
-    taxonPermalink,
-    params as Record<string, unknown>,
-    options,
-  );
+  return listTaxonProducts(taxonId, params, options);
 }
