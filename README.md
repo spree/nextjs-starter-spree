@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+>
+> Work in progress, please check our progress here: https://github.com/orgs/spree/projects/3
+
 # Spree Next.js Storefront
 
 A modern, headless e-commerce storefront built with Next.js 16, React 19, and the Spree Commerce API v3.
@@ -8,7 +12,8 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 - **React 19** - Latest React with improved Server Components
 - **Tailwind CSS 4** - Utility-first styling
 - **TypeScript 5** - Full type safety
-- **@spree/sdk** - Official Spree Commerce SDK
+- [@spree/sdk](https://github.com/spree/spree/tree/main/packages/sdk) - Official Spree Commerce SDK
+- [@spree/next](https://github.com/spree/spree/tree/main/packages/next) - Server actions, caching, and cookie-based auth
 
 ## Features
 
@@ -28,7 +33,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 
 ## Architecture
 
-This starter follows a **server-first pattern** similar to Medusa.js:
+This starter follows a **server-first pattern**:
 
 1. **Server Actions** (`src/lib/data/`) - All API calls are made server-side
 2. **httpOnly Cookies** - Auth tokens and cart tokens are stored securely
