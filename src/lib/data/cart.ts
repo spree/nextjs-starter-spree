@@ -25,8 +25,7 @@ export async function clearCart() {
   } catch (error) {
     return {
       success: false as const,
-      error:
-        error instanceof Error ? error.message : "Failed to clear cart",
+      error: error instanceof Error ? error.message : "Failed to clear cart",
     };
   }
 }

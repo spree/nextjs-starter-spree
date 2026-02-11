@@ -9,13 +9,13 @@ vi.mock("@/lib/data/cart", () => ({
   removeCartItem: vi.fn(),
 }));
 
+import { CartProvider, useCart } from "@/contexts/CartContext";
 import {
   addToCart,
   getCart,
   removeCartItem,
   updateCartItem,
 } from "@/lib/data/cart";
-import { CartProvider, useCart } from "@/contexts/CartContext";
 
 const mockGetCart = vi.mocked(getCart);
 const mockAddToCart = vi.mocked(addToCart);
@@ -113,7 +113,9 @@ describe("CartContext", () => {
     });
 
     it("logs error and does not update cart on failure", async () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
       mockAddToCart.mockResolvedValue({
         success: false as const,
         error: "Out of stock",

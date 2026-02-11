@@ -160,9 +160,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns error on failure", async () => {
-      mockSelectShippingRate.mockRejectedValue(
-        new Error("Rate not available"),
-      );
+      mockSelectShippingRate.mockRejectedValue(new Error("Rate not available"));
 
       const result = await selectShippingRate("order-1", "ship-1", "rate-1");
 

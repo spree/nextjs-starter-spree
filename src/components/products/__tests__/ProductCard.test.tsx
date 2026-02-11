@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
 import type { StoreProduct } from "@spree/sdk";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { ProductCard } from "@/components/products/ProductCard";
 
