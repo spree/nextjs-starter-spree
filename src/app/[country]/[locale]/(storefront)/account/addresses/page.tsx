@@ -1,9 +1,13 @@
 "use client";
 
-import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk";
+import type {
+  AddressParams,
+  StoreAddress,
+  StoreCountry,
+  StoreState,
+} from "@spree/sdk";
 import { useEffect, useState } from "react";
 import {
-  type AddressParams,
   createAddress,
   deleteAddress,
   getAddresses,
