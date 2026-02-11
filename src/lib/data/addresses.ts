@@ -1,54 +1,27 @@
 "use server";
 
-import { updateTag } from "next/cache";
-import { getSpreeClient } from "@/lib/spree";
-import { withAuthRefresh } from "./auth-request";
-import { getAuthHeadersWithRefresh } from "./cookies";
+import {
+  createAddress as _createAddress,
+  deleteAddress as _deleteAddress,
+  getAddress as _getAddress,
+  updateAddress as _updateAddress,
+  listAddresses,
+} from "@spree/next";
+import type { AddressParams } from "@spree/sdk";
 
-// Address params for creating/updating addresses
-export interface AddressParams {
-  firstname: string;
-  lastname: string;
-  address1: string;
-  address2?: string;
-  city: string;
-  zipcode: string;
-  phone?: string;
-  company?: string;
-  country_iso: string;
-  state_abbr?: string;
-  state_name?: string;
-}
+export type { AddressParams };
 
 export async function getAddresses() {
-  const authHeaders = await getAuthHeadersWithRefresh();
-
-  if (!authHeaders.token) {
-    return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } };
-  }
-
   try {
-    return await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.list(undefined, headers);
-    });
+    return await listAddresses();
   } catch {
-    return { data: [], meta: { page: 1, limit: 25, count: 0, pages: 0 } };
+    return { data: [] };
   }
 }
 
 export async function getAddress(id: string) {
-  const authHeaders = await getAuthHeadersWithRefresh();
-
-  if (!authHeaders.token) {
-    return null;
-  }
-
   try {
-    return await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.get(id, headers);
-    });
+    return await _getAddress(id);
   } catch {
     return null;
   }
@@ -56,11 +29,7 @@ export async function getAddress(id: string) {
 
 export async function createAddress(address: AddressParams) {
   try {
-    const result = await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.create(address as never, headers);
-    });
-    updateTag("addresses");
+    const result = await _createAddress(address);
     return { success: true, address: result };
   } catch (error) {
     return {
@@ -76,15 +45,7 @@ export async function updateAddress(
   address: Partial<AddressParams>,
 ) {
   try {
-    const result = await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.update(
-        id,
-        address as never,
-        headers,
-      );
-    });
-    updateTag("addresses");
+    const result = await _updateAddress(id, address);
     return { success: true, address: result };
   } catch (error) {
     return {
@@ -97,11 +58,7 @@ export async function updateAddress(
 
 export async function deleteAddress(id: string) {
   try {
-    await withAuthRefresh(async (headers) => {
-      const client = getSpreeClient();
-      return await client.customer.addresses.delete(id, headers);
-    });
-    updateTag("addresses");
+    await _deleteAddress(id);
     return { success: true };
   } catch (error) {
     return {

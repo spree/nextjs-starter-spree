@@ -1,82 +1,37 @@
 "use server";
 
+import {
+  getShipments as _getShipments,
+  selectShippingRate as _selectShippingRate,
+  advance,
+  applyCoupon,
+  complete,
+  getCheckout,
+  removeCoupon,
+  updateAddresses,
+} from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
-import { updateTag } from "next/cache";
-import { getSpreeClient } from "@/lib/spree";
-import { getCartToken } from "./cart";
-import { getAuthHeaders } from "./cookies";
 
-interface CheckoutOptions {
-  currency?: string;
-  locale?: string;
-}
-
-/**
- * Get checkout auth options - uses JWT for authenticated users, order token for guests
- */
-async function getCheckoutAuth() {
-  const authHeaders = await getAuthHeaders();
-  const orderToken = await getCartToken();
-
-  // JWT takes precedence over order token
-  if (authHeaders.token) {
-    return { token: authHeaders.token };
-  }
-
-  // Fall back to order token for guest checkout
-  if (orderToken) {
-    return { orderToken };
-  }
-
-  return {};
-}
-
-/**
- * Get order for checkout - validates access permissions
- */
-export async function getCheckoutOrder(
-  orderId: string,
-  options?: CheckoutOptions,
-) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
+export async function getCheckoutOrder(orderId: string) {
   try {
-    const order = await client.orders.get(
-      orderId,
-      {
-        includes:
-          "line_items,shipments,order_promotions,bill_address,ship_address",
-      },
-      { ...auth, ...options },
-    );
-    return order;
+    return await getCheckout(orderId);
   } catch {
     return null;
   }
 }
 
-/**
- * Update order addresses
- */
 export async function updateOrderAddresses(
   orderId: string,
   addresses: {
     ship_address?: AddressParams;
     bill_address?: AddressParams;
+    ship_address_id?: string;
+    bill_address_id?: string;
     email?: string;
   },
-  options?: CheckoutOptions,
 ) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
   try {
-    const order = await client.orders.update(orderId, addresses, {
-      ...auth,
-      ...options,
-    });
-    updateTag("checkout");
+    const order = await updateAddresses(orderId, addresses);
     return { success: true, order };
   } catch (error) {
     return {
@@ -87,20 +42,9 @@ export async function updateOrderAddresses(
   }
 }
 
-/**
- * Advance order to next checkout step
- */
-export async function advanceCheckout(
-  orderId: string,
-  options?: CheckoutOptions,
-) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
+export async function advanceCheckout(orderId: string) {
   try {
-    const order = await client.orders.next(orderId, { ...auth, ...options });
-    updateTag("checkout");
-    updateTag("cart");
+    const order = await advance(orderId);
     return { success: true, order };
   } catch (error) {
     return {
@@ -111,44 +55,22 @@ export async function advanceCheckout(
   }
 }
 
-/**
- * Get shipments for order
- */
-export async function getShipments(orderId: string, options?: CheckoutOptions) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
+export async function getShipments(orderId: string) {
   try {
-    const response = await client.orders.shipments.list(orderId, {
-      ...auth,
-      ...options,
-    });
+    const response = await _getShipments(orderId);
     return response.data;
   } catch {
     return [];
   }
 }
 
-/**
- * Select shipping rate for a shipment
- */
 export async function selectShippingRate(
   orderId: string,
   shipmentId: string,
   shippingRateId: string,
-  options?: CheckoutOptions,
 ) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
   try {
-    await client.orders.shipments.update(
-      orderId,
-      shipmentId,
-      { selected_shipping_rate_id: shippingRateId },
-      { ...auth, ...options },
-    );
-    updateTag("checkout");
+    await _selectShippingRate(orderId, shipmentId, shippingRateId);
     return { success: true };
   } catch (error) {
     return {
@@ -161,24 +83,9 @@ export async function selectShippingRate(
   }
 }
 
-/**
- * Apply coupon code to order
- */
-export async function applyCouponCode(
-  orderId: string,
-  couponCode: string,
-  options?: CheckoutOptions,
-) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
+export async function applyCouponCode(orderId: string, couponCode: string) {
   try {
-    const order = await client.orders.couponCodes.apply(orderId, couponCode, {
-      ...auth,
-      ...options,
-    });
-    updateTag("checkout");
-    updateTag("cart");
+    const order = await applyCoupon(orderId, couponCode);
     return { success: true, order };
   } catch (error) {
     return {
@@ -188,24 +95,9 @@ export async function applyCouponCode(
   }
 }
 
-/**
- * Remove coupon code from order
- */
-export async function removeCouponCode(
-  orderId: string,
-  promotionId: string,
-  options?: CheckoutOptions,
-) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
+export async function removeCouponCode(orderId: string, promotionId: string) {
   try {
-    const order = await client.orders.couponCodes.remove(orderId, promotionId, {
-      ...auth,
-      ...options,
-    });
-    updateTag("checkout");
-    updateTag("cart");
+    const order = await removeCoupon(orderId, promotionId);
     return { success: true, order };
   } catch (error) {
     return {
@@ -216,23 +108,9 @@ export async function removeCouponCode(
   }
 }
 
-/**
- * Complete the order (skip payment for now)
- */
-export async function completeOrder(
-  orderId: string,
-  options?: CheckoutOptions,
-) {
-  const client = getSpreeClient();
-  const auth = await getCheckoutAuth();
-
+export async function completeOrder(orderId: string) {
   try {
-    const order = await client.orders.complete(orderId, {
-      ...auth,
-      ...options,
-    });
-    updateTag("checkout");
-    updateTag("cart");
+    const order = await complete(orderId);
     return { success: true, order };
   } catch (error) {
     return {

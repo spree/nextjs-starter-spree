@@ -274,92 +274,96 @@ export function AddressStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Sign-in prompt for guests */}
-      {!isAuthenticated && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
-            Already have an account?{" "}
-            <Link
-              href={signInUrl}
-              className="font-medium text-blue-600 hover:text-blue-700 underline"
-            >
-              Sign in
-            </Link>{" "}
-            to access your saved addresses and order history.
-          </p>
-        </div>
-      )}
-
-      {/* Contact Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Contact Information
-        </h2>
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Email address
-          </label>
-          <input
-            type="email"
-            id="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isAuthenticated}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-            placeholder="you@example.com"
-          />
-          {isAuthenticated && (
-            <p className="mt-1 text-xs text-gray-500">
-              Using your account email address
+    <>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Sign-in prompt for guests */}
+        {!isAuthenticated && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              Already have an account?{" "}
+              <Link
+                href={signInUrl}
+                className="font-medium text-blue-600 hover:text-blue-700 underline"
+              >
+                Sign in
+              </Link>{" "}
+              to access your saved addresses and order history.
             </p>
+          </div>
+        )}
+
+        {/* Contact Information */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Contact Information
+          </h2>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email address
+            </label>
+            <input
+              type="email"
+              id="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isAuthenticated}
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+              placeholder="you@example.com"
+            />
+            {isAuthenticated && (
+              <p className="mt-1 text-xs text-gray-500">
+                Using your account email address
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Shipping Address */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Shipping Address
+          </h2>
+          {isAuthenticated && savedAddresses.length > 0 ? (
+            <AddressSelector
+              savedAddresses={savedAddresses}
+              currentAddress={shipAddress}
+              countries={countries}
+              states={shipStates}
+              loadingStates={isPendingShip}
+              onChange={updateShipAddress}
+              onSelectSavedAddress={handleSelectSavedAddress}
+              onEditAddress={
+                onUpdateSavedAddress ? handleEditAddress : undefined
+              }
+              idPrefix="ship"
+            />
+          ) : (
+            <AddressForm
+              address={shipAddress}
+              countries={countries}
+              states={shipStates}
+              loadingStates={isPendingShip}
+              onChange={updateShipAddress}
+              idPrefix="ship"
+            />
           )}
         </div>
-      </div>
 
-      {/* Shipping Address */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Shipping Address
-        </h2>
-        {isAuthenticated && savedAddresses.length > 0 ? (
-          <AddressSelector
-            savedAddresses={savedAddresses}
-            currentAddress={shipAddress}
-            countries={countries}
-            states={shipStates}
-            loadingStates={isPendingShip}
-            onChange={updateShipAddress}
-            onSelectSavedAddress={handleSelectSavedAddress}
-            onEditAddress={onUpdateSavedAddress ? handleEditAddress : undefined}
-            idPrefix="ship"
-          />
-        ) : (
-          <AddressForm
-            address={shipAddress}
-            countries={countries}
-            states={shipStates}
-            loadingStates={isPendingShip}
-            onChange={updateShipAddress}
-            idPrefix="ship"
-          />
-        )}
-      </div>
-
-      {/* Submit */}
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={processing}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {processing ? "Saving..." : "Continue to Delivery"}
-        </button>
-      </div>
+        {/* Submit */}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={processing}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {processing ? "Saving..." : "Continue to Delivery"}
+          </button>
+        </div>
+      </form>
 
       {/* Edit Address Modal */}
       {editingAddress && (
@@ -613,7 +617,7 @@ export function AddressStep({
           </div>
         </div>
       )}
-    </form>
+    </>
   );
 }
 
