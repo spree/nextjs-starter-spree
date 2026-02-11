@@ -9,8 +9,6 @@ import {
 } from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
 
-export type { AddressParams };
-
 export async function getAddresses() {
   try {
     return await listAddresses();
