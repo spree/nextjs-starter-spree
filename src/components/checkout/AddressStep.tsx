@@ -14,6 +14,8 @@ import {
   addressToFormData,
   formDataToAddress,
 } from "@/lib/utils/address";
+import { AddressEditModal } from "./AddressEditModal";
+import { AddressFormFields } from "./AddressFormFields";
 import { AddressSelector } from "./AddressSelector";
 
 interface AddressStepProps {
@@ -56,10 +58,6 @@ export function AddressStep({
   const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
     null,
   );
-  const [editModalStates, setEditModalStates] = useState<StoreState[]>([]);
-  const [editModalLoading, setEditModalLoading] = useState(false);
-  const [editModalSaving, setEditModalSaving] = useState(false);
-  const [editModalError, setEditModalError] = useState("");
 
   // Load states when shipping country changes
   useEffect(() => {
@@ -108,74 +106,15 @@ export function AddressStep({
     setShipAddress(addressToFormData(address));
   };
 
-  const handleEditAddress = async (address: StoreAddress) => {
-    setEditingAddress(address);
-    setEditModalError("");
-    setEditModalStates([]);
+  const handleSaveEditedAddress = async (data: AddressParams, id?: string) => {
+    if (!id || !onUpdateSavedAddress) return;
 
-    if (address.country_iso) {
-      setEditModalLoading(true);
-      try {
-        const states = await fetchStates(address.country_iso);
-        setEditModalStates(states);
-      } finally {
-        setEditModalLoading(false);
-      }
-    }
-  };
-
-  const handleEditModalCountryChange = async (countryIso: string) => {
-    if (!editingAddress) return;
-
-    setEditingAddress({
-      ...editingAddress,
-      country_iso: countryIso,
-      state_abbr: null,
-      state_name: null,
-    });
-
-    if (countryIso) {
-      setEditModalLoading(true);
-      try {
-        const states = await fetchStates(countryIso);
-        setEditModalStates(states);
-      } finally {
-        setEditModalLoading(false);
-      }
-    } else {
-      setEditModalStates([]);
-    }
-  };
-
-  const handleSaveEditedAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingAddress || !onUpdateSavedAddress) return;
-
-    setEditModalSaving(true);
-    setEditModalError("");
-
-    try {
-      const updatedAddress = await onUpdateSavedAddress(
-        editingAddress.id,
-        formDataToAddress(addressToFormData(editingAddress)),
+    const updatedAddress = await onUpdateSavedAddress(id, data);
+    if (updatedAddress) {
+      setSavedAddresses((prev) =>
+        prev.map((addr) => (addr.id === id ? updatedAddress : addr)),
       );
-      if (updatedAddress) {
-        // Update local state with the returned address
-        setSavedAddresses((prev) =>
-          prev.map((addr) =>
-            addr.id === editingAddress.id ? updatedAddress : addr,
-          ),
-        );
-        // Also update the form if this address was selected
-        handleSelectSavedAddress(updatedAddress);
-        setEditingAddress(null);
-      }
-    } catch (err) {
-      setEditModalError(
-        err instanceof Error ? err.message : "Failed to update address",
-      );
-    } finally {
-      setEditModalSaving(false);
+      handleSelectSavedAddress(updatedAddress);
     }
   };
 
@@ -243,12 +182,14 @@ export function AddressStep({
               onChange={updateShipAddress}
               onSelectSavedAddress={handleSelectSavedAddress}
               onEditAddress={
-                onUpdateSavedAddress ? handleEditAddress : undefined
+                onUpdateSavedAddress
+                  ? (address) => setEditingAddress(address)
+                  : undefined
               }
               idPrefix="ship"
             />
           ) : (
-            <AddressForm
+            <AddressFormFields
               address={shipAddress}
               countries={countries}
               states={shipStates}
@@ -273,475 +214,15 @@ export function AddressStep({
 
       {/* Edit Address Modal */}
       {editingAddress && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <div
-              className="fixed inset-0 bg-gray-500 opacity-50 transition-opacity"
-              onClick={() => setEditingAddress(null)}
-            />
-
-            <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleSaveEditedAddress}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Edit Address
-                  </h3>
-
-                  {editModalError && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                      {editModalError}
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          First Name
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingAddress.firstname || ""}
-                          onChange={(e) =>
-                            setEditingAddress({
-                              ...editingAddress,
-                              firstname: e.target.value,
-                            })
-                          }
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Last Name
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingAddress.lastname || ""}
-                          onChange={(e) =>
-                            setEditingAddress({
-                              ...editingAddress,
-                              lastname: e.target.value,
-                            })
-                          }
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Company (optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={editingAddress.company || ""}
-                        onChange={(e) =>
-                          setEditingAddress({
-                            ...editingAddress,
-                            company: e.target.value,
-                          })
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Address Line 1
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editingAddress.address1 || ""}
-                        onChange={(e) =>
-                          setEditingAddress({
-                            ...editingAddress,
-                            address1: e.target.value,
-                          })
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Address Line 2 (optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={editingAddress.address2 || ""}
-                        onChange={(e) =>
-                          setEditingAddress({
-                            ...editingAddress,
-                            address2: e.target.value,
-                          })
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Country
-                      </label>
-                      <select
-                        required
-                        value={editingAddress.country_iso}
-                        onChange={(e) =>
-                          handleEditModalCountryChange(e.target.value)
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      >
-                        <option value="">Select a country</option>
-                        {countries.map((country) => (
-                          <option key={country.iso} value={country.iso}>
-                            {country.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          City
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingAddress.city || ""}
-                          onChange={(e) =>
-                            setEditingAddress({
-                              ...editingAddress,
-                              city: e.target.value,
-                            })
-                          }
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          {editModalStates.length > 0
-                            ? "State"
-                            : "State/Region"}
-                        </label>
-                        {editModalLoading ? (
-                          <div className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400 text-sm">
-                            Loading...
-                          </div>
-                        ) : editModalStates.length > 0 ? (
-                          <select
-                            value={editingAddress.state_abbr || ""}
-                            onChange={(e) =>
-                              setEditingAddress({
-                                ...editingAddress,
-                                state_abbr: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                          >
-                            <option value="">Select state</option>
-                            {editModalStates.map((state) => (
-                              <option key={state.abbr} value={state.abbr}>
-                                {state.name}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type="text"
-                            value={editingAddress.state_name || ""}
-                            onChange={(e) =>
-                              setEditingAddress({
-                                ...editingAddress,
-                                state_name: e.target.value,
-                              })
-                            }
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                          />
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          ZIP Code
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingAddress.zipcode || ""}
-                          onChange={(e) =>
-                            setEditingAddress({
-                              ...editingAddress,
-                              zipcode: e.target.value,
-                            })
-                          }
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Phone (optional)
-                      </label>
-                      <input
-                        type="tel"
-                        value={editingAddress.phone || ""}
-                        onChange={(e) =>
-                          setEditingAddress({
-                            ...editingAddress,
-                            phone: e.target.value,
-                          })
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    disabled={editModalSaving}
-                    className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
-                  >
-                    {editModalSaving ? "Saving..." : "Save Address"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingAddress(null)}
-                    className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+        <AddressEditModal
+          address={editingAddress}
+          countries={countries}
+          fetchStates={fetchStates}
+          onSave={handleSaveEditedAddress}
+          onClose={() => setEditingAddress(null)}
+          title="Edit Address"
+        />
       )}
     </>
-  );
-}
-
-interface AddressFormProps {
-  address: AddressFormData;
-  countries: StoreCountry[];
-  states: StoreState[];
-  loadingStates: boolean;
-  onChange: (field: keyof AddressFormData, value: string) => void;
-  idPrefix: string;
-}
-
-function AddressForm({
-  address,
-  countries,
-  states,
-  loadingStates,
-  onChange,
-  idPrefix,
-}: AddressFormProps) {
-  const hasStates = states.length > 0;
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label
-          htmlFor={`${idPrefix}-firstname`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          First name
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-firstname`}
-          required
-          value={address.firstname}
-          onChange={(e) => onChange("firstname", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${idPrefix}-lastname`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Last name
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-lastname`}
-          required
-          value={address.lastname}
-          onChange={(e) => onChange("lastname", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-
-      <div className="sm:col-span-2">
-        <label
-          htmlFor={`${idPrefix}-company`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Company (optional)
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-company`}
-          value={address.company}
-          onChange={(e) => onChange("company", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-
-      <div className="sm:col-span-2">
-        <label
-          htmlFor={`${idPrefix}-address1`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Address
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-address1`}
-          required
-          value={address.address1}
-          onChange={(e) => onChange("address1", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          placeholder="Street address"
-        />
-      </div>
-
-      <div className="sm:col-span-2">
-        <label
-          htmlFor={`${idPrefix}-address2`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Apartment, suite, etc. (optional)
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-address2`}
-          value={address.address2}
-          onChange={(e) => onChange("address2", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${idPrefix}-city`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          City
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-city`}
-          required
-          value={address.city}
-          onChange={(e) => onChange("city", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${idPrefix}-country`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Country
-        </label>
-        <select
-          id={`${idPrefix}-country`}
-          required
-          value={address.country_iso}
-          onChange={(e) => onChange("country_iso", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        >
-          <option value="">Select a country</option>
-          {countries.map((country) => (
-            <option key={country.iso} value={country.iso}>
-              {country.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${idPrefix}-state`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          State / Province
-        </label>
-        {loadingStates ? (
-          <div className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400">
-            Loading...
-          </div>
-        ) : hasStates ? (
-          <select
-            id={`${idPrefix}-state`}
-            required
-            value={address.state_abbr}
-            onChange={(e) => onChange("state_abbr", e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            <option value="">Select a state</option>
-            {states.map((state) => (
-              <option key={state.abbr} value={state.abbr}>
-                {state.name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type="text"
-            id={`${idPrefix}-state`}
-            value={address.state_name}
-            onChange={(e) => onChange("state_name", e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            placeholder="State or province"
-          />
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${idPrefix}-zipcode`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          ZIP / Postal code
-        </label>
-        <input
-          type="text"
-          id={`${idPrefix}-zipcode`}
-          required
-          value={address.zipcode}
-          onChange={(e) => onChange("zipcode", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-
-      <div className="sm:col-span-2">
-        <label
-          htmlFor={`${idPrefix}-phone`}
-          className="block text-sm font-medium text-gray-700"
-        >
-          Phone (optional)
-        </label>
-        <input
-          type="tel"
-          id={`${idPrefix}-phone`}
-          value={address.phone}
-          onChange={(e) => onChange("phone", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
-    </div>
   );
 }

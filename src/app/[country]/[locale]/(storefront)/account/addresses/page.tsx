@@ -1,12 +1,8 @@
 "use client";
 
-import type {
-  AddressParams,
-  StoreAddress,
-  StoreCountry,
-  StoreState,
-} from "@spree/sdk";
-import { useEffect, useState } from "react";
+import type { AddressParams, StoreAddress, StoreCountry } from "@spree/sdk";
+import { useCallback, useEffect, useState } from "react";
+import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import {
   createAddress,
   deleteAddress,
@@ -14,12 +10,6 @@ import {
   updateAddress,
 } from "@/lib/data/addresses";
 import { getCountries, getCountry } from "@/lib/data/countries";
-import {
-  type AddressFormData,
-  addressToFormData,
-  emptyAddress,
-  formDataToAddress,
-} from "@/lib/utils/address";
 
 function AddressCard({
   address,
@@ -79,292 +69,6 @@ function AddressCard({
   );
 }
 
-function AddressModal({
-  isOpen,
-  onClose,
-  address,
-  countries,
-  onSave,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  address: StoreAddress | null;
-  countries: StoreCountry[];
-  onSave: (data: AddressParams, id?: string) => Promise<void>;
-}) {
-  const [formData, setFormData] = useState<AddressFormData>(emptyAddress);
-  const [states, setStates] = useState<StoreState[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  // Initialize form data when address changes
-  useEffect(() => {
-    setFormData(address ? addressToFormData(address) : emptyAddress);
-    setError("");
-  }, [address, isOpen]);
-
-  // Load states when country changes
-  useEffect(() => {
-    async function loadStates() {
-      if (!formData.country_iso) {
-        setStates([]);
-        return;
-      }
-      const country = await getCountry(formData.country_iso);
-      if (country?.states) {
-        setStates(country.states);
-      } else {
-        setStates([]);
-      }
-    }
-    loadStates();
-  }, [formData.country_iso]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSaving(true);
-
-    try {
-      await onSave(formDataToAddress(formData), address?.id);
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save address");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div
-          className="fixed inset-0 bg-gray-500 opacity-50 transition-opacity"
-          onClick={onClose}
-        />
-
-        <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <form onSubmit={handleSubmit}>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {address ? "Edit Address" : "Add New Address"}
-              </h3>
-
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.firstname}
-                      onChange={(e) =>
-                        setFormData({ ...formData, firstname: e.target.value })
-                      }
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.lastname}
-                      onChange={(e) =>
-                        setFormData({ ...formData, lastname: e.target.value })
-                      }
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Company (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.company}
-                    onChange={(e) =>
-                      setFormData({ ...formData, company: e.target.value })
-                    }
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address Line 1
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.address1}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address1: e.target.value })
-                    }
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address Line 2 (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.address2}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address2: e.target.value })
-                    }
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Country
-                  </label>
-                  <select
-                    required
-                    value={formData.country_iso}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        country_iso: e.target.value,
-                        state_abbr: "",
-                        state_name: "",
-                      })
-                    }
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  >
-                    <option value="">Select a country</option>
-                    {countries.map((country) => (
-                      <option key={country.iso} value={country.iso}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      {states.length > 0 ? "State" : "State/Region"}
-                    </label>
-                    {states.length > 0 ? (
-                      <select
-                        value={formData.state_abbr}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            state_abbr: e.target.value,
-                          })
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      >
-                        <option value="">Select state</option>
-                        {states.map((state) => (
-                          <option key={state.abbr} value={state.abbr}>
-                            {state.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={formData.state_name}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            state_name: e.target.value,
-                          })
-                        }
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      ZIP Code
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.zipcode}
-                      onChange={(e) =>
-                        setFormData({ ...formData, zipcode: e.target.value })
-                      }
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone (optional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
-              >
-                {saving ? "Saving..." : "Save Address"}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<StoreAddress[]>([]);
   const [countries, setCountries] = useState<StoreCountry[]>([]);
@@ -373,6 +77,11 @@ export default function AddressesPage() {
   const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
     null,
   );
+
+  const fetchStates = useCallback(async (countryIso: string) => {
+    const country = await getCountry(countryIso);
+    return country?.states ?? [];
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -520,13 +229,15 @@ export default function AddressesPage() {
         </div>
       )}
 
-      <AddressModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        address={editingAddress}
-        countries={countries}
-        onSave={handleSave}
-      />
+      {modalOpen && (
+        <AddressEditModal
+          address={editingAddress}
+          countries={countries}
+          fetchStates={fetchStates}
+          onSave={handleSave}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
