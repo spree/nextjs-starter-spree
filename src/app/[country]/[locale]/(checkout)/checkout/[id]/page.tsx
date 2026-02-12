@@ -28,15 +28,7 @@ import {
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
 import { getCountries, getCountry } from "@/lib/data/countries";
-
-// Extract base path from pathname (e.g., /us/en from /us/en/checkout/123)
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 // Checkout steps
 type CheckoutStep = "address" | "delivery" | "payment";

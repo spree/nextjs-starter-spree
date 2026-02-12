@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/contexts/StoreContext";
+import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 // Convert ISO country code to flag emoji
 // Uses regional indicator symbols: A=🇦 (U+1F1E6), B=🇧 (U+1F1E7), etc.
@@ -43,16 +44,10 @@ export function CountrySwitcher() {
     (c) => c.iso.toLowerCase() === country.toLowerCase(),
   );
 
-  // Get the path without country/locale prefix
-  const getPathWithoutPrefix = () => {
-    const match = pathname.match(/^\/[a-z]{2}\/[a-z]{2}(\/.*)?$/i);
-    return match?.[1] || "";
-  };
-
   // Handle country selection
   const handleCountrySelect = (selectedCountry: (typeof countries)[0]) => {
     const newLocale = selectedCountry.default_locale || locale;
-    const pathRest = getPathWithoutPrefix();
+    const pathRest = getPathWithoutPrefix(pathname);
     const newPath = `/${selectedCountry.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
     // Set cookie for persistence

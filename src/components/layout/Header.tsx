@@ -4,16 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useCart } from "@/contexts/CartContext";
+import { extractBasePath } from "@/lib/utils/path";
 import { CountrySwitcher } from "./CountrySwitcher";
-
-function extractBasePath(pathname: string): string {
-  // Extract /country/locale from pathname
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
 
 export function Header() {
   const { itemCount, openCart } = useCart();

@@ -11,6 +11,7 @@ import {
 } from "react";
 import { getCountries as getCountriesAction } from "@/lib/data/countries";
 import { getStore as getStoreAction } from "@/lib/data/store";
+import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 interface StoreContextValue {
   country: string;
@@ -45,12 +46,6 @@ export function StoreProvider({
   const [countries, setCountries] = useState<StoreCountry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get the path without country/locale prefix
-  const getPathWithoutPrefix = () => {
-    const match = pathname.match(/^\/[a-z]{2}\/[a-z]{2}(\/.*)?$/i);
-    return match?.[1] || "";
-  };
-
   // Fetch store and countries data on mount
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +76,7 @@ export function StoreProvider({
           if (defaultCountry) {
             const newLocale =
               defaultCountry.default_locale || storeData.default_locale || "en";
-            const pathRest = getPathWithoutPrefix();
+            const pathRest = getPathWithoutPrefix(pathname);
             const newPath = `/${defaultCountry.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
             // Set cookies for persistence

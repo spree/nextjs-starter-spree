@@ -5,14 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { useStore } from "@/contexts/StoreContext";
-
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 function CheckoutHeader() {
   const pathname = usePathname();
