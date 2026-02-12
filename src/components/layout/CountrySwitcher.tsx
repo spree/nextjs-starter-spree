@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/contexts/StoreContext";
+import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 // Convert ISO country code to flag emoji
@@ -50,9 +51,7 @@ export function CountrySwitcher() {
     const pathRest = getPathWithoutPrefix(pathname);
     const newPath = `/${selectedCountry.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
-    // Set cookie for persistence
-    document.cookie = `spree_country=${selectedCountry.iso.toLowerCase()}; path=/; max-age=31536000`;
-    document.cookie = `spree_locale=${newLocale}; path=/; max-age=31536000`;
+    setStoreCookies(selectedCountry.iso.toLowerCase(), newLocale);
 
     setIsOpen(false);
     router.push(newPath);

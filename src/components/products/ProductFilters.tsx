@@ -35,9 +35,7 @@ export function ProductFilters({
     new Set(["price"]),
   );
 
-  const updateFilters = (
-    updater: (prev: ActiveFilters) => ActiveFilters,
-  ) => {
+  const updateFilters = (updater: (prev: ActiveFilters) => ActiveFilters) => {
     setActiveFilters((prev) => {
       const next = updater(prev);
       onFilterChange(next);
