@@ -9,6 +9,7 @@ import {
   removeItem,
   updateItem,
 } from "@spree/next";
+import { actionResult } from "./utils";
 
 export async function getCart() {
   return _getCart();
@@ -19,68 +20,39 @@ export async function getOrCreateCart() {
 }
 
 export async function clearCart() {
-  try {
+  return actionResult(async () => {
     await _clearCart();
-    return { success: true as const };
-  } catch (error) {
-    return {
-      success: false as const,
-      error: error instanceof Error ? error.message : "Failed to clear cart",
-    };
-  }
+    return {};
+  }, "Failed to clear cart");
 }
 
 export async function addToCart(variantId: string, quantity: number) {
-  try {
+  return actionResult(async () => {
     await addItem(variantId, quantity);
     const cart = await _getCart();
-    return { success: true as const, cart };
-  } catch (error) {
-    return {
-      success: false as const,
-      error:
-        error instanceof Error ? error.message : "Failed to add item to cart",
-    };
-  }
+    return { cart };
+  }, "Failed to add item to cart");
 }
 
 export async function updateCartItem(lineItemId: string, quantity: number) {
-  try {
+  return actionResult(async () => {
     await updateItem(lineItemId, quantity);
     const cart = await _getCart();
-    return { success: true as const, cart };
-  } catch (error) {
-    return {
-      success: false as const,
-      error:
-        error instanceof Error ? error.message : "Failed to update cart item",
-    };
-  }
+    return { cart };
+  }, "Failed to update cart item");
 }
 
 export async function removeCartItem(lineItemId: string) {
-  try {
+  return actionResult(async () => {
     await removeItem(lineItemId);
     const cart = await _getCart();
-    return { success: true as const, cart };
-  } catch (error) {
-    return {
-      success: false as const,
-      error:
-        error instanceof Error ? error.message : "Failed to remove cart item",
-    };
-  }
+    return { cart };
+  }, "Failed to remove cart item");
 }
 
 export async function associateCartWithUser() {
-  try {
+  return actionResult(async () => {
     await associateCart();
-    return { success: true as const };
-  } catch (error) {
-    return {
-      success: false as const,
-      error:
-        error instanceof Error ? error.message : "Failed to associate cart",
-    };
-  }
+    return {};
+  }, "Failed to associate cart");
 }

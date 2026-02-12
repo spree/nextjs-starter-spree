@@ -8,61 +8,36 @@ import {
   listAddresses,
 } from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
+import { actionResult, withFallback } from "./utils";
 
 export async function getAddresses() {
-  try {
-    return await listAddresses();
-  } catch {
-    return { data: [] };
-  }
+  return withFallback(() => listAddresses(), { data: [] });
 }
 
 export async function getAddress(id: string) {
-  try {
-    return await _getAddress(id);
-  } catch {
-    return null;
-  }
+  return withFallback(() => _getAddress(id), null);
 }
 
 export async function createAddress(address: AddressParams) {
-  try {
+  return actionResult(async () => {
     const result = await _createAddress(address);
-    return { success: true, address: result };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to create address",
-    };
-  }
+    return { address: result };
+  }, "Failed to create address");
 }
 
 export async function updateAddress(
   id: string,
   address: Partial<AddressParams>,
 ) {
-  try {
+  return actionResult(async () => {
     const result = await _updateAddress(id, address);
-    return { success: true, address: result };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to update address",
-    };
-  }
+    return { address: result };
+  }, "Failed to update address");
 }
 
 export async function deleteAddress(id: string) {
-  try {
+  return actionResult(async () => {
     await _deleteAddress(id);
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to delete address",
-    };
-  }
+    return {};
+  }, "Failed to delete address");
 }

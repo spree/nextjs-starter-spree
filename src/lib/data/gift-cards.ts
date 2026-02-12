@@ -1,19 +1,12 @@
 "use server";
 
 import { getGiftCard as _getGiftCard, listGiftCards } from "@spree/next";
+import { withFallback } from "./utils";
 
 export async function getGiftCards() {
-  try {
-    return await listGiftCards();
-  } catch {
-    return { data: [] };
-  }
+  return withFallback(() => listGiftCards(), { data: [] });
 }
 
 export async function getGiftCard(id: string) {
-  try {
-    return await _getGiftCard(id);
-  } catch {
-    return null;
-  }
+  return withFallback(() => _getGiftCard(id), null);
 }
