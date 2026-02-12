@@ -107,7 +107,9 @@ export function AddressStep({
   };
 
   const handleSaveEditedAddress = async (data: AddressParams, id?: string) => {
-    if (!id || !onUpdateSavedAddress) return;
+    if (!id || !onUpdateSavedAddress) {
+      throw new Error("Cannot update address");
+    }
 
     const updatedAddress = await onUpdateSavedAddress(id, data);
     if (updatedAddress) {

@@ -47,6 +47,7 @@ export function useProductListing({
   const pageRef = useRef(1);
   const hasMoreRef = useRef(false);
   const filtersRef = useRef<ActiveFilters>({ optionValues: [] });
+  const loadIdRef = useRef(0);
 
   const fetchProducts = useCallback(
     async (page: number, filters: ActiveFilters, query: string) => {
@@ -68,10 +69,11 @@ export function useProductListing({
     async (filters: ActiveFilters, query: string) => {
       setLoading(true);
       pageRef.current = 1;
+      const currentLoadId = ++loadIdRef.current;
 
       const response = await fetchProducts(1, filters, query);
 
-      if (response) {
+      if (response && loadIdRef.current === currentLoadId) {
         setProducts(response.data);
         setTotalCount(response.meta.count);
         const moreAvailable = 1 < response.meta.pages;
@@ -79,7 +81,9 @@ export function useProductListing({
         hasMoreRef.current = moreAvailable;
       }
 
-      setLoading(false);
+      if (loadIdRef.current === currentLoadId) {
+        setLoading(false);
+      }
     },
     [fetchProducts],
   );
@@ -140,11 +144,12 @@ export function useProductListing({
     if (loadingMore || !hasMoreRef.current) return;
 
     setLoadingMore(true);
+    const currentLoadId = loadIdRef.current;
     const nextPage = pageRef.current + 1;
 
     const response = await fetchProducts(nextPage, activeFilters, searchQuery);
 
-    if (response) {
+    if (response && loadIdRef.current === currentLoadId) {
       setProducts((prev) => [...prev, ...response.data]);
       const moreAvailable = nextPage < response.meta.pages;
       setHasMore(moreAvailable);

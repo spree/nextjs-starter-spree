@@ -59,11 +59,13 @@ export function PaymentStep({
     let cancelled = false;
 
     startTransitionBill(() => {
-      fetchStates(billAddress.country_iso).then((states) => {
-        if (!cancelled) {
-          setBillStates(states);
-        }
-      });
+      fetchStates(billAddress.country_iso)
+        .then((states) => {
+          if (!cancelled) setBillStates(states);
+        })
+        .catch(() => {
+          if (!cancelled) setBillStates([]);
+        });
     });
 
     return () => {

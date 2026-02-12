@@ -62,7 +62,7 @@ export async function applyCouponCode(orderId: string, couponCode: string) {
   return actionResult(async () => {
     const order = await applyCoupon(orderId, couponCode);
     return { order };
-  }, "Invalid coupon code");
+  }, "Failed to apply coupon code");
 }
 
 export async function removeCouponCode(orderId: string, promotionId: string) {

@@ -145,6 +145,7 @@ export function ProductFilters({
                 onToggle={() => toggleSection(filter.id)}
               >
                 <PriceFilter
+                  key={`${activeFilters.priceMin}-${activeFilters.priceMax}`}
                   filter={filter as PriceRangeFilter}
                   minValue={activeFilters.priceMin}
                   maxValue={activeFilters.priceMax}

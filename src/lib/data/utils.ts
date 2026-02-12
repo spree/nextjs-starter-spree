@@ -26,7 +26,8 @@ export async function withFallback<T>(
 ): Promise<T> {
   try {
     return await fn();
-  } catch {
+  } catch (error) {
+    console.error(error);
     return fallback;
   }
 }

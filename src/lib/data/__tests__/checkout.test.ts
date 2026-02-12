@@ -192,14 +192,14 @@ describe("checkout server actions", () => {
       });
     });
 
-    it("returns 'Invalid coupon code' for non-Error throws", async () => {
+    it("returns fallback message for non-Error throws", async () => {
       mockApplyCoupon.mockRejectedValue("unexpected");
 
       const result = await applyCouponCode("order-1", "BAD");
 
       expect(result).toEqual({
         success: false,
-        error: "Invalid coupon code",
+        error: "Failed to apply coupon code",
       });
     });
   });

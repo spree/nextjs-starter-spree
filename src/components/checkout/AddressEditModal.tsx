@@ -44,7 +44,7 @@ export function AddressEditModal({
   title,
 }: AddressEditModalProps) {
   const [formData, setFormData] = useState<AddressFormData>(
-    address ? addressToFormData(address) : emptyAddress,
+    address ? addressToFormData(address) : { ...emptyAddress },
   );
   const [states, setStates] = useState<StoreState[]>([]);
   const [loadingStates, setLoadingStates] = useState(false);
@@ -77,6 +77,9 @@ export function AddressEditModal({
     fetchStates(formData.country_iso)
       .then((result) => {
         if (!cancelled) setStates(result);
+      })
+      .catch(() => {
+        if (!cancelled) setStates([]);
       })
       .finally(() => {
         if (!cancelled) setLoadingStates(false);
