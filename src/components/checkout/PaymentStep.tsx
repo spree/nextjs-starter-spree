@@ -71,12 +71,12 @@ export function PaymentStep({
     };
   }, [billAddress.country_iso, useShippingForBilling, fetchStates]);
 
-  // When "use shipping" changes, reset billing address
-  useEffect(() => {
-    if (useShippingForBilling) {
+  const handleUseShippingChange = (checked: boolean) => {
+    setUseShippingForBilling(checked);
+    if (checked) {
       setBillAddress(shipAddressData);
     }
-  }, [useShippingForBilling]); // eslint-disable-line react-hooks/exhaustive-deps
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +145,7 @@ export function PaymentStep({
             <input
               type="checkbox"
               checked={useShippingForBilling}
-              onChange={(e) => setUseShippingForBilling(e.target.checked)}
+              onChange={(e) => handleUseShippingChange(e.target.checked)}
               className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
             />
             <span className="ml-2 text-sm text-gray-600">

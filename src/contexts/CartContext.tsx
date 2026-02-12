@@ -74,6 +74,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         } else {
           console.error(`Failed to ${errorLabel}:`, result.error);
         }
+      } catch (error) {
+        console.error(`Failed to ${errorLabel}:`, error);
       } finally {
         setUpdating(false);
       }

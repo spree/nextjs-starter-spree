@@ -41,7 +41,7 @@ export function addressToFormData(address?: {
   state_abbr: string | null;
   state_name: string | null;
 }): AddressFormData {
-  if (!address) return emptyAddress;
+  if (!address) return { ...emptyAddress };
   return {
     firstname: address.firstname || "",
     lastname: address.lastname || "",

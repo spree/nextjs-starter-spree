@@ -36,11 +36,9 @@ export function ProductFilters({
   );
 
   const updateFilters = (updater: (prev: ActiveFilters) => ActiveFilters) => {
-    setActiveFilters((prev) => {
-      const next = updater(prev);
-      onFilterChange(next);
-      return next;
-    });
+    const next = updater(activeFilters);
+    setActiveFilters(next);
+    onFilterChange(next);
   };
 
   const toggleSection = (sectionId: string) => {

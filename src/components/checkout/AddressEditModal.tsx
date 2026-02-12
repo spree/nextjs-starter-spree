@@ -1,7 +1,7 @@
 "use client";
 
 import type { StoreCountry, StoreState } from "@spree/sdk";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   type AddressFormData,
   addressToFormData,
@@ -50,6 +50,19 @@ export function AddressEditModal({
   const [loadingStates, setLoadingStates] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // Close on Escape key
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   // Load states when country changes
   useEffect(() => {
@@ -104,7 +117,12 @@ export function AddressEditModal({
     title ?? (address?.id ? "Edit Address" : "Add New Address");
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="address-modal-title"
+    >
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
         <div
           className="fixed inset-0 bg-gray-500 opacity-50 transition-opacity"
@@ -114,7 +132,10 @@ export function AddressEditModal({
         <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form onSubmit={handleSubmit}>
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3
+                id="address-modal-title"
+                className="text-lg font-medium text-gray-900 mb-4"
+              >
                 {modalTitle}
               </h3>
 

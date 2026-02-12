@@ -42,12 +42,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function toUser(customer: {
-  id: string;
-  email: string;
-  first_name?: string | null;
-  last_name?: string | null;
-}): User {
+function toUser(customer: User): User {
   return {
     id: customer.id,
     email: customer.email,
