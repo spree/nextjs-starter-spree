@@ -2,20 +2,7 @@
 
 import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk";
 import { useEffect, useState } from "react";
-
-interface AddressFormData {
-  firstname: string;
-  lastname: string;
-  address1: string;
-  address2: string;
-  city: string;
-  zipcode: string;
-  phone: string;
-  company: string;
-  country_iso: string;
-  state_abbr: string;
-  state_name: string;
-}
+import type { AddressFormData } from "@/lib/utils/address";
 
 interface AddressSelectorProps {
   savedAddresses: StoreAddress[];

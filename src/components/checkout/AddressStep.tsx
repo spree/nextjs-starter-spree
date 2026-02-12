@@ -9,6 +9,11 @@ import type {
 } from "@spree/sdk";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import {
+  type AddressFormData,
+  addressToFormData,
+  formDataToAddress,
+} from "@/lib/utils/address";
 import { AddressSelector } from "./AddressSelector";
 
 interface AddressStepProps {
@@ -28,79 +33,6 @@ interface AddressStepProps {
     data: AddressParams,
   ) => Promise<StoreAddress | null>;
   processing: boolean;
-}
-
-interface AddressFormData {
-  firstname: string;
-  lastname: string;
-  address1: string;
-  address2: string;
-  city: string;
-  zipcode: string;
-  phone: string;
-  company: string;
-  country_iso: string;
-  state_abbr: string;
-  state_name: string;
-}
-
-const emptyAddress: AddressFormData = {
-  firstname: "",
-  lastname: "",
-  address1: "",
-  address2: "",
-  city: "",
-  zipcode: "",
-  phone: "",
-  company: "",
-  country_iso: "",
-  state_abbr: "",
-  state_name: "",
-};
-
-function addressToFormData(address?: {
-  firstname: string | null;
-  lastname: string | null;
-  address1: string | null;
-  address2: string | null;
-  city: string | null;
-  zipcode: string | null;
-  phone: string | null;
-  company: string | null;
-  country_iso: string;
-  state_abbr: string | null;
-  state_name: string | null;
-}): AddressFormData {
-  if (!address) return emptyAddress;
-  return {
-    firstname: address.firstname || "",
-    lastname: address.lastname || "",
-    address1: address.address1 || "",
-    address2: address.address2 || "",
-    city: address.city || "",
-    zipcode: address.zipcode || "",
-    phone: address.phone || "",
-    company: address.company || "",
-    country_iso: address.country_iso || "",
-    state_abbr: address.state_abbr || "",
-    state_name: address.state_name || "",
-  };
-}
-
-function formDataToAddress(data: AddressFormData): AddressParams {
-  return {
-    firstname: data.firstname,
-    lastname: data.lastname,
-    address1: data.address1,
-    address2: data.address2 || undefined,
-    city: data.city,
-    zipcode: data.zipcode,
-    phone: data.phone || undefined,
-    company: data.company || undefined,
-    country_iso: data.country_iso,
-    state_abbr: data.state_abbr || undefined,
-    state_name: data.state_name || undefined,
-  };
 }
 
 export function AddressStep({
@@ -173,19 +105,7 @@ export function AddressStep({
   };
 
   const handleSelectSavedAddress = (address: StoreAddress) => {
-    setShipAddress({
-      firstname: address.firstname || "",
-      lastname: address.lastname || "",
-      address1: address.address1 || "",
-      address2: address.address2 || "",
-      city: address.city || "",
-      zipcode: address.zipcode || "",
-      phone: address.phone || "",
-      company: address.company || "",
-      country_iso: address.country_iso || "",
-      state_abbr: address.state_abbr || "",
-      state_name: address.state_name || "",
-    });
+    setShipAddress(addressToFormData(address));
   };
 
   const handleEditAddress = async (address: StoreAddress) => {
@@ -235,23 +155,9 @@ export function AddressStep({
     setEditModalError("");
 
     try {
-      const addressData: AddressParams = {
-        firstname: editingAddress.firstname || "",
-        lastname: editingAddress.lastname || "",
-        address1: editingAddress.address1 || "",
-        address2: editingAddress.address2 || undefined,
-        city: editingAddress.city || "",
-        zipcode: editingAddress.zipcode || "",
-        phone: editingAddress.phone || undefined,
-        company: editingAddress.company || undefined,
-        country_iso: editingAddress.country_iso,
-        state_abbr: editingAddress.state_abbr || undefined,
-        state_name: editingAddress.state_name || undefined,
-      };
-
       const updatedAddress = await onUpdateSavedAddress(
         editingAddress.id,
-        addressData,
+        formDataToAddress(addressToFormData(editingAddress)),
       );
       if (updatedAddress) {
         // Update local state with the returned address

@@ -14,34 +14,12 @@ import {
   updateAddress,
 } from "@/lib/data/addresses";
 import { getCountries, getCountry } from "@/lib/data/countries";
-
-interface AddressFormData {
-  firstname: string;
-  lastname: string;
-  address1: string;
-  address2: string;
-  city: string;
-  zipcode: string;
-  phone: string;
-  company: string;
-  country_iso: string;
-  state_abbr: string;
-  state_name: string;
-}
-
-const emptyFormData: AddressFormData = {
-  firstname: "",
-  lastname: "",
-  address1: "",
-  address2: "",
-  city: "",
-  zipcode: "",
-  phone: "",
-  company: "",
-  country_iso: "",
-  state_abbr: "",
-  state_name: "",
-};
+import {
+  type AddressFormData,
+  addressToFormData,
+  emptyAddress,
+  formDataToAddress,
+} from "@/lib/utils/address";
 
 function AddressCard({
   address,
@@ -114,30 +92,14 @@ function AddressModal({
   countries: StoreCountry[];
   onSave: (data: AddressParams, id?: string) => Promise<void>;
 }) {
-  const [formData, setFormData] = useState<AddressFormData>(emptyFormData);
+  const [formData, setFormData] = useState<AddressFormData>(emptyAddress);
   const [states, setStates] = useState<StoreState[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   // Initialize form data when address changes
   useEffect(() => {
-    if (address) {
-      setFormData({
-        firstname: address.firstname || "",
-        lastname: address.lastname || "",
-        address1: address.address1 || "",
-        address2: address.address2 || "",
-        city: address.city || "",
-        zipcode: address.zipcode || "",
-        phone: address.phone || "",
-        company: address.company || "",
-        country_iso: address.country_iso || "",
-        state_abbr: address.state_abbr || "",
-        state_name: address.state_name || "",
-      });
-    } else {
-      setFormData(emptyFormData);
-    }
+    setFormData(address ? addressToFormData(address) : emptyAddress);
     setError("");
   }, [address, isOpen]);
 
@@ -164,21 +126,7 @@ function AddressModal({
     setSaving(true);
 
     try {
-      const addressData: AddressParams = {
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-        address1: formData.address1,
-        address2: formData.address2 || undefined,
-        city: formData.city,
-        zipcode: formData.zipcode,
-        phone: formData.phone || undefined,
-        company: formData.company || undefined,
-        country_iso: formData.country_iso,
-        state_abbr: formData.state_abbr || undefined,
-        state_name: formData.state_name || undefined,
-      };
-
-      await onSave(addressData, address?.id);
+      await onSave(formDataToAddress(formData), address?.id);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save address");
