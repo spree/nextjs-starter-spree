@@ -7,7 +7,9 @@ interface CheckoutContextValue {
   setSummaryContent: (content: ReactNode) => void;
 }
 
-const CheckoutContext = createContext<CheckoutContextValue | null>(null);
+const CheckoutContext = createContext<CheckoutContextValue | undefined>(
+  undefined,
+);
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [summaryContent, setSummaryContent] = useState<ReactNode>(null);
@@ -21,7 +23,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
 
 export function useCheckout() {
   const context = useContext(CheckoutContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useCheckout must be used within a CheckoutProvider");
   }
   return context;

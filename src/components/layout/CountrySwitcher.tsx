@@ -40,11 +40,6 @@ export function CountrySwitcher() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Get current country data
-  const currentCountry = countries.find(
-    (c) => c.iso.toLowerCase() === country.toLowerCase(),
-  );
-
   // Handle country selection
   const handleCountrySelect = (selectedCountry: (typeof countries)[0]) => {
     const newLocale = selectedCountry.default_locale || locale;
@@ -145,15 +140,13 @@ export function CountrySwitcher() {
           </ul>
           {store?.supported_currencies &&
             store.supported_currencies.length > 1 && (
-              <>
-                <div className="border-t border-gray-100 mt-1 pt-1">
-                  <div className="px-3 py-2">
-                    <p className="text-xs text-gray-500">
-                      Currency is based on selected country
-                    </p>
-                  </div>
+              <div className="border-t border-gray-100 mt-1 pt-1">
+                <div className="px-3 py-2">
+                  <p className="text-xs text-gray-500">
+                    Currency is based on selected country
+                  </p>
                 </div>
-              </>
+              </div>
             )}
         </div>
       )}

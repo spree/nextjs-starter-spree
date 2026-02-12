@@ -272,9 +272,8 @@ export default function AccountLayout({
     router,
   ]);
 
-  // Show loading state with full layout shell while checking auth
-  if (loading) {
-    // For auth pages or main account page, show simple skeleton
+  // Show loading or redirect-in-progress skeleton
+  if (loading || (!isAuthenticated && !isAuthPage && !isMainAccountPage)) {
     if (isAuthPage || isMainAccountPage) {
       return (
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -286,16 +285,6 @@ export default function AccountLayout({
         </div>
       );
     }
-    // For protected pages, show full layout with content skeleton
-    return (
-      <AccountShell basePath={basePath} pathname={pathname} isLoading={true}>
-        <ContentSkeleton />
-      </AccountShell>
-    );
-  }
-
-  // Redirect in progress for unauthenticated users on protected pages
-  if (!isAuthenticated && !isAuthPage && !isMainAccountPage) {
     return (
       <AccountShell basePath={basePath} pathname={pathname} isLoading={true}>
         <ContentSkeleton />
