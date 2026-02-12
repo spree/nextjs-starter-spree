@@ -369,14 +369,16 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Update a saved address
   const handleUpdateSavedAddress = async (id: string, data: AddressParams) => {
     const result = await updateAddress(id, data);
-    if (result.success && result.address) {
-      // Update local state
+    if (!result.success) {
+      throw new Error(result.error || "Failed to update address");
+    }
+    if (result.address) {
       setSavedAddresses((prev) =>
         prev.map((addr) => (addr.id === id ? result.address! : addr)),
       );
       return result.address;
     }
-    throw new Error(result.error || "Failed to update address");
+    throw new Error("Failed to update address");
   };
 
   // Navigate back to a previous step
