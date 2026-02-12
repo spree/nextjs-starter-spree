@@ -6,14 +6,12 @@ import type {
   PriceRangeFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
-import { useEffect, useState } from "react";
-import { useStore } from "@/contexts/StoreContext";
-import { getProductFilters } from "@/lib/data/products";
+import { useState } from "react";
 
 interface ProductFiltersProps {
   taxonId?: string;
-  filtersData?: ProductFiltersResponse | null;
-  loading?: boolean;
+  filtersData: ProductFiltersResponse | null;
+  loading: boolean;
   onFilterChange: (filters: ActiveFilters) => void;
 }
 
@@ -26,16 +24,10 @@ export interface ActiveFilters {
 }
 
 export function ProductFilters({
-  taxonId,
-  filtersData: externalFiltersData,
-  loading: externalLoading,
+  filtersData,
+  loading,
   onFilterChange,
 }: ProductFiltersProps) {
-  const { currency, locale, loading: storeLoading } = useStore();
-
-  const [internalFiltersData, setInternalFiltersData] =
-    useState<ProductFiltersResponse | null>(null);
-  const [internalLoading, setInternalLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     optionValues: [],
   });
@@ -43,50 +35,15 @@ export function ProductFilters({
     new Set(["price"]),
   );
 
-  // Use external data if provided, otherwise fetch internally
-  const filtersData =
-    externalFiltersData !== undefined
-      ? externalFiltersData
-      : internalFiltersData;
-  const loading =
-    externalLoading !== undefined ? externalLoading : internalLoading;
-
-  // Only fetch internally if no external data provided
-  useEffect(() => {
-    if (externalFiltersData !== undefined || storeLoading) return;
-
-    let cancelled = false;
-
-    const fetchFilters = async () => {
-      setInternalLoading(true);
-      try {
-        const response = await getProductFilters(
-          { taxon_id: taxonId },
-          { currency, locale },
-        );
-        if (!cancelled) {
-          setInternalFiltersData(response);
-        }
-      } catch (error) {
-        console.error("Failed to fetch filters:", error);
-      } finally {
-        if (!cancelled) {
-          setInternalLoading(false);
-        }
-      }
-    };
-
-    fetchFilters();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [taxonId, currency, locale, storeLoading, externalFiltersData]);
-
-  // Notify parent of filter changes
-  useEffect(() => {
-    onFilterChange(activeFilters);
-  }, [activeFilters, onFilterChange]);
+  const updateFilters = (
+    updater: (prev: ActiveFilters) => ActiveFilters,
+  ) => {
+    setActiveFilters((prev) => {
+      const next = updater(prev);
+      onFilterChange(next);
+      return next;
+    });
+  };
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => {
@@ -101,7 +58,7 @@ export function ProductFilters({
   };
 
   const handleOptionValueToggle = (optionValueId: string) => {
-    setActiveFilters((prev) => {
+    updateFilters((prev) => {
       const newOptionValues = prev.optionValues.includes(optionValueId)
         ? prev.optionValues.filter((id) => id !== optionValueId)
         : [...prev.optionValues, optionValueId];
@@ -110,21 +67,23 @@ export function ProductFilters({
   };
 
   const handlePriceChange = (min?: number, max?: number) => {
-    setActiveFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }));
+    updateFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }));
   };
 
   const handleAvailabilityChange = (
     availability?: "in_stock" | "out_of_stock",
   ) => {
-    setActiveFilters((prev) => ({ ...prev, availability }));
+    updateFilters((prev) => ({ ...prev, availability }));
   };
 
   const handleSortChange = (sortBy: string) => {
-    setActiveFilters((prev) => ({ ...prev, sortBy }));
+    updateFilters((prev) => ({ ...prev, sortBy }));
   };
 
   const clearFilters = () => {
-    setActiveFilters({ optionValues: [] });
+    const reset: ActiveFilters = { optionValues: [] };
+    setActiveFilters(reset);
+    onFilterChange(reset);
   };
 
   if (loading) {
