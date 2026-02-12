@@ -42,6 +42,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function toUser(customer: {
+  id: string;
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+}): User {
+  return {
+    id: customer.id,
+    email: customer.email,
+    first_name: customer.first_name,
+    last_name: customer.last_name,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,16 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     try {
       const customer = await getCustomer();
-      if (customer) {
-        setUser({
-          id: customer.id,
-          email: customer.email,
-          first_name: customer.first_name,
-          last_name: customer.last_name,
-        });
-      } else {
-        setUser(null);
-      }
+      setUser(customer ? toUser(customer) : null);
     } catch {
       setUser(null);
     }
@@ -80,12 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       const result = await loginAction(email, password);
       if (result.success && result.user) {
-        setUser({
-          id: result.user.id,
-          email: result.user.email,
-          first_name: result.user.first_name,
-          last_name: result.user.last_name,
-        });
+        setUser(toUser(result.user));
         router.refresh();
       }
       return result;
@@ -102,12 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         passwordConfirmation,
       );
       if (result.success && result.user) {
-        setUser({
-          id: result.user.id,
-          email: result.user.email,
-          first_name: result.user.first_name,
-          last_name: result.user.last_name,
-        });
+        setUser(toUser(result.user));
         router.refresh();
       }
       return result;
