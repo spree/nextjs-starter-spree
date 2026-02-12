@@ -54,59 +54,62 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addItem = useCallback(
-    async (variantId: string, quantity = 1) => {
+  const mutateCart = useCallback(
+    async (
+      action: () => Promise<{
+        success: boolean;
+        cart?: StoreOrder | null;
+        error?: string;
+      }>,
+      errorLabel: string,
+      onSuccess?: () => void,
+    ) => {
       setUpdating(true);
       try {
-        const result = await addToCartAction(variantId, quantity);
+        const result = await action();
         if (result.success) {
-          setCart(result.cart);
-          setIsOpen(true); // Open cart drawer after adding
+          setCart(result.cart ?? null);
+          onSuccess?.();
           router.refresh();
         } else {
-          console.error("Failed to add item to cart:", result.error);
+          console.error(`Failed to ${errorLabel}:`, result.error);
         }
       } finally {
         setUpdating(false);
       }
     },
     [router],
+  );
+
+  const addItem = useCallback(
+    async (variantId: string, quantity = 1) => {
+      await mutateCart(
+        () => addToCartAction(variantId, quantity),
+        "add item to cart",
+        () => setIsOpen(true),
+      );
+    },
+    [mutateCart],
   );
 
   const updateItem = useCallback(
     async (lineItemId: string, quantity: number) => {
-      setUpdating(true);
-      try {
-        const result = await updateCartItemAction(lineItemId, quantity);
-        if (result.success) {
-          setCart(result.cart);
-          router.refresh();
-        } else {
-          console.error("Failed to update cart item:", result.error);
-        }
-      } finally {
-        setUpdating(false);
-      }
+      await mutateCart(
+        () => updateCartItemAction(lineItemId, quantity),
+        "update cart item",
+      );
     },
-    [router],
+    [mutateCart],
   );
 
   const removeItem = useCallback(
     async (lineItemId: string) => {
-      setUpdating(true);
-      try {
-        const result = await removeCartItemAction(lineItemId);
-        if (result.success) {
-          setCart(result.cart);
-          router.refresh();
-        } else {
-          console.error("Failed to remove cart item:", result.error);
-        }
-      } finally {
-        setUpdating(false);
-      }
+      await mutateCart(
+        () => removeCartItemAction(lineItemId),
+        "remove cart item",
+      );
     },
-    [router],
+    [mutateCart],
   );
 
   useEffect(() => {
