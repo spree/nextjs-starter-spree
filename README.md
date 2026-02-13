@@ -75,6 +75,24 @@ SPREE_API_KEY=your_publishable_api_key_here
 
 > Note: These are server-side only variables (no `NEXT_PUBLIC_` prefix needed).
 
+#### Optional variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `NEXT_PUBLIC_DEFAULT_COUNTRY` | Default country ISO code, used for initial redirects before API data loads | `us` |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | Default locale code | `en` |
+| `SITEMAP_LOCALE_MODE` | Which country/locale pairs to include in the sitemap: `default`, `selected`, or `all` | `default` |
+| `SITEMAP_COUNTRIES` | Comma-separated country ISO codes (only used when `SITEMAP_LOCALE_MODE=selected`) | _(empty)_ |
+| `SITEMAP_REVALIDATE_SECONDS` | How often (in seconds) the sitemap is regenerated | `3600` |
+| `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `true` |
+
+> **Sitemap locale modes:**
+> - `default` — only the store's default country and locale (good for single-region stores)
+> - `selected` — only countries listed in `SITEMAP_COUNTRIES` (e.g. `SITEMAP_COUNTRIES=us,gb,de`)
+> - `all` — every country available in the Spree store
+>
+> Each country resolves its locale from the country's `default_locale` in the Spree API, falling back to the store's default locale.
+
 ### Development
 
 ```bash
@@ -217,7 +235,9 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables (`SPREE_API_URL`, `SPREE_API_KEY`)
+3. Add environment variables:
+   - `SPREE_API_URL` and `SPREE_API_KEY` (required)
+   - `SITEMAP_LOCALE_MODE`, `SITEMAP_COUNTRIES` (optional — for multi-region sitemap)
 4. Deploy
 
 ## License
