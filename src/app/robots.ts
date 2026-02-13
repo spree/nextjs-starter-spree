@@ -1,9 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getStore } from "@/lib/data/store";
 
-/** Revalidate robots.txt at most once per day. */
-export const revalidate = 86400;
-
 /**
  * AI crawler user-agents to block by default.
  * Override via the ROBOTS_DISALLOW_AI env variable:
@@ -63,7 +60,10 @@ const AI_CRAWLERS = [
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const store = await getStore();
-  const baseUrl = store.url.replace(/\/$/, "");
+  const baseUrl = (store.url || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
+    /\/$/,
+    "",
+  );
   const blockAi = process.env.ROBOTS_DISALLOW_AI !== "false";
 
   const rules: MetadataRoute.Robots["rules"] = [
