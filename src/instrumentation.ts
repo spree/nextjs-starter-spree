@@ -5,8 +5,7 @@ export async function register() {
 
   // Opt-in to sending PII (IP addresses, cookies, user data) to Sentry.
   // Defaults to false for privacy. Set SENTRY_SEND_DEFAULT_PII=true to enable.
-  const sendDefaultPii =
-    process.env.SENTRY_SEND_DEFAULT_PII === "true";
+  const sendDefaultPii = process.env.SENTRY_SEND_DEFAULT_PII === "true";
 
   if (dsn) {
     Sentry.init({
