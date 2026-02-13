@@ -223,7 +223,7 @@ export default function GiftCardsPage() {
 
       {cards.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <GiftIcon className="w-12 h-12 text-gray-400" />
+          <GiftIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No gift cards
           </h3>
