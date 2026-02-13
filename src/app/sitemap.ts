@@ -110,7 +110,7 @@ export default async function sitemap(props: {
     for (const product of allProducts) {
       entries.push({
         url: `${basePath}/products/${product.slug}`,
-        lastModified: new Date(product.updated_at),
+        ...safeLastModified(product.updated_at),
         changeFrequency: "weekly",
         priority: 0.6,
         ...(product.images && product.images.length > 0
@@ -127,7 +127,7 @@ export default async function sitemap(props: {
     for (const taxon of nonRootTaxons) {
       entries.push({
         url: `${basePath}/t/${taxon.permalink}`,
-        lastModified: new Date(taxon.updated_at),
+        ...safeLastModified(taxon.updated_at),
         changeFrequency: "weekly",
         priority: 0.5,
       });
@@ -149,8 +149,17 @@ export default async function sitemap(props: {
 async function resolveCountryLocales(
   store: Awaited<ReturnType<typeof getStore>>,
 ): Promise<CountryLocale[]> {
-  const mode: SitemapLocaleMode =
-    (process.env.SITEMAP_LOCALE_MODE as SitemapLocaleMode) || "default";
+  const rawMode = process.env.SITEMAP_LOCALE_MODE || "default";
+  const mode: SitemapLocaleMode = VALID_LOCALE_MODES.includes(
+    rawMode as SitemapLocaleMode,
+  )
+    ? (rawMode as SitemapLocaleMode)
+    : (() => {
+        console.warn(
+          `Invalid SITEMAP_LOCALE_MODE "${rawMode}". Expected one of: ${VALID_LOCALE_MODES.join(", ")}. Falling back to "default".`,
+        );
+        return "default" as const;
+      })();
 
   const storeDefaultLocale =
     store.default_locale || process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
@@ -214,6 +223,17 @@ async function fetchTotalCount(
   const response = await fetcher({ page: 1, per_page: 1 });
   return response.meta.count;
 }
+
+function safeLastModified(
+  dateStr: string | null | undefined,
+): { lastModified: Date } | Record<string, never> {
+  if (!dateStr) return {};
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return {};
+  return { lastModified: date };
+}
+
+const VALID_LOCALE_MODES: SitemapLocaleMode[] = ["default", "selected", "all"];
 
 async function fetchAllProducts(): Promise<StoreProduct[]> {
   const allProducts: StoreProduct[] = [];
