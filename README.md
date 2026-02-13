@@ -75,6 +75,12 @@ SPREE_API_KEY=your_publishable_api_key_here
 
 > Note: These are server-side only variables (no `NEXT_PUBLIC_` prefix needed).
 
+#### Optional variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ |
+
 ### Development
 
 ```bash
@@ -217,7 +223,7 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables (`SPREE_API_URL`, `SPREE_API_KEY`)
+3. Add environment variables (`SPREE_API_URL`, `SPREE_API_KEY`, and optionally `GTM_ID`)
 4. Deploy
 
 ## License
