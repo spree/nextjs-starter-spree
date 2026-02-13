@@ -94,7 +94,6 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 | `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` | Send PII to Sentry client-side | `false` |
 | `SITEMAP_LOCALE_MODE` | Which country/locale pairs to include in the sitemap: `default`, `selected`, or `all` | `default` |
 | `SITEMAP_COUNTRIES` | Comma-separated country ISO codes (only used when `SITEMAP_LOCALE_MODE=selected`) | _(empty)_ |
-| `SITEMAP_REVALIDATE_SECONDS` | How often (in seconds) the sitemap is regenerated | `3600` |
 | `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `true` |
 
 > **Privacy note:** PII collection is disabled by default. Only set `SENTRY_SEND_DEFAULT_PII` / `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` to `true` if you have appropriate user consent or a privacy policy covering this data.
