@@ -3,6 +3,13 @@
 import type { StoreImage } from "@spree/sdk";
 import Image from "next/image";
 import { useState } from "react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  ImagePlaceholderIcon,
+  SearchPlusIcon,
+} from "@/components/icons";
 
 interface MediaGalleryProps {
   images: StoreImage[];
@@ -43,37 +50,13 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            <svg
-              className="w-24 h-24"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+            <ImagePlaceholderIcon className="w-24 h-24" />
           </div>
         )}
         {/* Zoom hint */}
         {mainImageUrl && (
           <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm text-gray-600 flex items-center gap-1.5">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-              />
-            </svg>
+            <SearchPlusIcon className="w-4 h-4" />
             Click to zoom
           </div>
         )}
@@ -104,19 +87,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                    <svg
-                      className="w-8 h-8"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <ImagePlaceholderIcon className="w-8 h-8" />
                   </div>
                 )}
               </button>
@@ -136,19 +107,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
             onClick={() => setIsZoomed(false)}
             aria-label="Close lightbox"
           >
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <CloseIcon className="w-8 h-8" />
           </button>
 
           {/* Navigation arrows */}
@@ -164,19 +123,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                 }}
                 aria-label="Previous image"
               >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+                <ChevronLeftIcon className="w-8 h-8" />
               </button>
               <button
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
@@ -188,19 +135,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                 }}
                 aria-label="Next image"
               >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRightIcon className="w-8 h-8" />
               </button>
             </>
           )}

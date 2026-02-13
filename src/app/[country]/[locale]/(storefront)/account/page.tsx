@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import {
+  CreditCardIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  MapPinIcon,
+  ShoppingBagIcon,
+  UserIcon,
+} from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
 
@@ -112,40 +120,9 @@ export default function AccountPage() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"
-                      />
-                    </svg>
+                    <EyeSlashIcon className="w-5 h-5" />
                   ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>
+                    <EyeIcon className="w-5 h-5" />
                   )}
                 </button>
               </div>
@@ -187,19 +164,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
+              <ShoppingBagIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
@@ -218,25 +183,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
+              <MapPinIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
@@ -253,19 +200,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
+              <CreditCardIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
@@ -284,19 +219,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+              <UserIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Profile</h2>

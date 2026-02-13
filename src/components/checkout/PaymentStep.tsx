@@ -7,6 +7,7 @@ import type {
   StoreState,
 } from "@spree/sdk";
 import { useEffect, useState, useTransition } from "react";
+import { CreditCardIcon } from "@/components/icons";
 import {
   type AddressFormData,
   addressesMatch,
@@ -174,19 +175,10 @@ export function PaymentStep({
           Payment Method
         </h2>
         <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <svg
+          <CreditCardIcon
             className="w-12 h-12 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-            />
-          </svg>
+            strokeWidth={1.5}
+          />
           <p className="text-gray-500">
             Payment methods will be available soon.
           </p>

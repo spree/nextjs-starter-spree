@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { CheckIcon, ChevronDownIcon } from "@/components/icons";
 import { useStore } from "@/contexts/StoreContext";
 import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
@@ -72,19 +73,9 @@ export function CountrySwitcher() {
         <span className="font-medium">{country.toUpperCase()}</span>
         <span className="text-gray-400">|</span>
         <span>{currency}</span>
-        <svg
+        <ChevronDownIcon
           className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        />
       </button>
 
       {isOpen && (
@@ -120,17 +111,7 @@ export function CountrySwitcher() {
                         {c.default_currency || store?.default_currency}
                       </span>
                       {isSelected && (
-                        <svg
-                          className="w-4 h-4 text-indigo-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <CheckIcon className="w-4 h-4 text-indigo-600" />
                       )}
                     </span>
                   </button>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ArrowLeftIcon, ChevronDownIcon, ShoppingBagIcon } from "@/components/icons";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";
@@ -20,19 +21,7 @@ function CheckoutHeader() {
         href={basePath || "/"}
         className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
       >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
-        </svg>
+        <ArrowLeftIcon className="w-4 h-4" />
         <span className="hidden sm:inline">Back to store</span>
       </Link>
     </header>
@@ -64,34 +53,12 @@ function MobileSummaryToggle() {
         className="w-full px-5 py-4 flex items-center justify-between text-left"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
-          <svg
-            className="w-5 h-5 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
+          <ShoppingBagIcon className="w-5 h-5 text-gray-600" />
           {isOpen ? "Hide order summary" : "Show order summary"}
         </span>
-        <svg
+        <ChevronDownIcon
           className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        />
       </button>
       {isOpen && (
         <div className="px-5 pb-4">

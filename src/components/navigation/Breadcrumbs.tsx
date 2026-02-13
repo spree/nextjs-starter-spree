@@ -1,5 +1,6 @@
 import type { StoreTaxon } from "@spree/sdk";
 import Link from "next/link";
+import { ChevronRightIcon } from "@/components/icons";
 
 interface BreadcrumbsProps {
   taxon: StoreTaxon;
@@ -38,19 +39,7 @@ export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
           return (
             <li key={index} className="flex items-center">
               {index > 0 && (
-                <svg
-                  className="w-4 h-4 text-gray-400 mx-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-2" />
               )}
               {isLast ? (
                 <span className="text-gray-500" aria-current="page">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CreditCardIcon, LockIcon } from "@/components/icons";
 import { deleteCreditCard, getCreditCards } from "@/lib/data/credit-cards";
 
 // Credit card type (matches SDK StoreCreditCard)
@@ -141,19 +142,7 @@ export default function CreditCardsPage() {
 
       {cards.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <svg
-            className="w-12 h-12 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-            />
-          </svg>
+          <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No payment methods saved
           </h3>
@@ -175,19 +164,7 @@ export default function CreditCardsPage() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          <svg
-            className="w-4 h-4 inline mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
+          <LockIcon className="w-4 h-4 inline mr-1" />
           Your payment information is securely stored and encrypted. We never
           store your full card number.
         </p>
