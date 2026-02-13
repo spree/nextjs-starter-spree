@@ -112,12 +112,14 @@ export function AddressStep({
     }
 
     const updatedAddress = await onUpdateSavedAddress(id, data);
-    if (updatedAddress) {
-      setSavedAddresses((prev) =>
-        prev.map((addr) => (addr.id === id ? updatedAddress : addr)),
-      );
-      handleSelectSavedAddress(updatedAddress);
+    if (!updatedAddress) {
+      throw new Error("Failed to update address");
     }
+
+    setSavedAddresses((prev) =>
+      prev.map((addr) => (addr.id === id ? updatedAddress : addr)),
+    );
+    handleSelectSavedAddress(updatedAddress);
   };
 
   return (
