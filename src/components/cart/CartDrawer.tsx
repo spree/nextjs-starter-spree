@@ -4,7 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { CloseIcon, MinusIcon, PlusIcon, ShoppingBagIcon } from "@/components/icons";
+import {
+  CloseIcon,
+  MinusIcon,
+  PlusIcon,
+  ShoppingBagIcon,
+} from "@/components/icons";
 import { useCart } from "@/contexts/CartContext";
 import { extractBasePath } from "@/lib/utils/path";
 

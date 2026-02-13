@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeftIcon, ChevronDownIcon, ShoppingBagIcon } from "@/components/icons";
+import {
+  ArrowLeftIcon,
+  ChevronDownIcon,
+  ShoppingBagIcon,
+} from "@/components/icons";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";

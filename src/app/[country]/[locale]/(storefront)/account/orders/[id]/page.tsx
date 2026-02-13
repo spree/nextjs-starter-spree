@@ -4,10 +4,7 @@ import type { StoreOrder } from "@spree/sdk";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { use, useEffect, useState } from "react";
-import {
-  ChevronLeftIcon,
-  ImagePlaceholderIcon,
-} from "@/components/icons";
+import { ChevronLeftIcon, ImagePlaceholderIcon } from "@/components/icons";
 import { getOrder } from "@/lib/data/orders";
 import { extractBasePath } from "@/lib/utils/path";
 
