@@ -367,7 +367,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   };
 
   // Update a saved address
-  const handleUpdateSavedAddress = async (id: string, data: AddressParams): Promise<StoreAddress> => {
+  const handleUpdateSavedAddress = async (
+    id: string,
+    data: AddressParams,
+  ): Promise<StoreAddress> => {
     const result = await updateAddress(id, data);
 
     if (!result.success) {
