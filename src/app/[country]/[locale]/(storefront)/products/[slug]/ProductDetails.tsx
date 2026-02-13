@@ -88,8 +88,13 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     : (product.in_stock ?? false);
 
   const handleAddToCart = async () => {
-    const variantId = selectedVariant?.id || product.default_variant?.id;
-    if (!variantId) return;
+    const variantId =
+      selectedVariant?.id ||
+      product.default_variant?.id ||
+      product.default_variant_id;
+    if (!variantId) {
+      throw new Error("No variant selected");
+    }
 
     setLoading(true);
     try {
