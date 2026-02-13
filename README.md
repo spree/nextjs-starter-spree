@@ -12,6 +12,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 - **React 19** - Latest React with improved Server Components
 - **Tailwind CSS 4** - Utility-first styling
 - **TypeScript 5** - Full type safety
+- **Sentry** - Error tracking and performance monitoring with source maps
 - [@spree/sdk](https://github.com/spree/spree/tree/main/packages/sdk) - Official Spree Commerce SDK
 - [@spree/next](https://github.com/spree/spree/tree/main/packages/next) - Server actions, caching, and cookie-based auth
 
@@ -30,6 +31,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
   - Saved payment methods
 - **Multi-Region Support** - Country and currency switching via URL segments
 - **Responsive Design** - Mobile-first Tailwind CSS styling
+- **Error Tracking** - Sentry integration for both server-side and client-side error monitoring with source maps
 
 ## Architecture
 
@@ -74,6 +76,19 @@ SPREE_API_KEY=your_publishable_api_key_here
 ```
 
 > Note: These are server-side only variables (no `NEXT_PUBLIC_` prefix needed).
+
+#### Optional variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
+| `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
+| `SENTRY_PROJECT` | Sentry project slug (for source map uploads) | _(none)_ |
+| `SENTRY_AUTH_TOKEN` | Sentry auth token (for source map uploads in CI) | _(none)_ |
+| `SENTRY_SEND_DEFAULT_PII` | Send PII (IP addresses, cookies, user data) to Sentry server-side | `false` |
+| `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` | Send PII to Sentry client-side | `false` |
+
+> **Privacy note:** PII collection is disabled by default. Only set `SENTRY_SEND_DEFAULT_PII` / `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` to `true` if you have appropriate user consent or a privacy policy covering this data.
 
 ### Development
 
@@ -217,7 +232,9 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 
 1. Push your code to GitHub
 2. Import the repository in Vercel
-3. Add environment variables (`SPREE_API_URL`, `SPREE_API_KEY`)
+3. Add environment variables:
+   - `SPREE_API_URL` and `SPREE_API_KEY` (required)
+   - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy
 
 ## License
