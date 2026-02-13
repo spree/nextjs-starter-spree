@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import {
+  CreditCardIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  MapPinIcon,
+  ShoppingBagIcon,
+  UserIcon,
+} from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
-
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function AccountPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -101,15 +103,29 @@ export default function AccountPage() {
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
@@ -148,19 +164,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
+              <ShoppingBagIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
@@ -179,25 +183,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
+              <MapPinIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
@@ -214,19 +200,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
+              <CreditCardIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
@@ -245,19 +219,7 @@ export default function AccountPage() {
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-indigo-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+              <UserIcon className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Profile</h2>

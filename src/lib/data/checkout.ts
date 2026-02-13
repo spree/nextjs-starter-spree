@@ -11,13 +11,10 @@ import {
   updateAddresses,
 } from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
+import { actionResult, withFallback } from "./utils";
 
 export async function getCheckoutOrder(orderId: string) {
-  try {
-    return await getCheckout(orderId);
-  } catch {
-    return null;
-  }
+  return withFallback(() => getCheckout(orderId), null);
 }
 
 export async function updateOrderAddresses(
@@ -30,38 +27,24 @@ export async function updateOrderAddresses(
     email?: string;
   },
 ) {
-  try {
+  return actionResult(async () => {
     const order = await updateAddresses(orderId, addresses);
-    return { success: true, order };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to update addresses",
-    };
-  }
+    return { order };
+  }, "Failed to update addresses");
 }
 
 export async function advanceCheckout(orderId: string) {
-  try {
+  return actionResult(async () => {
     const order = await advance(orderId);
-    return { success: true, order };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to advance checkout",
-    };
-  }
+    return { order };
+  }, "Failed to advance checkout");
 }
 
 export async function getShipments(orderId: string) {
-  try {
+  return withFallback(async () => {
     const response = await _getShipments(orderId);
     return response.data;
-  } catch {
-    return [];
-  }
+  }, []);
 }
 
 export async function selectShippingRate(
@@ -69,54 +52,29 @@ export async function selectShippingRate(
   shipmentId: string,
   shippingRateId: string,
 ) {
-  try {
+  return actionResult(async () => {
     await _selectShippingRate(orderId, shipmentId, shippingRateId);
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to select shipping rate",
-    };
-  }
+    return {};
+  }, "Failed to select shipping rate");
 }
 
 export async function applyCouponCode(orderId: string, couponCode: string) {
-  try {
+  return actionResult(async () => {
     const order = await applyCoupon(orderId, couponCode);
-    return { success: true, order };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Invalid coupon code",
-    };
-  }
+    return { order };
+  }, "Failed to apply coupon code");
 }
 
 export async function removeCouponCode(orderId: string, promotionId: string) {
-  try {
+  return actionResult(async () => {
     const order = await removeCoupon(orderId, promotionId);
-    return { success: true, order };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to remove coupon code",
-    };
-  }
+    return { order };
+  }, "Failed to remove coupon code");
 }
 
 export async function completeOrder(orderId: string) {
-  try {
+  return actionResult(async () => {
     const order = await complete(orderId);
-    return { success: true, order };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to complete order",
-    };
-  }
+    return { order };
+  }, "Failed to complete order");
 }

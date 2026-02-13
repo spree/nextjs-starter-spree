@@ -11,6 +11,8 @@ import {
 } from "react";
 import { getCountries as getCountriesAction } from "@/lib/data/countries";
 import { getStore as getStoreAction } from "@/lib/data/store";
+import { setStoreCookies } from "@/lib/utils/cookies";
+import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 interface StoreContextValue {
   country: string;
@@ -31,6 +33,39 @@ interface StoreProviderProps {
   initialLocale: string;
 }
 
+function resolveCountryAndCurrency(
+  countriesData: StoreCountry[],
+  storeData: StoreStore,
+  urlCountry: string,
+): {
+  country: StoreCountry | undefined;
+  currency: string;
+  needsRedirect: boolean;
+} {
+  const urlCountryInList = countriesData.find(
+    (c) => c.iso.toLowerCase() === urlCountry.toLowerCase(),
+  );
+
+  if (!urlCountryInList && countriesData.length > 0) {
+    const defaultCountryIso = storeData.default_country_iso?.toLowerCase();
+    const defaultCountry = defaultCountryIso
+      ? countriesData.find((c) => c.iso.toLowerCase() === defaultCountryIso)
+      : countriesData[0];
+
+    return {
+      country: defaultCountry,
+      currency: defaultCountry?.default_currency || storeData.default_currency,
+      needsRedirect: true,
+    };
+  }
+
+  const currentCountry = urlCountryInList || countriesData[0];
+  const currency =
+    currentCountry?.default_currency || storeData.default_currency || "USD";
+
+  return { country: currentCountry, currency, needsRedirect: false };
+}
+
 export function StoreProvider({
   children,
   initialCountry,
@@ -45,12 +80,6 @@ export function StoreProvider({
   const [countries, setCountries] = useState<StoreCountry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get the path without country/locale prefix
-  const getPathWithoutPrefix = () => {
-    const match = pathname.match(/^\/[a-z]{2}\/[a-z]{2}(\/.*)?$/i);
-    return match?.[1] || "";
-  };
-
   // Fetch store and countries data on mount
   useEffect(() => {
     const fetchData = async () => {
@@ -63,55 +92,31 @@ export function StoreProvider({
         setStore(storeData);
         setCountries(countriesData.data);
 
-        // Check if current URL country is in the available countries list
-        const urlCountryInList = countriesData.data.find(
-          (c) => c.iso.toLowerCase() === initialCountry.toLowerCase(),
+        const resolved = resolveCountryAndCurrency(
+          countriesData.data,
+          storeData,
+          initialCountry,
         );
 
-        if (!urlCountryInList && countriesData.data.length > 0) {
-          // URL country is not in the checkout zone - redirect to store default
-          const defaultCountryIso =
-            storeData.default_country_iso?.toLowerCase();
-          const defaultCountry = defaultCountryIso
-            ? countriesData.data.find(
-                (c) => c.iso.toLowerCase() === defaultCountryIso,
-              )
-            : countriesData.data[0];
+        if (resolved.needsRedirect && resolved.country) {
+          const newLocale =
+            resolved.country.default_locale || storeData.default_locale || "en";
+          const pathRest = getPathWithoutPrefix(pathname);
+          const newPath = `/${resolved.country.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
-          if (defaultCountry) {
-            const newLocale =
-              defaultCountry.default_locale || storeData.default_locale || "en";
-            const pathRest = getPathWithoutPrefix();
-            const newPath = `/${defaultCountry.iso.toLowerCase()}/${newLocale}${pathRest}`;
-
-            // Set cookies for persistence
-            document.cookie = `spree_country=${defaultCountry.iso.toLowerCase()}; path=/; max-age=31536000`;
-            document.cookie = `spree_locale=${newLocale}; path=/; max-age=31536000`;
-
-            // Update state and redirect
-            setCountryState(defaultCountry.iso.toLowerCase());
-            setLocaleState(newLocale);
-            setCurrency(
-              defaultCountry.default_currency || storeData.default_currency,
-            );
-            router.replace(newPath);
-            setLoading(false);
-            return;
-          }
+          setStoreCookies(resolved.country.iso.toLowerCase(), newLocale);
+          setCountryState(resolved.country.iso.toLowerCase());
+          setLocaleState(newLocale);
+          setCurrency(resolved.currency);
+          router.replace(newPath);
+          setLoading(false);
+          return;
         }
 
-        // URL country is valid - use it
-        const currentCountry = urlCountryInList || countriesData.data[0];
-        if (currentCountry) {
-          setCountryState(currentCountry.iso.toLowerCase());
-          if (currentCountry.default_currency) {
-            setCurrency(currentCountry.default_currency);
-          } else if (storeData.default_currency) {
-            setCurrency(storeData.default_currency);
-          }
-        } else if (storeData.default_currency) {
-          setCurrency(storeData.default_currency);
+        if (resolved.country) {
+          setCountryState(resolved.country.iso.toLowerCase());
         }
+        setCurrency(resolved.currency);
       } catch (error) {
         console.error("Failed to fetch store data:", error);
       } finally {
@@ -120,11 +125,12 @@ export function StoreProvider({
     };
 
     fetchData();
+    // pathname is intentionally excluded — this runs once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCountry, router]);
 
   const setCountry = (newCountry: string) => {
     setCountryState(newCountry);
-    // Update currency based on new country
     const countryData = countries.find(
       (c) => c.iso.toLowerCase() === newCountry.toLowerCase(),
     );

@@ -4,15 +4,9 @@ import type { StoreOrder } from "@spree/sdk";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ShoppingBagIcon } from "@/components/icons";
 import { getOrders } from "@/lib/data/orders";
-
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return "-";
@@ -108,19 +102,7 @@ export default function OrdersPage() {
 
       {orders.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <svg
-            className="w-12 h-12 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
+          <ShoppingBagIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No orders yet
           </h3>

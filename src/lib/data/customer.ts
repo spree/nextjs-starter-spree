@@ -7,6 +7,7 @@ import {
   register as _register,
   updateCustomer as _updateCustomer,
 } from "@spree/next";
+import { actionResult } from "./utils";
 
 export async function getCustomer() {
   return _getCustomer();
@@ -33,13 +34,8 @@ export async function updateCustomer(data: {
   last_name?: string;
   email?: string;
 }) {
-  try {
+  return actionResult(async () => {
     const customer = await _updateCustomer(data);
-    return { success: true, customer };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Update failed",
-    };
-  }
+    return { customer };
+  }, "Update failed");
 }

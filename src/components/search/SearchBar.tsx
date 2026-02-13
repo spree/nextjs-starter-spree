@@ -4,6 +4,7 @@ import type { StoreProduct } from "@spree/sdk";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ImagePlaceholderIcon, SearchIcon } from "@/components/icons";
 import { useStore } from "@/contexts/StoreContext";
 import { getProducts } from "@/lib/data/products";
 
@@ -131,7 +132,8 @@ export function SearchBar({ basePath }: SearchBarProps) {
     }
   };
 
-  const showSuggestions = isOpen && (suggestions.length > 0 || loading);
+  const showSuggestions =
+    isOpen && (suggestions.length > 0 || loading || query.length >= 2);
 
   return (
     <div ref={containerRef} className="relative">
@@ -150,20 +152,15 @@ export function SearchBar({ basePath }: SearchBarProps) {
             onKeyDown={handleKeyDown}
             placeholder="Search..."
             className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            role="combobox"
+            aria-expanded={showSuggestions}
+            aria-controls="search-suggestions"
+            aria-activedescendant={
+              selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined
+            }
+            aria-autocomplete="list"
           />
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
       </form>
 
@@ -175,12 +172,19 @@ export function SearchBar({ basePath }: SearchBarProps) {
               Searching...
             </div>
           ) : suggestions.length > 0 ? (
-            <ul>
+            <ul id="search-suggestions" role="listbox">
               {suggestions.map((product, index) => (
-                <li key={product.id}>
+                <li
+                  key={product.id}
+                  id={`search-option-${index}`}
+                  role="option"
+                  aria-selected={index === selectedIndex}
+                  tabIndex={-1}
+                >
                   <button
                     type="button"
                     onClick={() => handleSuggestionClick(product)}
+                    tabIndex={-1}
                     className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${
                       index === selectedIndex ? "bg-gray-50" : ""
                     }`}
@@ -197,19 +201,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300">
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
+                          <ImagePlaceholderIcon className="w-5 h-5" />
                         </div>
                       )}
                     </div>

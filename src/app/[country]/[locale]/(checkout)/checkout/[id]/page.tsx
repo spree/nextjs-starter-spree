@@ -28,15 +28,7 @@ import {
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
 import { getCountries, getCountry } from "@/lib/data/countries";
-
-// Extract base path from pathname (e.g., /us/en from /us/en/checkout/123)
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 // Checkout steps
 type CheckoutStep = "address" | "delivery" | "payment";
@@ -375,16 +367,26 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   };
 
   // Update a saved address
-  const handleUpdateSavedAddress = async (id: string, data: AddressParams) => {
+  const handleUpdateSavedAddress = async (
+    id: string,
+    data: AddressParams,
+  ): Promise<StoreAddress> => {
     const result = await updateAddress(id, data);
-    if (result.success && result.address) {
-      // Update local state
-      setSavedAddresses((prev) =>
-        prev.map((addr) => (addr.id === id ? result.address! : addr)),
-      );
-      return result.address;
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to update address");
     }
-    throw new Error(result.error || "Failed to update address");
+
+    if (!result.address) {
+      throw new Error("Update succeeded but address payload is missing");
+    }
+
+    const updatedAddress = result.address;
+    setSavedAddresses((prev) =>
+      prev.map((addr) => (addr.id === id ? updatedAddress : addr)),
+    );
+
+    return updatedAddress;
   };
 
   // Navigate back to a previous step
@@ -470,9 +472,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             {steps.map((step, index) => (
               <li
                 key={step.id}
-                className={`relative ${index < steps.length - 1 ? "pr-8 sm:pr-20" : ""}`}
+                className={`relative flex flex-row items-center ${index === steps.length - 1 ? "w-auto" : "w-full"}`}
               >
-                <div className="flex items-center">
+                <div className="flex items-center pr-2">
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       index < currentStepIndex
@@ -485,7 +487,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                     {index < currentStepIndex ? "✓" : index + 1}
                   </div>
                   <span
-                    className={`ml-4 text-sm font-medium ${
+                    className={`ml-2 text-sm font-medium ${
                       index === currentStepIndex
                         ? "text-indigo-600"
                         : index < currentStepIndex
@@ -497,7 +499,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   </span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="absolute top-4 left-8 w-full h-0.5 bg-gray-200">
+                  <div className="w-full h-0.5 bg-gray-200">
                     <div
                       className={`h-full ${index < currentStepIndex ? "bg-indigo-600" : "bg-gray-200"}`}
                       style={{

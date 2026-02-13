@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  CheckIcon,
+  ClipboardCopyIcon,
+  GiftIcon,
+  InfoCircleIcon,
+} from "@/components/icons";
 import { getGiftCards } from "@/lib/data/gift-cards";
 
 // Gift card type (matches SDK StoreGiftCard)
@@ -96,36 +102,12 @@ function CopyButton({ code }: { code: string }) {
     >
       {copied ? (
         <>
-          <svg
-            className="w-4 h-4 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          <CheckIcon className="w-4 h-4 text-green-600" />
           <span className="text-green-600">Copied!</span>
         </>
       ) : (
         <>
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-            />
-          </svg>
+          <ClipboardCopyIcon className="w-4 h-4" />
           <span>Copy</span>
         </>
       )}
@@ -241,19 +223,7 @@ export default function GiftCardsPage() {
 
       {cards.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <svg
-            className="w-12 h-12 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
-            />
-          </svg>
+          <GiftIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No gift cards
           </h3>
@@ -295,19 +265,7 @@ export default function GiftCardsPage() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <p className="text-sm text-gray-600">
-          <svg
-            className="w-4 h-4 inline mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <InfoCircleIcon className="w-4 h-4 inline mr-1" />
           Gift cards can be used during checkout to pay for your orders. The
           remaining balance will be saved for future purchases.
         </p>

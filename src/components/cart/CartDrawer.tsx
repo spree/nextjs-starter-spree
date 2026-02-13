@@ -4,15 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import {
+  CloseIcon,
+  MinusIcon,
+  PlusIcon,
+  ShoppingBagIcon,
+} from "@/components/icons";
 import { useCart } from "@/contexts/CartContext";
-
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 export function CartDrawer() {
   const {
@@ -44,11 +43,6 @@ export function CartDrawer() {
     };
   }, [isOpen, closeCart]);
 
-  // Close when clicking outside
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) closeCart();
-  };
-
   // Close when navigating
   useEffect(() => {
     closeCart();
@@ -60,12 +54,12 @@ export function CartDrawer() {
   const isEmpty = lineItems.length === 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end"
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 transition-opacity" />
+      <div
+        className="absolute inset-0 bg-black/50 transition-opacity"
+        onClick={closeCart}
+      />
 
       {/* Drawer */}
       <div
@@ -79,35 +73,11 @@ export function CartDrawer() {
             className="p-2 -ml-2 text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Close cart"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <CloseIcon className="w-6 h-6" />
           </button>
           <h2 className="text-lg font-semibold uppercase">Cart</h2>
           <div className="relative w-6 h-6">
-            <svg
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-              />
-            </svg>
+            <ShoppingBagIcon className="w-6 h-6 text-gray-600" />
             {itemCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {itemCount}
@@ -132,19 +102,10 @@ export function CartDrawer() {
             </div>
           ) : isEmpty ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <svg
+              <ShoppingBagIcon
                 className="w-16 h-16 text-gray-300 mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
+                strokeWidth={1}
+              />
               <p className="text-gray-500 mb-4">Your cart is empty</p>
               <Link
                 href={`${basePath}/products`}
@@ -190,19 +151,7 @@ export function CartDrawer() {
                           className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                           aria-label="Remove item"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
+                          <CloseIcon className="w-4 h-4" />
                         </button>
                       </div>
 
@@ -247,19 +196,7 @@ export function CartDrawer() {
                             className="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label="Decrease quantity"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M20 12H4"
-                              />
-                            </svg>
+                            <MinusIcon className="w-3 h-3" />
                           </button>
                           <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
                             {item.quantity}
@@ -272,19 +209,7 @@ export function CartDrawer() {
                             className="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
                             aria-label="Increase quantity"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4v16m8-8H4"
-                              />
-                            </svg>
+                            <PlusIcon className="w-3 h-3" />
                           </button>
                         </div>
                       </div>
@@ -343,20 +268,6 @@ export function CartDrawer() {
           </div>
         )}
       </div>
-
-      <style jsx global>{`
-        @keyframes slide-in-right {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-        .animate-slide-in-right {
-          animation: slide-in-right 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

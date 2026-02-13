@@ -2,16 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
-
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,13 +15,21 @@ export default function RegisterPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [showPasswordConfirmation, setShowPasswordConfirmation] =
+    useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Redirect if already authenticated
+  // useEffect is needed here to prevent rendering issues.
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(`${basePath}/account`);
+    }
+  }, [isAuthenticated, router, basePath]);
   if (isAuthenticated) {
-    router.push(`${basePath}/account`);
     return null;
   }
 
@@ -96,16 +98,30 @@ export default function RegisterPage() {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           <div>
@@ -115,16 +131,34 @@ export default function RegisterPage() {
             >
               Confirm Password
             </label>
-            <input
-              type="password"
-              id="passwordConfirmation"
-              value={passwordConfirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
-              required
-              minLength={6}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showPasswordConfirmation ? "text" : "password"}
+                id="passwordConfirmation"
+                value={passwordConfirmation}
+                onChange={(e) => setPasswordConfirmation(e.target.value)}
+                required
+                minLength={6}
+                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPasswordConfirmation(!showPasswordConfirmation)
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                aria-label={
+                  showPasswordConfirmation ? "Hide password" : "Show password"
+                }
+              >
+                {showPasswordConfirmation ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           <button

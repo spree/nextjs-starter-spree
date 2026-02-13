@@ -2,7 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { CheckIcon, ChevronDownIcon } from "@/components/icons";
 import { useStore } from "@/contexts/StoreContext";
+import { setStoreCookies } from "@/lib/utils/cookies";
+import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 // Convert ISO country code to flag emoji
 // Uses regional indicator symbols: A=🇦 (U+1F1E6), B=🇧 (U+1F1E7), etc.
@@ -38,26 +41,13 @@ export function CountrySwitcher() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Get current country data
-  const currentCountry = countries.find(
-    (c) => c.iso.toLowerCase() === country.toLowerCase(),
-  );
-
-  // Get the path without country/locale prefix
-  const getPathWithoutPrefix = () => {
-    const match = pathname.match(/^\/[a-z]{2}\/[a-z]{2}(\/.*)?$/i);
-    return match?.[1] || "";
-  };
-
   // Handle country selection
   const handleCountrySelect = (selectedCountry: (typeof countries)[0]) => {
     const newLocale = selectedCountry.default_locale || locale;
-    const pathRest = getPathWithoutPrefix();
+    const pathRest = getPathWithoutPrefix(pathname);
     const newPath = `/${selectedCountry.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
-    // Set cookie for persistence
-    document.cookie = `spree_country=${selectedCountry.iso.toLowerCase()}; path=/; max-age=31536000`;
-    document.cookie = `spree_locale=${newLocale}; path=/; max-age=31536000`;
+    setStoreCookies(selectedCountry.iso.toLowerCase(), newLocale);
 
     setIsOpen(false);
     router.push(newPath);
@@ -83,19 +73,9 @@ export function CountrySwitcher() {
         <span className="font-medium">{country.toUpperCase()}</span>
         <span className="text-gray-400">|</span>
         <span>{currency}</span>
-        <svg
+        <ChevronDownIcon
           className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        />
       </button>
 
       {isOpen && (
@@ -131,17 +111,7 @@ export function CountrySwitcher() {
                         {c.default_currency || store?.default_currency}
                       </span>
                       {isSelected && (
-                        <svg
-                          className="w-4 h-4 text-indigo-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <CheckIcon className="w-4 h-4 text-indigo-600" />
                       )}
                     </span>
                   </button>
@@ -151,15 +121,13 @@ export function CountrySwitcher() {
           </ul>
           {store?.supported_currencies &&
             store.supported_currencies.length > 1 && (
-              <>
-                <div className="border-t border-gray-100 mt-1 pt-1">
-                  <div className="px-3 py-2">
-                    <p className="text-xs text-gray-500">
-                      Currency is based on selected country
-                    </p>
-                  </div>
+              <div className="border-t border-gray-100 mt-1 pt-1">
+                <div className="px-3 py-2">
+                  <p className="text-xs text-gray-500">
+                    Currency is based on selected country
+                  </p>
                 </div>
-              </>
+              </div>
             )}
         </div>
       )}

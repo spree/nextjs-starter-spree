@@ -3,15 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ShoppingBagIcon } from "@/components/icons";
 import { useCart } from "@/contexts/CartContext";
-
-function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
-}
+import { extractBasePath } from "@/lib/utils/path";
 
 export default function CartPage() {
   const { cart, loading, updateItem, removeItem } = useCart();
@@ -37,19 +31,10 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
-          <svg
-            className="w-24 h-24 text-gray-300 mx-auto"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
+          <ShoppingBagIcon
+            className="w-24 h-24 text-gray-300"
+            strokeWidth={1}
+          />
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
             Your cart is empty
           </h1>
