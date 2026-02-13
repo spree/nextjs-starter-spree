@@ -1,6 +1,6 @@
+import { GoogleTagManager } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
