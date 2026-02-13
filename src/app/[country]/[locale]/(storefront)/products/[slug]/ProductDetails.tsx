@@ -192,6 +192,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
+                  aria-label="Decrease quantity"
                 >
                   <svg
                     className="w-4 h-4"
@@ -213,6 +214,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
+                  aria-label="Increase quantity"
                 >
                   <svg
                     className="w-4 h-4"

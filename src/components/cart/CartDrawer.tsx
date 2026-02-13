@@ -37,11 +37,6 @@ export function CartDrawer() {
     };
   }, [isOpen, closeCart]);
 
-  // Close when clicking outside
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) closeCart();
-  };
-
   // Close when navigating
   useEffect(() => {
     closeCart();
@@ -53,12 +48,12 @@ export function CartDrawer() {
   const isEmpty = lineItems.length === 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end"
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 transition-opacity" />
+      <div
+        className="absolute inset-0 bg-black/50 transition-opacity"
+        onClick={closeCart}
+      />
 
       {/* Drawer */}
       <div
@@ -336,20 +331,6 @@ export function CartDrawer() {
           </div>
         )}
       </div>
-
-      <style jsx global>{`
-        @keyframes slide-in-right {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-        .animate-slide-in-right {
-          animation: slide-in-right 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

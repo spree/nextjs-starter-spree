@@ -71,6 +71,7 @@ export function Header() {
             <Link
               href={`${basePath}/account`}
               className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              aria-label="Account"
             >
               <svg
                 className="w-6 h-6"

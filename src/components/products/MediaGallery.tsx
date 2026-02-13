@@ -134,6 +134,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
           <button
             className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
             onClick={() => setIsZoomed(false)}
+            aria-label="Close lightbox"
           >
             <svg
               className="w-8 h-8"
@@ -161,6 +162,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                     prev === 0 ? images.length - 1 : prev - 1,
                   );
                 }}
+                aria-label="Previous image"
               >
                 <svg
                   className="w-8 h-8"
@@ -184,6 +186,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                     prev === images.length - 1 ? 0 : prev + 1,
                   );
                 }}
+                aria-label="Next image"
               >
                 <svg
                   className="w-8 h-8"

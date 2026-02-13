@@ -131,7 +131,8 @@ export function SearchBar({ basePath }: SearchBarProps) {
     }
   };
 
-  const showSuggestions = isOpen && (suggestions.length > 0 || loading);
+  const showSuggestions =
+    isOpen && (suggestions.length > 0 || loading || query.length >= 2);
 
   return (
     <div ref={containerRef} className="relative">
@@ -150,6 +151,13 @@ export function SearchBar({ basePath }: SearchBarProps) {
             onKeyDown={handleKeyDown}
             placeholder="Search..."
             className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            role="combobox"
+            aria-expanded={showSuggestions}
+            aria-controls="search-suggestions"
+            aria-activedescendant={
+              selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined
+            }
+            aria-autocomplete="list"
           />
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -175,12 +183,19 @@ export function SearchBar({ basePath }: SearchBarProps) {
               Searching...
             </div>
           ) : suggestions.length > 0 ? (
-            <ul>
+            <ul id="search-suggestions" role="listbox">
               {suggestions.map((product, index) => (
-                <li key={product.id}>
+                <li
+                  key={product.id}
+                  id={`search-option-${index}`}
+                  role="option"
+                  aria-selected={index === selectedIndex}
+                  tabIndex={-1}
+                >
                   <button
                     type="button"
                     onClick={() => handleSuggestionClick(product)}
+                    tabIndex={-1}
                     className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${
                       index === selectedIndex ? "bg-gray-50" : ""
                     }`}
