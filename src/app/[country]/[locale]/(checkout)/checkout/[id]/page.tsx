@@ -469,7 +469,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             {steps.map((step, index) => (
               <li
                 key={step.id}
-                className={`relative flex flex-row items-center ${index == steps.length - 1 ? "w-auto" : "w-full"}`}
+                className={`relative flex flex-row items-center ${index === steps.length - 1 ? "w-auto" : "w-full"}`}
               >
                 <div className="flex items-center pr-2">
                   <div
