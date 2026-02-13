@@ -32,8 +32,8 @@ const STATIC_PAGES_PER_LOCALE = 3;
  * Splits the sitemap into multiple files when the total URL count
  * exceeds 50,000 (Google's per-sitemap limit).
  *
- * Next.js generates /sitemap/0.xml, /sitemap/1.xml, etc. and
- * automatically creates a sitemap index that references them.
+ * Next.js generates /sitemap/0.xml, /sitemap/1.xml, etc.
+ * robots.ts references all chunks via generateSitemaps().
  *
  * @see https://nextjs.org/docs/app/api-reference/functions/generate-sitemaps
  */

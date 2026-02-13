@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getStore } from "@/lib/data/store";
+import { generateSitemaps } from "./sitemap";
 
 /**
  * AI crawler user-agents to block by default.
@@ -64,6 +65,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     /\/$/,
     "",
   );
+  const sitemaps = await generateSitemaps();
   const blockAi = process.env.ROBOTS_DISALLOW_AI !== "false";
 
   const rules: MetadataRoute.Robots["rules"] = [
@@ -91,7 +93,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
   return {
     rules,
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: sitemaps.map((s) => `${baseUrl}/sitemap/${s.id}.xml`),
     host: baseUrl,
   };
 }
