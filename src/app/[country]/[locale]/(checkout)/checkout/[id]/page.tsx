@@ -469,9 +469,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             {steps.map((step, index) => (
               <li
                 key={step.id}
-                className={`relative ${index < steps.length - 1 ? "pr-8 sm:pr-20" : ""}`}
+                className={`relative flex flex-row items-center ${index == steps.length - 1 ? "w-auto" : "w-full"}`}
               >
-                <div className="flex items-center">
+                <div className="flex items-center pr-2">
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       index < currentStepIndex
@@ -484,7 +484,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                     {index < currentStepIndex ? "✓" : index + 1}
                   </div>
                   <span
-                    className={`ml-4 text-sm font-medium ${
+                    className={`ml-2 text-sm font-medium ${
                       index === currentStepIndex
                         ? "text-indigo-600"
                         : index < currentStepIndex
@@ -496,7 +496,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   </span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="absolute top-4 left-8 w-full h-0.5 bg-gray-200">
+                  <div className="w-full h-0.5 bg-gray-200">
                     <div
                       className={`h-full ${index < currentStepIndex ? "bg-indigo-600" : "bg-gray-200"}`}
                       style={{
