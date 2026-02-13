@@ -6,13 +6,6 @@ import { getStore } from "@/lib/data/store";
 import { getTaxons } from "@/lib/data/taxonomies";
 
 /**
- * Revalidate the sitemap at most once per hour (3600 seconds).
- * Adjust via the SITEMAP_REVALIDATE_SECONDS env variable.
- */
-export const revalidate =
-  Number(process.env.SITEMAP_REVALIDATE_SECONDS) || 3600;
-
-/**
  * Sitemap locale mode — controls which country/locale combinations are
  * included in the generated sitemap.
  *
@@ -48,7 +41,9 @@ export async function generateSitemaps() {
   const store = await getStore();
   const countryLocales = await resolveCountryLocales(store);
 
-  // Lightweight count — fetch only 1 record per request to read meta.count
+  // Lightweight count — fetch only 1 record per request to read meta.count.
+  // Taxon count is approximate (includes root taxons filtered out during generation),
+  // so we may produce one extra sitemap file at most — harmless for SEO.
   const [productCount, taxonCount] = await Promise.all([
     fetchTotalCount("products"),
     fetchTotalCount("taxons"),
@@ -67,7 +62,10 @@ export default async function sitemap(props: {
   const id = Number(await props.id);
 
   const store = await getStore();
-  const baseUrl = store.url.replace(/\/$/, "");
+  const baseUrl = (store.url || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
+    /\/$/,
+    "",
+  );
   const countryLocales = await resolveCountryLocales(store);
 
   // Fetch all products and taxons in parallel
@@ -78,7 +76,9 @@ export default async function sitemap(props: {
 
   const nonRootTaxons = allTaxons.filter((t) => !t.is_root);
 
-  // Build the full flat list of entries across all locales
+  // Build entries for all locales, then slice to the requested chunk.
+  // For most stores (< 50k URLs) this produces a single chunk so no slicing occurs.
+  const now = new Date();
   const entries: MetadataRoute.Sitemap = [];
 
   for (const { country, locale } of countryLocales) {
@@ -88,19 +88,19 @@ export default async function sitemap(props: {
     entries.push(
       {
         url: basePath,
-        lastModified: new Date(),
+        lastModified: now,
         changeFrequency: "daily",
         priority: 1,
       },
       {
         url: `${basePath}/products`,
-        lastModified: new Date(),
+        lastModified: now,
         changeFrequency: "daily",
         priority: 0.8,
       },
       {
         url: `${basePath}/taxonomies`,
-        lastModified: new Date(),
+        lastModified: now,
         changeFrequency: "weekly",
         priority: 0.7,
       },
@@ -135,6 +135,9 @@ export default async function sitemap(props: {
   }
 
   // Return only the slice for this sitemap chunk
+  if (id === 0 && entries.length <= URLS_PER_SITEMAP) {
+    return entries;
+  }
   const start = id * URLS_PER_SITEMAP;
   return entries.slice(start, start + URLS_PER_SITEMAP);
 }
@@ -184,16 +187,13 @@ async function resolveCountryLocales(
       return [{ country: defaultCountry, locale: storeDefaultLocale }];
     }
 
-    return selectedIsos
-      .map((iso) => {
-        const found = allCountries.find(
-          (c) => c.iso.toLowerCase() === iso,
-        );
-        return {
-          country: iso,
-          locale: found?.default_locale || storeDefaultLocale,
-        };
-      });
+    return selectedIsos.map((iso) => {
+      const found = allCountries.find((c) => c.iso.toLowerCase() === iso);
+      return {
+        country: iso,
+        locale: found?.default_locale || storeDefaultLocale,
+      };
+    });
   }
 
   // mode === "all"
