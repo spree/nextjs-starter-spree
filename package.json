@@ -15,8 +15,8 @@
   "dependencies": {
     "@next/third-parties": "^16.1.6",
     "@sentry/nextjs": "^10.38.0",
-    "@spree/next": "^0.1.1",
-    "@spree/sdk": "^0.1.4",
+    "@spree/next": "^0.2.0",
+    "@spree/sdk": "^0.2.0",
     "next": "^16",
     "react": "^19",
     "react-dom": "^19"
