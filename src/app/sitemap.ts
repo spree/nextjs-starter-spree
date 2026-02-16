@@ -117,7 +117,7 @@ export default async function sitemap(props: {
           ? {
               images: product.images
                 .map((img) => img.original_url)
-                .filter((url): url is string => url !== null),
+                .filter((url): url is string => url != null),
             }
           : {}),
       });
