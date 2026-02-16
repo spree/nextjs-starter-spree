@@ -30,11 +30,11 @@ export default function CartPage() {
     }
   }, [cart, loading]);
 
-  const handleRemove = (item: StoreLineItem) => {
+  const handleRemove = async (item: StoreLineItem) => {
+    await removeItem(item.id);
     if (cart) {
       trackRemoveFromCart(item, cart.currency);
     }
-    removeItem(item.id);
   };
 
   if (loading) {

@@ -28,6 +28,7 @@ export function CartDrawer() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const viewCartFiredRef = useRef(false);
 
   // Close on escape key
   useEffect(() => {
@@ -49,10 +50,20 @@ export function CartDrawer() {
     closeCart();
   }, [pathname, closeCart]);
 
-  // Track view_cart when drawer opens with items
+  // Track view_cart when drawer opens with items (fire once per open)
   useEffect(() => {
-    if (isOpen && cart && cart.line_items && cart.line_items.length > 0) {
+    if (
+      isOpen &&
+      cart &&
+      cart.line_items &&
+      cart.line_items.length > 0 &&
+      !viewCartFiredRef.current
+    ) {
       trackViewCart(cart);
+      viewCartFiredRef.current = true;
+    }
+    if (!isOpen) {
+      viewCartFiredRef.current = false;
     }
   }, [isOpen, cart]);
 
@@ -154,11 +165,11 @@ export function CartDrawer() {
                           {item.name}
                         </Link>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
+                            await removeItem(item.id);
                             if (cart) {
                               trackRemoveFromCart(item, cart.currency);
                             }
-                            removeItem(item.id);
                           }}
                           disabled={updating}
                           className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"

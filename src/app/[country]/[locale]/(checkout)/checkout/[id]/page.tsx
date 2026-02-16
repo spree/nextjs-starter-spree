@@ -218,8 +218,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       ) {
         setShipments(orderData.shipments || []);
       }
+
+      return orderData;
     } catch {
       setError("Failed to load checkout. Please try again.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -267,9 +270,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       }
 
       // Reload order to get updated state
-      await loadOrder();
-      if (orderRef.current) {
-        trackAddShippingInfo(orderRef.current);
+      const updatedOrder = await loadOrder();
+      if (updatedOrder) {
+        trackAddShippingInfo(updatedOrder);
       }
     } catch {
       setError("An error occurred. Please try again.");
