@@ -5,10 +5,11 @@ import type { StoreProduct, StoreStore, StoreTaxon } from "@spree/sdk";
  * If the URL doesn't start with http:// or https://, prepend https://.
  */
 export function ensureProtocol(url: string): string {
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
+  const trimmed = url.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
   }
-  return `https://${url}`;
+  return `https://${trimmed}`;
 }
 
 /**

@@ -29,7 +29,7 @@ export default async function CountryLocaleLayout({
 
   let store;
   try {
-    store = await getCachedStore({ locale });
+    store = await getCachedStore(locale);
   } catch {
     store = null;
   }

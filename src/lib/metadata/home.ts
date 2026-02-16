@@ -13,7 +13,7 @@ export async function generateHomeMetadata({
 }: HomeMetadataParams): Promise<Metadata> {
   let store;
   try {
-    store = await getCachedStore({ locale });
+    store = await getCachedStore(locale);
   } catch {
     store = null;
   }

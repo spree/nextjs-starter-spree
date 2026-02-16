@@ -26,14 +26,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   let product;
   try {
-    product = await getCachedProduct(slug, { includes: "images" }, { locale });
+    product = await getCachedProduct(slug, "images", locale);
   } catch {
     product = null;
   }
 
   let store;
   try {
-    store = await getCachedStore({ locale });
+    store = await getCachedStore(locale);
   } catch {
     store = null;
   }
