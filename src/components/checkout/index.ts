@@ -4,3 +4,4 @@ export { CouponCode } from "./CouponCode";
 export { DeliveryStep } from "./DeliveryStep";
 export { OrderSummary } from "./OrderSummary";
 export { PaymentStep } from "./PaymentStep";
+export { StripePaymentForm } from "./StripePaymentForm";

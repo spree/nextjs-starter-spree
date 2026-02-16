@@ -20,7 +20,6 @@ import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
   advanceCheckout,
   applyCouponCode,
-  completeOrder,
   getCheckoutOrder,
   removeCouponCode,
   selectShippingRate,
@@ -28,6 +27,10 @@ import {
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
 import { getCountries, getCountry } from "@/lib/data/countries";
+import {
+  completeCheckoutOrder,
+  completeCheckoutPaymentSession,
+} from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
 // Checkout steps
@@ -187,7 +190,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       // Check if order is already complete
       if (orderData.state === "complete") {
-        router.push(`${basePath}/account/orders/${orderId}`);
+        router.push(`${basePath}/order-placed/${orderId}`);
         return;
       }
 
@@ -276,12 +279,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       const result = await selectShippingRate(order.id, shipmentId, rateId);
       if (!result.success) {
         setError(result.error || "Failed to select shipping rate");
-      }
-      // Reload order to get updated totals (includes shipments)
-      const orderData = await getCheckoutOrder(order.id);
-      if (orderData) {
-        setOrder(orderData);
-        setShipments(orderData.shipments || []);
+      } else if (result.order) {
+        setOrder(result.order);
+        setShipments(result.order.shipments || []);
       }
     } catch {
       setError("An error occurred. Please try again.");
@@ -315,43 +315,61 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   };
 
-  // Handle payment submission (billing address + complete order)
-  const handlePaymentSubmit = async (paymentData: {
+  // Handle billing address update (called by PaymentStep before Stripe confirmation)
+  const handleUpdateBillingAddress = async (data: {
     bill_address: AddressParams;
-    use_shipping_for_billing: boolean;
-  }) => {
+  }): Promise<boolean> => {
+    if (!order) return false;
+
+    setError(null);
+
+    const updateResult = await updateOrderAddresses(order.id, {
+      bill_address: data.bill_address,
+    });
+
+    if (!updateResult.success) {
+      setError(updateResult.error || "Failed to save billing address");
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle payment completion (called by PaymentStep after Stripe confirms)
+  const handlePaymentComplete = async (paymentSessionId: string) => {
     if (!order) return;
 
-    setProcessing(true);
     setError(null);
 
     try {
-      // Update billing address
-      const updateResult = await updateOrderAddresses(order.id, {
-        bill_address: paymentData.bill_address,
-      });
+      // Complete the payment session on the backend
+      const sessionResult = await completeCheckoutPaymentSession(
+        order.id,
+        paymentSessionId,
+      );
 
-      if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save billing address");
+      if (!sessionResult.success) {
+        setError(sessionResult.error || "Failed to complete payment session");
         setProcessing(false);
         return;
       }
 
-      // Complete the order (skip actual payment for now)
-      const completeResult = await completeOrder(order.id);
-      if (!completeResult.success) {
-        setError(completeResult.error || "Failed to complete order");
-        setProcessing(false);
-        return;
+      // Check if the order was already completed by the payment session completion.
+      // If not, explicitly complete it.
+      const updatedOrder = await getCheckoutOrder(order.id);
+      if (updatedOrder && updatedOrder.state !== "complete") {
+        const completeResult = await completeCheckoutOrder(order.id);
+        if (!completeResult.success) {
+          setError(completeResult.error || "Failed to complete order");
+          setProcessing(false);
+          return;
+        }
       }
 
-      // Redirect to order confirmation
-      if (completeResult.order) {
-        router.push(`${basePath}/account/orders/${completeResult.order.id}`);
-      }
+      // Redirect to order placed page (cart cookie is cleared there)
+      router.push(`${basePath}/order-placed/${order.id}`);
     } catch {
       setError("An error occurred. Please try again.");
-    } finally {
       setProcessing(false);
     }
   };
@@ -554,9 +572,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           order={order}
           countries={countries}
           fetchStates={fetchStates}
-          onSubmit={handlePaymentSubmit}
+          onUpdateBillingAddress={handleUpdateBillingAddress}
+          onPaymentComplete={handlePaymentComplete}
           onBack={() => goToStep("delivery")}
           processing={processing}
+          setProcessing={setProcessing}
         />
       )}
     </>

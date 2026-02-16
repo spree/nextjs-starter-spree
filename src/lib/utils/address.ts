@@ -28,19 +28,21 @@ export const emptyAddress: AddressFormData = {
   state_name: "",
 };
 
-export function addressToFormData(address?: {
-  firstname: string | null;
-  lastname: string | null;
-  address1: string | null;
-  address2: string | null;
-  city: string | null;
-  zipcode: string | null;
-  phone: string | null;
-  company: string | null;
-  country_iso: string;
-  state_abbr: string | null;
-  state_name: string | null;
-}): AddressFormData {
+export function addressToFormData(
+  address?: {
+    firstname: string | null;
+    lastname: string | null;
+    address1: string | null;
+    address2: string | null;
+    city: string | null;
+    zipcode: string | null;
+    phone: string | null;
+    company: string | null;
+    country_iso: string;
+    state_abbr: string | null;
+    state_name: string | null;
+  } | null,
+): AddressFormData {
   if (!address) return { ...emptyAddress };
   return {
     firstname: address.firstname || "",
@@ -74,7 +76,7 @@ export function formDataToAddress(data: AddressFormData): AddressParams {
 }
 
 export function addressesMatch(
-  a: AddressFormData | undefined,
+  a: AddressFormData | undefined | null,
   b:
     | {
         firstname: string | null;
@@ -84,7 +86,8 @@ export function addressesMatch(
         zipcode: string | null;
         country_iso: string;
       }
-    | undefined,
+    | undefined
+    | null,
 ): boolean {
   if (!a || !b) return false;
   return (
