@@ -12,6 +12,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 - **React 19** - Latest React with improved Server Components
 - **Tailwind CSS 4** - Utility-first styling
 - **TypeScript 5** - Full type safety
+- **Sentry** - Error tracking and performance monitoring with source maps
 - [@spree/sdk](https://github.com/spree/spree/tree/main/packages/sdk) - Official Spree Commerce SDK
 - [@spree/next](https://github.com/spree/spree/tree/main/packages/next) - Server actions, caching, and cookie-based auth
 
@@ -30,6 +31,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
   - Saved payment methods
 - **Multi-Region Support** - Country and currency switching via URL segments
 - **Responsive Design** - Mobile-first Tailwind CSS styling
+- **Error Tracking** - Sentry integration for both server-side and client-side error monitoring with source maps
 
 ## Architecture
 
@@ -70,7 +72,7 @@ cp .env.local.example .env.local
 
 ```env
 SPREE_API_URL=http://localhost:3000
-SPREE_API_KEY=your_publishable_api_key_here
+SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 ```
 
 > Note: These are server-side only variables (no `NEXT_PUBLIC_` prefix needed).
@@ -84,6 +86,12 @@ SPREE_API_KEY=your_publishable_api_key_here
 | `SITEMAP_LOCALE_MODE` | Which country/locale pairs to include in the sitemap: `default`, `selected`, or `all` | `default` |
 | `SITEMAP_COUNTRIES` | Comma-separated country ISO codes (only used when `SITEMAP_LOCALE_MODE=selected`) | _(empty)_ |
 | `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `true` |
+| `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
+| `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
+| `SENTRY_PROJECT` | Sentry project slug (for source map uploads) | _(none)_ |
+| `SENTRY_AUTH_TOKEN` | Sentry auth token (for source map uploads in CI) | _(none)_ |
+| `SENTRY_SEND_DEFAULT_PII` | Send PII (IP addresses, cookies, user data) to Sentry server-side | `false` |
+| `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` | Send PII to Sentry client-side | `false` |
 
 > **Sitemap locale modes:**
 > - `default` — only the store's default country and locale (good for single-region stores)
@@ -91,6 +99,8 @@ SPREE_API_KEY=your_publishable_api_key_here
 > - `all` — every country available in the Spree store
 >
 > Each country resolves its locale from the country's `default_locale` in the Spree API, falling back to the store's default locale.
+
+> **Privacy note:** PII collection is disabled by default. Only set `SENTRY_SEND_DEFAULT_PII` / `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` to `true` if you have appropriate user consent or a privacy policy covering this data.
 
 ### Development
 
@@ -235,8 +245,9 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 1. Push your code to GitHub
 2. Import the repository in Vercel
 3. Add environment variables:
-   - `SPREE_API_URL` and `SPREE_API_KEY` (required)
+   - `SPREE_API_URL` and `SPREE_PUBLISHABLE_KEY` (required)
    - `SITEMAP_LOCALE_MODE`, `SITEMAP_COUNTRIES` (optional — for multi-region sitemap)
+   - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy
 
 ## License
