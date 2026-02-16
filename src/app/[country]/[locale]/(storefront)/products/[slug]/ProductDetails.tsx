@@ -13,7 +13,7 @@ import {
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { useCart } from "@/contexts/CartContext";
-import { useStore } from "@/contexts/StoreContext";
+import { trackAddToCart } from "@/lib/analytics/gtm";
 
 interface ProductDetailsProps {
   product: StoreProduct;
@@ -22,7 +22,6 @@ interface ProductDetailsProps {
 
 export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const { addItem } = useCart();
-  const { currency } = useStore();
 
   // Filter out master variant from variants list
   const variants = useMemo(() => {
@@ -107,6 +106,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     setLoading(true);
     try {
       await addItem(variantId, quantity);
+      trackAddToCart(product, selectedVariant, quantity);
     } catch (error) {
       console.error("Failed to add to cart:", error);
     } finally {

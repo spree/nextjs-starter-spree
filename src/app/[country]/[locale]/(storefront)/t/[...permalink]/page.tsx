@@ -93,6 +93,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <CategoryProductsContent
           taxonPermalink={fullPermalink}
           taxonId={taxon.id}
+          taxonName={taxon.name}
           basePath={basePath}
         />
       </div>

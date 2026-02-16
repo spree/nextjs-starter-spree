@@ -11,6 +11,7 @@ import {
   ShoppingBagIcon,
 } from "@/components/icons";
 import { useCart } from "@/contexts/CartContext";
+import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
 export function CartDrawer() {
@@ -47,6 +48,13 @@ export function CartDrawer() {
   useEffect(() => {
     closeCart();
   }, [pathname, closeCart]);
+
+  // Track view_cart when drawer opens with items
+  useEffect(() => {
+    if (isOpen && cart && cart.line_items && cart.line_items.length > 0) {
+      trackViewCart(cart);
+    }
+  }, [isOpen, cart]);
 
   if (!isOpen) return null;
 
@@ -146,7 +154,12 @@ export function CartDrawer() {
                           {item.name}
                         </Link>
                         <button
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => {
+                            if (cart) {
+                              trackRemoveFromCart(item, cart.currency);
+                            }
+                            removeItem(item.id);
+                          }}
                           disabled={updating}
                           className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                           aria-label="Remove item"

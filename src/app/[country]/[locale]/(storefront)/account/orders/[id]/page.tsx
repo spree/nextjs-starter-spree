@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { ChevronLeftIcon, ImagePlaceholderIcon } from "@/components/icons";
+import { trackPurchase } from "@/lib/analytics/gtm";
 import { getOrder } from "@/lib/data/orders";
 import { extractBasePath } from "@/lib/utils/path";
 
@@ -70,6 +71,9 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         includes: "line_items,shipments,payments,bill_address,ship_address",
       });
       setOrder(orderData);
+      if (orderData && orderData.state === "complete") {
+        trackPurchase(orderData);
+      }
       setLoading(false);
     }
     loadOrder();

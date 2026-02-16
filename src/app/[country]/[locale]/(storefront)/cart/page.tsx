@@ -1,16 +1,41 @@
 "use client";
 
+import type { StoreLineItem } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { ShoppingBagIcon } from "@/components/icons";
 import { useCart } from "@/contexts/CartContext";
+import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function CartPage() {
   const { cart, loading, updateItem, removeItem } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const viewCartFiredRef = useRef(false);
+
+  // Track view_cart when cart loads with items
+  useEffect(() => {
+    if (
+      !loading &&
+      cart &&
+      cart.line_items &&
+      cart.line_items.length > 0 &&
+      !viewCartFiredRef.current
+    ) {
+      trackViewCart(cart);
+      viewCartFiredRef.current = true;
+    }
+  }, [cart, loading]);
+
+  const handleRemove = (item: StoreLineItem) => {
+    if (cart) {
+      trackRemoveFromCart(item, cart.currency);
+    }
+    removeItem(item.id);
+  };
 
   if (loading) {
     return (
@@ -110,7 +135,7 @@ export default function CartPage() {
                     </button>
                   </div>
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => handleRemove(item)}
                     className="text-sm text-red-600 hover:text-red-700"
                   >
                     Remove
