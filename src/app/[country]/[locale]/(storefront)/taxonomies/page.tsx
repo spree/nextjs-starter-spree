@@ -1,7 +1,9 @@
 import type { StoreTaxon, StoreTaxonomy } from "@spree/sdk";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { GridIcon } from "@/components/icons";
 import { getTaxonomies } from "@/lib/data/taxonomies";
+import { generateCategoriesMetadata } from "@/lib/metadata/categories";
 
 export const revalidate = 60;
 
@@ -10,6 +12,13 @@ interface CategoriesPageProps {
     country: string;
     locale: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: CategoriesPageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  return generateCategoriesMetadata({ country, locale });
 }
 
 function getTopLevelTaxons(taxons: StoreTaxon[] | undefined): StoreTaxon[] {

@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckIcon, LightningBoltIcon, SupportIcon } from "@/components/icons";
+import { generateHomeMetadata } from "@/lib/metadata/home";
 import { FeaturedProducts } from "./FeaturedProducts";
 
 interface HomePageProps {
@@ -7,6 +9,13 @@ interface HomePageProps {
     country: string;
     locale: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: HomePageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  return generateHomeMetadata({ country, locale });
 }
 
 export default async function HomePage({ params }: HomePageProps) {

@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
-import { getTaxon } from "@/lib/data/taxonomies";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getCachedStore, getCachedTaxon } from "@/lib/data/cached";
+import { generateCategoryMetadata } from "@/lib/metadata/category";
+import { buildBreadcrumbJsonLd } from "@/lib/seo";
 import { CategoryProductsContent } from "./CategoryProductsContent";
 
 export const revalidate = 60;
@@ -13,6 +17,13 @@ interface CategoryPageProps {
   }>;
 }
 
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const { country, locale, permalink } = await params;
+  return generateCategoryMetadata({ country, locale, permalink });
+}
+
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { country, locale, permalink } = await params;
   const fullPermalink = permalink.join("/");
@@ -20,7 +31,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   let taxon;
   try {
-    taxon = await getTaxon(fullPermalink, { includes: "ancestors,children" });
+    taxon = await getCachedTaxon(
+      fullPermalink,
+      { includes: "ancestors,children" },
+      { locale },
+    );
   } catch (error) {
     console.error("Failed to fetch taxon:", error);
     notFound();
@@ -30,8 +45,19 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  let store;
+  try {
+    store = await getCachedStore({ locale });
+  } catch {
+    store = null;
+  }
+
   return (
     <div>
+      {store?.url && (
+        <JsonLd data={buildBreadcrumbJsonLd(taxon, basePath, store.url)} />
+      )}
+
       {/* Banner Image */}
       {taxon.image_url && (
         <div className="relative w-full h-48 md:h-64 lg:h-80 bg-gray-100">
