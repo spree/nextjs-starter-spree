@@ -160,7 +160,7 @@ export function AddressStep({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isAuthenticated}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="you@example.com"
             />
             {isAuthenticated && (
@@ -209,7 +209,7 @@ export function AddressStep({
           <button
             type="submit"
             disabled={processing}
-            className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {processing ? "Saving..." : "Continue to Delivery"}
           </button>

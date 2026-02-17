@@ -286,7 +286,7 @@ export function PaymentStep({
             <button
               type="button"
               onClick={onBack}
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-500 hover:text-primary-700"
             >
               Edit
             </button>
@@ -321,7 +321,7 @@ export function PaymentStep({
               type="checkbox"
               checked={useShippingForBilling}
               onChange={(e) => handleUseShippingChange(e.target.checked)}
-              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
             />
             <span className="ml-2 text-sm text-gray-600">
               Same as shipping address
@@ -366,7 +366,7 @@ export function PaymentStep({
                   onChange={() =>
                     handleCardSelect(card.gateway_payment_profile_id)
                   }
-                  className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
                 />
                 <PaymentIcon
                   type={getCardIconType(card.cc_type)}
@@ -382,7 +382,7 @@ export function PaymentStep({
                   </span>
                 </div>
                 {card.default && (
-                  <span className="text-xs font-medium text-primary-600 bg-primary-100 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-medium text-primary-500 bg-primary-100 px-2 py-0.5 rounded-full">
                     Default
                   </span>
                 )}
@@ -402,7 +402,7 @@ export function PaymentStep({
                 name="payment_source"
                 checked={isAddingNew}
                 onChange={() => handleCardSelect(null)}
-                className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
               />
               <CreditCardIcon
                 className="w-5 h-5 text-gray-400"
@@ -470,7 +470,7 @@ export function PaymentStep({
             !clientSecret ||
             (isAddingNew && !gatewayReady)
           }
-          className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {processing ? "Processing..." : "Pay Now"}
         </button>

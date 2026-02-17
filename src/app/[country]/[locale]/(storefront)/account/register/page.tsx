@@ -86,7 +86,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
               placeholder="you@example.com"
             />
           </div>
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
                 placeholder="••••••••"
               />
               <button
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                 required
                 minLength={6}
-                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
                 placeholder="••••••••"
               />
               <button
@@ -164,7 +164,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary-600 text-white py-2 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>
@@ -174,7 +174,7 @@ export default function RegisterPage() {
           <span className="text-gray-500">Already have an account? </span>
           <Link
             href={`${basePath}/account`}
-            className="text-primary-600 hover:text-primary-700 font-medium"
+            className="text-primary-500 hover:text-primary-700 font-medium"
           >
             Sign in
           </Link>

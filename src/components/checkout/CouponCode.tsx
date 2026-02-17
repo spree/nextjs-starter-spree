@@ -99,7 +99,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
               setError(null);
             }}
             placeholder="Gift card or discount code"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary-500 focus:outline-primary-500"
           />
           <button
             type="submit"

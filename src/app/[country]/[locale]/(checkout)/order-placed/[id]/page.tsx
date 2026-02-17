@@ -104,7 +104,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         </h1>
         <Link
           href={`${basePath}/`}
-          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
         >
           Continue Shopping
         </Link>
@@ -273,7 +273,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       <div className="text-center">
         <Link
           href={`${basePath}/`}
-          className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
+          className="inline-flex items-center px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
         >
           Continue Shopping
         </Link>

@@ -204,7 +204,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                   flex-1 py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2
                   ${
                     isPurchasable
-                      ? "bg-primary-600 text-white hover:bg-primary-700"
+                      ? "bg-primary-500 text-white hover:bg-primary-700"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }
                   disabled:opacity-50 disabled:cursor-not-allowed

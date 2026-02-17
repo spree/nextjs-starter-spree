@@ -40,7 +40,7 @@ export function DeliveryStep({
             <button
               type="button"
               onClick={onBack}
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-500 hover:text-primary-700"
             >
               Edit
             </button>
@@ -109,7 +109,7 @@ export function DeliveryStep({
                             handleRateChange(shipment.id, rate.id)
                           }
                           disabled={processing}
-                          className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                          className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
                         />
                         <div className="ml-3">
                           <span className="block text-sm font-medium text-gray-900">
@@ -143,7 +143,7 @@ export function DeliveryStep({
           type="button"
           onClick={onConfirm}
           disabled={processing || !allRatesSelected}
-          className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {processing ? "Processing..." : "Continue"}
         </button>

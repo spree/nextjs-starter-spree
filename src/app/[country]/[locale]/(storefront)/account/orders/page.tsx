@@ -111,7 +111,7 @@ export default function OrdersPage() {
           </p>
           <Link
             href={`${basePath}/products`}
-            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
             Start Shopping
           </Link>
@@ -176,8 +176,8 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <Link
-                        href={`${basePath}/account/orders/${order.number}`}
-                        className="text-primary-600 hover:text-primary-900 text-sm font-medium"
+                        href={`${basePath}/account/orders/${order.id}`}
+                        className="text-primary-500 hover:text-primary-900 text-sm font-medium"
                       >
                         View
                       </Link>

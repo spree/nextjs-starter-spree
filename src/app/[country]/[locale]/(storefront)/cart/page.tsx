@@ -43,7 +43,7 @@ export default function CartPage() {
           </p>
           <Link
             href={`${basePath}/products`}
-            className="mt-6 inline-block bg-primary-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-primary-700 transition-colors"
+            className="mt-6 inline-block bg-primary-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
             Continue Shopping
           </Link>
@@ -159,14 +159,14 @@ export default function CartPage() {
 
             <Link
               href={`${basePath}/checkout/${cart.id}`}
-              className="mt-6 block w-full bg-primary-600 text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
+              className="mt-6 block w-full bg-primary-500 text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
             >
               Proceed to Checkout
             </Link>
 
             <Link
               href={`${basePath}/products`}
-              className="mt-4 block w-full text-center text-primary-600 hover:text-primary-700 font-medium"
+              className="mt-4 block w-full text-center text-primary-500 hover:text-primary-700 font-medium"
             >
               Continue Shopping
             </Link>

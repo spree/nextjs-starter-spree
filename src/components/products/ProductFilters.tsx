@@ -128,7 +128,7 @@ export function ProductFilters({
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className="text-sm text-primary-600 hover:text-primary-800"
+          className="text-sm text-primary-500 hover:text-primary-800"
         >
           Reset filters
         </button>
@@ -302,7 +302,7 @@ function AvailabilityFilterSection({
             name="availability"
             checked={selected === option.id}
             onChange={() => onChange(option.id as "in_stock" | "out_of_stock")}
-            className="text-primary-600"
+            className="text-primary-500"
           />
           <span className="text-sm text-gray-700">{option.label}</span>
           <span className="text-xs text-gray-400">({option.count})</span>
@@ -341,7 +341,7 @@ function OptionFilterSection({
             type="checkbox"
             checked={selectedValues.includes(option.id)}
             onChange={() => onToggle(option.id)}
-            className="rounded text-primary-600"
+            className="rounded text-primary-500"
           />
           <span className="text-sm text-gray-700">{option.label}</span>
           <span className="text-xs text-gray-400">({option.count})</span>

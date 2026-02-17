@@ -101,7 +101,7 @@ export function AddressSelector({
                     value={address.id}
                     checked={selectedAddressId === address.id}
                     onChange={() => handleSelectAddress(address.id)}
-                    className="mt-1 h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                    className="mt-1 h-4 w-4 text-primary-500 border-gray-300 focus:ring-primary-500"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900">
@@ -132,7 +132,7 @@ export function AddressSelector({
                       e.preventDefault();
                       onEditAddress(address);
                     }}
-                    className="ml-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    className="ml-2 text-sm text-primary-500 hover:text-primary-700 font-medium"
                   >
                     Edit
                   </button>
@@ -152,7 +152,7 @@ export function AddressSelector({
                 value="new"
                 checked={selectedAddressId === "new"}
                 onChange={() => handleSelectAddress("new")}
-                className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                className="h-4 w-4 text-primary-500 border-gray-300 focus:ring-primary-500"
               />
               <span className="ml-3 text-sm font-medium text-gray-900">
                 Use a different address

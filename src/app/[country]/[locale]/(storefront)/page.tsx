@@ -29,7 +29,7 @@ export default async function HomePage({ params }: HomePageProps) {
             <div className="mt-8 flex justify-center gap-4">
               <Link
                 href={`${basePath}/products`}
-                className="bg-white text-primary-600 px-6 py-3 rounded-xl font-medium hover:bg-primary-50 transition-colors"
+                className="bg-white text-primary-500 px-6 py-3 rounded-xl font-medium hover:bg-primary-50 transition-colors"
               >
                 Shop Now
               </Link>
@@ -52,7 +52,7 @@ export default async function HomePage({ params }: HomePageProps) {
           </h2>
           <Link
             href={`${basePath}/products`}
-            className="text-primary-600 hover:text-primary-700 font-medium"
+            className="text-primary-500 hover:text-primary-700 font-medium"
           >
             View all &rarr;
           </Link>
@@ -65,7 +65,7 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-primary-100 text-primary-500 rounded-xl flex items-center justify-center mx-auto">
                 <CheckIcon className="w-6 h-6" />
               </div>
               <h3 className="mt-4 text-lg font-medium text-gray-900">
@@ -76,7 +76,7 @@ export default async function HomePage({ params }: HomePageProps) {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-primary-100 text-primary-500 rounded-xl flex items-center justify-center mx-auto">
                 <LightningBoltIcon className="w-6 h-6" />
               </div>
               <h3 className="mt-4 text-lg font-medium text-gray-900">
@@ -87,7 +87,7 @@ export default async function HomePage({ params }: HomePageProps) {
               </p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-primary-100 text-primary-500 rounded-xl flex items-center justify-center mx-auto">
                 <SupportIcon className="w-6 h-6" />
               </div>
               <h3 className="mt-4 text-lg font-medium text-gray-900">

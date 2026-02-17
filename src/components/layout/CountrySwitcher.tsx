@@ -111,7 +111,7 @@ export function CountrySwitcher() {
                         {c.default_currency || store?.default_currency}
                       </span>
                       {isSelected && (
-                        <CheckIcon className="w-4 h-4 text-primary-600" />
+                        <CheckIcon className="w-4 h-4 text-primary-500" />
                       )}
                     </span>
                   </button>

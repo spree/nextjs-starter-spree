@@ -215,7 +215,7 @@ export function VariantPicker({
                         px-4 py-2 text-sm font-medium rounded-xl border transition-all relative
                         ${
                           isSelected
-                            ? "border-primary-600 bg-primary-50 text-primary-600"
+                            ? "border-primary-600 bg-primary-50 text-primary-500"
                             : "border-gray-200 text-gray-700 hover:border-gray-400"
                         }
                         ${!isAvailable ? "opacity-30 cursor-not-allowed line-through" : "cursor-pointer"}

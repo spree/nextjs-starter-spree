@@ -64,7 +64,7 @@ export function ProductCard({ product, basePath = "" }: ProductCardProps) {
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2">
+        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary-500 transition-colors line-clamp-2">
           {product.name}
         </h3>
 

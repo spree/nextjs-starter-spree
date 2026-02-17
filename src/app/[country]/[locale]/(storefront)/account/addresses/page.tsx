@@ -53,7 +53,7 @@ function AddressCard({
         <div className="flex gap-2">
           <button
             onClick={onEdit}
-            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            className="text-sm text-primary-500 hover:text-primary-700 font-medium"
           >
             Edit
           </button>
@@ -164,7 +164,7 @@ export default function AddressesPage() {
         <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
         <button
           onClick={handleAdd}
-          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors text-sm"
+          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors text-sm"
         >
           <PlusIcon className="w-4 h-4 mr-2" />
           Add Address
@@ -182,7 +182,7 @@ export default function AddressesPage() {
           </p>
           <button
             onClick={handleAdd}
-            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
             Add Your First Address
           </button>
