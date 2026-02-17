@@ -104,7 +104,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         </h1>
         <Link
           href={`${basePath}/`}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700"
         >
           Continue Shopping
         </Link>
@@ -131,14 +131,14 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       </div>
 
       {/* Order Items */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Order Items</h2>
         </div>
         <ul className="divide-y divide-gray-200">
           {order.line_items?.map((item) => (
             <li key={item.id} className="px-6 py-4 flex gap-4">
-              <div className="w-14 h-14 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+              <div className="w-14 h-14 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
                 {item.thumbnail_url ? (
                   <Image
                     src={item.thumbnail_url}
@@ -201,7 +201,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       </div>
 
       {/* Contact & Addresses */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
             Contact Information
@@ -273,7 +273,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       <div className="text-center">
         <Link
           href={`${basePath}/`}
-          className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
         >
           Continue Shopping
         </Link>

@@ -85,7 +85,7 @@ export default function OrdersPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-xl border border-gray-200 p-6"
             >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -101,7 +101,7 @@ export default function OrdersPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
 
       {orders.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <ShoppingBagIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No orders yet
@@ -111,13 +111,13 @@ export default function OrdersPage() {
           </p>
           <Link
             href={`${basePath}/products`}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
             Start Shopping
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -177,7 +177,7 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <Link
                         href={`${basePath}/account/orders/${order.number}`}
-                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        className="text-primary-600 hover:text-primary-900 text-sm font-medium"
                       >
                         View
                       </Link>

@@ -43,7 +43,7 @@ export default function CartPage() {
           </p>
           <Link
             href={`${basePath}/products`}
-            className="mt-6 inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+            className="mt-6 inline-block bg-primary-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
             Continue Shopping
           </Link>
@@ -59,11 +59,11 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 divide-y">
+          <div className="bg-white rounded-xl border border-gray-200 divide-y">
             {cart.line_items.map((item) => (
               <div key={item.id} className="p-6 flex gap-6">
                 {/* Image */}
-                <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="relative w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                   <Image
                     src={item.thumbnail_url || "/placeholder.svg"}
                     alt={item.name}
@@ -123,7 +123,7 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
+          <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
             <h2 className="text-lg font-medium text-gray-900">Order Summary</h2>
 
             <dl className="mt-6 space-y-4">
@@ -159,14 +159,14 @@ export default function CartPage() {
 
             <Link
               href={`${basePath}/checkout/${cart.id}`}
-              className="mt-6 block w-full bg-indigo-600 text-white text-center py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+              className="mt-6 block w-full bg-primary-600 text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
             >
               Proceed to Checkout
             </Link>
 
             <Link
               href={`${basePath}/products`}
-              className="mt-4 block w-full text-center text-indigo-600 hover:text-indigo-700 font-medium"
+              className="mt-4 block w-full text-center text-primary-600 hover:text-primary-700 font-medium"
             >
               Continue Shopping
             </Link>

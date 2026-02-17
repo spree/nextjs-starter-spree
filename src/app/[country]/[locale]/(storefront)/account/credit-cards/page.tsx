@@ -27,7 +27,7 @@ function CreditCardItem({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
           <PaymentIcon
@@ -100,7 +100,7 @@ export default function CreditCardsPage() {
           {[1, 2].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-xl border border-gray-200 p-6"
             >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -116,7 +116,7 @@ export default function CreditCardsPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h1>
 
       {cards.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No payment methods saved
@@ -137,7 +137,7 @@ export default function CreditCardsPage() {
         </div>
       )}
 
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+      <div className="mt-6 p-4 bg-gray-50 rounded-xl">
         <p className="text-sm text-gray-600">
           <LockIcon className="w-4 h-4 inline mr-1" />
           Your payment information is securely stored and encrypted. We never

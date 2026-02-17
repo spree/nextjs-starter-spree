@@ -271,7 +271,7 @@ export function PaymentStep({
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Shipping Address Summary */}
       {order.ship_address && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Shipping Address
@@ -279,7 +279,7 @@ export function PaymentStep({
             <button
               type="button"
               onClick={onBack}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Edit
             </button>
@@ -304,7 +304,7 @@ export function PaymentStep({
       )}
 
       {/* Billing Address */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Billing Address
         </h2>
@@ -314,7 +314,7 @@ export function PaymentStep({
               type="checkbox"
               checked={useShippingForBilling}
               onChange={(e) => handleUseShippingChange(e.target.checked)}
-              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
             />
             <span className="ml-2 text-sm text-gray-600">
               Same as shipping address
@@ -335,7 +335,7 @@ export function PaymentStep({
       </div>
 
       {/* Payment Method */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Payment Method
         </h2>
@@ -346,9 +346,9 @@ export function PaymentStep({
             {savedCards.map((card) => (
               <label
                 key={card.id}
-                className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
                   selectedCardId === card.gateway_payment_profile_id
-                    ? "border-indigo-600 bg-indigo-50"
+                    ? "border-primary-600 bg-primary-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -359,7 +359,7 @@ export function PaymentStep({
                   onChange={() =>
                     handleCardSelect(card.gateway_payment_profile_id)
                   }
-                  className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                 />
                 <PaymentIcon
                   type={getCardIconType(card.cc_type)}
@@ -375,7 +375,7 @@ export function PaymentStep({
                   </span>
                 </div>
                 {card.default && (
-                  <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-medium text-primary-600 bg-primary-100 px-2 py-0.5 rounded-full">
                     Default
                   </span>
                 )}
@@ -384,9 +384,9 @@ export function PaymentStep({
 
             {/* Add new payment method option */}
             <label
-              className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+              className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
                 isAddingNew
-                  ? "border-indigo-600 bg-indigo-50"
+                  ? "border-primary-600 bg-primary-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -395,7 +395,7 @@ export function PaymentStep({
                 name="payment_source"
                 checked={isAddingNew}
                 onChange={() => handleCardSelect(null)}
-                className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
               />
               <CreditCardIcon
                 className="w-5 h-5 text-gray-400"
@@ -410,7 +410,7 @@ export function PaymentStep({
 
         {loading && (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
             <span className="ml-3 text-sm text-gray-500">
               Loading payment form...
             </span>
@@ -418,7 +418,7 @@ export function PaymentStep({
         )}
 
         {gatewayError && !loading && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 mb-4">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 mb-4">
             {gatewayError}
           </div>
         )}
@@ -432,7 +432,7 @@ export function PaymentStep({
         )}
 
         {!sessionPaymentMethod && !loading && (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <div className="bg-gray-50 rounded-xl p-8 text-center">
             <CreditCardIcon
               className="w-12 h-12 text-gray-400 mx-auto mb-4"
               strokeWidth={1.5}
@@ -450,7 +450,7 @@ export function PaymentStep({
           type="button"
           onClick={onBack}
           disabled={processing}
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Back
         </button>
@@ -459,7 +459,7 @@ export function PaymentStep({
           disabled={
             processing || loading || !sessionPaymentMethod || !clientSecret
           }
-          className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {processing ? "Processing..." : "Pay Now"}
         </button>
