@@ -10,10 +10,14 @@ import { actionResult } from "./utils";
 export async function createCheckoutPaymentSession(
   orderId: string,
   paymentMethodId: string,
+  stripePaymentMethodId?: string,
 ) {
   return actionResult(async () => {
     const session = await createPaymentSession(orderId, {
       payment_method_id: paymentMethodId,
+      ...(stripePaymentMethodId && {
+        external_data: { stripe_payment_method_id: stripePaymentMethodId },
+      }),
     });
     return { session };
   }, "Failed to create payment session");

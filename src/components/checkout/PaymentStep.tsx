@@ -3,11 +3,13 @@
 import type {
   AddressParams,
   StoreCountry,
+  StoreCreditCard,
   StoreOrder,
   StoreState,
 } from "@spree/sdk";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { CreditCardIcon } from "@/components/icons";
+import { getCreditCards } from "@/lib/data/credit-cards";
 import { createCheckoutPaymentSession } from "@/lib/data/payment";
 import {
   type AddressFormData,
@@ -19,11 +21,13 @@ import { AddressFormFields } from "./AddressFormFields";
 import {
   StripePaymentForm,
   type StripePaymentFormHandle,
+  confirmWithSavedCard,
 } from "./StripePaymentForm";
 
 interface PaymentStepProps {
   order: StoreOrder;
   countries: StoreCountry[];
+  isAuthenticated: boolean;
   fetchStates: (countryIso: string) => Promise<StoreState[]>;
   onUpdateBillingAddress: (data: {
     bill_address: AddressParams;
@@ -34,9 +38,27 @@ interface PaymentStepProps {
   setProcessing: (processing: boolean) => void;
 }
 
+function getCardLabel(ccType: string): string {
+  switch (ccType.toLowerCase()) {
+    case "visa":
+      return "Visa";
+    case "mastercard":
+    case "master":
+      return "Mastercard";
+    case "american_express":
+    case "amex":
+      return "Amex";
+    case "discover":
+      return "Discover";
+    default:
+      return ccType || "Card";
+  }
+}
+
 export function PaymentStep({
   order,
   countries,
+  isAuthenticated,
   fetchStates,
   onUpdateBillingAddress,
   onPaymentComplete,
@@ -58,13 +80,18 @@ export function PaymentStep({
   const [billStates, setBillStates] = useState<StoreState[]>([]);
   const [isPendingBill, startTransitionBill] = useTransition();
 
+  // Saved cards state
+  const [savedCards, setSavedCards] = useState<StoreCreditCard[]>([]);
+  // null = "add new payment method", string = gateway_payment_profile_id of selected card
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+
   // Stripe state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
   const [stripeError, setStripeError] = useState<string | null>(null);
-  const [loadingSession, setLoadingSession] = useState(false);
+  const [loading, setLoading] = useState(false);
   const stripeHandleRef = useRef<StripePaymentFormHandle | null>(null);
-  const lastOrderTotalRef = useRef<string | undefined>(order.total);
+  const initRef = useRef(false);
 
   const handleStripeReady = useCallback((handle: StripePaymentFormHandle) => {
     stripeHandleRef.current = handle;
@@ -75,48 +102,78 @@ export function PaymentStep({
     (pm) => pm.session_required,
   );
 
-  // Reset payment session when order total changes (e.g., coupon applied/removed)
-  if (order.total !== lastOrderTotalRef.current && clientSecret) {
-    lastOrderTotalRef.current = order.total;
-    setClientSecret(null);
-    setPaymentSessionId(null);
-    setStripeError(null);
-    stripeHandleRef.current = null;
-  }
-  lastOrderTotalRef.current = order.total;
+  // Helper: create a payment session
+  const createSession = useCallback(
+    async (cardId: string | null) => {
+      if (!stripePaymentMethod) return;
 
-  // Create payment session when needed (on mount or after total changes)
-  useEffect(() => {
-    if (!stripePaymentMethod || clientSecret) return;
+      setLoading(true);
+      setStripeError(null);
+      setClientSecret(null);
+      setPaymentSessionId(null);
+      stripeHandleRef.current = null;
 
-    let cancelled = false;
-    setLoadingSession(true);
+      const result = await createCheckoutPaymentSession(
+        order.id,
+        stripePaymentMethod.id,
+        cardId ?? undefined,
+      );
 
-    createCheckoutPaymentSession(order.id, stripePaymentMethod.id).then(
-      (result) => {
-        if (cancelled) return;
-        setLoadingSession(false);
+      setLoading(false);
 
-        if (result.success && result.session) {
-          const secret = result.session.external_data?.client_secret as
-            | string
-            | undefined;
-          if (secret) {
-            setClientSecret(secret);
-            setPaymentSessionId(result.session.id);
-          } else {
-            setStripeError("Failed to initialize payment. Please try again.");
-          }
-        } else if (!result.success) {
-          setStripeError(result.error || "Failed to create payment session.");
+      if (result.success && result.session) {
+        const secret = result.session.external_data?.client_secret as
+          | string
+          | undefined;
+        if (secret) {
+          setClientSecret(secret);
+          setPaymentSessionId(result.session.id);
+        } else {
+          setStripeError("Failed to initialize payment. Please try again.");
         }
-      },
-    );
+      } else if (!result.success) {
+        setStripeError(result.error || "Failed to create payment session.");
+      }
+    },
+    [stripePaymentMethod, order.id],
+  );
 
-    return () => {
-      cancelled = true;
+  // On mount: load saved cards (if authenticated), then create initial session — once.
+  useEffect(() => {
+    if (initRef.current || !stripePaymentMethod) return;
+    initRef.current = true;
+
+    const init = async () => {
+      setLoading(true);
+
+      let initialCardId: string | null = null;
+
+      // Load saved cards for authenticated users
+      if (isAuthenticated) {
+        try {
+          const result = await getCreditCards();
+          const stripeCards = result.data.filter(
+            (card) => card.gateway_payment_profile_id,
+          );
+          setSavedCards(stripeCards);
+
+          if (stripeCards.length > 0) {
+            const defaultCard =
+              stripeCards.find((c) => c.default) || stripeCards[0];
+            initialCardId = defaultCard.gateway_payment_profile_id;
+            setSelectedCardId(initialCardId);
+          }
+        } catch {
+          // Cards failed to load — proceed without saved cards
+        }
+      }
+
+      // Create the initial payment session
+      await createSession(initialCardId);
     };
-  }, [stripePaymentMethod, order.id, clientSecret]);
+
+    init();
+  }, [stripePaymentMethod, isAuthenticated, createSession]);
 
   // Load states when billing country changes
   useEffect(() => {
@@ -149,10 +206,17 @@ export function PaymentStep({
     }
   };
 
+  const handleCardSelect = (cardId: string | null) => {
+    if (cardId === selectedCardId) return;
+    setSelectedCardId(cardId);
+    createSession(cardId);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripeHandleRef.current || !paymentSessionId) return;
+    if (!paymentSessionId || !clientSecret) return;
+    if (!selectedCardId && !stripeHandleRef.current) return;
 
     setProcessing(true);
     setStripeError(null);
@@ -173,8 +237,23 @@ export function PaymentStep({
 
       // 2. Confirm payment with Stripe
       const returnUrl = `${window.location.origin}${window.location.pathname.replace(/\/checkout\/.*/, `/order-placed/${order.id}`)}`;
-      const { error } =
-        await stripeHandleRef.current!.confirmPayment(returnUrl);
+
+      let error: string | undefined;
+
+      if (selectedCardId) {
+        // Confirm with saved payment method — no Elements needed
+        const result = await confirmWithSavedCard(
+          clientSecret,
+          selectedCardId,
+          returnUrl,
+        );
+        error = result.error;
+      } else {
+        // Confirm with new card via PaymentElement
+        const result =
+          await stripeHandleRef.current!.confirmPayment(returnUrl);
+        error = result.error;
+      }
 
       if (error) {
         setStripeError(error);
@@ -200,6 +279,8 @@ export function PaymentStep({
       return updated;
     });
   };
+
+  const isAddingNew = selectedCardId === null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -274,7 +355,74 @@ export function PaymentStep({
           Payment Method
         </h2>
 
-        {loadingSession && (
+        {/* Saved Cards Selector */}
+        {savedCards.length > 0 && (
+          <div className="space-y-3 mb-6">
+            {savedCards.map((card) => (
+              <label
+                key={card.id}
+                className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                  selectedCardId === card.gateway_payment_profile_id
+                    ? "border-indigo-600 bg-indigo-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment_source"
+                  checked={
+                    selectedCardId === card.gateway_payment_profile_id
+                  }
+                  onChange={() =>
+                    handleCardSelect(card.gateway_payment_profile_id)
+                  }
+                  className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                />
+                <div className="w-10 h-7 bg-gradient-to-br from-gray-700 to-gray-900 rounded flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[10px] font-bold">
+                    {card.cc_type?.slice(0, 4).toUpperCase() || "CARD"}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-gray-900">
+                    {getCardLabel(card.cc_type)} ending in {card.last_digits}
+                  </span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    Exp {String(card.month).padStart(2, "0")}/{card.year}
+                  </span>
+                </div>
+                {card.default && (
+                  <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
+                    Default
+                  </span>
+                )}
+              </label>
+            ))}
+
+            {/* Add new payment method option */}
+            <label
+              className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                isAddingNew
+                  ? "border-indigo-600 bg-indigo-50"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <input
+                type="radio"
+                name="payment_source"
+                checked={isAddingNew}
+                onChange={() => handleCardSelect(null)}
+                className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+              />
+              <CreditCardIcon className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+              <span className="text-sm font-medium text-gray-900">
+                Add new payment method
+              </span>
+            </label>
+          </div>
+        )}
+
+        {loading && (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
             <span className="ml-3 text-sm text-gray-500">
@@ -283,13 +431,13 @@ export function PaymentStep({
           </div>
         )}
 
-        {stripeError && !loadingSession && (
+        {stripeError && !loading && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 mb-4">
             {stripeError}
           </div>
         )}
 
-        {clientSecret && !loadingSession && (
+        {clientSecret && !loading && isAddingNew && (
           <StripePaymentForm
             key={clientSecret}
             clientSecret={clientSecret}
@@ -297,7 +445,7 @@ export function PaymentStep({
           />
         )}
 
-        {!stripePaymentMethod && !loadingSession && (
+        {!stripePaymentMethod && !loading && (
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <CreditCardIcon
               className="w-12 h-12 text-gray-400 mx-auto mb-4"
@@ -324,7 +472,7 @@ export function PaymentStep({
           type="submit"
           disabled={
             processing ||
-            loadingSession ||
+            loading ||
             (!clientSecret && !!stripePaymentMethod)
           }
           className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

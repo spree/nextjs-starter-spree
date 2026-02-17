@@ -571,6 +571,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <PaymentStep
           order={order}
           countries={countries}
+          isAuthenticated={isAuthenticated}
           fetchStates={fetchStates}
           onUpdateBillingAddress={handleUpdateBillingAddress}
           onPaymentComplete={handlePaymentComplete}

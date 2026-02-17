@@ -60,10 +60,10 @@ function StripePaymentFormInner({
   );
 
   useEffect(() => {
-    if (stripe && elements) {
+    if (stripe) {
       onReady({ confirmPayment });
     }
-  }, [stripe, elements, confirmPayment, onReady]);
+  }, [stripe, confirmPayment, onReady]);
 
   return (
     <div>
@@ -98,4 +98,29 @@ export function StripePaymentForm({
       <StripePaymentFormInner onReady={onReady} />
     </Elements>
   );
+}
+
+/**
+ * Confirm payment with a saved card (no Elements/PaymentElement needed).
+ */
+export async function confirmWithSavedCard(
+  clientSecret: string,
+  paymentMethodId: string,
+  returnUrl: string,
+): Promise<{ error?: string }> {
+  const stripe = await stripePromise;
+  if (!stripe) {
+    return { error: "Stripe has not loaded yet" };
+  }
+
+  const result = await stripe.confirmCardPayment(clientSecret, {
+    payment_method: paymentMethodId,
+    return_url: returnUrl,
+  });
+
+  if (result.error) {
+    return { error: result.error.message || "An error occurred during payment." };
+  }
+
+  return {};
 }
