@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreOrder } from "@spree/sdk";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
@@ -139,9 +140,11 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
             <li key={item.id} className="px-6 py-4 flex gap-4">
               <div className="w-14 h-14 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
                 {item.thumbnail_url ? (
-                  <img
+                  <Image
                     src={item.thumbnail_url}
                     alt={item.name}
+                    width={56}
+                    height={56}
                     className="w-full h-full object-cover"
                   />
                 ) : (

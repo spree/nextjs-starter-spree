@@ -119,7 +119,9 @@ export async function confirmWithSavedCard(
   });
 
   if (result.error) {
-    return { error: result.error.message || "An error occurred during payment." };
+    return {
+      error: result.error.message || "An error occurred during payment.",
+    };
   }
 
   return {};

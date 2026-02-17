@@ -7,8 +7,8 @@ import type {
   StoreOrder,
   StoreState,
 } from "@spree/sdk";
-import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { CreditCardIcon } from "@/components/icons";
 import { getCreditCards } from "@/lib/data/credit-cards";
 import { createCheckoutPaymentSession } from "@/lib/data/payment";
@@ -21,9 +21,9 @@ import {
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { AddressFormFields } from "./AddressFormFields";
 import {
+  confirmWithSavedCard,
   StripePaymentForm,
   type StripePaymentFormHandle,
-  confirmWithSavedCard,
 } from "./StripePaymentForm";
 
 interface PaymentStepProps {
@@ -70,37 +70,37 @@ export function PaymentStep({
   // null = "add new payment method", string = gateway_payment_profile_id of selected card
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
-  // Stripe state
+  // Payment gateway state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
-  const [stripeError, setStripeError] = useState<string | null>(null);
+  const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const stripeHandleRef = useRef<StripePaymentFormHandle | null>(null);
+  const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
   const initRef = useRef(false);
 
-  const handleStripeReady = useCallback((handle: StripePaymentFormHandle) => {
-    stripeHandleRef.current = handle;
+  const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
+    gatewayHandleRef.current = handle;
   }, []);
 
-  // Find Stripe payment method
-  const stripePaymentMethod = order.payment_methods?.find(
+  // Find the payment method that requires a session (e.g. Stripe, Adyen)
+  const sessionPaymentMethod = order.payment_methods?.find(
     (pm) => pm.session_required,
   );
 
   // Helper: create a payment session
   const createSession = useCallback(
     async (cardId: string | null) => {
-      if (!stripePaymentMethod) return;
+      if (!sessionPaymentMethod) return;
 
       setLoading(true);
-      setStripeError(null);
+      setGatewayError(null);
       setClientSecret(null);
       setPaymentSessionId(null);
-      stripeHandleRef.current = null;
+      gatewayHandleRef.current = null;
 
       const result = await createCheckoutPaymentSession(
         order.id,
-        stripePaymentMethod.id,
+        sessionPaymentMethod.id,
         cardId ?? undefined,
       );
 
@@ -114,18 +114,18 @@ export function PaymentStep({
           setClientSecret(secret);
           setPaymentSessionId(result.session.id);
         } else {
-          setStripeError("Failed to initialize payment. Please try again.");
+          setGatewayError("Failed to initialize payment. Please try again.");
         }
       } else if (!result.success) {
-        setStripeError(result.error || "Failed to create payment session.");
+        setGatewayError(result.error || "Failed to create payment session.");
       }
     },
-    [stripePaymentMethod, order.id],
+    [sessionPaymentMethod, order.id],
   );
 
   // On mount: load saved cards (if authenticated), then create initial session — once.
   useEffect(() => {
-    if (initRef.current || !stripePaymentMethod) return;
+    if (initRef.current || !sessionPaymentMethod) return;
     initRef.current = true;
 
     const init = async () => {
@@ -137,14 +137,14 @@ export function PaymentStep({
       if (isAuthenticated) {
         try {
           const result = await getCreditCards();
-          const stripeCards = result.data.filter(
+          const gatewayCards = result.data.filter(
             (card) => card.gateway_payment_profile_id,
           );
-          setSavedCards(stripeCards);
+          setSavedCards(gatewayCards);
 
-          if (stripeCards.length > 0) {
+          if (gatewayCards.length > 0) {
             const defaultCard =
-              stripeCards.find((c) => c.default) || stripeCards[0];
+              gatewayCards.find((c) => c.default) || gatewayCards[0];
             initialCardId = defaultCard.gateway_payment_profile_id;
             setSelectedCardId(initialCardId);
           }
@@ -158,7 +158,7 @@ export function PaymentStep({
     };
 
     init();
-  }, [stripePaymentMethod, isAuthenticated, createSession]);
+  }, [sessionPaymentMethod, isAuthenticated, createSession]);
 
   // Load states when billing country changes
   useEffect(() => {
@@ -201,10 +201,10 @@ export function PaymentStep({
     e.preventDefault();
 
     if (!paymentSessionId || !clientSecret) return;
-    if (!selectedCardId && !stripeHandleRef.current) return;
+    if (!selectedCardId && !gatewayHandleRef.current) return;
 
     setProcessing(true);
-    setStripeError(null);
+    setGatewayError(null);
 
     try {
       // 1. Update billing address
@@ -220,7 +220,7 @@ export function PaymentStep({
         return;
       }
 
-      // 2. Confirm payment with Stripe
+      // 2. Confirm payment with gateway
       const returnUrl = `${window.location.origin}${window.location.pathname.replace(/\/checkout\/.*/, `/order-placed/${order.id}`)}`;
 
       let error: string | undefined;
@@ -234,14 +234,14 @@ export function PaymentStep({
         );
         error = result.error;
       } else {
-        // Confirm with new card via PaymentElement
+        // Confirm with new card via payment form
         const result =
-          await stripeHandleRef.current!.confirmPayment(returnUrl);
+          await gatewayHandleRef.current!.confirmPayment(returnUrl);
         error = result.error;
       }
 
       if (error) {
-        setStripeError(error);
+        setGatewayError(error);
         setProcessing(false);
         return;
       }
@@ -249,7 +249,7 @@ export function PaymentStep({
       // 3. Payment succeeded — complete session and order
       await onPaymentComplete(paymentSessionId);
     } catch {
-      setStripeError("An error occurred during payment. Please try again.");
+      setGatewayError("An error occurred during payment. Please try again.");
       setProcessing(false);
     }
   };
@@ -355,9 +355,7 @@ export function PaymentStep({
                 <input
                   type="radio"
                   name="payment_source"
-                  checked={
-                    selectedCardId === card.gateway_payment_profile_id
-                  }
+                  checked={selectedCardId === card.gateway_payment_profile_id}
                   onChange={() =>
                     handleCardSelect(card.gateway_payment_profile_id)
                   }
@@ -399,7 +397,10 @@ export function PaymentStep({
                 onChange={() => handleCardSelect(null)}
                 className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
               />
-              <CreditCardIcon className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+              <CreditCardIcon
+                className="w-5 h-5 text-gray-400"
+                strokeWidth={1.5}
+              />
               <span className="text-sm font-medium text-gray-900">
                 Add new payment method
               </span>
@@ -416,9 +417,9 @@ export function PaymentStep({
           </div>
         )}
 
-        {stripeError && !loading && (
+        {gatewayError && !loading && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 mb-4">
-            {stripeError}
+            {gatewayError}
           </div>
         )}
 
@@ -426,11 +427,11 @@ export function PaymentStep({
           <StripePaymentForm
             key={clientSecret}
             clientSecret={clientSecret}
-            onReady={handleStripeReady}
+            onReady={handleGatewayReady}
           />
         )}
 
-        {!stripePaymentMethod && !loading && (
+        {!sessionPaymentMethod && !loading && (
           <div className="bg-gray-50 rounded-lg p-8 text-center">
             <CreditCardIcon
               className="w-12 h-12 text-gray-400 mx-auto mb-4"
@@ -456,9 +457,7 @@ export function PaymentStep({
         <button
           type="submit"
           disabled={
-            processing ||
-            loading ||
-            (!clientSecret && !!stripePaymentMethod)
+            processing || loading || !sessionPaymentMethod || !clientSecret
           }
           className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >

@@ -315,7 +315,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   };
 
-  // Handle billing address update (called by PaymentStep before Stripe confirmation)
+  // Handle billing address update (called by PaymentStep before gateway confirmation)
   const handleUpdateBillingAddress = async (data: {
     bill_address: AddressParams;
   }): Promise<boolean> => {
@@ -323,16 +323,21 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
     setError(null);
 
-    const updateResult = await updateOrderAddresses(order.id, {
-      bill_address: data.bill_address,
-    });
+    try {
+      const updateResult = await updateOrderAddresses(order.id, {
+        bill_address: data.bill_address,
+      });
 
-    if (!updateResult.success) {
-      setError(updateResult.error || "Failed to save billing address");
+      if (!updateResult.success) {
+        setError(updateResult.error || "Failed to save billing address");
+        return false;
+      }
+
+      return true;
+    } catch {
+      setError("Failed to save billing address. Please try again.");
       return false;
     }
-
-    return true;
   };
 
   // Handle payment completion (called by PaymentStep after Stripe confirms)
@@ -357,7 +362,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Check if the order was already completed by the payment session completion.
       // If not, explicitly complete it.
       const updatedOrder = await getCheckoutOrder(order.id);
-      if (updatedOrder && updatedOrder.state !== "complete") {
+
+      if (!updatedOrder) {
+        setError("Order not found after payment. Please contact support.");
+        setProcessing(false);
+        return;
+      }
+
+      if (updatedOrder.state !== "complete") {
         const completeResult = await completeCheckoutOrder(order.id);
         if (!completeResult.success) {
           setError(completeResult.error || "Failed to complete order");

@@ -65,7 +65,11 @@ export async function selectShippingRate(
   shippingRateId: string,
 ) {
   return actionResult(async () => {
-    const order = await _selectShippingRate(orderId, shipmentId, shippingRateId);
+    const order = await _selectShippingRate(
+      orderId,
+      shipmentId,
+      shippingRateId,
+    );
     return { order };
   }, "Failed to select shipping rate");
 }

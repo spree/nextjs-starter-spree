@@ -1,8 +1,8 @@
 "use client";
 
 import type { StoreCreditCard } from "@spree/sdk";
+import { useCallback, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
-import { useEffect, useState } from "react";
 import { CreditCardIcon, LockIcon } from "@/components/icons";
 import { deleteCreditCard, getCreditCards } from "@/lib/data/credit-cards";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
@@ -19,8 +19,11 @@ function CreditCardItem({
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to remove this card?")) return;
     setDeleting(true);
-    await onDelete();
-    setDeleting(false);
+    try {
+      await onDelete();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -67,10 +70,10 @@ export default function CreditCardsPage() {
   const [cards, setCards] = useState<StoreCreditCard[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadCards = async () => {
+  const loadCards = useCallback(async () => {
     const response = await getCreditCards();
     setCards(response.data);
-  };
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -78,7 +81,7 @@ export default function CreditCardsPage() {
       setLoading(false);
     }
     loadData();
-  }, []);
+  }, [loadCards]);
 
   const handleDelete = async (id: string) => {
     const result = await deleteCreditCard(id);
