@@ -1,42 +1,17 @@
 "use client";
 
+import type { StoreCreditCard } from "@spree/sdk";
+import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { useEffect, useState } from "react";
 import { CreditCardIcon, LockIcon } from "@/components/icons";
 import { deleteCreditCard, getCreditCards } from "@/lib/data/credit-cards";
-
-// Credit card type (matches SDK StoreCreditCard)
-interface CreditCard {
-  id: string;
-  cc_type: string;
-  last_digits: string;
-  month: number;
-  year: number;
-  name: string | null;
-  default: boolean;
-}
-
-function getCardIcon(ccType: string): string {
-  switch (ccType.toLowerCase()) {
-    case "visa":
-      return "💳 Visa";
-    case "mastercard":
-    case "master":
-      return "💳 Mastercard";
-    case "american_express":
-    case "amex":
-      return "💳 Amex";
-    case "discover":
-      return "💳 Discover";
-    default:
-      return "💳 " + ccType;
-  }
-}
+import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 
 function CreditCardItem({
   card,
   onDelete,
 }: {
-  card: CreditCard;
+  card: StoreCreditCard;
   onDelete: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
@@ -52,20 +27,17 @@ function CreditCardItem({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded flex items-center justify-center">
-            <span className="text-white text-xs font-bold">
-              {card.cc_type?.slice(0, 4).toUpperCase() || "CARD"}
-            </span>
-          </div>
+          <PaymentIcon
+            type={getCardIconType(card.cc_type)}
+            format="flatRounded"
+            width={48}
+          />
           <div>
             <p className="font-medium text-gray-900">
-              {getCardIcon(card.cc_type || "Card")}
+              {getCardLabel(card.cc_type)} ending in {card.last_digits}
             </p>
             <p className="text-sm text-gray-500">
-              •••• •••• •••• {card.last_digits}
-            </p>
-            <p className="text-sm text-gray-500">
-              Expires {card.month}/{card.year}
+              Expires {String(card.month).padStart(2, "0")}/{card.year}
             </p>
             {card.name && (
               <p className="text-sm text-gray-500 mt-1">{card.name}</p>
@@ -92,7 +64,7 @@ function CreditCardItem({
 }
 
 export default function CreditCardsPage() {
-  const [cards, setCards] = useState<CreditCard[]>([]);
+  const [cards, setCards] = useState<StoreCreditCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadCards = async () => {

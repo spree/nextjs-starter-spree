@@ -7,6 +7,7 @@ import type {
   StoreOrder,
   StoreState,
 } from "@spree/sdk";
+import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { CreditCardIcon } from "@/components/icons";
 import { getCreditCards } from "@/lib/data/credit-cards";
@@ -17,6 +18,7 @@ import {
   addressToFormData,
   formDataToAddress,
 } from "@/lib/utils/address";
+import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { AddressFormFields } from "./AddressFormFields";
 import {
   StripePaymentForm,
@@ -36,23 +38,6 @@ interface PaymentStepProps {
   onBack: () => void;
   processing: boolean;
   setProcessing: (processing: boolean) => void;
-}
-
-function getCardLabel(ccType: string): string {
-  switch (ccType.toLowerCase()) {
-    case "visa":
-      return "Visa";
-    case "mastercard":
-    case "master":
-      return "Mastercard";
-    case "american_express":
-    case "amex":
-      return "Amex";
-    case "discover":
-      return "Discover";
-    default:
-      return ccType || "Card";
-  }
 }
 
 export function PaymentStep({
@@ -378,11 +363,11 @@ export function PaymentStep({
                   }
                   className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                 />
-                <div className="w-10 h-7 bg-gradient-to-br from-gray-700 to-gray-900 rounded flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-[10px] font-bold">
-                    {card.cc_type?.slice(0, 4).toUpperCase() || "CARD"}
-                  </span>
-                </div>
+                <PaymentIcon
+                  type={getCardIconType(card.cc_type)}
+                  format="flatRounded"
+                  width={40}
+                />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-medium text-gray-900">
                     {getCardLabel(card.cc_type)} ending in {card.last_digits}
