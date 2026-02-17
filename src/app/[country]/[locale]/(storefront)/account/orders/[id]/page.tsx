@@ -1,12 +1,21 @@
 "use client";
 
-import type { StoreAddress, StoreOrder, StoreShipment } from "@spree/sdk";
+import type {
+  StoreAddress,
+  StoreCreditCard,
+  StoreOrder,
+  StorePayment,
+  StoreShipment,
+  StoreStoreCredit,
+} from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { ChevronLeftIcon, ImagePlaceholderIcon } from "@/components/icons";
 import { getOrder } from "@/lib/data/orders";
+import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { extractBasePath } from "@/lib/utils/path";
 
 function formatDate(dateString: string | null): string {
@@ -33,6 +42,50 @@ function getShipmentStatusColor(state: string): string {
     default:
       return "bg-gray-100 text-gray-800";
   }
+}
+
+function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
+  const source = payment.source;
+
+  if (payment.source_type === "credit_card" && source) {
+    const card = source as StoreCreditCard;
+    return (
+      <div className="flex items-center gap-3">
+        <PaymentIcon
+          type={getCardIconType(card.cc_type)}
+          format="flatRounded"
+          width={40}
+        />
+        <div>
+          <p className="text-sm font-medium text-gray-900">
+            {getCardLabel(card.cc_type)} ending in {card.last_digits}
+          </p>
+          <p className="text-xs text-gray-500">
+            Expires {String(card.month).padStart(2, "0")}/{card.year}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (payment.source_type === "store_credit" && source) {
+    const credit = source as StoreStoreCredit;
+    return (
+      <div>
+        <p className="text-sm font-medium text-gray-900">Store Credit</p>
+        <p className="text-xs text-gray-500">
+          Applied {payment.display_amount} — {credit.display_amount_remaining}{" "}
+          remaining
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <p className="text-sm font-medium text-gray-900">
+      {payment.payment_method?.name}
+    </p>
+  );
 }
 
 function AddressBlock({ address }: { address: StoreAddress }) {
@@ -227,10 +280,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
   useEffect(() => {
     async function loadOrder() {
-      const orderData = await getOrder(id, {
-        includes:
-          "line_items,shipments,payments,bill_address,ship_address,line_items.option_values",
-      });
+      const orderData = await getOrder(id);
       setOrder(orderData);
       setLoading(false);
     }
@@ -342,11 +392,9 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
               {order.payments
                 .filter((p) => p.state !== "void" && p.state !== "invalid")
                 .map((payment) => (
-                  <div key={payment.id} className="mb-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {payment.payment_method?.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
+                  <div key={payment.id} className="mb-3 last:mb-0">
+                    <PaymentSourceInfo payment={payment} />
+                    <p className="text-sm text-gray-500 mt-1">
                       {payment.display_amount}
                     </p>
                   </div>
