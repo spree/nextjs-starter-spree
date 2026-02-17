@@ -75,11 +75,13 @@ export function PaymentStep({
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [gatewayReady, setGatewayReady] = useState(false);
   const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
   const initRef = useRef(false);
 
   const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
     gatewayHandleRef.current = handle;
+    setGatewayReady(true);
   }, []);
 
   // Find the payment method that requires a session (e.g. Stripe, Adyen)
@@ -97,27 +99,32 @@ export function PaymentStep({
       setClientSecret(null);
       setPaymentSessionId(null);
       gatewayHandleRef.current = null;
+      setGatewayReady(false);
 
-      const result = await createCheckoutPaymentSession(
-        order.id,
-        sessionPaymentMethod.id,
-        cardId ?? undefined,
-      );
+      try {
+        const result = await createCheckoutPaymentSession(
+          order.id,
+          sessionPaymentMethod.id,
+          cardId ?? undefined,
+        );
 
-      setLoading(false);
-
-      if (result.success && result.session) {
-        const secret = result.session.external_data?.client_secret as
-          | string
-          | undefined;
-        if (secret) {
-          setClientSecret(secret);
-          setPaymentSessionId(result.session.id);
-        } else {
-          setGatewayError("Failed to initialize payment. Please try again.");
+        if (result.success && result.session) {
+          const secret = result.session.external_data?.client_secret as
+            | string
+            | undefined;
+          if (secret) {
+            setClientSecret(secret);
+            setPaymentSessionId(result.session.id);
+          } else {
+            setGatewayError("Failed to initialize payment. Please try again.");
+          }
+        } else if (!result.success) {
+          setGatewayError(result.error || "Failed to create payment session.");
         }
-      } else if (!result.success) {
-        setGatewayError(result.error || "Failed to create payment session.");
+      } catch {
+        setGatewayError("Failed to initialize payment. Please try again.");
+      } finally {
+        setLoading(false);
       }
     },
     [sessionPaymentMethod, order.id],
@@ -457,7 +464,11 @@ export function PaymentStep({
         <button
           type="submit"
           disabled={
-            processing || loading || !sessionPaymentMethod || !clientSecret
+            processing ||
+            loading ||
+            !sessionPaymentMethod ||
+            !clientSecret ||
+            (isAddingNew && !gatewayReady)
           }
           className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >

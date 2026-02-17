@@ -71,8 +71,12 @@ export default function CreditCardsPage() {
   const [loading, setLoading] = useState(true);
 
   const loadCards = useCallback(async () => {
-    const response = await getCreditCards();
-    setCards(response.data);
+    try {
+      const response = await getCreditCards();
+      setCards(response.data);
+    } catch {
+      setCards([]);
+    }
   }, []);
 
   useEffect(() => {
