@@ -70,7 +70,7 @@ function AccountShell({
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Navigation */}
         <aside className="lg:w-64 flex-shrink-0">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             {/* User Info */}
             <div className="p-4 border-b border-gray-200">
               {isLoading ? (
@@ -105,9 +105,9 @@ function AccountShell({
                     <li key={item.href}>
                       <Link
                         href={href}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-indigo-50 text-indigo-700"
+                            ? "bg-primary-50 text-primary-700"
                             : "text-gray-700 hover:bg-gray-50"
                         }`}
                       >
@@ -125,7 +125,7 @@ function AccountShell({
               <button
                 onClick={onLogout}
                 disabled={isLoading}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <SignOutIcon className="w-5 h-5" />
                 Sign Out

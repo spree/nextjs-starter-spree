@@ -176,7 +176,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           <div className="mt-8">
             <div className="flex gap-4">
               {/* Quantity Selector */}
-              <div className="flex items-center border border-gray-300 rounded-lg">
+              <div className="flex items-center border border-gray-300 rounded-xl">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
@@ -201,10 +201,10 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 onClick={handleAddToCart}
                 disabled={loading || !isPurchasable}
                 className={`
-                  flex-1 py-3 px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2
+                  flex-1 py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2
                   ${
                     isPurchasable
-                      ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                      ? "bg-primary-600 text-white hover:bg-primary-700"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }
                   disabled:opacity-50 disabled:cursor-not-allowed

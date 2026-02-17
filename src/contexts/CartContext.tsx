@@ -1,7 +1,7 @@
 "use client";
 
 import type { StoreLineItem, StoreOrder } from "@spree/sdk";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   type ReactNode,
@@ -39,6 +39,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [updating, setUpdating] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
@@ -114,9 +115,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [mutateCart],
   );
 
+  // Re-fetch cart on navigation (e.g., after checkout completes, the stale
+  // cart token will be cleared by getCart and the cart state will update)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname triggers re-fetch on navigation
   useEffect(() => {
     refreshCart();
-  }, [refreshCart]);
+  }, [refreshCart, pathname]);
 
   const itemCount =
     cart?.line_items?.reduce(

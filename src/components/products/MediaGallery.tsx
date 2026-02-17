@@ -22,7 +22,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
 
   if (images.length === 0) {
     return (
-      <div className="relative aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="relative aspect-square bg-gray-100 rounded-xl flex items-center justify-center">
         <span className="text-gray-400">No image available</span>
       </div>
     );
@@ -35,7 +35,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
     <div className="flex flex-col gap-4">
       {/* Main Image */}
       <div
-        className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in"
+        className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-zoom-in"
         onClick={() => mainImageUrl && setIsZoomed(true)}
       >
         {mainImageUrl ? (
@@ -71,9 +71,9 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
               <button
                 key={image.id}
                 onClick={() => setSelectedIndex(index)}
-                className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-colors bg-gray-100 ${
+                className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-colors bg-gray-100 ${
                   index === selectedIndex
-                    ? "border-indigo-600"
+                    ? "border-primary-600"
                     : "border-transparent hover:border-gray-300"
                 }`}
               >

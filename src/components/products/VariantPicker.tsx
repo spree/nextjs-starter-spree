@@ -172,7 +172,7 @@ export function VariantPicker({
                       title={optionValue?.presentation || value}
                       className={`
                         w-10 h-10 rounded-full border-2 transition-all relative
-                        ${isSelected ? "border-indigo-600 ring-2 ring-indigo-600 ring-offset-2" : "border-gray-200"}
+                        ${isSelected ? "border-primary-600 ring-2 ring-primary-600 ring-offset-2" : "border-gray-200"}
                         ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}
                         ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
@@ -212,10 +212,10 @@ export function VariantPicker({
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
                       className={`
-                        px-4 py-2 text-sm font-medium rounded-lg border transition-all relative
+                        px-4 py-2 text-sm font-medium rounded-xl border transition-all relative
                         ${
                           isSelected
-                            ? "border-indigo-600 bg-indigo-50 text-indigo-600"
+                            ? "border-primary-600 bg-primary-50 text-primary-600"
                             : "border-gray-200 text-gray-700 hover:border-gray-400"
                         }
                         ${!isAvailable ? "opacity-30 cursor-not-allowed line-through" : "cursor-pointer"}

@@ -120,7 +120,7 @@ function GiftCardItem({ card }: { card: GiftCard }) {
     card.amount > 0 ? Math.round((card.amount_used / card.amount) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ function GiftCardItem({ card }: { card: GiftCard }) {
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
             className={`h-2 rounded-full transition-all ${
-              usagePercentage >= 100 ? "bg-gray-400" : "bg-indigo-600"
+              usagePercentage >= 100 ? "bg-gray-400" : "bg-primary-600"
             }`}
             style={{ width: `${Math.min(usagePercentage, 100)}%` }}
           />
@@ -201,7 +201,7 @@ export default function GiftCardsPage() {
           {[1, 2].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-xl border border-gray-200 p-6"
             >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
@@ -222,7 +222,7 @@ export default function GiftCardsPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Gift Cards</h1>
 
       {cards.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <GiftIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No gift cards
@@ -263,7 +263,7 @@ export default function GiftCardsPage() {
         </>
       )}
 
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+      <div className="mt-6 p-4 bg-gray-50 rounded-xl">
         <p className="text-sm text-gray-600">
           <InfoCircleIcon className="w-4 h-4 inline mr-1" />
           Gift cards can be used during checkout to pay for your orders. The

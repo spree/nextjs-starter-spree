@@ -98,7 +98,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         </p>
         <Link
           href={`${basePath}/account/orders`}
-          className="text-indigo-600 hover:text-indigo-700 font-medium"
+          className="text-primary-600 hover:text-primary-700 font-medium"
         >
           Back to orders
         </Link>
@@ -142,14 +142,14 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order Items */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">Order Items</h2>
             </div>
             <ul className="divide-y divide-gray-200">
               {order.line_items?.map((item) => (
                 <li key={item.id} className="px-6 py-4 flex gap-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                  <div className="w-16 h-16 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
                     {item.thumbnail_url ? (
                       <img
                         src={item.thumbnail_url}
@@ -190,7 +190,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         {/* Order Summary & Addresses */}
         <div className="space-y-6">
           {/* Order Summary */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">
                 Order Summary
@@ -232,7 +232,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
           {/* Shipping Address */}
           {order.ship_address && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">
                   Shipping Address
@@ -273,7 +273,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
           {/* Billing Address */}
           {order.bill_address && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">
                   Billing Address

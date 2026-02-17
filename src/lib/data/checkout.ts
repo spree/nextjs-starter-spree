@@ -11,7 +11,19 @@ import {
   updateAddresses,
 } from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
+import { cookies } from "next/headers";
+import { CART_TOKEN_KEY } from "@/lib/constants";
 import { actionResult, withFallback } from "./utils";
+
+/**
+ * Clear the cart cookie without triggering revalidation.
+ * Used on the order-placed page to prevent the storefront from showing
+ * the completed order, without causing a re-render that would lose the order data.
+ */
+export async function clearCartCookie() {
+  const cookieStore = await cookies();
+  cookieStore.set(CART_TOKEN_KEY, "", { maxAge: -1, path: "/" });
+}
 
 export async function getCheckoutOrder(orderId: string) {
   return withFallback(() => getCheckout(orderId), null);
@@ -53,8 +65,12 @@ export async function selectShippingRate(
   shippingRateId: string,
 ) {
   return actionResult(async () => {
-    await _selectShippingRate(orderId, shipmentId, shippingRateId);
-    return {};
+    const order = await _selectShippingRate(
+      orderId,
+      shipmentId,
+      shippingRateId,
+    );
+    return { order };
   }, "Failed to select shipping rate");
 }
 

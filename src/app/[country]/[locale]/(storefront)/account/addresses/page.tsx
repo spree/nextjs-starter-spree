@@ -31,7 +31,7 @@ function AddressCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex justify-between items-start">
         <div>
           <p className="font-medium text-gray-900">{address.full_name}</p>
@@ -53,7 +53,7 @@ function AddressCard({
         <div className="flex gap-2">
           <button
             onClick={onEdit}
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
           >
             Edit
           </button>
@@ -147,7 +147,7 @@ export default function AddressesPage() {
           {[1, 2].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-xl border border-gray-200 p-6"
             >
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -164,7 +164,7 @@ export default function AddressesPage() {
         <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
         <button
           onClick={handleAdd}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors text-sm"
+          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors text-sm"
         >
           <PlusIcon className="w-4 h-4 mr-2" />
           Add Address
@@ -172,7 +172,7 @@ export default function AddressesPage() {
       </div>
 
       {addresses.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <MapPinIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No addresses saved
@@ -182,7 +182,7 @@ export default function AddressesPage() {
           </p>
           <button
             onClick={handleAdd}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
             Add Your First Address
           </button>

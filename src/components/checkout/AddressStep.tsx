@@ -127,7 +127,7 @@ export function AddressStep({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Sign-in prompt for guests */}
         {!isAuthenticated && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <p className="text-sm text-blue-800">
               Already have an account?{" "}
               <Link
@@ -142,7 +142,7 @@ export function AddressStep({
         )}
 
         {/* Contact Information */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Contact Information
           </h2>
@@ -160,7 +160,7 @@ export function AddressStep({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isAuthenticated}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="you@example.com"
             />
             {isAuthenticated && (
@@ -172,7 +172,7 @@ export function AddressStep({
         </div>
 
         {/* Shipping Address */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Shipping Address
           </h2>
@@ -209,7 +209,7 @@ export function AddressStep({
           <button
             type="submit"
             disabled={processing}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {processing ? "Saving..." : "Continue to Delivery"}
           </button>

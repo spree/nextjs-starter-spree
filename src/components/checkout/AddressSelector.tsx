@@ -88,9 +88,9 @@ export function AddressSelector({
             {savedAddresses.map((address) => (
               <div
                 key={address.id}
-                className={`flex items-start p-4 border rounded-lg transition-colors ${
+                className={`flex items-start p-4 border rounded-xl transition-colors ${
                   selectedAddressId === address.id
-                    ? "border-indigo-600 bg-indigo-50"
+                    ? "border-primary-600 bg-primary-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -101,7 +101,7 @@ export function AddressSelector({
                     value={address.id}
                     checked={selectedAddressId === address.id}
                     onChange={() => handleSelectAddress(address.id)}
-                    className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                    className="mt-1 h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900">
@@ -132,7 +132,7 @@ export function AddressSelector({
                       e.preventDefault();
                       onEditAddress(address);
                     }}
-                    className="ml-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    className="ml-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
                   >
                     Edit
                   </button>
@@ -140,9 +140,9 @@ export function AddressSelector({
               </div>
             ))}
             <label
-              className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+              className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${
                 selectedAddressId === "new"
-                  ? "border-indigo-600 bg-indigo-50"
+                  ? "border-primary-600 bg-primary-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -152,7 +152,7 @@ export function AddressSelector({
                 value="new"
                 checked={selectedAddressId === "new"}
                 onChange={() => handleSelectAddress("new")}
-                className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
               />
               <span className="ml-3 text-sm font-medium text-gray-900">
                 Use a different address
