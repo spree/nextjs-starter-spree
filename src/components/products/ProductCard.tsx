@@ -38,7 +38,7 @@ export function ProductCard({ product, basePath = "" }: ProductCardProps) {
   return (
     <Link
       href={`${basePath}/products/${product.slug}`}
-      className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
     >
       {/* Image */}
       <div className="relative aspect-square bg-gray-100">
@@ -64,7 +64,7 @@ export function ProductCard({ product, basePath = "" }: ProductCardProps) {
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2">
+        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary-500 transition-colors line-clamp-2">
           {product.name}
         </h3>
 

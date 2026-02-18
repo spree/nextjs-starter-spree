@@ -71,10 +71,10 @@ export default function AccountPage() {
           </p>
         </div>
 
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
                 {error}
               </div>
             )}
@@ -92,7 +92,7 @@ export default function AccountPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
                 placeholder="you@example.com"
               />
             </div>
@@ -110,7 +110,7 @@ export default function AccountPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
                   placeholder="••••••••"
                 />
                 <button
@@ -130,7 +130,7 @@ export default function AccountPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-primary-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -140,7 +140,7 @@ export default function AccountPage() {
             <span className="text-gray-500">Don&apos;t have an account? </span>
             <Link
               href={`${basePath}/account/register`}
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-primary-500 hover:text-primary-700 font-medium"
             >
               Sign up
             </Link>
@@ -160,11 +160,11 @@ export default function AccountPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           href={`${basePath}/account/orders`}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 rounded-lg">
-              <ShoppingBagIcon className="w-6 h-6 text-indigo-600" />
+            <div className="p-3 bg-primary-100 rounded-xl">
+              <ShoppingBagIcon className="w-6 h-6 text-primary-500" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
@@ -179,11 +179,11 @@ export default function AccountPage() {
 
         <Link
           href={`${basePath}/account/addresses`}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 rounded-lg">
-              <MapPinIcon className="w-6 h-6 text-indigo-600" />
+            <div className="p-3 bg-primary-100 rounded-xl">
+              <MapPinIcon className="w-6 h-6 text-primary-500" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
@@ -196,11 +196,11 @@ export default function AccountPage() {
 
         <Link
           href={`${basePath}/account/credit-cards`}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 rounded-lg">
-              <CreditCardIcon className="w-6 h-6 text-indigo-600" />
+            <div className="p-3 bg-primary-100 rounded-xl">
+              <CreditCardIcon className="w-6 h-6 text-primary-500" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
@@ -215,11 +215,11 @@ export default function AccountPage() {
 
         <Link
           href={`${basePath}/account/profile`}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 rounded-lg">
-              <UserIcon className="w-6 h-6 text-indigo-600" />
+            <div className="p-3 bg-primary-100 rounded-xl">
+              <UserIcon className="w-6 h-6 text-primary-500" />
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">Profile</h2>

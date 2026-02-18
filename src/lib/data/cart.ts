@@ -28,24 +28,21 @@ export async function clearCart() {
 
 export async function addToCart(variantId: string, quantity: number) {
   return actionResult(async () => {
-    await addItem(variantId, quantity);
-    const cart = await _getCart();
+    const cart = await addItem(variantId, quantity);
     return { cart };
   }, "Failed to add item to cart");
 }
 
 export async function updateCartItem(lineItemId: string, quantity: number) {
   return actionResult(async () => {
-    await updateItem(lineItemId, quantity);
-    const cart = await _getCart();
+    const cart = await updateItem(lineItemId, quantity);
     return { cart };
   }, "Failed to update cart item");
 }
 
 export async function removeCartItem(lineItemId: string) {
   return actionResult(async () => {
-    await removeItem(lineItemId);
-    const cart = await _getCart();
+    const cart = await removeItem(lineItemId);
     return { cart };
   }, "Failed to remove cart item");
 }

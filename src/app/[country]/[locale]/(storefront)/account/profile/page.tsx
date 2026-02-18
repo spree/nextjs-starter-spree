@@ -50,17 +50,17 @@ function ProfileForm({
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-6">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+              <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
                 Profile updated successfully!
               </div>
             )}
@@ -80,7 +80,7 @@ function ProfileForm({
                   onChange={(e) =>
                     setFormData({ ...formData, first_name: e.target.value })
                   }
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:border-primary-500 focus:outline-primary-500"
                 />
               </div>
 
@@ -98,7 +98,7 @@ function ProfileForm({
                   onChange={(e) =>
                     setFormData({ ...formData, last_name: e.target.value })
                   }
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:border-primary-500 focus:outline-primary-500"
                 />
               </div>
             </div>
@@ -118,7 +118,7 @@ function ProfileForm({
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:border-primary-500 focus:outline-primary-500"
               />
             </div>
           </div>
@@ -127,7 +127,7 @@ function ProfileForm({
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
@@ -136,7 +136,7 @@ function ProfileForm({
       </div>
 
       {/* Account Info */}
-      <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="mt-8 bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
             Account Information

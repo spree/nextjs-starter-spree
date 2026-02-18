@@ -79,7 +79,7 @@ export function CountrySwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
           <div className="px-3 py-2 border-b border-gray-100">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
               Select Country
@@ -94,7 +94,7 @@ export function CountrySwitcher() {
                     onClick={() => handleCountrySelect(c)}
                     className={`w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
                       isSelected
-                        ? "bg-indigo-50 text-indigo-700"
+                        ? "bg-primary-50 text-primary-700"
                         : "text-gray-700"
                     }`}
                     role="option"
@@ -111,7 +111,7 @@ export function CountrySwitcher() {
                         {c.default_currency || store?.default_currency}
                       </span>
                       {isSelected && (
-                        <CheckIcon className="w-4 h-4 text-indigo-600" />
+                        <CheckIcon className="w-4 h-4 text-primary-500" />
                       )}
                     </span>
                   </button>

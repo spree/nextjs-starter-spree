@@ -72,7 +72,7 @@ cp .env.local.example .env.local
 
 ```env
 SPREE_API_URL=http://localhost:3000
-SPREE_API_KEY=your_publishable_api_key_here
+SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 ```
 
 > Note: These are server-side only variables (no `NEXT_PUBLIC_` prefix needed).
@@ -233,7 +233,7 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 1. Push your code to GitHub
 2. Import the repository in Vercel
 3. Add environment variables:
-   - `SPREE_API_URL` and `SPREE_API_KEY` (required)
+   - `SPREE_API_URL` and `SPREE_PUBLISHABLE_KEY` (required)
    - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy
 

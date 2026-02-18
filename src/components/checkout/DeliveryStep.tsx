@@ -32,7 +32,7 @@ export function DeliveryStep({
     <div className="space-y-8">
       {/* Shipping Address Summary */}
       {order.ship_address && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Shipping Address
@@ -40,7 +40,7 @@ export function DeliveryStep({
             <button
               type="button"
               onClick={onBack}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-500 hover:text-primary-700"
             >
               Edit
             </button>
@@ -68,7 +68,7 @@ export function DeliveryStep({
       )}
 
       {/* Shipping Methods */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Shipping Method
         </h2>
@@ -94,9 +94,9 @@ export function DeliveryStep({
                   {shipment.shipping_rates.map((rate) => (
                     <label
                       key={rate.id}
-                      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-colors ${
+                      className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-colors ${
                         rate.selected
-                          ? "border-indigo-600 bg-indigo-50"
+                          ? "border-primary-600 bg-primary-50"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -109,7 +109,7 @@ export function DeliveryStep({
                             handleRateChange(shipment.id, rate.id)
                           }
                           disabled={processing}
-                          className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                          className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
                         />
                         <div className="ml-3">
                           <span className="block text-sm font-medium text-gray-900">
@@ -135,7 +135,7 @@ export function DeliveryStep({
           type="button"
           onClick={onBack}
           disabled={processing}
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Back
         </button>
@@ -143,7 +143,7 @@ export function DeliveryStep({
           type="button"
           onClick={onConfirm}
           disabled={processing || !allRatesSelected}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {processing ? "Processing..." : "Continue"}
         </button>

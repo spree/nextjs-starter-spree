@@ -88,7 +88,7 @@ export function useProductListing({
     [fetchProducts],
   );
 
-  // Fetch filters
+  // Fetch filters (scoped to search query when present)
   useEffect(() => {
     if (storeLoading) return;
 
@@ -97,7 +97,11 @@ export function useProductListing({
     const fetchFilters = async () => {
       setFiltersLoading(true);
       try {
-        const response = await getProductFilters(filterParams, {
+        const params = { ...filterParams };
+        if (searchQuery) {
+          params["q[multi_search]"] = searchQuery;
+        }
+        const response = await getProductFilters(params, {
           currency,
           locale,
         });
@@ -120,7 +124,7 @@ export function useProductListing({
     };
     // filterParams is stable per mount (object identity may differ but content is constant)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currency, locale, storeLoading]);
+  }, [currency, locale, storeLoading, searchQuery]);
 
   // Load products when search query or store context changes
   useEffect(() => {
