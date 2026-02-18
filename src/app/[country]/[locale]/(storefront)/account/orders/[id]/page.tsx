@@ -14,7 +14,6 @@ import { usePathname } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { ChevronLeftIcon, ImagePlaceholderIcon } from "@/components/icons";
-import { trackPurchase } from "@/lib/analytics/gtm";
 import { getOrder } from "@/lib/data/orders";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { extractBasePath } from "@/lib/utils/path";
@@ -283,9 +282,6 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
     async function loadOrder() {
       const orderData = await getOrder(id);
       setOrder(orderData);
-      if (orderData && orderData.state === "complete") {
-        trackPurchase(orderData);
-      }
       setLoading(false);
     }
     loadOrder();

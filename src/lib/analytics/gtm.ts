@@ -118,12 +118,9 @@ export function mapLineItemToGA4Item(
     item.item_list_name = options.listName;
   }
 
-  if (
-    lineItem.compare_at_amount &&
-    parseFloat(lineItem.compare_at_amount) > parseFloat(lineItem.price)
-  ) {
-    item.discount =
-      parseFloat(lineItem.compare_at_amount) - parseFloat(lineItem.price);
+   const promoTotal = parseFloat(lineItem.promo_total);
+  if (promoTotal < 0) {
+    item.discount = Math.abs(promoTotal);
   }
 
   return item;
@@ -267,7 +264,7 @@ export function trackAddPaymentInfo(
 
 export function trackPurchase(order: StoreOrder): void {
   const key = `gtm_purchase_${order.number}`;
-  if (typeof window !== "undefined" && sessionStorage.getItem(key)) {
+  if (typeof window !== "undefined" && localStorage.getItem(key)) {
     return;
   }
 
@@ -286,7 +283,7 @@ export function trackPurchase(order: StoreOrder): void {
   });
 
   if (typeof window !== "undefined") {
-    sessionStorage.setItem(key, "1");
+    localStorage.setItem(key, "1");
   }
 }
 
