@@ -29,6 +29,28 @@ const URLS_PER_SITEMAP = 50_000;
 const STATIC_PAGES_PER_LOCALE = 3;
 
 /**
+ * Module-level cache so that multiple sitemap({id}) calls during the same
+ * `next build` process reuse already-fetched data instead of hitting the
+ * API O(chunks) times.
+ */
+let cachedProducts: Promise<StoreProduct[]> | null = null;
+let cachedTaxons: Promise<StoreTaxon[]> | null = null;
+
+function getCachedProducts(): Promise<StoreProduct[]> {
+  if (!cachedProducts) {
+    cachedProducts = fetchAllProducts();
+  }
+  return cachedProducts;
+}
+
+function getCachedTaxons(): Promise<StoreTaxon[]> {
+  if (!cachedTaxons) {
+    cachedTaxons = fetchAllTaxons();
+  }
+  return cachedTaxons;
+}
+
+/**
  * Splits the sitemap into multiple files when the total URL count
  * exceeds 50,000 (Google's per-sitemap limit).
  *
@@ -66,12 +88,20 @@ export default async function sitemap(props: {
     /\/$/,
     "",
   );
+
+  if (!baseUrl) {
+    console.error(
+      "Sitemap generation skipped: neither store.url nor NEXT_PUBLIC_SITE_URL is set. " +
+        "Sitemaps require absolute URLs.",
+    );
+    return [];
+  }
+
   const countryLocales = await resolveCountryLocales(store);
 
-  // Fetch all products and taxons in parallel
   const [allProducts, allTaxons] = await Promise.all([
-    fetchAllProducts(),
-    fetchAllTaxons(),
+    getCachedProducts(),
+    getCachedTaxons(),
   ]);
 
   const nonRootTaxons = allTaxons.filter((t) => !t.is_root);
