@@ -37,7 +37,7 @@ export function AddressFormFields({
           required
           value={address.firstname}
           onChange={(e) => onChange("firstname", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
 
@@ -54,7 +54,7 @@ export function AddressFormFields({
           required
           value={address.lastname}
           onChange={(e) => onChange("lastname", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
 
@@ -70,7 +70,7 @@ export function AddressFormFields({
           id={`${idPrefix}-company`}
           value={address.company}
           onChange={(e) => onChange("company", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
 
@@ -87,7 +87,7 @@ export function AddressFormFields({
           required
           value={address.address1}
           onChange={(e) => onChange("address1", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
           placeholder="Street address"
         />
       </div>
@@ -104,7 +104,7 @@ export function AddressFormFields({
           id={`${idPrefix}-address2`}
           value={address.address2}
           onChange={(e) => onChange("address2", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
 
@@ -121,7 +121,7 @@ export function AddressFormFields({
           required
           value={address.city}
           onChange={(e) => onChange("city", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
 
@@ -137,7 +137,7 @@ export function AddressFormFields({
           required
           value={address.country_iso}
           onChange={(e) => onChange("country_iso", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         >
           <option value="">Select a country</option>
           {countries.map((country) => (
@@ -165,7 +165,7 @@ export function AddressFormFields({
             required
             value={address.state_abbr}
             onChange={(e) => onChange("state_abbr", e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
           >
             <option value="">Select a state</option>
             {states.map((state) => (
@@ -180,7 +180,7 @@ export function AddressFormFields({
             id={`${idPrefix}-state`}
             value={address.state_name}
             onChange={(e) => onChange("state_name", e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
             placeholder="State or province"
           />
         )}
@@ -199,7 +199,7 @@ export function AddressFormFields({
           required
           value={address.zipcode}
           onChange={(e) => onChange("zipcode", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
 
@@ -215,7 +215,7 @@ export function AddressFormFields({
           id={`${idPrefix}-phone`}
           value={address.phone}
           onChange={(e) => onChange("phone", e.target.value)}
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         />
       </div>
     </div>

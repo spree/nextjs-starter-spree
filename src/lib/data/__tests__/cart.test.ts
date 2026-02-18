@@ -74,13 +74,11 @@ describe("cart server actions", () => {
 
   describe("addToCart", () => {
     it("returns success with cart", async () => {
-      mockAddItem.mockResolvedValue({});
-      mockGetCart.mockResolvedValue(mockCart);
+      mockAddItem.mockResolvedValue(mockCart);
 
       const result = await addToCart("variant-1", 2);
 
       expect(mockAddItem).toHaveBeenCalledWith("variant-1", 2);
-      expect(mockGetCart).toHaveBeenCalledOnce();
       expect(result).toEqual({ success: true, cart: mockCart });
     });
 
@@ -105,24 +103,11 @@ describe("cart server actions", () => {
         error: "Failed to add item to cart",
       });
     });
-
-    it("returns error when getCart fails after successful add", async () => {
-      mockAddItem.mockResolvedValue({});
-      mockGetCart.mockRejectedValue(new Error("Network error"));
-
-      const result = await addToCart("variant-1", 1);
-
-      expect(result).toEqual({
-        success: false,
-        error: "Network error",
-      });
-    });
   });
 
   describe("updateCartItem", () => {
     it("returns success with refreshed cart", async () => {
-      mockUpdateItem.mockResolvedValue({});
-      mockGetCart.mockResolvedValue(mockCart);
+      mockUpdateItem.mockResolvedValue(mockCart);
 
       const result = await updateCartItem("li-1", 3);
 
@@ -144,8 +129,7 @@ describe("cart server actions", () => {
 
   describe("removeCartItem", () => {
     it("returns success with refreshed cart", async () => {
-      mockRemoveItem.mockResolvedValue(undefined);
-      mockGetCart.mockResolvedValue(mockCart);
+      mockRemoveItem.mockResolvedValue(mockCart);
 
       const result = await removeCartItem("li-1");
 

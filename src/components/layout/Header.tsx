@@ -50,7 +50,7 @@ export function Header() {
             >
               <ShoppingBagIcon className="w-6 h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">
                   {itemCount}
                 </span>
               )}

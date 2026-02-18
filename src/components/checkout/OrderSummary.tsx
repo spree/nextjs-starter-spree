@@ -27,10 +27,10 @@ export function OrderSummary({ order }: OrderSummaryProps) {
                   src={item.thumbnail_url}
                   alt={item.name}
                   fill
-                  className="object-cover rounded-lg"
+                  className="object-cover rounded-xl"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="w-full h-full bg-gray-100 rounded-xl flex items-center justify-center">
                   <ImagePlaceholderIcon
                     className="w-6 h-6 text-gray-400"
                     strokeWidth={2}
