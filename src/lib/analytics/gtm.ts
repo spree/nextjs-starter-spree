@@ -79,7 +79,7 @@ export function mapProductToGA4Item(
     item.discount = discount;
   }
   if (index != null) {
-    item.index = index;
+    item.index = index + 1;
   }
   if (listId) {
     item.item_list_id = listId;
@@ -264,8 +264,12 @@ export function trackAddPaymentInfo(
 
 export function trackPurchase(order: StoreOrder): void {
   const key = `gtm_purchase_${order.number}`;
-  if (typeof window !== "undefined" && localStorage.getItem(key)) {
-    return;
+  try {
+    if (typeof window !== "undefined" && localStorage.getItem(key)) {
+      return;
+    }
+  } catch {
+    // Storage unavailable (private browsing, quota exceeded) — proceed without dedup
   }
 
   const coupon = order.order_promotions?.[0]?.code;
@@ -282,8 +286,12 @@ export function trackPurchase(order: StoreOrder): void {
       ) ?? [],
   });
 
-  if (typeof window !== "undefined") {
-    localStorage.setItem(key, "1");
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(key, "1");
+    }
+  } catch {
+    // Storage unavailable — dedup won't persist but purchase event was sent
   }
 }
 

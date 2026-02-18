@@ -65,7 +65,11 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           loadedRef.current = true;
           if (orderData) {
             setOrder(orderData);
-            trackPurchase(orderData);
+            try {
+              trackPurchase(orderData);
+            } catch {
+              // Analytics failure must not break the order confirmation UX
+            }
           } else {
             setError("Order not found.");
           }

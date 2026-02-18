@@ -81,7 +81,6 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-
 | `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ |
 | `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
 | `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |

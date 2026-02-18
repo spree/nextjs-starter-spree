@@ -273,10 +273,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       }
 
       // Reload order to get updated state
-      const updatedOrder = await loadOrder();
-      if (updatedOrder) {
-        trackAddShippingInfo(updatedOrder);
-      }
+      await loadOrder();
     } catch {
       setError("An error occurred. Please try again.");
     } finally {

@@ -106,12 +106,13 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     setLoading(true);
     try {
       await addItem(variantId, quantity);
-      trackAddToCart(product, selectedVariant, quantity);
     } catch (error) {
       console.error("Failed to add to cart:", error);
+      return;
     } finally {
       setLoading(false);
     }
+    trackAddToCart(product, selectedVariant, quantity);
   };
 
   return (
