@@ -1,19 +1,14 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
 
 const gtmId = process.env.GTM_ID;
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
@@ -31,7 +26,7 @@ export default function RootLayout({
     <html lang="en">
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geist.variable} antialiased min-h-screen flex flex-col`}
       >
         <CartProvider>
           {children}

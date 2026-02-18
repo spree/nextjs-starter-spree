@@ -62,7 +62,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
           {couponPromotions.map((promotion) => (
             <div
               key={promotion.id}
-              className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
+              className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl"
             >
               <div className="flex items-center">
                 <CheckCircleIcon className="w-5 h-5 text-green-600 mr-2" />
@@ -99,12 +99,12 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
               setError(null);
             }}
             placeholder="Gift card or discount code"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary-500 focus:outline-primary-500"
           />
           <button
             type="submit"
             disabled={applying || !code.trim()}
-            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {applying ? "..." : "Apply"}
           </button>

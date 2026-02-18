@@ -65,7 +65,7 @@ export function ProductDetailsWrapper({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image skeleton */}
-          <div className="aspect-square bg-gray-200 rounded-lg animate-pulse" />
+          <div className="aspect-square bg-gray-200 rounded-xl animate-pulse" />
 
           {/* Content skeleton */}
           <div className="space-y-4">

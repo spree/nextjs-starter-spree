@@ -1,16 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #fcfaf7;
   --foreground: #171717;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist);
   --animate-slide-in-right: slide-in-right 0.3s ease-out;
+
+  /* Primary color palette based on #0077FF */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #0077ff;
+  --color-primary-600: #0066dd;
+  --color-primary-700: #0055bb;
+  --color-primary-800: #004499;
+  --color-primary-900: #003377;
+  --color-primary-950: #001d4d;
 }
 
 @keyframes slide-in-right {
@@ -25,5 +37,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist), system-ui, sans-serif;
+  font-weight: 400;
 }
+

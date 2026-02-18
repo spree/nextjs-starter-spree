@@ -146,7 +146,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
         <div className="relative">
           <input
             ref={inputRef}
-            type="text"
+            type="search"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -156,7 +156,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search..."
-            className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
             role="combobox"
             aria-expanded={showSuggestions}
             aria-controls="search-suggestions"
@@ -171,7 +171,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
 
       {/* Suggestions dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
           {loading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
               Searching...
@@ -235,7 +235,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
                       );
                       setIsOpen(false);
                     }}
-                    className="w-full p-3 text-sm text-indigo-600 hover:bg-gray-50 text-center font-medium"
+                    className="w-full p-3 text-sm text-primary-500 hover:bg-gray-50 text-center font-medium"
                   >
                     View all results for &ldquo;{query}&rdquo;
                   </button>

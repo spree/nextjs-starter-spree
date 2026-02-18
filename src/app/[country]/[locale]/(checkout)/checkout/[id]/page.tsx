@@ -25,7 +25,6 @@ import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
   advanceCheckout,
   applyCouponCode,
-  completeOrder,
   getCheckoutOrder,
   removeCouponCode,
   selectShippingRate,
@@ -33,6 +32,10 @@ import {
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
 import { getCountries, getCountry } from "@/lib/data/countries";
+import {
+  completeCheckoutOrder,
+  completeCheckoutPaymentSession,
+} from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
 // Checkout steps
@@ -195,7 +198,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       // Check if order is already complete
       if (orderData.state === "complete") {
-        router.push(`${basePath}/account/orders/${orderId}`);
+        router.push(`${basePath}/order-placed/${orderId}`);
         return;
       }
 
@@ -295,18 +298,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       const result = await selectShippingRate(order.id, shipmentId, rateId);
       if (!result.success) {
         setError(result.error || "Failed to select shipping rate");
-      }
-      // Reload order to get updated totals (includes shipments)
-      const orderData = await getCheckoutOrder(order.id);
-      if (orderData) {
-        setOrder(orderData);
-        setShipments(orderData.shipments || []);
+      } else if (result.order) {
+        setOrder(result.order);
+        setShipments(result.order.shipments || []);
 
-        // Find selected rate name for shipping_tier
-        const selectedRate = orderData.shipments
+        const selectedRate = result.order.shipments
           ?.flatMap((s) => s.shipping_rates || [])
           ?.find((r) => r.id === rateId);
-        trackAddShippingInfo(orderData, selectedRate?.name);
+        trackAddShippingInfo(result.order, selectedRate?.name);
       }
     } catch {
       setError("An error occurred. Please try again.");
@@ -340,45 +339,75 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   };
 
-  // Handle payment submission (billing address + complete order)
-  const handlePaymentSubmit = async (paymentData: {
+  // Handle billing address update (called by PaymentStep before gateway confirmation)
+  const handleUpdateBillingAddress = async (data: {
     bill_address: AddressParams;
-    use_shipping_for_billing: boolean;
-  }) => {
-    if (!order) return;
+  }): Promise<boolean> => {
+    if (!order) return false;
 
-    setProcessing(true);
     setError(null);
 
     try {
-      // Update billing address
       const updateResult = await updateOrderAddresses(order.id, {
-        bill_address: paymentData.bill_address,
+        bill_address: data.bill_address,
       });
 
       if (!updateResult.success) {
         setError(updateResult.error || "Failed to save billing address");
+        return false;
+      }
+
+      return true;
+    } catch {
+      setError("Failed to save billing address. Please try again.");
+      return false;
+    }
+  };
+
+  // Handle payment completion (called by PaymentStep after Stripe confirms)
+  const handlePaymentComplete = async (paymentSessionId: string) => {
+    if (!order) return;
+
+    setError(null);
+
+    try {
+      // Complete the payment session on the backend
+      const sessionResult = await completeCheckoutPaymentSession(
+        order.id,
+        paymentSessionId,
+      );
+
+      if (!sessionResult.success) {
+        setError(sessionResult.error || "Failed to complete payment session");
         setProcessing(false);
         return;
       }
 
       trackAddPaymentInfo(order);
 
-      // Complete the order (skip actual payment for now)
-      const completeResult = await completeOrder(order.id);
-      if (!completeResult.success) {
-        setError(completeResult.error || "Failed to complete order");
+      // Check if the order was already completed by the payment session completion.
+      // If not, explicitly complete it.
+      const updatedOrder = await getCheckoutOrder(order.id);
+
+      if (!updatedOrder) {
+        setError("Order not found after payment. Please contact support.");
         setProcessing(false);
         return;
       }
 
-      // Redirect to order confirmation
-      if (completeResult.order) {
-        router.push(`${basePath}/account/orders/${completeResult.order.id}`);
+      if (updatedOrder.state !== "complete") {
+        const completeResult = await completeCheckoutOrder(order.id);
+        if (!completeResult.success) {
+          setError(completeResult.error || "Failed to complete order");
+          setProcessing(false);
+          return;
+        }
       }
+
+      // Redirect to order placed page (cart cookie is cleared there)
+      router.push(`${basePath}/order-placed/${order.id}`);
     } catch {
       setError("An error occurred. Please try again.");
-    } finally {
       setProcessing(false);
     }
   };
@@ -446,7 +475,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <p className="text-gray-600 mb-6">{error}</p>
         <Link
           href={`${basePath}/cart`}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
         >
           Return to Cart
         </Link>
@@ -468,7 +497,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         </p>
         <Link
           href={`${basePath}/products`}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
         >
           Continue Shopping
         </Link>
@@ -505,9 +534,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       index < currentStepIndex
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-primary-500 text-white"
                         : index === currentStepIndex
-                          ? "bg-indigo-600 text-white"
+                          ? "bg-primary-500 text-white"
                           : "bg-gray-200 text-gray-500"
                     }`}
                   >
@@ -516,7 +545,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <span
                     className={`ml-2 text-sm font-medium ${
                       index === currentStepIndex
-                        ? "text-indigo-600"
+                        ? "text-primary-500"
                         : index < currentStepIndex
                           ? "text-gray-900"
                           : "text-gray-500"
@@ -528,7 +557,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 {index < steps.length - 1 && (
                   <div className="w-full h-0.5 bg-gray-200">
                     <div
-                      className={`h-full ${index < currentStepIndex ? "bg-indigo-600" : "bg-gray-200"}`}
+                      className={`h-full ${index < currentStepIndex ? "bg-primary-500" : "bg-gray-200"}`}
                       style={{
                         width: index < currentStepIndex ? "100%" : "0%",
                       }}
@@ -543,7 +572,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
           {error}
         </div>
       )}
@@ -580,10 +609,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <PaymentStep
           order={order}
           countries={countries}
+          isAuthenticated={isAuthenticated}
           fetchStates={fetchStates}
-          onSubmit={handlePaymentSubmit}
+          onUpdateBillingAddress={handleUpdateBillingAddress}
+          onPaymentComplete={handlePaymentComplete}
           onBack={() => goToStep("delivery")}
           processing={processing}
+          setProcessing={setProcessing}
         />
       )}
     </>

@@ -56,7 +56,7 @@ export function ProductCard({
   return (
     <Link
       href={`${basePath}/products/${product.slug}`}
-      className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
       onClick={handleClick}
     >
       {/* Image */}
@@ -83,7 +83,7 @@ export function ProductCard({
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2">
+        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary-500 transition-colors line-clamp-2">
           {product.name}
         </h3>
 

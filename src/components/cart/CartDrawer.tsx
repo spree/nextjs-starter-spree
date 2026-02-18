@@ -98,7 +98,7 @@ export function CartDrawer() {
           <div className="relative w-6 h-6">
             <ShoppingBagIcon className="w-6 h-6 text-gray-600" />
             {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-primary-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {itemCount}
               </span>
             )}
@@ -128,7 +128,7 @@ export function CartDrawer() {
               <p className="text-gray-500 mb-4">Your cart is empty</p>
               <Link
                 href={`${basePath}/products`}
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className="text-primary-500 hover:text-primary-700 font-medium"
                 onClick={closeCart}
               >
                 Continue Shopping
@@ -159,7 +159,7 @@ export function CartDrawer() {
                       <div className="flex justify-between items-start">
                         <Link
                           href={`${basePath}/products/${item.slug}`}
-                          className="font-medium text-gray-900 hover:text-indigo-600 line-clamp-2"
+                          className="font-medium text-gray-900 hover:text-primary-500 line-clamp-2"
                           onClick={closeCart}
                         >
                           {item.name}
@@ -269,14 +269,14 @@ export function CartDrawer() {
             <div className="space-y-2">
               <Link
                 href={`${basePath}/checkout/${cart?.id}`}
-                className="block w-full bg-indigo-600 text-white text-center py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                className="block w-full bg-primary-500 text-white text-center py-3 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors"
                 onClick={closeCart}
               >
                 Checkout
               </Link>
               <Link
                 href={`${basePath}/cart`}
-                className="block w-full text-center text-indigo-600 hover:text-indigo-700 font-medium py-2"
+                className="block w-full text-center text-primary-500 hover:text-primary-700 font-medium py-2"
                 onClick={closeCart}
               >
                 View Cart
@@ -288,7 +288,7 @@ export function CartDrawer() {
         {/* Loading overlay */}
         {updating && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-            <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </div>

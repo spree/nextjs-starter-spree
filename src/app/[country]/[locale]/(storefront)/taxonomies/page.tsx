@@ -61,7 +61,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                         href={`${basePath}/t/${taxon.permalink}`}
                         className="group"
                       >
-                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-indigo-500 transition-all">
+                        <div className="aspect-square bg-white border border-gray-200 rounded-xl overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-primary-500 transition-all">
                           {taxon.square_image_url || taxon.image_url ? (
                             <img
                               src={
@@ -73,12 +73,12 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                            <div className="w-full h-full flex items-center justify-center">
                               <GridIcon className="w-12 h-12 text-gray-400" />
                             </div>
                           )}
                         </div>
-                        <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                        <h3 className="font-medium text-gray-900 group-hover:text-primary-500 transition-colors">
                           {taxon.name}
                         </h3>
                         {taxon.children_count > 0 && (
