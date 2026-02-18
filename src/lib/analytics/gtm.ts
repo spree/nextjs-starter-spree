@@ -118,7 +118,7 @@ export function mapLineItemToGA4Item(
     item.item_list_name = options.listName;
   }
 
-   const promoTotal = parseFloat(lineItem.promo_total);
+  const promoTotal = parseFloat(lineItem.promo_total);
   if (promoTotal < 0) {
     item.discount = Math.abs(promoTotal);
   }
