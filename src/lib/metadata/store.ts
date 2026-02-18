@@ -19,7 +19,13 @@ export async function generateStoreMetadata({
   const storeName = store?.seo_title || store?.name || "Spree Store";
 
   return {
-    ...(store?.url ? { metadataBase: new URL(ensureProtocol(store.url)) } : {}),
+    ...(store?.url ? (() => {
+      try {
+        return { metadataBase: new URL(ensureProtocol(store.url)) };
+      } catch {
+        return {};
+      }
+    })() : {}),
     title: {
       template: `%s | ${storeName}`,
       default: storeName,

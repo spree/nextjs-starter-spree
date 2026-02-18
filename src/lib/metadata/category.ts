@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getCachedStore, getCachedTaxon } from "@/lib/data/cached";
-import { buildCanonicalUrl } from "@/lib/seo";
+import { buildCanonicalUrl, stripHtml } from "@/lib/seo";
 
 interface CategoryMetadataParams {
   country: string;
@@ -32,7 +32,7 @@ export async function generateCategoryMetadata({
   const title = taxon.meta_title || taxon.name;
   const description =
     taxon.meta_description ||
-    taxon.description ||
+    (taxon.description ? stripHtml(taxon.description) : null) ||
     `Browse ${taxon.name} products.`;
 
   const canonicalUrl = store?.url
