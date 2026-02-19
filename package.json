@@ -22,7 +22,8 @@
     "next": "^16",
     "react": "^19",
     "react-dom": "^19",
-    "react-svg-credit-card-payment-icons": "^5.1.2"
+    "react-svg-credit-card-payment-icons": "^5.1.2",
+    "swiper": "^12.1.2"
   },
   "overrides": {
     "minimatch": "^10.2.1"

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckIcon, LightningBoltIcon, SupportIcon } from "@/components/icons";
-import { FeaturedProducts } from "./FeaturedProducts";
+import { ProductCarousel } from "@/components/products/ProductCarousel";
 
 interface HomePageProps {
   params: Promise<{
@@ -57,7 +57,7 @@ export default async function HomePage({ params }: HomePageProps) {
             View all &rarr;
           </Link>
         </div>
-        <FeaturedProducts basePath={basePath} />
+        <ProductCarousel basePath={basePath} />
       </section>
 
       {/* Features Section */}
