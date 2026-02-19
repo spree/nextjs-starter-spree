@@ -44,7 +44,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
         );
         setSuggestions(response.data);
         if (response.data.length > 0) {
-          trackQuickSearch(response.data, searchQuery);
+          trackQuickSearch(response.data, searchQuery, currency);
         }
       } catch (error) {
         console.error("Search failed:", error);
@@ -104,7 +104,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
 
   // Handle suggestion click
   const handleSuggestionClick = (product: StoreProduct, index: number) => {
-    trackSelectItem(product, "quick-search", "Quick Search", index);
+    trackSelectItem(product, "quick-search", "Quick Search", index, currency);
     router.push(`${basePath}/products/${product.slug}`);
     setIsOpen(false);
     setQuery("");

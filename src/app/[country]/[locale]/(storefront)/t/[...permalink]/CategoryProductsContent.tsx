@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { ProductListingLayout } from "@/components/products/ProductListingLayout";
+import { useStore } from "@/contexts/StoreContext";
 import { useProductListing } from "@/hooks/useProductListing";
 import { trackViewItemList } from "@/lib/analytics/gtm";
 import { getTaxonProducts } from "@/lib/data/products";
@@ -19,7 +20,7 @@ export function CategoryProductsContent({
   taxonName,
   basePath,
 }: CategoryProductsContentProps) {
-  const trackedProductsRef = useRef<string | null>(null);
+  const { currency } = useStore();
 
   const fetchFn = useCallback(
     (
@@ -39,14 +40,16 @@ export function CategoryProductsContent({
 
   // Track view_item_list when products load
   useEffect(() => {
-    if (listing.loading || listing.products.length === 0) return;
-
-    const key = listing.products.map((p) => p.id).join(",");
-    if (trackedProductsRef.current === key) return;
-    trackedProductsRef.current = key;
-
-    trackViewItemList(listing.products, listId, listName);
-  }, [listing.products, listing.loading, listId, listName]);
+    if (listing.loading || listing.totalCount === 0) return;
+    trackViewItemList(listing.products, listId, listName, currency);
+  }, [
+    listing.products,
+    listing.loading,
+    listing.totalCount,
+    listId,
+    listName,
+    currency,
+  ]);
 
   return (
     <ProductListingLayout

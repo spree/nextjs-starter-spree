@@ -1,8 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { ProductListingLayout } from "@/components/products/ProductListingLayout";
+import { useStore } from "@/contexts/StoreContext";
 import { useProductListing } from "@/hooks/useProductListing";
 import { trackViewItemList, trackViewSearchResults } from "@/lib/analytics/gtm";
 import { getProducts } from "@/lib/data/products";
@@ -13,8 +14,8 @@ interface ProductsContentProps {
 
 export function ProductsContent({ basePath }: ProductsContentProps) {
   const searchParams = useSearchParams();
+  const { currency } = useStore();
   const query = searchParams.get("q") || "";
-  const trackedProductsRef = useRef<string | null>(null);
 
   const fetchFn = useCallback(
     (
@@ -34,19 +35,22 @@ export function ProductsContent({ basePath }: ProductsContentProps) {
 
   // Track view_item_list / view_search_results when products load
   useEffect(() => {
-    if (listing.loading || listing.products.length === 0) return;
-
-    // Deduplicate: only fire when the product set changes
-    const key = `${query}:${listing.products.map((p) => p.id).join(",")}`;
-    if (trackedProductsRef.current === key) return;
-    trackedProductsRef.current = key;
+    if (listing.loading || listing.totalCount === 0) return;
 
     if (query) {
-      trackViewSearchResults(listing.products, query);
+      trackViewSearchResults(listing.products, query, currency);
     } else {
-      trackViewItemList(listing.products, listId, listName);
+      trackViewItemList(listing.products, listId, listName, currency);
     }
-  }, [listing.products, listing.loading, query, listId, listName]);
+  }, [
+    listing.products,
+    listing.loading,
+    listing.totalCount,
+    query,
+    listId,
+    listName,
+    currency,
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

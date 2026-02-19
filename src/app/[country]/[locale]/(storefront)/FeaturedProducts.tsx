@@ -31,13 +31,12 @@ export function FeaturedProducts({ basePath }: FeaturedProductsProps) {
         );
         if (!cancelled) {
           setProducts(response.data);
-          if (response.data.length > 0) {
-            trackViewItemList(
-              response.data,
-              "featured-products",
-              "Featured Products",
-            );
-          }
+          trackViewItemList(
+            response.data,
+            "featured-products",
+            "Featured Products",
+            currency,
+          );
         }
       } catch (error) {
         console.error("Failed to fetch featured products:", error);

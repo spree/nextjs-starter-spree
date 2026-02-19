@@ -32,10 +32,6 @@ function safeParseFloat(value: string | undefined | null): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function getProductCurrency(product: StoreProduct): string {
-  return product.price?.currency || "USD";
-}
-
 export function mapProductToGA4Item(
   product: StoreProduct,
   options: ItemMappingOptions = {},
@@ -134,13 +130,20 @@ function pushEcommerceEvent(
 
 // --- Event Functions ---
 
+let lastViewItemListKey: string | null = null;
+
 export function trackViewItemList(
   products: StoreProduct[],
   listId: string,
   listName: string,
+  currency: string,
 ): void {
-  const currency =
-    products.length > 0 ? getProductCurrency(products[0]) : "USD";
+  if (products.length === 0) return;
+
+  const key = `${listId}:${products.map((p) => p.id).join(",")}`;
+  if (lastViewItemListKey === key) return;
+  lastViewItemListKey = key;
+
   pushEcommerceEvent("view_item_list", {
     item_list_id: listId,
     item_list_name: listName,
@@ -156,22 +159,24 @@ export function trackSelectItem(
   listId: string,
   listName: string,
   index: number,
+  currency: string,
 ): void {
   pushEcommerceEvent("select_item", {
     item_list_id: listId,
     item_list_name: listName,
-    currency: getProductCurrency(product),
+    currency,
     items: [mapProductToGA4Item(product, { index, listId, listName })],
   });
 }
 
 export function trackViewItem(
   product: StoreProduct,
+  currency: string,
   variant?: StoreVariant | null,
 ): void {
   const item = mapProductToGA4Item(product, { variant });
   pushEcommerceEvent("view_item", {
-    currency: getProductCurrency(product),
+    currency,
     value: item.price ?? 0,
     items: [item],
   });
@@ -181,11 +186,12 @@ export function trackAddToCart(
   product: StoreProduct,
   variant: StoreVariant | null,
   quantity: number,
+  currency: string,
 ): void {
   const item = mapProductToGA4Item(product, { variant });
   item.quantity = quantity;
   pushEcommerceEvent("add_to_cart", {
-    currency: getProductCurrency(product),
+    currency,
     value: (item.price ?? 0) * quantity,
     items: [item],
   });
@@ -289,9 +295,8 @@ export function trackPurchase(order: StoreOrder): void {
 export function trackQuickSearch(
   products: StoreProduct[],
   searchTerm: string,
+  currency: string,
 ): void {
-  const currency =
-    products.length > 0 ? getProductCurrency(products[0]) : "USD";
   pushEcommerceEvent("view_search_results", {
     search_term: searchTerm,
     currency,
@@ -305,12 +310,19 @@ export function trackQuickSearch(
   });
 }
 
+let lastViewSearchResultsKey: string | null = null;
+
 export function trackViewSearchResults(
   products: StoreProduct[],
   searchTerm: string,
+  currency: string,
 ): void {
-  const currency =
-    products.length > 0 ? getProductCurrency(products[0]) : "USD";
+  if (products.length === 0) return;
+
+  const key = `${searchTerm}:${products.map((p) => p.id).join(",")}`;
+  if (lastViewSearchResultsKey === key) return;
+  lastViewSearchResultsKey = key;
+
   pushEcommerceEvent("view_search_results", {
     search_term: searchTerm,
     currency,

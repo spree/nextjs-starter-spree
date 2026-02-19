@@ -4,6 +4,7 @@ import type { StoreProduct } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { ImagePlaceholderIcon } from "@/components/icons";
+import { useStore } from "@/contexts/StoreContext";
 import { trackSelectItem } from "@/lib/analytics/gtm";
 
 interface ProductCardProps {
@@ -21,6 +22,7 @@ export function ProductCard({
   listId,
   listName,
 }: ProductCardProps) {
+  const { currency } = useStore();
   const imageUrl = product.thumbnail_url || null;
 
   // Current display price
@@ -49,7 +51,7 @@ export function ProductCard({
 
   const handleClick = () => {
     if (index != null && listId && listName) {
-      trackSelectItem(product, listId, listName, index);
+      trackSelectItem(product, listId, listName, index, currency);
     }
   };
 

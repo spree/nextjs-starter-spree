@@ -18,13 +18,7 @@ export default function CartPage() {
 
   // Track view_cart when cart loads with items
   useEffect(() => {
-    if (
-      !loading &&
-      cart &&
-      cart.line_items &&
-      cart.line_items.length > 0 &&
-      !viewCartFiredRef.current
-    ) {
+    if (!loading && cart && cart.item_count > 0 && !viewCartFiredRef.current) {
       trackViewCart(cart);
       viewCartFiredRef.current = true;
     }

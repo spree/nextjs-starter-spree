@@ -39,7 +39,7 @@ export function ProductDetailsWrapper({
         if (!cancelled) {
           setProduct(data);
           setError(false);
-          trackViewItem(data);
+          trackViewItem(data, currency);
         }
       } catch (err) {
         console.error("Failed to fetch product:", err);
