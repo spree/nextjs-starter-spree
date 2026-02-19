@@ -1,3 +1,4 @@
+import type { StoreStore } from "@spree/sdk";
 import type { Metadata } from "next";
 import { getCachedStore } from "@/lib/data/cached";
 import { ensureProtocol } from "@/lib/seo";
@@ -9,7 +10,7 @@ interface StoreMetadataParams {
 export async function generateStoreMetadata({
   locale,
 }: StoreMetadataParams): Promise<Metadata> {
-  let store;
+  let store: StoreStore | null;
   try {
     store = await getCachedStore(locale);
   } catch {
@@ -18,16 +19,17 @@ export async function generateStoreMetadata({
 
   const storeName = store?.seo_title || store?.name || "Spree Store";
 
+  let metadataBaseSpread: { metadataBase: URL } | Record<string, never> = {};
+  if (store?.url) {
+    try {
+      metadataBaseSpread = { metadataBase: new URL(ensureProtocol(store.url)) };
+    } catch {
+      metadataBaseSpread = {};
+    }
+  }
+
   return {
-    ...(store?.url
-      ? (() => {
-          try {
-            return { metadataBase: new URL(ensureProtocol(store.url)) };
-          } catch {
-            return {};
-          }
-        })()
-      : {}),
+    ...metadataBaseSpread,
     title: {
       template: `%s | ${storeName}`,
       default: storeName,
