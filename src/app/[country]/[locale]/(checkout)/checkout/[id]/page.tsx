@@ -209,7 +209,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCurrentStep(getCheckoutStep(orderData.state));
 
       if (!beginCheckoutFiredRef.current) {
-        trackBeginCheckout(orderData);
+        try {
+          trackBeginCheckout(orderData);
+        } catch {
+          // Analytics should never break checkout flow
+        }
         beginCheckoutFiredRef.current = true;
       }
 
@@ -291,6 +295,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setProcessing(true);
     setError(null);
 
+    let trackingOrder: StoreOrder | null = null;
+    let trackingRateName: string | undefined;
+
     try {
       const result = await selectShippingRate(order.id, shipmentId, rateId);
       if (!result.success) {
@@ -302,12 +309,21 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         const selectedRate = result.order.shipments
           ?.flatMap((s) => s.shipping_rates || [])
           ?.find((r) => r.id === rateId);
-        trackAddShippingInfo(result.order, selectedRate?.name);
+        trackingOrder = result.order;
+        trackingRateName = selectedRate?.name;
       }
     } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setProcessing(false);
+    }
+
+    if (trackingOrder) {
+      try {
+        trackAddShippingInfo(trackingOrder, trackingRateName);
+      } catch {
+        // Analytics should never break checkout flow
+      }
     }
   };
 
@@ -380,7 +396,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         return;
       }
 
-      trackAddPaymentInfo(order);
+      try {
+        trackAddPaymentInfo(order);
+      } catch {
+        // Analytics should never break checkout flow
+      }
 
       // Check if the order was already completed by the payment session completion.
       // If not, explicitly complete it.

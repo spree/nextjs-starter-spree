@@ -27,6 +27,11 @@ interface ItemMappingOptions {
   variant?: StoreVariant | null;
 }
 
+function safeParseFloat(value: string | undefined | null): number {
+  const parsed = parseFloat(value as string);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function getProductCurrency(product: StoreProduct): string {
   return product.price?.currency || "USD";
 }
@@ -72,7 +77,7 @@ export function mapProductToGA4Item(
     item.discount = discount;
   }
   if (index != null) {
-    item.index = index + 1;
+    item.index = index;
   }
   if (listId) {
     item.item_list_id = listId;
@@ -94,7 +99,7 @@ export function mapLineItemToGA4Item(
   const item: GA4Item = {
     item_id: lineItem.id,
     item_name: lineItem.name,
-    price: parseFloat(lineItem.price),
+    price: safeParseFloat(lineItem.price),
     quantity: lineItem.quantity,
   };
 
@@ -111,7 +116,7 @@ export function mapLineItemToGA4Item(
     item.item_list_name = options.listName;
   }
 
-  const promoTotal = parseFloat(lineItem.promo_total);
+  const promoTotal = safeParseFloat(lineItem.promo_total);
   if (promoTotal < 0) {
     item.discount = Math.abs(promoTotal);
   }
@@ -192,7 +197,7 @@ export function trackRemoveFromCart(
 ): void {
   pushEcommerceEvent("remove_from_cart", {
     currency,
-    value: parseFloat(lineItem.total),
+    value: safeParseFloat(lineItem.total),
     items: [mapLineItemToGA4Item(lineItem)],
   });
 }
@@ -200,7 +205,7 @@ export function trackRemoveFromCart(
 export function trackViewCart(order: StoreOrder): void {
   pushEcommerceEvent("view_cart", {
     currency: order.currency,
-    value: parseFloat(order.item_total),
+    value: safeParseFloat(order.item_total),
     items:
       order.line_items?.map((item, index) =>
         mapLineItemToGA4Item(item, { index }),
@@ -208,51 +213,49 @@ export function trackViewCart(order: StoreOrder): void {
   });
 }
 
-export function trackBeginCheckout(order: StoreOrder): void {
+function buildOrderEcommercePayload(
+  order: StoreOrder,
+  extras?: Record<string, unknown>,
+): Record<string, unknown> {
   const coupon = order.order_promotions?.[0]?.code;
-  pushEcommerceEvent("begin_checkout", {
+  return {
     currency: order.currency,
-    value: parseFloat(order.total),
+    value: safeParseFloat(order.total),
     ...(coupon && { coupon }),
+    ...extras,
     items:
       order.line_items?.map((item, index) =>
         mapLineItemToGA4Item(item, { index }),
       ) ?? [],
-  });
+  };
+}
+
+export function trackBeginCheckout(order: StoreOrder): void {
+  pushEcommerceEvent("begin_checkout", buildOrderEcommercePayload(order));
 }
 
 export function trackAddShippingInfo(
   order: StoreOrder,
   shippingTier?: string,
 ): void {
-  const coupon = order.order_promotions?.[0]?.code;
-  pushEcommerceEvent("add_shipping_info", {
-    currency: order.currency,
-    value: parseFloat(order.total),
-    ...(coupon && { coupon }),
-    ...(shippingTier && { shipping_tier: shippingTier }),
-    items:
-      order.line_items?.map((item, index) =>
-        mapLineItemToGA4Item(item, { index }),
-      ) ?? [],
-  });
+  pushEcommerceEvent(
+    "add_shipping_info",
+    buildOrderEcommercePayload(order, {
+      ...(shippingTier && { shipping_tier: shippingTier }),
+    }),
+  );
 }
 
 export function trackAddPaymentInfo(
   order: StoreOrder,
   paymentType?: string,
 ): void {
-  const coupon = order.order_promotions?.[0]?.code;
-  pushEcommerceEvent("add_payment_info", {
-    currency: order.currency,
-    value: parseFloat(order.total),
-    ...(coupon && { coupon }),
-    ...(paymentType && { payment_type: paymentType }),
-    items:
-      order.line_items?.map((item, index) =>
-        mapLineItemToGA4Item(item, { index }),
-      ) ?? [],
-  });
+  pushEcommerceEvent(
+    "add_payment_info",
+    buildOrderEcommercePayload(order, {
+      ...(paymentType && { payment_type: paymentType }),
+    }),
+  );
 }
 
 export function trackPurchase(order: StoreOrder): void {
@@ -265,19 +268,14 @@ export function trackPurchase(order: StoreOrder): void {
     // Storage unavailable (private browsing, quota exceeded) — proceed without dedup
   }
 
-  const coupon = order.order_promotions?.[0]?.code;
-  pushEcommerceEvent("purchase", {
-    transaction_id: order.number,
-    currency: order.currency,
-    value: parseFloat(order.total),
-    tax: parseFloat(order.tax_total),
-    shipping: parseFloat(order.ship_total),
-    ...(coupon && { coupon }),
-    items:
-      order.line_items?.map((item, index) =>
-        mapLineItemToGA4Item(item, { index }),
-      ) ?? [],
-  });
+  pushEcommerceEvent(
+    "purchase",
+    buildOrderEcommercePayload(order, {
+      transaction_id: order.number,
+      tax: safeParseFloat(order.tax_total),
+      shipping: safeParseFloat(order.ship_total),
+    }),
+  );
 
   try {
     if (typeof window !== "undefined") {
