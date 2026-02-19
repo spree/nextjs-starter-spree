@@ -3,6 +3,12 @@ import type { Metadata } from "next";
 import { getCachedStore } from "@/lib/data/cached";
 import { ensureProtocol } from "@/lib/seo";
 
+function normalizeOpenGraphLocale(locale: string): string {
+  const parts = locale.split(/[-_]/);
+  if (parts.length < 2) return locale;
+  return `${parts[0].toLowerCase()}_${parts[1].toUpperCase()}`;
+}
+
 interface StoreMetadataParams {
   locale: string;
 }
@@ -19,7 +25,7 @@ export async function generateStoreMetadata({
 
   const storeName = store?.seo_title || store?.name || "Spree Store";
 
-  let metadataBaseSpread: { metadataBase: URL } | Record<string, never> = {};
+  let metadataBaseSpread: Partial<{ metadataBase: URL }> = {};
   if (store?.url) {
     try {
       metadataBaseSpread = { metadataBase: new URL(ensureProtocol(store.url)) };
@@ -39,7 +45,7 @@ export async function generateStoreMetadata({
     ...(store?.meta_keywords ? { keywords: store.meta_keywords } : {}),
     openGraph: {
       siteName: store?.name || "Spree Store",
-      locale,
+      locale: normalizeOpenGraphLocale(locale),
       type: "website",
       ...(store?.social_image_url ? { images: [store.social_image_url] } : {}),
     },

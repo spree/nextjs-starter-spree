@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getCachedStore, getCachedTaxon } from "@/lib/data/cached";
 import { buildCanonicalUrl } from "@/lib/seo";
 
-interface CategoryMetadataParams {
+export interface CategoryMetadataParams {
   country: string;
   locale: string;
   permalink: string[];
