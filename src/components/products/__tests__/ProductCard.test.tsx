@@ -1,11 +1,7 @@
 import type { StoreProduct } from "@spree/sdk";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ProductCard } from "@/components/products/ProductCard";
-
-vi.mock("@/contexts/StoreContext", () => ({
-  useStore: () => ({ currency: "USD", locale: "en", loading: false }),
-}));
 
 // Minimal product fixtures — cast to StoreProduct for component props
 const baseProduct = {
