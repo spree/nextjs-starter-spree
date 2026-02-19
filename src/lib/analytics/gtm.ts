@@ -31,13 +31,6 @@ function getProductCurrency(product: StoreProduct): string {
   return product.price?.currency || "USD";
 }
 
-function centsToDecimal(
-  amountInCents: number | null | undefined,
-): number | undefined {
-  if (amountInCents == null) return undefined;
-  return amountInCents / 100;
-}
-
 export function mapProductToGA4Item(
   product: StoreProduct,
   options: ItemMappingOptions = {},
@@ -47,26 +40,26 @@ export function mapProductToGA4Item(
   const price = variant?.price ?? product.price;
   const originalPrice = variant?.original_price ?? product.original_price;
 
-  const currentCents = price?.amount_in_cents;
-  const originalCents = originalPrice?.amount_in_cents;
+  const currentAmount =
+    price?.amount != null ? parseFloat(price.amount) : undefined;
+  const originalAmount =
+    originalPrice?.amount != null
+      ? parseFloat(originalPrice.amount)
+      : undefined;
 
   let discount: number | undefined;
   if (
-    currentCents != null &&
-    originalCents != null &&
-    originalCents > currentCents
+    currentAmount != null &&
+    originalAmount != null &&
+    originalAmount > currentAmount
   ) {
-    discount = (originalCents - currentCents) / 100;
+    discount = originalAmount - currentAmount;
   }
 
   const item: GA4Item = {
-    item_id:
-      variant?.id ||
-      product.default_variant?.id ||
-      product.default_variant_id ||
-      product.id,
+    item_id: variant?.id || product.default_variant_id || product.id,
     item_name: product.name,
-    price: centsToDecimal(currentCents),
+    price: currentAmount,
   };
 
   if (variant?.options_text) {
@@ -99,7 +92,7 @@ export function mapLineItemToGA4Item(
   options: { index?: number; listId?: string; listName?: string } = {},
 ): GA4Item {
   const item: GA4Item = {
-    item_id: lineItem.variant_id || lineItem.id,
+    item_id: lineItem.id,
     item_name: lineItem.name,
     price: parseFloat(lineItem.price),
     quantity: lineItem.quantity,

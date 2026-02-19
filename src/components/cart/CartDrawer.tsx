@@ -52,13 +52,7 @@ export function CartDrawer() {
 
   // Track view_cart when drawer opens with items (fire once per open)
   useEffect(() => {
-    if (
-      isOpen &&
-      cart &&
-      cart.line_items &&
-      cart.line_items.length > 0 &&
-      !viewCartFiredRef.current
-    ) {
+    if (isOpen && cart && cart.item_count > 0 && !viewCartFiredRef.current) {
       trackViewCart(cart);
       viewCartFiredRef.current = true;
     }
