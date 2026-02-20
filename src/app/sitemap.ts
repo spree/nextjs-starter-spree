@@ -146,7 +146,7 @@ export default async function sitemap(props: {
         ...(product.images && product.images.length > 0
           ? {
               images: product.images
-                .map((img) => img.original_url)
+                .map((img) => img.large_url)
                 .filter((url): url is string => url != null),
             }
           : {}),
