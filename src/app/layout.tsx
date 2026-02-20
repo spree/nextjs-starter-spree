@@ -13,8 +13,11 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Spree Storefront",
-  description: "Next.js storefront powered by Spree Commerce",
+  title: {
+    template: "%s | Spree Store",
+    default: "Spree Store",
+  },
+  description: "Online store powered by Spree Commerce",
 };
 
 export default function RootLayout({
