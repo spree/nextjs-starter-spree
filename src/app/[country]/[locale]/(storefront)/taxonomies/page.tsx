@@ -1,4 +1,5 @@
 import type { StoreTaxon, StoreTaxonomy } from "@spree/sdk";
+import Image from "next/image";
 import Link from "next/link";
 import { GridIcon } from "@/components/icons";
 import { getTaxonomies } from "@/lib/data/taxonomies";
@@ -61,16 +62,14 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                         href={`${basePath}/t/${taxon.permalink}`}
                         className="group"
                       >
-                        <div className="aspect-square bg-white border border-gray-200 rounded-xl overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-primary-500 transition-all">
+                        <div className="relative aspect-square bg-white border border-gray-200 rounded-xl overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-primary-500 transition-all">
                           {taxon.square_image_url || taxon.image_url ? (
-                            <img
-                              src={
-                                taxon.square_image_url ??
-                                taxon.image_url ??
-                                undefined
-                              }
+                            <Image
+                              src={(taxon.square_image_url ?? taxon.image_url)!}
                               alt={taxon.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">

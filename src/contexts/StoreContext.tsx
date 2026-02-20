@@ -7,6 +7,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { getCountries as getCountriesAction } from "@/lib/data/countries";
@@ -79,6 +80,8 @@ export function StoreProvider({
   const [store, setStore] = useState<StoreStore | null>(null);
   const [countries, setCountries] = useState<StoreCountry[]>([]);
   const [loading, setLoading] = useState(true);
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
 
   // Fetch store and countries data on mount
   useEffect(() => {
@@ -101,7 +104,7 @@ export function StoreProvider({
         if (resolved.needsRedirect && resolved.country) {
           const newLocale =
             resolved.country.default_locale || storeData.default_locale || "en";
-          const pathRest = getPathWithoutPrefix(pathname);
+          const pathRest = getPathWithoutPrefix(pathnameRef.current);
           const newPath = `/${resolved.country.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
           setStoreCookies(resolved.country.iso.toLowerCase(), newLocale);
@@ -125,8 +128,6 @@ export function StoreProvider({
     };
 
     fetchData();
-    // pathname is intentionally excluded — this runs once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCountry, router]);
 
   const setCountry = (newCountry: string) => {

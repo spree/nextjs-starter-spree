@@ -47,6 +47,8 @@ export function useProductListing({
   const pageRef = useRef(1);
   const hasMoreRef = useRef(false);
   const filtersRef = useRef<ActiveFilters>({ optionValues: [] });
+  const filterParamsRef = useRef(filterParams);
+  filterParamsRef.current = filterParams;
   const loadIdRef = useRef(0);
 
   const fetchProducts = useCallback(
@@ -97,7 +99,7 @@ export function useProductListing({
     const fetchFilters = async () => {
       setFiltersLoading(true);
       try {
-        const params = { ...filterParams };
+        const params = { ...filterParamsRef.current };
         if (searchQuery) {
           params["q[multi_search]"] = searchQuery;
         }
@@ -122,16 +124,13 @@ export function useProductListing({
     return () => {
       cancelled = true;
     };
-    // filterParams is stable per mount (object identity may differ but content is constant)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currency, locale, storeLoading, searchQuery]);
 
   // Load products when search query or store context changes
   useEffect(() => {
     if (storeLoading) return;
-    loadProducts(activeFilters, searchQuery);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeLoading, searchQuery]);
+    loadProducts(filtersRef.current, searchQuery);
+  }, [storeLoading, searchQuery, loadProducts]);
 
   const handleFilterChange = useCallback(
     (newFilters: ActiveFilters) => {
