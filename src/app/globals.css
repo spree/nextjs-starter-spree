@@ -41,3 +41,9 @@ body {
   font-weight: 400;
 }
 
+/* Hide default Swiper navigation (using custom buttons) */
+.product-carousel .swiper-button-next,
+.product-carousel .swiper-button-prev {
+  display: none;
+}
+
