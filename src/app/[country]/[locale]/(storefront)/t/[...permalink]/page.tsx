@@ -40,6 +40,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             src={taxon.image_url}
             alt={taxon.name}
             fill
+            priority
             className="object-cover"
             sizes="100vw"
           />

@@ -49,6 +49,7 @@ export function useProductListing({
   const filtersRef = useRef<ActiveFilters>({ optionValues: [] });
   const filterParamsRef = useRef(filterParams);
   filterParamsRef.current = filterParams;
+  const filterParamsKey = JSON.stringify(filterParams);
   const loadIdRef = useRef(0);
 
   const fetchProducts = useCallback(
@@ -93,6 +94,8 @@ export function useProductListing({
   // Fetch filters (scoped to search query when present)
   useEffect(() => {
     if (storeLoading) return;
+    // Track filterParams changes for re-fetching on soft-nav
+    void filterParamsKey;
 
     let cancelled = false;
 
@@ -124,13 +127,15 @@ export function useProductListing({
     return () => {
       cancelled = true;
     };
-  }, [currency, locale, storeLoading, searchQuery]);
+  }, [currency, locale, storeLoading, searchQuery, filterParamsKey]);
 
-  // Load products when search query or store context changes
+  // Load products when search query, store context, or filter params change
   useEffect(() => {
     if (storeLoading) return;
+    // Track filterParams changes for re-fetching on soft-nav
+    void filterParamsKey;
     loadProducts(filtersRef.current, searchQuery);
-  }, [storeLoading, searchQuery, loadProducts]);
+  }, [storeLoading, searchQuery, loadProducts, filterParamsKey]);
 
   const handleFilterChange = useCallback(
     (newFilters: ActiveFilters) => {
