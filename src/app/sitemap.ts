@@ -27,6 +27,8 @@ interface CountryLocale {
 /** Google's limit is 50,000 URLs per sitemap file. */
 const URLS_PER_SITEMAP = 50_000;
 const STATIC_PAGES_PER_LOCALE = 3;
+const VALID_LOCALE_MODES: SitemapLocaleMode[] = ["default", "selected", "all"];
+const MAX_PAGES = 1000;
 
 /**
  * Module-level cache so that multiple sitemap({id}) calls during the same
@@ -35,19 +37,38 @@ const STATIC_PAGES_PER_LOCALE = 3;
  */
 let cachedProducts: Promise<StoreProduct[]> | null = null;
 let cachedTaxons: Promise<StoreTaxon[]> | null = null;
+let cachedCountryLocales: Promise<CountryLocale[]> | null = null;
 
 function getCachedProducts(): Promise<StoreProduct[]> {
   if (!cachedProducts) {
-    cachedProducts = fetchAllProducts();
+    cachedProducts = fetchAllProducts().catch((err) => {
+      cachedProducts = null;
+      throw err;
+    });
   }
   return cachedProducts;
 }
 
 function getCachedTaxons(): Promise<StoreTaxon[]> {
   if (!cachedTaxons) {
-    cachedTaxons = fetchAllTaxons();
+    cachedTaxons = fetchAllTaxons().catch((err) => {
+      cachedTaxons = null;
+      throw err;
+    });
   }
   return cachedTaxons;
+}
+
+function getCachedCountryLocales(
+  store: Awaited<ReturnType<typeof getStore>>,
+): Promise<CountryLocale[]> {
+  if (!cachedCountryLocales) {
+    cachedCountryLocales = resolveCountryLocales(store).catch((err) => {
+      cachedCountryLocales = null;
+      throw err;
+    });
+  }
+  return cachedCountryLocales;
 }
 
 /**
@@ -61,7 +82,7 @@ function getCachedTaxons(): Promise<StoreTaxon[]> {
  */
 export async function generateSitemaps() {
   const store = await getStore();
-  const countryLocales = await resolveCountryLocales(store);
+  const countryLocales = await getCachedCountryLocales(store);
 
   // Lightweight count — fetch only 1 record per request to read meta.count.
   // Taxon count is approximate (includes root taxons filtered out during generation),
@@ -97,7 +118,7 @@ export default async function sitemap(props: {
     return [];
   }
 
-  const countryLocales = await resolveCountryLocales(store);
+  const countryLocales = await getCachedCountryLocales(store);
 
   const [allProducts, allTaxons] = await Promise.all([
     getCachedProducts(),
@@ -146,7 +167,7 @@ export default async function sitemap(props: {
         ...(product.images && product.images.length > 0
           ? {
               images: product.images
-                .map((img) => img.large_url)
+                .map((img) => img.original_url)
                 .filter((url): url is string => url != null),
             }
           : {}),
@@ -180,16 +201,15 @@ async function resolveCountryLocales(
   store: Awaited<ReturnType<typeof getStore>>,
 ): Promise<CountryLocale[]> {
   const rawMode = process.env.SITEMAP_LOCALE_MODE || "default";
-  const mode: SitemapLocaleMode = VALID_LOCALE_MODES.includes(
-    rawMode as SitemapLocaleMode,
-  )
-    ? (rawMode as SitemapLocaleMode)
-    : (() => {
-        console.warn(
-          `Invalid SITEMAP_LOCALE_MODE "${rawMode}". Expected one of: ${VALID_LOCALE_MODES.join(", ")}. Falling back to "default".`,
-        );
-        return "default" as const;
-      })();
+  let mode: SitemapLocaleMode;
+  if (VALID_LOCALE_MODES.includes(rawMode as SitemapLocaleMode)) {
+    mode = rawMode as SitemapLocaleMode;
+  } else {
+    console.warn(
+      `Invalid SITEMAP_LOCALE_MODE "${rawMode}". Expected one of: ${VALID_LOCALE_MODES.join(", ")}. Falling back to "default".`,
+    );
+    mode = "default";
+  }
 
   const storeDefaultLocale =
     store.default_locale || process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
@@ -263,8 +283,6 @@ function safeLastModified(
   return { lastModified: date };
 }
 
-const VALID_LOCALE_MODES: SitemapLocaleMode[] = ["default", "selected", "all"];
-
 async function fetchAllProducts(): Promise<StoreProduct[]> {
   const allProducts: StoreProduct[] = [];
   let page = 1;
@@ -279,7 +297,7 @@ async function fetchAllProducts(): Promise<StoreProduct[]> {
     allProducts.push(...response.data);
     totalPages = response.meta.pages;
     page++;
-  } while (page <= totalPages);
+  } while (page <= totalPages && page <= MAX_PAGES);
 
   return allProducts;
 }
@@ -294,7 +312,7 @@ async function fetchAllTaxons(): Promise<StoreTaxon[]> {
     allTaxons.push(...response.data);
     totalPages = response.meta.pages;
     page++;
-  } while (page <= totalPages);
+  } while (page <= totalPages && page <= MAX_PAGES);
 
   return allTaxons;
 }

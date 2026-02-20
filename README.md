@@ -84,7 +84,7 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ 
+| `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ |
 | `SITEMAP_LOCALE_MODE` | Which country/locale pairs to include in the sitemap: `default`, `selected`, or `all` | `default` |
 | `SITEMAP_COUNTRIES` | Comma-separated country ISO codes (only used when `SITEMAP_LOCALE_MODE=selected`) | _(empty)_ |
 | `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `false` |
@@ -101,7 +101,7 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 > - `all` — every country available in the Spree store
 >
 > Each country resolves its locale from the country's `default_locale` in the Spree API, falling back to the store's default locale.
-
+>
 > **Privacy note:** PII collection is disabled by default. Only set `SENTRY_SEND_DEFAULT_PII` / `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` to `true` if you have appropriate user consent or a privacy policy covering this data.
 
 ### Development
