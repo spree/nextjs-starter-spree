@@ -87,7 +87,7 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 | `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ 
 | `SITEMAP_LOCALE_MODE` | Which country/locale pairs to include in the sitemap: `default`, `selected`, or `all` | `default` |
 | `SITEMAP_COUNTRIES` | Comma-separated country ISO codes (only used when `SITEMAP_LOCALE_MODE=selected`) | _(empty)_ |
-| `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `true` |
+| `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `false` |
 | `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
 | `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
 | `SENTRY_PROJECT` | Sentry project slug (for source map uploads) | _(none)_ |
