@@ -80,7 +80,8 @@ export function ProductCarousel({
         ref={prevRef}
         type="button"
         aria-label="Previous products"
-        className={`${NAV_BUTTON_BASE} -left-5 ${isBeginning ? "opacity-0 pointer-events-none" : ""}`}
+        disabled={isBeginning}
+        className={`${NAV_BUTTON_BASE} -left-5 ${isBeginning ? "opacity-0" : ""}`}
       >
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
@@ -88,7 +89,8 @@ export function ProductCarousel({
         ref={nextRef}
         type="button"
         aria-label="Next products"
-        className={`${NAV_BUTTON_BASE} -right-5 ${isEnd ? "opacity-0 pointer-events-none" : ""}`}
+        disabled={isEnd}
+        className={`${NAV_BUTTON_BASE} -right-5 ${isEnd ? "opacity-0" : ""}`}
       >
         <ChevronRightIcon className="w-5 h-5" />
       </button>

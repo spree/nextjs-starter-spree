@@ -24,37 +24,37 @@ export function useCarouselProducts({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (storeLoading) return;
-
     let cancelled = false;
 
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const options = { currency, locale };
-        const params = { per_page: limit };
+    if (!storeLoading) {
+      const fetchProducts = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const options = { currency, locale };
+          const params = { per_page: limit };
 
-        const response = taxonId
-          ? await getTaxonProducts(taxonId, params, options)
-          : await getProducts(params, options);
+          const response = taxonId
+            ? await getTaxonProducts(taxonId, params, options)
+            : await getProducts(params, options);
 
-        if (!cancelled) {
-          setProducts(response.data);
+          if (!cancelled) {
+            setProducts(response.data);
+          }
+        } catch (err) {
+          console.error("Failed to fetch carousel products:", err);
+          if (!cancelled) {
+            setError("Failed to load products. Please try again later.");
+          }
+        } finally {
+          if (!cancelled) {
+            setLoading(false);
+          }
         }
-      } catch (err) {
-        console.error("Failed to fetch carousel products:", err);
-        if (!cancelled) {
-          setError("Failed to load products. Please try again later.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
+      };
 
-    fetchProducts();
+      fetchProducts();
+    }
 
     return () => {
       cancelled = true;
