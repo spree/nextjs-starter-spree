@@ -20,14 +20,17 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 
 - **Server-First Architecture** - All API calls happen server-side using Next.js Server Actions
 - **Secure Authentication** - JWT tokens stored in httpOnly cookies (not localStorage)
-- **Product Catalog** - Browse, search, and filter products with faceted navigation
+- **Product Catalog** - Browse, search, filter products by categories and with faceted navigation
 - **Product Details** - View product information with variant selection and images
 - **Shopping Cart** - Add, update, and remove items with server-side state
-- **Categories** - Browse products by taxonomy with nested category support
+- **Multi-Step Checkout** - Guest visitors and signed in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
+- **Stripe payments** - native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe)
+- **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
 - **Customer Account** - Full account management:
   - Profile management
   - Order history with detailed order view
   - Address book (create, edit, delete)
+  - Gift Cards and Store Credit
   - Saved payment methods
 - **Multi-Region Support** - Country and currency switching via URL segments
 - **Responsive Design** - Mobile-first Tailwind CSS styling
@@ -52,7 +55,7 @@ Browser → Server Action → Spree API
 ### Prerequisites
 
 - Node.js 20+ (required for Next.js 16)
-- A running Spree Commerce backend with API v3 enabled
+- A running Spree Commerce 5.4+
 
 ### Installation
 
@@ -80,9 +83,8 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 #### Optional variables
 
 | Variable | Description | Default |
-|---|---|---|
-| `NEXT_PUBLIC_DEFAULT_COUNTRY` | Default country ISO code, used for initial redirects before API data loads | `us` |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | Default locale code | `en` |
+|----------|-------------|---------|
+| `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ 
 | `SITEMAP_LOCALE_MODE` | Which country/locale pairs to include in the sitemap: `default`, `selected`, or `all` | `default` |
 | `SITEMAP_COUNTRIES` | Comma-separated country ISO codes (only used when `SITEMAP_LOCALE_MODE=selected`) | _(empty)_ |
 | `ROBOTS_DISALLOW_AI` | Block AI training bots (GPTBot, CCBot, Google-Extended, etc.) in robots.txt | `true` |
@@ -246,6 +248,7 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 2. Import the repository in Vercel
 3. Add environment variables:
    - `SPREE_API_URL` and `SPREE_PUBLISHABLE_KEY` (required)
+   - `GTM_ID` (optional — Google Tag Manager)
    - `SITEMAP_LOCALE_MODE`, `SITEMAP_COUNTRIES` (optional — for multi-region sitemap)
    - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy
