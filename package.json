@@ -24,6 +24,9 @@
     "react-dom": "^19",
     "react-svg-credit-card-payment-icons": "^5.1.2"
   },
+  "overrides": {
+    "minimatch": "^10.2.1"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",
     "@svgr/webpack": "^8.1.0",
