@@ -1,8 +1,7 @@
 "use client";
 
-import type { StoreProduct } from "@spree/sdk";
 import type { ReactElement } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type Swiper from "swiper";
 import { Navigation } from "swiper/modules";
 import { Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
@@ -10,8 +9,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 import { ProductCard } from "@/components/products/ProductCard";
-import { useStore } from "@/contexts/StoreContext";
-import { getProducts, getTaxonProducts } from "@/lib/data/products";
+import { useCarouselProducts } from "@/hooks/useCarouselProducts";
 
 interface ProductCarouselProps {
   taxonId?: string;
@@ -27,53 +25,12 @@ export function ProductCarousel({
   limit = 8,
   basePath,
 }: ProductCarouselProps): ReactElement {
-  const { currency, locale, loading: storeLoading } = useStore();
-  const [products, setProducts] = useState<StoreProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { products, loading, error } = useCarouselProducts({ taxonId, limit });
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
 
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (storeLoading) return;
-
-    let cancelled = false;
-
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const options = { currency, locale };
-        const params = { per_page: limit };
-
-        const response = taxonId
-          ? await getTaxonProducts(taxonId, params, options)
-          : await getProducts(params, options);
-
-        if (!cancelled) {
-          setProducts(response.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch carousel products:", err);
-        if (!cancelled) {
-          setError("Failed to load products. Please try again later.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchProducts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currency, locale, storeLoading, taxonId, limit]);
 
   const handleBeforeInit = useCallback((swiper: Swiper) => {
     if (typeof swiper.params.navigation === "object") {
@@ -87,7 +44,7 @@ export function ProductCarousel({
     setIsEnd(swiper.isEnd);
   }, []);
 
-  if (loading || storeLoading) {
+  if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {[...Array(4)].map((_, i) => (
