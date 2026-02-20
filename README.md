@@ -81,6 +81,7 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ |
 | `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
 | `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
 | `SENTRY_PROJECT` | Sentry project slug (for source map uploads) | _(none)_ |
@@ -234,6 +235,7 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 2. Import the repository in Vercel
 3. Add environment variables:
    - `SPREE_API_URL` and `SPREE_PUBLISHABLE_KEY` (required)
+   - `GTM_ID` (optional — Google Tag Manager)
    - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy
 
