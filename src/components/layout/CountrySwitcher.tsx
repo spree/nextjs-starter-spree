@@ -89,8 +89,7 @@ export function CountrySwitcher() {
           </div>
           <ul className="max-h-64 overflow-auto py-1" role="listbox">
             {countries.map((c) => {
-              const isSelected =
-                c.iso.toLowerCase() === country.toLowerCase();
+              const isSelected = c.iso.toLowerCase() === country.toLowerCase();
               return (
                 <li key={c.iso}>
                   <button

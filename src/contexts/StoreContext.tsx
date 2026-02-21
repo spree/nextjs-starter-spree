@@ -70,10 +70,8 @@ function resolveCountryAndCurrency(
   if (defaultCountry) {
     return {
       country: defaultCountry,
-      currency:
-        defaultCountry.currency || storeData.default_currency || "USD",
-      locale:
-        defaultCountry.default_locale || storeData.default_locale || "en",
+      currency: defaultCountry.currency || storeData.default_currency || "USD",
+      locale: defaultCountry.default_locale || storeData.default_locale || "en",
       needsRedirect: true,
     };
   }
