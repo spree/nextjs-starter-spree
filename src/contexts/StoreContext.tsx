@@ -34,37 +34,56 @@ interface StoreProviderProps {
   initialLocale: string;
 }
 
+/** Find a country by ISO code in the flat countries list. */
+function findCountry(
+  countries: StoreCountry[],
+  countryIso: string,
+): StoreCountry | undefined {
+  return countries.find(
+    (c) => c.iso.toLowerCase() === countryIso.toLowerCase(),
+  );
+}
+
 function resolveCountryAndCurrency(
-  countriesData: StoreCountry[],
+  countries: StoreCountry[],
   storeData: StoreStore,
   urlCountry: string,
 ): {
   country: StoreCountry | undefined;
   currency: string;
+  locale: string;
   needsRedirect: boolean;
 } {
-  const urlCountryInList = countriesData.find(
-    (c) => c.iso.toLowerCase() === urlCountry.toLowerCase(),
-  );
+  const country = findCountry(countries, urlCountry);
 
-  if (!urlCountryInList && countriesData.length > 0) {
-    const defaultCountryIso = storeData.default_country_iso?.toLowerCase();
-    const defaultCountry = defaultCountryIso
-      ? countriesData.find((c) => c.iso.toLowerCase() === defaultCountryIso)
-      : countriesData[0];
+  if (country) {
+    return {
+      country,
+      currency: country.currency || storeData.default_currency || "USD",
+      locale: country.default_locale || storeData.default_locale || "en",
+      needsRedirect: false,
+    };
+  }
 
+  // Country not found — redirect to first available country
+  const defaultCountry = countries[0];
+  if (defaultCountry) {
     return {
       country: defaultCountry,
-      currency: defaultCountry?.default_currency || storeData.default_currency,
+      currency:
+        defaultCountry.currency || storeData.default_currency || "USD",
+      locale:
+        defaultCountry.default_locale || storeData.default_locale || "en",
       needsRedirect: true,
     };
   }
 
-  const currentCountry = urlCountryInList || countriesData[0];
-  const currency =
-    currentCountry?.default_currency || storeData.default_currency || "USD";
-
-  return { country: currentCountry, currency, needsRedirect: false };
+  return {
+    country: undefined,
+    currency: storeData.default_currency || "USD",
+    locale: storeData.default_locale || "en",
+    needsRedirect: false,
+  };
 }
 
 export function StoreProvider({
@@ -102,8 +121,7 @@ export function StoreProvider({
         );
 
         if (resolved.needsRedirect && resolved.country) {
-          const newLocale =
-            resolved.country.default_locale || storeData.default_locale || "en";
+          const newLocale = resolved.locale;
           const pathRest = getPathWithoutPrefix(pathnameRef.current);
           const newPath = `/${resolved.country.iso.toLowerCase()}/${newLocale}${pathRest}`;
 
@@ -120,6 +138,7 @@ export function StoreProvider({
           setCountryState(resolved.country.iso.toLowerCase());
         }
         setCurrency(resolved.currency);
+        setLocaleState(resolved.locale || initialLocale);
       } catch (error) {
         console.error("Failed to fetch store data:", error);
       } finally {
@@ -128,15 +147,13 @@ export function StoreProvider({
     };
 
     fetchData();
-  }, [initialCountry, router]);
+  }, [initialCountry, initialLocale, router]);
 
   const setCountry = (newCountry: string) => {
     setCountryState(newCountry);
-    const countryData = countries.find(
-      (c) => c.iso.toLowerCase() === newCountry.toLowerCase(),
-    );
-    if (countryData?.default_currency) {
-      setCurrency(countryData.default_currency);
+    const countryObj = findCountry(countries, newCountry);
+    if (countryObj?.currency) {
+      setCurrency(countryObj.currency);
     }
   };
 
