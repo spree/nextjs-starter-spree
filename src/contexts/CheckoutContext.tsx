@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
 interface CheckoutContextValue {
   summaryContent: ReactNode;
@@ -14,8 +20,13 @@ const CheckoutContext = createContext<CheckoutContextValue | undefined>(
 export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [summaryContent, setSummaryContent] = useState<ReactNode>(null);
 
+  const value = useMemo<CheckoutContextValue>(
+    () => ({ summaryContent, setSummaryContent }),
+    [summaryContent],
+  );
+
   return (
-    <CheckoutContext.Provider value={{ summaryContent, setSummaryContent }}>
+    <CheckoutContext.Provider value={value}>
       {children}
     </CheckoutContext.Provider>
   );

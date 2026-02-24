@@ -5,11 +5,25 @@ import type {
   ProductFiltersResponse,
   StoreProduct,
 } from "@spree/sdk";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ActiveFilters } from "@/components/products/ProductFilters";
 import { useStore } from "@/contexts/StoreContext";
 import { getProductFilters } from "@/lib/data/products";
 import { buildProductQueryParams } from "@/lib/utils/product-query";
+
+/** Shallow compare two ActiveFilters objects. */
+function filtersEqual(a: ActiveFilters, b: ActiveFilters): boolean {
+  if (a.priceMin !== b.priceMin || a.priceMax !== b.priceMax) return false;
+  if (a.availability !== b.availability) return false;
+  if (a.sortBy !== b.sortBy) return false;
+  if (a.optionValues.length !== b.optionValues.length) return false;
+  const aVals = [...a.optionValues].sort();
+  const bVals = [...b.optionValues].sort();
+  for (let i = 0; i < aVals.length; i++) {
+    if (aVals[i] !== bVals[i]) return false;
+  }
+  return true;
+}
 
 interface UseProductListingOptions {
   /** Function that fetches a page of products given query params and store options. */
@@ -49,8 +63,13 @@ export function useProductListing({
   const filtersRef = useRef<ActiveFilters>({ optionValues: [] });
   const filterParamsRef = useRef(filterParams);
   filterParamsRef.current = filterParams;
-  const filterParamsKey = JSON.stringify(filterParams);
+  const filterParamsKey = useMemo(
+    () => JSON.stringify(filterParams),
+    [filterParams],
+  );
   const loadIdRef = useRef(0);
+  const searchQueryRef = useRef(searchQuery);
+  searchQueryRef.current = searchQuery;
 
   const fetchProducts = useCallback(
     async (page: number, filters: ActiveFilters, query: string) => {
@@ -139,13 +158,13 @@ export function useProductListing({
 
   const handleFilterChange = useCallback(
     (newFilters: ActiveFilters) => {
-      if (JSON.stringify(filtersRef.current) !== JSON.stringify(newFilters)) {
+      if (!filtersEqual(filtersRef.current, newFilters)) {
         filtersRef.current = newFilters;
         setActiveFilters(newFilters);
-        loadProducts(newFilters, searchQuery);
+        loadProducts(newFilters, searchQueryRef.current);
       }
     },
-    [loadProducts, searchQuery],
+    [loadProducts],
   );
 
   const loadMore = useCallback(async () => {

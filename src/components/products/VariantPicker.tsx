@@ -46,18 +46,44 @@ export function VariantPicker({
     return options;
   }, [selectedVariant]);
 
+  // Precompute variant lookup structures to avoid O(n) iteration per option value
+  const { variantOptionMaps, optionValueDetailsMap } = useMemo(() => {
+    const maps = variants.map((variant) => {
+      const optionsMap: Record<string, string> = {};
+      variant.option_values.forEach((ov) => {
+        optionsMap[ov.option_type_id] = ov.name;
+      });
+      return { variant, optionsMap };
+    });
+
+    // Build option value details index: "typeId:name" -> option value object
+    const detailsMap: Record<string, (typeof variants)[0]["option_values"][0]> =
+      {};
+    for (const variant of variants) {
+      for (const ov of variant.option_values) {
+        const key = `${ov.option_type_id}:${ov.name}`;
+        if (!detailsMap[key]) {
+          detailsMap[key] = ov;
+        }
+      }
+    }
+
+    return { variantOptionMaps: maps, optionValueDetailsMap: detailsMap };
+  }, [variants]);
+
   // Find variant matching selected options
   const findVariant = (
     newOptions: Record<string, string>,
   ): StoreVariant | null => {
+    const optionCount = Object.keys(newOptions).length;
     return (
-      variants.find((variant) => {
-        return (
-          variant.option_values.every((ov) => {
-            return newOptions[ov.option_type_id] === ov.name;
-          }) && variant.option_values.length === Object.keys(newOptions).length
-        );
-      }) || null
+      variantOptionMaps.find(
+        ({ variant, optionsMap }) =>
+          variant.option_values.length === optionCount &&
+          Object.entries(newOptions).every(
+            ([typeId, value]) => optionsMap[typeId] === value,
+          ),
+      )?.variant || null
     );
   };
 
@@ -67,19 +93,11 @@ export function VariantPicker({
     optionValue: string,
   ): boolean => {
     const testOptions = { ...selectedOptions, [optionTypeId]: optionValue };
-
-    // Check if any variant matches these options
-    return variants.some((variant) => {
-      const variantOptions: Record<string, string> = {};
-      variant.option_values.forEach((ov) => {
-        variantOptions[ov.option_type_id] = ov.name;
-      });
-
-      // Check if all selected options match this variant
-      return Object.entries(testOptions).every(([typeId, value]) => {
-        return variantOptions[typeId] === value;
-      });
-    });
+    return variantOptionMaps.some(({ optionsMap }) =>
+      Object.entries(testOptions).every(
+        ([typeId, value]) => optionsMap[typeId] === value,
+      ),
+    );
   };
 
   // Check if a variant with these options is purchasable
@@ -88,19 +106,13 @@ export function VariantPicker({
     optionValue: string,
   ): boolean => {
     const testOptions = { ...selectedOptions, [optionTypeId]: optionValue };
-
-    return variants.some((variant) => {
-      if (!variant.purchasable) return false;
-
-      const variantOptions: Record<string, string> = {};
-      variant.option_values.forEach((ov) => {
-        variantOptions[ov.option_type_id] = ov.name;
-      });
-
-      return Object.entries(testOptions).every(([typeId, value]) => {
-        return variantOptions[typeId] === value;
-      });
-    });
+    return variantOptionMaps.some(
+      ({ variant, optionsMap }) =>
+        variant.purchasable &&
+        Object.entries(testOptions).every(
+          ([typeId, value]) => optionsMap[typeId] === value,
+        ),
+    );
   };
 
   const handleOptionSelect = (optionTypeId: string, optionValue: string) => {
@@ -109,19 +121,12 @@ export function VariantPicker({
     onVariantChange(newVariant);
   };
 
-  // Get option value details from variants
+  // Get option value details from precomputed map (O(1) lookup)
   const getOptionValueDetails = (
     optionTypeId: string,
     optionValueName: string,
-  ) => {
-    for (const variant of variants) {
-      const optionValue = variant.option_values.find(
-        (ov) =>
-          ov.option_type_id === optionTypeId && ov.name === optionValueName,
-      );
-      if (optionValue) return optionValue;
-    }
-    return null;
+  ): StoreVariant["option_values"][0] | null => {
+    return optionValueDetailsMap[`${optionTypeId}:${optionValueName}`] || null;
   };
 
   if (optionTypes.length === 0) {

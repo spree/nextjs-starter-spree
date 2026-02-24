@@ -5,8 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -147,33 +149,46 @@ export function StoreProvider({
     fetchData();
   }, [initialCountry, initialLocale, router]);
 
-  const setCountry = (newCountry: string) => {
-    setCountryState(newCountry);
-    const countryObj = findCountry(countries, newCountry);
-    if (countryObj?.currency) {
-      setCurrency(countryObj.currency);
-    }
-  };
+  const setCountry = useCallback(
+    (newCountry: string): void => {
+      setCountryState(newCountry);
+      const countryObj = findCountry(countries, newCountry);
+      if (countryObj?.currency) {
+        setCurrency(countryObj.currency);
+      }
+    },
+    [countries],
+  );
 
-  const setLocale = (newLocale: string) => {
+  const setLocale = useCallback((newLocale: string): void => {
     setLocaleState(newLocale);
-  };
+  }, []);
+
+  const value = useMemo<StoreContextValue>(
+    () => ({
+      country,
+      locale,
+      currency,
+      store,
+      countries,
+      setCountry,
+      setLocale,
+      loading,
+    }),
+    [
+      country,
+      locale,
+      currency,
+      store,
+      countries,
+      setCountry,
+      setLocale,
+      loading,
+    ],
+  );
 
   return (
-    <StoreContext.Provider
-      value={{
-        country,
-        locale,
-        currency,
-        store,
-        countries,
-        setCountry,
-        setLocale,
-        loading,
-      }}
-    >
-      {children}
-    </StoreContext.Provider>
+    <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
   );
 }
 

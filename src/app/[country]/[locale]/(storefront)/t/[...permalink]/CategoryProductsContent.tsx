@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ProductListingLayout } from "@/components/products/ProductListingLayout";
 import { useStore } from "@/contexts/StoreContext";
 import { useProductListing } from "@/hooks/useProductListing";
@@ -30,21 +30,28 @@ export function CategoryProductsContent({
     [taxonPermalink],
   );
 
+  const filterParams = useMemo(() => ({ taxon_id: taxonId }), [taxonId]);
+
   const listing = useProductListing({
     fetchFn,
-    filterParams: { taxon_id: taxonId },
+    filterParams,
   });
 
-  const listId = `category-${taxonId}`;
-  const listName = `Category: ${taxonName}`;
+  const listId = useMemo(() => `category-${taxonId}`, [taxonId]);
+  const listName = useMemo(() => `Category: ${taxonName}`, [taxonName]);
 
-  // Track view_item_list when products load
+  // Track view_item_list only on fresh loads (not loadMore).
+  const prevLoadingRef = useRef(true);
   useEffect(() => {
-    if (listing.loading || listing.totalCount === 0) return;
+    const wasLoading = prevLoadingRef.current;
+    prevLoadingRef.current = listing.loading;
+
+    if (!wasLoading || listing.loading || listing.totalCount === 0) return;
+
     trackViewItemList(listing.products, listId, listName, currency);
   }, [
-    listing.products,
     listing.loading,
+    listing.products,
     listing.totalCount,
     listId,
     listName,

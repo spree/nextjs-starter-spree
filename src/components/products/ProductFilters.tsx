@@ -6,7 +6,7 @@ import type {
   PriceRangeFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { ChevronDownIcon } from "@/components/icons";
 
 interface ProductFiltersProps {
@@ -24,7 +24,7 @@ export interface ActiveFilters {
   sortBy?: string;
 }
 
-export function ProductFilters({
+export const ProductFilters = memo(function ProductFilters({
   filtersData,
   loading,
   onFilterChange,
@@ -195,7 +195,7 @@ export function ProductFilters({
       </div>
     </div>
   );
-}
+});
 
 // Filter Section wrapper with expand/collapse
 function FilterSection({

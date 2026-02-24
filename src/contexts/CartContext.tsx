@@ -8,6 +8,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -130,31 +131,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     refreshCart();
   }, [refreshCart, pathname]);
 
-  const itemCount =
-    cart?.line_items?.reduce(
-      (sum: number, item: StoreLineItem) => sum + item.quantity,
-      0,
-    ) ?? 0;
-
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        loading,
-        updating,
-        itemCount,
-        isOpen,
-        openCart,
-        closeCart,
-        addItem,
-        updateItem,
-        removeItem,
-        refreshCart,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  const itemCount = useMemo<number>(
+    () =>
+      cart?.line_items?.reduce(
+        (sum: number, item: StoreLineItem) => sum + item.quantity,
+        0,
+      ) ?? 0,
+    [cart],
   );
+
+  const value = useMemo<CartContextType>(
+    () => ({
+      cart,
+      loading,
+      updating,
+      itemCount,
+      isOpen,
+      openCart,
+      closeCart,
+      addItem,
+      updateItem,
+      removeItem,
+      refreshCart,
+    }),
+    [
+      cart,
+      loading,
+      updating,
+      itemCount,
+      isOpen,
+      openCart,
+      closeCart,
+      addItem,
+      updateItem,
+      removeItem,
+      refreshCart,
+    ],
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
