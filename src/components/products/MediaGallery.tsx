@@ -45,7 +45,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
             fill
             className="object-cover"
             priority
-            quality={100}
+            quality={85}
             sizes="(max-width: 768px) 100vw, 50vw"
           />
         ) : (
