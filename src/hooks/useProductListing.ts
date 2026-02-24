@@ -13,7 +13,6 @@ import { buildProductQueryParams } from "@/lib/utils/product-query";
 
 /** Shallow compare two ActiveFilters objects. */
 function filtersEqual(a: ActiveFilters, b: ActiveFilters): boolean {
-  if (a === b) return true;
   if (a.priceMin !== b.priceMin || a.priceMax !== b.priceMax) return false;
   if (a.availability !== b.availability) return false;
   if (a.sortBy !== b.sortBy) return false;

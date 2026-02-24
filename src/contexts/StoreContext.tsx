@@ -150,7 +150,7 @@ export function StoreProvider({
   }, [initialCountry, initialLocale, router]);
 
   const setCountry = useCallback(
-    (newCountry: string) => {
+    (newCountry: string): void => {
       setCountryState(newCountry);
       const countryObj = findCountry(countries, newCountry);
       if (countryObj?.currency) {
@@ -160,7 +160,7 @@ export function StoreProvider({
     [countries],
   );
 
-  const setLocale = useCallback((newLocale: string) => {
+  const setLocale = useCallback((newLocale: string): void => {
     setLocaleState(newLocale);
   }, []);
 
