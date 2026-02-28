@@ -5,6 +5,7 @@ import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { ExpressCheckoutButton } from "@/components/checkout";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -13,7 +14,7 @@ import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem } = useCart();
+  const { cart, loading, updateItem, removeItem, refreshCart } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -166,6 +167,17 @@ export default function CartPage() {
                 </dd>
               </div>
             </dl>
+
+            {/* Express Checkout (Apple Pay / Google Pay) */}
+            {parseFloat(cart.total) > 0 && (
+              <div className="mt-6">
+                <ExpressCheckoutButton
+                  cart={cart}
+                  basePath={basePath}
+                  onComplete={() => refreshCart()}
+                />
+              </div>
+            )}
 
             <div className="mt-6 space-y-3">
               <Button size="lg" asChild className="w-full">

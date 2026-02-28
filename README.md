@@ -98,6 +98,34 @@ npm run dev
 
 Open [http://localhost:3001](http://localhost:3001) in your browser.
 
+### HTTPS Development (Apple Pay / Google Pay)
+
+Apple Pay and Google Pay require HTTPS on non-localhost domains. To test Express Checkout locally with these payment methods:
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert):
+
+```bash
+brew install mkcert
+mkcert -install
+```
+
+2. Generate certificates:
+
+```bash
+mkdir -p certificates
+mkcert -key-file certificates/key.pem -cert-file certificates/cert.pem shop.lvh.me localhost 127.0.0.1
+```
+
+3. Start the HTTPS dev server:
+
+```bash
+npm run dev:https
+```
+
+4. Open [https://shop.lvh.me:3001](https://shop.lvh.me:3001) in your browser.
+
+> **Note:** `shop.lvh.me` resolves to `127.0.0.1` and must be registered in your [Stripe Payment method domains](https://dashboard.stripe.com/settings/payment_methods/domains). The `*.pem` files are already in `.gitignore`.
+
 ### Production Build
 
 ```bash
