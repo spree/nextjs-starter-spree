@@ -6,12 +6,8 @@ import {
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import { useCallback, useEffect, useState } from "react";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
-);
+import { stripePromise } from "@/lib/utils/stripe";
 
 export interface StripePaymentFormHandle {
   confirmPayment: (returnUrl: string) => Promise<{ error?: string }>;
