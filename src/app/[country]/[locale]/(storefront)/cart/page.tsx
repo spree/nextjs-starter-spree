@@ -2,16 +2,24 @@
 
 import type { LineItem } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { ExpressCheckoutButton } from "@/components/checkout";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
+
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then(
+      (mod) => mod.ExpressCheckoutButton,
+    ),
+  { ssr: false, loading: () => null },
+);
 
 export default function CartPage() {
   const { cart, loading, updateItem, removeItem, refreshCart } = useCart();

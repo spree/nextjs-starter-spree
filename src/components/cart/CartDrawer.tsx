@@ -1,10 +1,10 @@
 "use client";
 
 import { ShoppingBag, Trash, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ExpressCheckoutButton } from "@/components/checkout";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -19,6 +19,14 @@ import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then(
+      (mod) => mod.ExpressCheckoutButton,
+    ),
+  { ssr: false, loading: () => null },
+);
+
 export function CartDrawer() {
   const {
     cart,
@@ -29,6 +37,7 @@ export function CartDrawer() {
     updateItem,
     removeItem,
     itemCount,
+    refreshCart,
   } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -241,7 +250,10 @@ export function CartDrawer() {
               <ExpressCheckoutButton
                 cart={cart}
                 basePath={basePath}
-                onComplete={closeCart}
+                onComplete={async () => {
+                  await refreshCart();
+                  closeCart();
+                }}
                 onProcessingChange={handleProcessingChange}
               />
             )}
