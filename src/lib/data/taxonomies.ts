@@ -1,5 +1,6 @@
 "use server";
 
+import type { TaxonListParams } from "@spree/sdk";
 import {
   getTaxon as _getTaxon,
   getTaxonomy as _getTaxonomy,
@@ -7,32 +8,21 @@ import {
   listTaxons,
 } from "@spree/next";
 
-export async function getTaxonomies(
-  params?: Record<string, unknown>,
-  options?: { locale?: string; currency?: string },
-) {
-  return listTaxonomies(params, options);
+export async function getTaxonomies(params?: TaxonListParams) {
+  return listTaxonomies(params);
 }
 
-export async function getTaxonomy(
-  id: string,
-  params?: Record<string, unknown>,
-  options?: { locale?: string; currency?: string },
-) {
-  return _getTaxonomy(id, params, options);
+export async function getTaxonomy(id: string, params?: TaxonListParams) {
+  return _getTaxonomy(id, params);
 }
 
-export async function getTaxons(
-  params?: Record<string, unknown>,
-  options?: { locale?: string; currency?: string },
-) {
-  return listTaxons(params, options);
+export async function getTaxons(params?: TaxonListParams) {
+  return listTaxons(params);
 }
 
 export async function getTaxon(
   idOrPermalink: string,
-  params?: Record<string, unknown>,
-  options?: { locale?: string; currency?: string },
+  params?: TaxonListParams,
 ) {
-  return _getTaxon(idOrPermalink, params, options);
+  return _getTaxon(idOrPermalink, params);
 }
