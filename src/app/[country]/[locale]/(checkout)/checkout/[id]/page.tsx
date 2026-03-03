@@ -192,7 +192,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       // Fetch countries scoped to the resolved market
       const countriesData = market
-        ? await getMarketCountries(market.id)
+        ? await getMarketCountries(market.id).catch(() => ({
+            data: [] as StoreCountry[],
+          }))
         : { data: [] as StoreCountry[] };
 
       if (!orderData) {

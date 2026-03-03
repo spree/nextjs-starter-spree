@@ -53,11 +53,15 @@ export function CountrySwitcher() {
 
     // Update existing cart if currency or locale changed
     if (cart && (cart.currency !== newCurrency || cart.locale !== newLocale)) {
-      await updateOrderMarket(cart.id, {
+      const result = await updateOrderMarket(cart.id, {
         currency: newCurrency,
         locale: newLocale,
       });
-      refreshCart();
+      if (!result.success) {
+        setIsOpen(false);
+        return;
+      }
+      await refreshCart();
     }
 
     setStoreCookies(entry.iso.toLowerCase(), newLocale);

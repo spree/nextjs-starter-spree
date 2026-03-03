@@ -135,6 +135,20 @@ describe("checkout server actions", () => {
         error: "Currency not supported",
       });
     });
+
+    it("returns fallback message for non-Error throws", async () => {
+      mockUpdateOrder.mockRejectedValue("unexpected");
+
+      const result = await updateOrderMarket("order-1", {
+        currency: "EUR",
+        locale: "de",
+      });
+
+      expect(result).toEqual({
+        success: false,
+        error: "Failed to update order market",
+      });
+    });
   });
 
   describe("advanceCheckout", () => {

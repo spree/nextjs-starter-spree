@@ -185,6 +185,7 @@ export function StoreProvider({
       const countryObj = findCountry(countries, newCountry);
       if (countryObj) {
         setCurrency(countryObj.currency);
+        setLocaleState(countryObj.default_locale);
       }
     },
     [countries],
