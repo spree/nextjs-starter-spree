@@ -3,6 +3,7 @@
 import type { StoreProduct } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
+import { memo } from "react";
 import { ImagePlaceholderIcon } from "@/components/icons";
 import { useStore } from "@/contexts/StoreContext";
 import { trackSelectItem } from "@/lib/analytics/gtm";
@@ -15,7 +16,7 @@ interface ProductCardProps {
   listName?: string;
 }
 
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
   product,
   basePath = "",
   index,
@@ -108,4 +109,4 @@ export function ProductCard({
       </div>
     </Link>
   );
-}
+});

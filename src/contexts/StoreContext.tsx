@@ -5,8 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -59,8 +61,8 @@ function resolveCountryAndCurrency(
   if (country) {
     return {
       country,
-      currency: country.currency || storeData.default_currency || "USD",
-      locale: country.default_locale || storeData.default_locale || "en",
+      currency: country.currency || "USD",
+      locale: country.default_locale || "en",
       needsRedirect: false,
     };
   }
@@ -70,16 +72,16 @@ function resolveCountryAndCurrency(
   if (defaultCountry) {
     return {
       country: defaultCountry,
-      currency: defaultCountry.currency || storeData.default_currency || "USD",
-      locale: defaultCountry.default_locale || storeData.default_locale || "en",
+      currency: defaultCountry.currency || "USD",
+      locale: defaultCountry.default_locale || "en",
       needsRedirect: true,
     };
   }
 
   return {
     country: undefined,
-    currency: storeData.default_currency || "USD",
-    locale: storeData.default_locale || "en",
+    currency: "USD",
+    locale: "en",
     needsRedirect: false,
   };
 }
@@ -147,33 +149,46 @@ export function StoreProvider({
     fetchData();
   }, [initialCountry, initialLocale, router]);
 
-  const setCountry = (newCountry: string) => {
-    setCountryState(newCountry);
-    const countryObj = findCountry(countries, newCountry);
-    if (countryObj?.currency) {
-      setCurrency(countryObj.currency);
-    }
-  };
+  const setCountry = useCallback(
+    (newCountry: string): void => {
+      setCountryState(newCountry);
+      const countryObj = findCountry(countries, newCountry);
+      if (countryObj?.currency) {
+        setCurrency(countryObj.currency);
+      }
+    },
+    [countries],
+  );
 
-  const setLocale = (newLocale: string) => {
+  const setLocale = useCallback((newLocale: string): void => {
     setLocaleState(newLocale);
-  };
+  }, []);
+
+  const value = useMemo<StoreContextValue>(
+    () => ({
+      country,
+      locale,
+      currency,
+      store,
+      countries,
+      setCountry,
+      setLocale,
+      loading,
+    }),
+    [
+      country,
+      locale,
+      currency,
+      store,
+      countries,
+      setCountry,
+      setLocale,
+      loading,
+    ],
+  );
 
   return (
-    <StoreContext.Provider
-      value={{
-        country,
-        locale,
-        currency,
-        store,
-        countries,
-        setCountry,
-        setLocale,
-        loading,
-      }}
-    >
-      {children}
-    </StoreContext.Provider>
+    <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
   );
 }
 
