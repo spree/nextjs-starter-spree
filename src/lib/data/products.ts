@@ -14,7 +14,7 @@ export async function getProducts(params?: ProductListParams) {
 
 export async function getProduct(
   slugOrId: string,
-  params?: { expand?: string },
+  params?: { expand?: string[] },
 ) {
   return _getProduct(slugOrId, params);
 }

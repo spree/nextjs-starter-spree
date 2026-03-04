@@ -27,7 +27,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
   try {
     const response = await getTaxonomies({
       limit: 100,
-      expand: "taxons",
+      expand: ["taxons"],
     });
     taxonomies = response.data;
   } catch (error) {
