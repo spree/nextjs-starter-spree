@@ -55,9 +55,8 @@ function DropdownPanel({
     : null;
 
   return (
-    <div
+    <section
       className="fixed left-0 right-0 top-16 bg-white border-t border-gray-200 shadow-lg z-50"
-      role="menu"
       aria-label={label}
     >
       <div className="max-w-7xl mx-auto p-6">
@@ -95,7 +94,7 @@ function DropdownPanel({
           </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -127,14 +126,22 @@ function DesktopNavDropdown({
   } = useMemo(() => getNavItemChildren(navItem, basePath), [navItem, basePath]);
 
   return (
-    <div onMouseEnter={() => onMouseEnter(index)} onMouseLeave={onMouseLeave}>
+    <div
+      onMouseEnter={() => onMouseEnter(index)}
+      onMouseLeave={onMouseLeave}
+      onFocus={() => onMouseEnter(index)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          onMouseLeave();
+        }
+      }}
+    >
       <Link
         href={viewAllHref}
         className={`flex items-center gap-1 py-5 text-sm font-medium transition-colors ${
           isActive ? "text-gray-900" : "text-gray-600 hover:text-gray-900"
         }`}
         aria-expanded={isActive}
-        aria-haspopup="true"
       >
         {navItem.label}
         <ChevronDownIcon
@@ -184,23 +191,44 @@ export function MegaMenu({ basePath, config }: MegaMenuProps) {
   );
 
   useEffect(() => {
+    let stale = false;
     const fetchData = async () => {
       try {
-        const [taxonomiesRes, ...taxonResults] = await Promise.all([
-          getTaxonomies({ limit: 100, expand: ["taxons"] }),
-          ...extraTaxonSlugs.map((slug) =>
+        const taxonomiesRes = await getTaxonomies({
+          limit: 100,
+          expand: ["taxons"],
+        });
+        const taxonResults = await Promise.allSettled(
+          extraTaxonSlugs.map((slug) =>
             getTaxon(slug, { expand: ["children"] }),
           ),
-        ]);
+        );
+
+        if (stale) return;
+
+        const fulfilled = taxonResults.flatMap((r, i) =>
+          r.status === "fulfilled"
+            ? [{ slug: extraTaxonSlugs[i], taxon: r.value }]
+            : [],
+        );
+
         setTaxonomies(taxonomiesRes.data);
-        setExtraTaxonMap(buildExtraTaxonMap(extraTaxonSlugs, taxonResults));
+        setExtraTaxonMap(
+          buildExtraTaxonMap(
+            fulfilled.map((e) => e.slug),
+            fulfilled.map((e) => e.taxon),
+          ),
+        );
       } catch (error) {
         console.error("Failed to fetch mega menu data:", error);
       } finally {
-        setLoading(false);
+        if (!stale) setLoading(false);
       }
     };
     fetchData();
+    return () => {
+      stale = true;
+    };
   }, [extraTaxonSlugs]);
 
   useEffect(() => {
