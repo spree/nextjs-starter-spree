@@ -1,5 +1,6 @@
 "use client";
 
+import type { StoreGiftCard } from "@spree/sdk";
 import { useEffect, useState } from "react";
 import {
   CheckIcon,
@@ -8,27 +9,6 @@ import {
   InfoCircleIcon,
 } from "@/components/icons";
 import { getGiftCards } from "@/lib/data/gift-cards";
-
-// Gift card type (matches SDK StoreGiftCard)
-interface GiftCard {
-  id: string;
-  code: string;
-  state: string;
-  currency: string;
-  amount: number;
-  amount_used: number;
-  amount_authorized: number;
-  amount_remaining: number;
-  display_amount: string;
-  display_amount_used: string;
-  display_amount_remaining: string;
-  expires_at: string | null;
-  redeemed_at: string | null;
-  expired: boolean;
-  active: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 function getStateColor(state: string, expired: boolean): string {
   if (expired) return "bg-gray-100 text-gray-800";
@@ -115,9 +95,11 @@ function CopyButton({ code }: { code: string }) {
   );
 }
 
-function GiftCardItem({ card }: { card: GiftCard }) {
+function GiftCardItem({ card }: { card: StoreGiftCard }) {
   const usagePercentage =
-    card.amount > 0 ? Math.round((card.amount_used / card.amount) * 100) : 0;
+    Number(card.amount) > 0
+      ? Math.round((Number(card.amount_used) / Number(card.amount)) * 100)
+      : 0;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -181,7 +163,7 @@ function GiftCardItem({ card }: { card: GiftCard }) {
 }
 
 export default function GiftCardsPage() {
-  const [cards, setCards] = useState<GiftCard[]>([]);
+  const [cards, setCards] = useState<StoreGiftCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

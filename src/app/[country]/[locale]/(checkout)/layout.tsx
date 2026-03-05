@@ -9,8 +9,9 @@ import {
   ShoppingBagIcon,
 } from "@/components/icons";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
-import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";
+
+const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
 
 function CheckoutHeader() {
   const pathname = usePathname();
@@ -33,14 +34,12 @@ function CheckoutHeader() {
 }
 
 function CheckoutFooter() {
-  const { store } = useStore();
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="py-4 text-sm text-gray-500 border-t border-gray-200 mt-auto">
       <p>
-        &copy; {currentYear} {store?.name || "Spree Store"}. All rights
-        reserved.
+        &copy; {currentYear} {storeName}. All rights reserved.
       </p>
     </footer>
   );
