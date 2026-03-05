@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreLineItem } from "@spree/sdk";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,8 +11,16 @@ import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then(
+      (mod) => mod.ExpressCheckoutButton,
+    ),
+  { ssr: false, loading: () => null },
+);
+
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem } = useCart();
+  const { cart, loading, updateItem, removeItem, refreshCart } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -176,9 +185,20 @@ export default function CartPage() {
               </div>
             </dl>
 
+            {/* Express Checkout (Apple Pay / Google Pay) */}
+            {parseFloat(cart.total) > 0 && (
+              <div className="mt-6">
+                <ExpressCheckoutButton
+                  cart={cart}
+                  basePath={basePath}
+                  onComplete={() => refreshCart()}
+                />
+              </div>
+            )}
+
             <Link
               href={`${basePath}/checkout/${cart.id}`}
-              className="mt-6 block w-full bg-primary-500 text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
+              className="mt-4 block w-full bg-primary-500 text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
             >
               Proceed to Checkout
             </Link>

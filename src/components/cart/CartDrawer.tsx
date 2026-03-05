@@ -1,9 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CloseIcon,
   MinusIcon,
@@ -13,6 +14,14 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
+
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then(
+      (mod) => mod.ExpressCheckoutButton,
+    ),
+  { ssr: false, loading: () => null },
+);
 
 export function CartDrawer() {
   const {
@@ -24,12 +33,18 @@ export function CartDrawer() {
     updateItem,
     removeItem,
     itemCount,
+    refreshCart,
   } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const drawerRef = useRef<HTMLDivElement>(null);
   const viewCartFiredRef = useRef(false);
   const prevPathnameRef = useRef(pathname);
+  const [expressProcessing, setExpressProcessing] = useState(false);
+  const handleProcessingChange = useCallback(
+    (p: boolean) => setExpressProcessing(p),
+    [],
+  );
 
   // Close on escape key
   useEffect(() => {
@@ -246,40 +261,57 @@ export function CartDrawer() {
         {/* Footer */}
         {!isEmpty && !loading && (
           <div className="border-t border-gray-200 p-4 space-y-4">
-            {/* Summary */}
-            <div className="space-y-2">
-              <p className="text-sm text-gray-500 text-center">
-                Shipping and taxes calculated at checkout
-              </p>
-              <div className="flex justify-between items-center text-lg font-semibold">
-                <span>Total</span>
-                <span>{cart?.display_item_total}</span>
-              </div>
-              {cart?.promo_total && parseFloat(cart.promo_total) < 0 && (
-                <div className="flex justify-between items-center text-sm text-green-600">
-                  <span>Discount</span>
-                  <span>{cart.display_promo_total}</span>
+            {/* Summary — hidden while express checkout is processing */}
+            {!expressProcessing && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500 text-center">
+                  Shipping and taxes calculated at checkout
+                </p>
+                <div className="flex justify-between items-center text-lg font-semibold">
+                  <span>Total</span>
+                  <span>{cart?.display_item_total}</span>
                 </div>
-              )}
-            </div>
+                {cart?.promo_total && parseFloat(cart.promo_total) < 0 && (
+                  <div className="flex justify-between items-center text-sm text-green-600">
+                    <span>Discount</span>
+                    <span>{cart.display_promo_total}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
-            {/* Actions */}
-            <div className="space-y-2">
-              <Link
-                href={`${basePath}/checkout/${cart?.id}`}
-                className="block w-full bg-primary-500 text-white text-center py-3 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors"
-                onClick={closeCart}
-              >
-                Checkout
-              </Link>
-              <Link
-                href={`${basePath}/cart`}
-                className="block w-full text-center text-primary-500 hover:text-primary-700 font-medium py-2"
-                onClick={closeCart}
-              >
-                View Cart
-              </Link>
-            </div>
+            {/* Express Checkout (Apple Pay / Google Pay) */}
+            {cart && parseFloat(cart.total) > 0 && (
+              <ExpressCheckoutButton
+                cart={cart}
+                basePath={basePath}
+                onComplete={async () => {
+                  await refreshCart();
+                  closeCart();
+                }}
+                onProcessingChange={handleProcessingChange}
+              />
+            )}
+
+            {/* Actions — hidden while express checkout is processing */}
+            {!expressProcessing && (
+              <div className="space-y-2">
+                <Link
+                  href={`${basePath}/checkout/${cart?.id}`}
+                  className="block w-full bg-primary-500 text-white text-center py-3 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors"
+                  onClick={closeCart}
+                >
+                  Checkout
+                </Link>
+                <Link
+                  href={`${basePath}/cart`}
+                  className="block w-full text-center text-primary-500 hover:text-primary-700 font-medium py-2"
+                  onClick={closeCart}
+                >
+                  View Cart
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
