@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCountry, StoreMarket, StoreStore } from "@spree/sdk";
+import type { StoreCountry, StoreMarket } from "@spree/sdk";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
@@ -13,7 +13,6 @@ import {
   useState,
 } from "react";
 import { getMarkets as getMarketsAction } from "@/lib/data/markets";
-import { getStore as getStoreAction } from "@/lib/data/store";
 import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
 
@@ -28,7 +27,6 @@ interface StoreContextValue {
   country: string;
   locale: string;
   currency: string;
-  store: StoreStore | null;
   countries: CountryWithMarket[];
   setCountry: (country: string) => void;
   setLocale: (locale: string) => void;
@@ -126,7 +124,6 @@ export function StoreProvider({
   const [country, setCountryState] = useState(initialCountry);
   const [locale, setLocaleState] = useState(initialLocale);
   const [currency, setCurrency] = useState("USD");
-  const [store, setStore] = useState<StoreStore | null>(null);
   const [countries, setCountries] = useState<CountryWithMarket[]>([]);
   const [loading, setLoading] = useState(true);
   const pathnameRef = useRef(pathname);
@@ -136,12 +133,8 @@ export function StoreProvider({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [storeData, marketsData] = await Promise.all([
-          getStoreAction(),
-          getMarketsAction(),
-        ]);
+        const marketsData = await getMarketsAction();
 
-        setStore(storeData);
         const enrichedCountries = buildCountriesFromMarkets(marketsData.data);
         setCountries(enrichedCountries);
 
@@ -200,22 +193,12 @@ export function StoreProvider({
       country,
       locale,
       currency,
-      store,
       countries,
       setCountry,
       setLocale,
       loading,
     }),
-    [
-      country,
-      locale,
-      currency,
-      store,
-      countries,
-      setCountry,
-      setLocale,
-      loading,
-    ],
+    [country, locale, currency, countries, setCountry, setLocale, loading],
   );
 
   return (

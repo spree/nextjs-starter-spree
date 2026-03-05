@@ -7,7 +7,17 @@ import { withFallback } from "./utils";
 export async function getOrders(params?: OrderListParams) {
   return withFallback(() => listOrders(params), {
     data: [],
-    meta: { page: 1, limit: 25, count: 0, pages: 0 },
+    meta: {
+      page: 1,
+      limit: 25,
+      count: 0,
+      pages: 0,
+      from: 0,
+      to: 0,
+      in: 0,
+      previous: null,
+      next: null,
+    },
   });
 }
 
