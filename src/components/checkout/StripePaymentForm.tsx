@@ -7,6 +7,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 const stripePromise = loadStripe(
@@ -29,12 +30,13 @@ function StripePaymentFormInner({
 }) {
   const stripe = useStripe();
   const elements = useElements();
+  const t = useTranslations("checkout");
   const [error, setError] = useState<string | null>(null);
 
   const confirmPayment = useCallback(
     async (returnUrl: string) => {
       if (!stripe || !elements) {
-        return { error: "Stripe has not loaded yet" };
+        return { error: t("stripeNotLoaded") };
       }
 
       setError(null);
@@ -48,15 +50,14 @@ function StripePaymentFormInner({
       });
 
       if (result.error) {
-        const message =
-          result.error.message || "An error occurred during payment.";
+        const message = result.error.message || t("paymentProcessingError");
         setError(message);
         return { error: message };
       }
 
       return {};
     },
-    [stripe, elements],
+    [stripe, elements, t],
   );
 
   useEffect(() => {

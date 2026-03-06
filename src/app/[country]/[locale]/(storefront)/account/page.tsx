@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   CreditCardIcon,
@@ -20,6 +21,7 @@ export default function AccountPage() {
   const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
   const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const t = useTranslations("account");
 
   // Get redirect URL from query params (e.g., from checkout)
   const redirectUrl = searchParams.get("redirect");
@@ -42,7 +44,7 @@ export default function AccountPage() {
         router.push(redirectUrl);
       }
     } else {
-      setError(result.error || "Invalid email or password");
+      setError(result.error || t("invalidCredentials"));
     }
     setLoading(false);
   };
@@ -65,10 +67,8 @@ export default function AccountPage() {
     return (
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
-          <p className="mt-2 text-gray-500">
-            Sign in to access your account and order history.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("myAccount")}</h1>
+          <p className="mt-2 text-gray-500">{t("signInDescription")}</p>
         </div>
 
         <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
@@ -84,7 +84,7 @@ export default function AccountPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Email
+                {t("email")}
               </label>
               <input
                 type="email"
@@ -101,7 +101,7 @@ export default function AccountPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700"
               >
-                Password
+                {t("password")}
               </label>
               <div className="relative">
                 <input
@@ -132,17 +132,17 @@ export default function AccountPage() {
               disabled={loading}
               className="w-full bg-primary-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? t("signingIn") : t("signIn")}
             </button>
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-gray-500">Don&apos;t have an account? </span>
+            <span className="text-gray-500">{t("dontHaveAccount")} </span>
             <Link
               href={`${basePath}/account/register`}
               className="text-primary-500 hover:text-primary-700 font-medium"
             >
-              Sign up
+              {t("signUp")}
             </Link>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function AccountPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Account Overview
+        {t("accountOverview")}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -168,10 +168,10 @@ export default function AccountPage() {
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
-                Order History
+                {t("orderHistory")}
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                View your past orders and track shipments
+                {t("orderHistoryDescription")}
               </p>
             </div>
           </div>
@@ -186,9 +186,11 @@ export default function AccountPage() {
               <MapPinIcon className="w-6 h-6 text-primary-500" />
             </div>
             <div>
-              <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                {t("addresses")}
+              </h2>
               <p className="mt-1 text-sm text-gray-500">
-                Manage your shipping and billing addresses
+                {t("addressesDescription")}
               </p>
             </div>
           </div>
@@ -204,10 +206,10 @@ export default function AccountPage() {
             </div>
             <div>
               <h2 className="text-lg font-medium text-gray-900">
-                Payment Methods
+                {t("paymentMethods")}
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                Manage your saved credit cards
+                {t("paymentMethodsDescription")}
               </p>
             </div>
           </div>
@@ -222,9 +224,11 @@ export default function AccountPage() {
               <UserIcon className="w-6 h-6 text-primary-500" />
             </div>
             <div>
-              <h2 className="text-lg font-medium text-gray-900">Profile</h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                {t("profile")}
+              </h2>
               <p className="mt-1 text-sm text-gray-500">
-                Update your personal information
+                {t("profileDescription")}
               </p>
             </div>
           </div>

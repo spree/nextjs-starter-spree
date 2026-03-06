@@ -7,6 +7,7 @@ import type {
   StoreOrder,
   StoreState,
 } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { CreditCardIcon } from "@/components/icons";
@@ -51,6 +52,8 @@ export function PaymentStep({
   processing,
   setProcessing,
 }: PaymentStepProps) {
+  const t = useTranslations("checkout");
+  const tc = useTranslations("common");
   // Initialize billing address from order, check if it matches shipping
   const shipAddressData = addressToFormData(order.ship_address);
   const billAddressData = addressToFormData(order.bill_address);
@@ -116,18 +119,18 @@ export function PaymentStep({
             setClientSecret(secret);
             setPaymentSessionId(result.session.id);
           } else {
-            setGatewayError("Failed to initialize payment. Please try again.");
+            setGatewayError(t("failedToInitPayment"));
           }
         } else if (!result.success) {
-          setGatewayError(result.error || "Failed to create payment session.");
+          setGatewayError(result.error || t("failedToCreateSession"));
         }
       } catch {
-        setGatewayError("Failed to initialize payment. Please try again.");
+        setGatewayError(t("failedToInitPayment"));
       } finally {
         setLoading(false);
       }
     },
-    [sessionPaymentMethod, order.id],
+    [sessionPaymentMethod, order.id, t],
   );
 
   // On mount: load saved cards (if authenticated), then create initial session — once.
@@ -256,7 +259,7 @@ export function PaymentStep({
       // 3. Payment succeeded — complete session and order
       await onPaymentComplete(paymentSessionId);
     } catch {
-      setGatewayError("An error occurred during payment. Please try again.");
+      setGatewayError(t("paymentError"));
       setProcessing(false);
     }
   };
@@ -281,14 +284,14 @@ export function PaymentStep({
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              Shipping Address
+              {t("shippingAddress")}
             </h2>
             <button
               type="button"
               onClick={onBack}
               className="text-sm text-primary-500 hover:text-primary-700"
             >
-              Edit
+              {tc("edit")}
             </button>
           </div>
           <div className="text-sm text-gray-600">
@@ -313,7 +316,7 @@ export function PaymentStep({
       {/* Billing Address */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Billing Address
+          {t("billingAddress")}
         </h2>
         <div className="mb-4">
           <label className="flex items-center">
@@ -324,7 +327,7 @@ export function PaymentStep({
               className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
             />
             <span className="ml-2 text-sm text-gray-600">
-              Same as shipping address
+              {t("sameAsShipping")}
             </span>
           </label>
         </div>
@@ -344,7 +347,7 @@ export function PaymentStep({
       {/* Payment Method */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Payment Method
+          {t("paymentMethod")}
         </h2>
 
         {/* Saved Cards Selector */}
@@ -375,15 +378,16 @@ export function PaymentStep({
                 />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-medium text-gray-900">
-                    {getCardLabel(card.cc_type)} ending in {card.last_digits}
+                    {getCardLabel(card.cc_type)} {t("endingIn")}{" "}
+                    {card.last_digits}
                   </span>
                   <span className="text-sm text-gray-500 ml-2">
-                    Exp {String(card.month).padStart(2, "0")}/{card.year}
+                    {t("exp")} {String(card.month).padStart(2, "0")}/{card.year}
                   </span>
                 </div>
                 {card.default && (
                   <span className="text-xs font-medium text-primary-500 bg-primary-100 px-2 py-0.5 rounded-full">
-                    Default
+                    {t("default")}
                   </span>
                 )}
               </label>
@@ -409,7 +413,7 @@ export function PaymentStep({
                 strokeWidth={1.5}
               />
               <span className="text-sm font-medium text-gray-900">
-                Add new payment method
+                {t("addNewPaymentMethod")}
               </span>
             </label>
           </div>
@@ -419,7 +423,7 @@ export function PaymentStep({
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
             <span className="ml-3 text-sm text-gray-500">
-              Loading payment form...
+              {t("loadingPaymentForm")}
             </span>
           </div>
         )}
@@ -444,9 +448,7 @@ export function PaymentStep({
               className="w-12 h-12 text-gray-400 mx-auto mb-4"
               strokeWidth={1.5}
             />
-            <p className="text-gray-500">
-              No payment methods available for this order.
-            </p>
+            <p className="text-gray-500">{t("noPaymentMethods")}</p>
           </div>
         )}
       </div>
@@ -459,7 +461,7 @@ export function PaymentStep({
           disabled={processing}
           className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Back
+          {tc("back")}
         </button>
         <button
           type="submit"
@@ -472,7 +474,7 @@ export function PaymentStep({
           }
           className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {processing ? "Processing..." : "Pay Now"}
+          {processing ? tc("processing") : t("payNow")}
         </button>
       </div>
     </form>

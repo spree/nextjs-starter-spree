@@ -3,6 +3,7 @@
 import type { StoreProduct } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { memo } from "react";
 import { ImagePlaceholderIcon } from "@/components/icons";
 import { useStore } from "@/contexts/StoreContext";
@@ -24,6 +25,7 @@ export const ProductCard = memo(function ProductCard({
   listName,
 }: ProductCardProps) {
   const { currency } = useStore();
+  const t = useTranslations("products");
   const imageUrl = product.thumbnail_url || null;
 
   // Current display price
@@ -79,7 +81,7 @@ export const ProductCard = memo(function ProductCard({
         )}
         {onSale && (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
-            Sale
+            {t("sale")}
           </span>
         )}
       </div>
@@ -104,7 +106,7 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         {!product.purchasable && (
-          <span className="mt-2 text-sm text-gray-500">Out of Stock</span>
+          <span className="mt-2 text-sm text-gray-500">{t("outOfStock")}</span>
         )}
       </div>
     </Link>

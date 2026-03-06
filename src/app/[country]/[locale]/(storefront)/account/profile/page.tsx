@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateCustomer } from "@/lib/data/customer";
@@ -17,6 +18,7 @@ function ProfileForm({
   };
   refreshUser: () => Promise<void>;
 }) {
+  const t = useTranslations("profile");
   // Initialize form data from user props - no useEffect needed
   const [formData, setFormData] = useState({
     first_name: user.first_name || "",
@@ -48,7 +50,7 @@ function ProfileForm({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("profile")}</h1>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <form onSubmit={handleSubmit}>
@@ -61,7 +63,7 @@ function ProfileForm({
 
             {success && (
               <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-                Profile updated successfully!
+                {t("profileUpdated")}
               </div>
             )}
 
@@ -71,7 +73,7 @@ function ProfileForm({
                   htmlFor="first_name"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  First Name
+                  {t("firstName")}
                 </label>
                 <input
                   type="text"
@@ -89,7 +91,7 @@ function ProfileForm({
                   htmlFor="last_name"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Last Name
+                  {t("lastName")}
                 </label>
                 <input
                   type="text"
@@ -108,7 +110,7 @@ function ProfileForm({
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Email Address
+                {t("emailAddress")}
               </label>
               <input
                 type="email"
@@ -129,7 +131,7 @@ function ProfileForm({
               disabled={saving}
               className="px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("saving") : t("saveChanges")}
             </button>
           </div>
         </form>
@@ -139,17 +141,21 @@ function ProfileForm({
       <div className="mt-8 bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Account Information
+            {t("accountInformation")}
           </h2>
         </div>
         <div className="p-6">
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Account ID</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t("accountId")}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900">{user.id}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Email</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t("emailAddress")}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
             </div>
           </dl>
@@ -162,11 +168,12 @@ function ProfileForm({
 // Main page component - uses key prop to reset form when user changes
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
+  const t = useTranslations("profile");
 
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Loading profile...</p>
+        <p className="text-gray-500">{t("loadingProfile")}</p>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreCreditCard } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { CreditCardIcon, LockIcon } from "@/components/icons";
@@ -14,10 +15,12 @@ function CreditCardItem({
   card: StoreCreditCard;
   onDelete: () => void;
 }) {
+  const t = useTranslations("creditCards");
+  const tc = useTranslations("common");
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to remove this card?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
     try {
       await onDelete();
@@ -40,7 +43,7 @@ function CreditCardItem({
               {getCardLabel(card.cc_type)} ending in {card.last_digits}
             </p>
             <p className="text-sm text-gray-500">
-              Expires {String(card.month).padStart(2, "0")}/{card.year}
+              {t("expires")} {String(card.month).padStart(2, "0")}/{card.year}
             </p>
             {card.name && (
               <p className="text-sm text-gray-500 mt-1">{card.name}</p>
@@ -50,7 +53,7 @@ function CreditCardItem({
         <div className="flex items-center gap-3">
           {card.default && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Default
+              {t("default")}
             </span>
           )}
           <button
@@ -58,7 +61,7 @@ function CreditCardItem({
             disabled={deleting}
             className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
           >
-            {deleting ? "Removing..." : "Remove"}
+            {deleting ? t("removing") : tc("remove")}
           </button>
         </div>
       </div>
@@ -67,6 +70,7 @@ function CreditCardItem({
 }
 
 export default function CreditCardsPage() {
+  const t = useTranslations("creditCards");
   const [cards, setCards] = useState<StoreCreditCard[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -98,7 +102,7 @@ export default function CreditCardsPage() {
     return (
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Payment Methods
+          {t("paymentMethods")}
         </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
@@ -117,17 +121,17 @@ export default function CreditCardsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        {t("paymentMethods")}
+      </h1>
 
       {cards.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No payment methods saved
+            {t("noCards")}
           </h3>
-          <p className="text-gray-500">
-            Payment methods are saved automatically when you make a purchase.
-          </p>
+          <p className="text-gray-500">{t("noCardsDescription")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -144,8 +148,7 @@ export default function CreditCardsPage() {
       <div className="mt-6 p-4 bg-gray-50 rounded-xl">
         <p className="text-sm text-gray-600">
           <LockIcon className="w-4 h-4 inline mr-1" />
-          Your payment information is securely stored and encrypted. We never
-          store your full card number.
+          {t("secureInfo")}
         </p>
       </div>
     </div>

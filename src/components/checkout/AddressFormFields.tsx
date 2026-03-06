@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreCountry, StoreState } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import type { AddressFormData } from "@/lib/utils/address";
 
 interface AddressFormFieldsProps {
@@ -20,6 +21,8 @@ export function AddressFormFields({
   onChange,
   idPrefix,
 }: AddressFormFieldsProps) {
+  const t = useTranslations("address");
+  const tc = useTranslations("common");
   const hasStates = states.length > 0;
 
   return (
@@ -29,7 +32,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-firstname`}
           className="block text-sm font-medium text-gray-700"
         >
-          First name
+          {t("firstName")}
         </label>
         <input
           type="text"
@@ -46,7 +49,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-lastname`}
           className="block text-sm font-medium text-gray-700"
         >
-          Last name
+          {t("lastName")}
         </label>
         <input
           type="text"
@@ -63,7 +66,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-company`}
           className="block text-sm font-medium text-gray-700"
         >
-          Company (optional)
+          {t("company")}
         </label>
         <input
           type="text"
@@ -79,7 +82,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-address1`}
           className="block text-sm font-medium text-gray-700"
         >
-          Address
+          {t("address")}
         </label>
         <input
           type="text"
@@ -88,7 +91,7 @@ export function AddressFormFields({
           value={address.address1}
           onChange={(e) => onChange("address1", e.target.value)}
           className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
-          placeholder="Street address"
+          placeholder={t("streetAddress")}
         />
       </div>
 
@@ -97,7 +100,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-address2`}
           className="block text-sm font-medium text-gray-700"
         >
-          Apartment, suite, etc. (optional)
+          {t("apartment")}
         </label>
         <input
           type="text"
@@ -113,7 +116,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-city`}
           className="block text-sm font-medium text-gray-700"
         >
-          City
+          {t("city")}
         </label>
         <input
           type="text"
@@ -130,7 +133,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-country`}
           className="block text-sm font-medium text-gray-700"
         >
-          Country
+          {t("country")}
         </label>
         <select
           id={`${idPrefix}-country`}
@@ -139,7 +142,7 @@ export function AddressFormFields({
           onChange={(e) => onChange("country_iso", e.target.value)}
           className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
         >
-          <option value="">Select a country</option>
+          <option value="">{t("selectCountry")}</option>
           {countries.map((country) => (
             <option key={country.iso} value={country.iso}>
               {country.name}
@@ -153,11 +156,11 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-state`}
           className="block text-sm font-medium text-gray-700"
         >
-          State / Province
+          {t("stateProvince")}
         </label>
         {loadingStates ? (
           <div className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400">
-            Loading...
+            {tc("loading")}
           </div>
         ) : hasStates ? (
           <select
@@ -167,7 +170,7 @@ export function AddressFormFields({
             onChange={(e) => onChange("state_abbr", e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
           >
-            <option value="">Select a state</option>
+            <option value="">{t("selectState")}</option>
             {states.map((state) => (
               <option key={state.abbr} value={state.abbr}>
                 {state.name}
@@ -181,7 +184,7 @@ export function AddressFormFields({
             value={address.state_name}
             onChange={(e) => onChange("state_name", e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
-            placeholder="State or province"
+            placeholder={t("stateOrProvince")}
           />
         )}
       </div>
@@ -191,7 +194,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-zipcode`}
           className="block text-sm font-medium text-gray-700"
         >
-          ZIP / Postal code
+          {t("zipCode")}
         </label>
         <input
           type="text"
@@ -208,7 +211,7 @@ export function AddressFormFields({
           htmlFor={`${idPrefix}-phone`}
           className="block text-sm font-medium text-gray-700"
         >
-          Phone (optional)
+          {t("phone")}
         </label>
         <input
           type="tel"

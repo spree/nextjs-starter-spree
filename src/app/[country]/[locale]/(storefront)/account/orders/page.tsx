@@ -3,14 +3,15 @@
 import type { StoreOrder } from "@spree/sdk";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { ShoppingBagIcon } from "@/components/icons";
 import { getOrders } from "@/lib/data/orders";
 import { extractBasePath } from "@/lib/utils/path";
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -52,6 +53,9 @@ export default function OrdersPage() {
   const basePath = extractBasePath(pathname);
   const [orders, setOrders] = useState<StoreOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
+  const locale = useLocale();
 
   useEffect(() => {
     async function loadOrders() {
@@ -66,7 +70,9 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          {t("orderHistory")}
+        </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((i) => (
             <div
@@ -84,22 +90,22 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        {t("orderHistory")}
+      </h1>
 
       {orders.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <ShoppingBagIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No orders yet
+            {t("noOrders")}
           </h3>
-          <p className="text-gray-500 mb-6">
-            When you place orders, they will appear here.
-          </p>
+          <p className="text-gray-500 mb-6">{t("noOrdersDescription")}</p>
           <Link
             href={`${basePath}/products`}
             className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
-            Start Shopping
+            {t("startShopping")}
           </Link>
         </div>
       ) : (
@@ -109,22 +115,22 @@ export default function OrdersPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order
+                    {t("order")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    {t("date")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment
+                    {t("payment")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Shipment
+                    {t("shipment")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
+                    {tc("total")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t("actions")}
                   </th>
                 </tr>
               </thead>
@@ -138,21 +144,43 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-500">
-                        {formatDate(order.completed_at)}
+                        {formatDate(order.completed_at, locale)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_state)}`}
                       >
-                        {order.payment_state?.replace("_", " ") || "N/A"}
+                        {order.payment_state
+                          ? t(
+                              ({
+                                paid: "paid",
+                                balance_due: "balanceDue",
+                                failed: "failed",
+                                void: "void",
+                                pending: "pending",
+                              }[order.payment_state] ||
+                                order.payment_state) as any,
+                            )
+                          : t("notAvailable")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getShipmentStatusColor(order.shipment_state)}`}
                       >
-                        {order.shipment_state || "N/A"}
+                        {order.shipment_state
+                          ? t(
+                              ({
+                                shipped: "shipped",
+                                delivered: "delivered",
+                                ready: "ready",
+                                pending: "pending",
+                                canceled: "canceled",
+                              }[order.shipment_state] ||
+                                order.shipment_state) as any,
+                            )
+                          : t("notAvailable")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -165,7 +193,7 @@ export default function OrdersPage() {
                         href={`${basePath}/account/orders/${order.id}`}
                         className="text-primary-500 hover:text-primary-900 text-sm font-medium"
                       >
-                        View
+                        {t("view")}
                       </Link>
                     </td>
                   </tr>

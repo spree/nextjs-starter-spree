@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreCountry, StoreState } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import {
   type AddressFormData,
@@ -43,6 +44,8 @@ export function AddressEditModal({
   onClose,
   title,
 }: AddressEditModalProps) {
+  const t = useTranslations("address");
+  const tc = useTranslations("common");
   const [formData, setFormData] = useState<AddressFormData>(
     address ? addressToFormData(address) : { ...emptyAddress },
   );
@@ -110,14 +113,14 @@ export function AddressEditModal({
       await onSave(formDataToAddress(formData), address?.id);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save address");
+      setError(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
       setSaving(false);
     }
   };
 
   const modalTitle =
-    title ?? (address?.id ? "Edit Address" : "Add New Address");
+    title ?? (address?.id ? t("editAddress") : t("addNewAddress"));
 
   return (
     <div
@@ -164,14 +167,14 @@ export function AddressEditModal({
                 disabled={saving}
                 className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-500 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save Address"}
+                {saving ? tc("saving") : t("saveAddress")}
               </button>
               <button
                 type="button"
                 onClick={onClose}
                 className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                Cancel
+                {tc("cancel")}
               </button>
             </div>
           </form>

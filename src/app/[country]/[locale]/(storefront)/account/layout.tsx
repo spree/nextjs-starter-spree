@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { FC, SVGProps } from "react";
 import { useEffect } from "react";
 import {
@@ -18,19 +19,19 @@ import { extractBasePath } from "@/lib/utils/path";
 
 const navItems: {
   href: string;
-  label: string;
+  labelKey: string;
   icon: FC<SVGProps<SVGSVGElement>>;
 }[] = [
-  { href: "/account", label: "Overview", icon: HomeIcon },
-  { href: "/account/orders", label: "Orders", icon: ShoppingBagIcon },
-  { href: "/account/addresses", label: "Addresses", icon: MapPinIcon },
+  { href: "/account", labelKey: "overview", icon: HomeIcon },
+  { href: "/account/orders", labelKey: "orders", icon: ShoppingBagIcon },
+  { href: "/account/addresses", labelKey: "addresses", icon: MapPinIcon },
   {
     href: "/account/credit-cards",
-    label: "Payment Methods",
+    labelKey: "paymentMethods",
     icon: CreditCardIcon,
   },
-  { href: "/account/gift-cards", label: "Gift Cards", icon: GiftIcon },
-  { href: "/account/profile", label: "Profile", icon: UserIcon },
+  { href: "/account/gift-cards", labelKey: "giftCards", icon: GiftIcon },
+  { href: "/account/profile", labelKey: "profile", icon: UserIcon },
 ];
 
 function ContentSkeleton() {
@@ -65,6 +66,7 @@ function AccountShell({
   onLogout,
   isLoading,
 }: AccountShellProps) {
+  const t = useTranslations("account");
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -83,7 +85,7 @@ function AccountShell({
                   <p className="font-medium text-gray-900">
                     {user?.first_name
                       ? `${user.first_name} ${user.last_name || ""}`.trim()
-                      : "My Account"}
+                      : t("myAccount")}
                   </p>
                   <p className="text-sm text-gray-500 truncate">
                     {user?.email}
@@ -112,7 +114,7 @@ function AccountShell({
                         }`}
                       >
                         <item.icon className="w-5 h-5" />
-                        {item.label}
+                        {t(item.labelKey as any)}
                       </Link>
                     </li>
                   );
@@ -128,7 +130,7 @@ function AccountShell({
                 className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <SignOutIcon className="w-5 h-5" />
-                Sign Out
+                {t("signOut")}
               </button>
             </div>
           </div>

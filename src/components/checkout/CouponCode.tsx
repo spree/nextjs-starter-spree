@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreOrder } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { CheckCircleIcon } from "@/components/icons";
 
@@ -13,6 +14,7 @@ interface CouponCodeProps {
 }
 
 export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
+  const t = useTranslations("coupon");
   const [code, setCode] = useState("");
   const [applying, setApplying] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
     if (result.success) {
       setCode("");
     } else {
-      setError(result.error || "Invalid coupon code");
+      setError(result.error || t("invalidCode"));
     }
 
     setApplying(false);
@@ -45,7 +47,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
 
     const result = await onRemove(promotionId);
     if (!result.success) {
-      setError(result.error || "Failed to remove coupon code");
+      setError(result.error || t("failedToRemove"));
     }
 
     setRemoving(null);
@@ -81,7 +83,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
                 disabled={removing === promotion.id}
                 className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
               >
-                {removing === promotion.id ? "..." : "Remove"}
+                {removing === promotion.id ? t("removing") : t("remove")}
               </button>
             </div>
           ))}
@@ -98,7 +100,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
               setCode(e.target.value);
               setError(null);
             }}
-            placeholder="Gift card or discount code"
+            placeholder={t("placeholder")}
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary-500 focus:outline-primary-500"
           />
           <button
@@ -106,7 +108,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
             disabled={applying || !code.trim()}
             className="px-4 py-2 bg-gray-900 text-white text-sm rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {applying ? "..." : "Apply"}
+            {applying ? t("applying") : t("apply")}
           </button>
         </form>
       )}

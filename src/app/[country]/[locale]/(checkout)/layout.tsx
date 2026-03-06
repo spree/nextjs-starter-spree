@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   ArrowLeftIcon,
@@ -16,18 +17,22 @@ const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
 function CheckoutHeader() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const t = useTranslations("checkoutLayout");
+  const tc = useTranslations("common");
 
   return (
     <header className="py-4 lg:py-6 flex items-center justify-between">
       <Link href={basePath || "/"} className="inline-flex items-center">
-        <span className="text-xl font-bold text-gray-900">Spree Store</span>
+        <span className="text-xl font-bold text-gray-900">
+          {tc("spreeStore")}
+        </span>
       </Link>
       <Link
         href={basePath || "/"}
         className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
       >
         <ArrowLeftIcon className="w-4 h-4" />
-        <span className="hidden sm:inline">Back to store</span>
+        <span className="hidden sm:inline">{t("backToStore")}</span>
       </Link>
     </header>
   );
@@ -35,11 +40,15 @@ function CheckoutHeader() {
 
 function CheckoutFooter() {
   const currentYear = new Date().getFullYear();
+  const t = useTranslations("checkoutLayout");
 
   return (
     <footer className="py-4 text-sm text-gray-500 border-t border-gray-200 mt-auto">
       <p>
-        &copy; {currentYear} {storeName}. All rights reserved.
+        {t("allRightsReserved", {
+          year: currentYear,
+          storeName,
+        })}
       </p>
     </footer>
   );
@@ -47,6 +56,7 @@ function CheckoutFooter() {
 
 function MobileSummaryToggle() {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations("checkoutLayout");
 
   return (
     <div className="lg:hidden bg-gray-50 border-b border-gray-200">
@@ -57,7 +67,7 @@ function MobileSummaryToggle() {
       >
         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
           <ShoppingBagIcon className="w-5 h-5 text-gray-600" />
-          {isOpen ? "Hide order summary" : "Show order summary"}
+          {isOpen ? t("hideOrderSummary") : t("showOrderSummary")}
         </span>
         <ChevronDownIcon
           className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}

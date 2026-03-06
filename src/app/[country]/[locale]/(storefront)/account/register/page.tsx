@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +13,8 @@ export default function RegisterPage() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const { register, isAuthenticated } = useAuth();
+  const t = useTranslations("register");
+  const ta = useTranslations("account");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,12 +41,12 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== passwordConfirmation) {
-      setError("Passwords do not match");
+      setError(t("passwordsDontMatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t("passwordTooShort"));
       return;
     }
 
@@ -53,7 +56,7 @@ export default function RegisterPage() {
     if (result.success) {
       router.push(`${basePath}/account`);
     } else {
-      setError(result.error || "Registration failed. Please try again.");
+      setError(result.error || t("registrationFailed"));
     }
     setLoading(false);
   };
@@ -61,8 +64,10 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-        <p className="mt-2 text-gray-500">Sign up to start shopping with us.</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {t("createAccount")}
+        </h1>
+        <p className="mt-2 text-gray-500">{t("signUpDescription")}</p>
       </div>
 
       <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
@@ -78,7 +83,7 @@ export default function RegisterPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              Email
+              {ta("email")}
             </label>
             <input
               type="email"
@@ -96,7 +101,7 @@ export default function RegisterPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              {ta("password")}
             </label>
             <div className="relative">
               <input
@@ -129,7 +134,7 @@ export default function RegisterPage() {
               htmlFor="passwordConfirmation"
               className="block text-sm font-medium text-gray-700"
             >
-              Confirm Password
+              {t("confirmPassword")}
             </label>
             <div className="relative">
               <input
@@ -166,17 +171,17 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-primary-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? t("creatingAccount") : t("createAccount")}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-gray-500">Already have an account? </span>
+          <span className="text-gray-500">{t("alreadyHaveAccount")} </span>
           <Link
             href={`${basePath}/account`}
             className="text-primary-500 hover:text-primary-700 font-medium"
           >
-            Sign in
+            {t("signIn")}
           </Link>
         </div>
       </div>

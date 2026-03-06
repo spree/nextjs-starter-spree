@@ -8,6 +8,7 @@ import type {
   StoreState,
 } from "@spree/sdk";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import {
   type AddressFormData,
@@ -48,6 +49,9 @@ export function AddressStep({
   onUpdateSavedAddress,
   processing,
 }: AddressStepProps) {
+  const t = useTranslations("checkout");
+  const tc = useTranslations("common");
+  const ta = useTranslations("address");
   const [email, setEmail] = useState(order.email || "");
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     addressToFormData(order.ship_address),
@@ -129,14 +133,14 @@ export function AddressStep({
         {!isAuthenticated && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <p className="text-sm text-blue-800">
-              Already have an account?{" "}
+              {t("signInPrompt")}{" "}
               <Link
                 href={signInUrl}
                 className="font-medium text-blue-600 hover:text-blue-700 underline"
               >
-                Sign in
+                {t("signIn")}
               </Link>{" "}
-              to access your saved addresses and order history.
+              {t("signInDescription")}
             </p>
           </div>
         )}
@@ -144,14 +148,14 @@ export function AddressStep({
         {/* Contact Information */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Contact Information
+            {t("contactInformation")}
           </h2>
           <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              Email address
+              {t("emailAddress")}
             </label>
             <input
               type="email"
@@ -161,11 +165,11 @@ export function AddressStep({
               onChange={(e) => setEmail(e.target.value)}
               disabled={isAuthenticated}
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="you@example.com"
+              placeholder={t("emailPlaceholder")}
             />
             {isAuthenticated && (
               <p className="mt-1 text-xs text-gray-500">
-                Using your account email address
+                {t("usingAccountEmail")}
               </p>
             )}
           </div>
@@ -174,7 +178,7 @@ export function AddressStep({
         {/* Shipping Address */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Shipping Address
+            {t("shippingAddress")}
           </h2>
           {isAuthenticated && savedAddresses.length > 0 ? (
             <AddressSelector
@@ -211,7 +215,7 @@ export function AddressStep({
             disabled={processing}
             className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {processing ? "Saving..." : "Continue to Delivery"}
+            {processing ? tc("saving") : t("continueToDelivery")}
           </button>
         </div>
       </form>
@@ -224,7 +228,7 @@ export function AddressStep({
           fetchStates={fetchStates}
           onSave={handleSaveEditedAddress}
           onClose={() => setEditingAddress(null)}
-          title="Edit Address"
+          title={ta("editAddress")}
         />
       )}
     </>

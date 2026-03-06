@@ -1,5 +1,6 @@
 import type { StoreTaxon } from "@spree/sdk";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ChevronRightIcon } from "@/components/icons";
 
 interface BreadcrumbsProps {
@@ -7,11 +8,12 @@ interface BreadcrumbsProps {
   basePath: string;
 }
 
-export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
+export async function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
+  const t = await getTranslations("navigation");
   // Build breadcrumb items from ancestors + current taxon
   const items = [
-    { name: "Home", href: basePath },
-    { name: "Categories", href: `${basePath}/taxonomies` },
+    { name: t("home"), href: basePath },
+    { name: t("categories"), href: `${basePath}/taxonomies` },
   ];
 
   // Add ancestors (they come from the API in order from root to parent)

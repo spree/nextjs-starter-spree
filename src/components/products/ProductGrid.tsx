@@ -1,4 +1,5 @@
 import type { StoreProduct } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {
@@ -14,10 +15,11 @@ export function ProductGrid({
   listId,
   listName,
 }: ProductGridProps) {
+  const t = useTranslations("products");
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No products found.</p>
+        <p className="text-gray-500">{t("noProductsFound")}</p>
       </div>
     );
   }

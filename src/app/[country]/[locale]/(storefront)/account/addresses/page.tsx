@@ -1,6 +1,7 @@
 "use client";
 
 import type { AddressParams, StoreAddress, StoreCountry } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import { MapPinIcon, PlusIcon } from "@/components/icons";
@@ -21,10 +22,12 @@ function AddressCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const t = useTranslations("account");
+  const tc = useTranslations("common");
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
     await onDelete();
     setDeleting(false);
@@ -55,14 +58,14 @@ function AddressCard({
             onClick={onEdit}
             className="text-sm text-primary-500 hover:text-primary-700 font-medium"
           >
-            Edit
+            {tc("edit")}
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
             className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
           >
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? tc("loading") : tc("remove")}
           </button>
         </div>
       </div>
@@ -71,6 +74,7 @@ function AddressCard({
 }
 
 export default function AddressesPage() {
+  const t = useTranslations("account");
   const [addresses, setAddresses] = useState<StoreAddress[]>([]);
   const [countries, setCountries] = useState<StoreCountry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,7 +150,9 @@ export default function AddressesPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Addresses</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          {t("addresses")}
+        </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
             <div
@@ -165,13 +171,13 @@ export default function AddressesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t("addresses")}</h1>
         <button
           onClick={handleAdd}
           className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors text-sm"
         >
           <PlusIcon className="w-4 h-4 mr-2" />
-          Add Address
+          {t("addNewAddress")}
         </button>
       </div>
 
@@ -179,16 +185,14 @@ export default function AddressesPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <MapPinIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No addresses saved
+            {t("noAddresses")}
           </h3>
-          <p className="text-gray-500 mb-6">
-            Add an address for faster checkout.
-          </p>
+          <p className="text-gray-500 mb-6">{t("noAddressesDescription")}</p>
           <button
             onClick={handleAdd}
             className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
           >
-            Add Your First Address
+            {t("addNewAddress")}
           </button>
         </div>
       ) : (

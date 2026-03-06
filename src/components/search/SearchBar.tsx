@@ -3,6 +3,7 @@
 import type { StoreProduct } from "@spree/sdk";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlaceholderIcon, SearchIcon } from "@/components/icons";
 import { useStore } from "@/contexts/StoreContext";
@@ -16,6 +17,7 @@ interface SearchBarProps {
 export function SearchBar({ basePath }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
+  const t = useTranslations("products");
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<StoreProduct[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -152,7 +154,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
             }}
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Search..."
+            placeholder={t("search")}
             className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
             role="combobox"
             aria-expanded={showSuggestions}
@@ -171,7 +173,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
           {loading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
-              Searching...
+              {t("searching")}
             </div>
           ) : suggestions.length > 0 ? (
             <ul id="search-suggestions" role="listbox">
@@ -234,14 +236,14 @@ export function SearchBar({ basePath }: SearchBarProps) {
                     }}
                     className="w-full p-3 text-sm text-primary-500 hover:bg-gray-50 text-center font-medium"
                   >
-                    View all results for &ldquo;{query}&rdquo;
+                    {t("viewAllResultsFor", { query })}
                   </button>
                 </li>
               )}
             </ul>
           ) : query.length >= 2 ? (
             <div className="p-4 text-center text-gray-500 text-sm">
-              No products found
+              {t("noProductsFound")}
             </div>
           ) : null}
         </div>

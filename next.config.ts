@@ -1,5 +1,8 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   env: {
@@ -56,8 +59,10 @@ const nextConfig: NextConfig = {
   },
 };
 
+const configWithIntl = withNextIntl(nextConfig);
+
 export default process.env.SENTRY_DSN
-  ? withSentryConfig(nextConfig, {
+  ? withSentryConfig(configWithIntl, {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -75,4 +80,4 @@ export default process.env.SENTRY_DSN
       // Disables the Sentry SDK build-time telemetry
       telemetry: false,
     })
-  : nextConfig;
+  : configWithIntl;

@@ -9,6 +9,7 @@ import type {
 } from "@spree/sdk";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressStep } from "@/components/checkout/AddressStep";
 import { CouponCode } from "@/components/checkout/CouponCode";
@@ -97,6 +98,8 @@ function CheckoutSidebar({
 export default function CheckoutPage({ params }: CheckoutPageProps) {
   // use() must be called before all other hooks to avoid hook order issues
   const { id: orderId, country: urlCountry } = use(params);
+  const t = useTranslations("checkout");
+  const tc = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -198,7 +201,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         : { data: [] as StoreCountry[] };
 
       if (!orderData) {
-        setError("Order not found or you don't have access to it.");
+        setError(t("orderNotFound"));
         setLoading(false);
         return;
       }
@@ -235,12 +238,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       return orderData;
     } catch {
-      setError("Failed to load checkout. Please try again.");
+      setError(t("failedToLoadCheckout"));
       return null;
     } finally {
       setLoading(false);
     }
-  }, [orderId, urlCountry, basePath, router]);
+  }, [orderId, urlCountry, basePath, router, t]);
 
   useEffect(() => {
     loadOrder();
@@ -270,7 +273,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       });
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save address");
+        setError(updateResult.error || t("failedToSaveAddress"));
         setProcessing(false);
         return;
       }
@@ -278,7 +281,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Advance to delivery step
       const advanceResult = await advanceCheckout(order.id);
       if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed to next step");
+        setError(advanceResult.error || t("failedToProceed"));
         setProcessing(false);
         return;
       }
@@ -286,7 +289,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Reload order to get updated state
       await loadOrder();
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
     } finally {
       setProcessing(false);
     }
@@ -308,7 +311,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     try {
       const result = await selectShippingRate(order.id, shipmentId, rateId);
       if (!result.success) {
-        setError(result.error || "Failed to select shipping rate");
+        setError(result.error || t("failedToSelectRate"));
       } else if (result.order) {
         setOrder(result.order);
         setShipments(result.order.shipments || []);
@@ -320,7 +323,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         trackingRateName = selectedRate?.name;
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
     } finally {
       setProcessing(false);
     }
@@ -345,7 +348,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Advance to payment step
       const advanceResult = await advanceCheckout(order.id);
       if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed");
+        setError(advanceResult.error || t("failedToProceed"));
         setProcessing(false);
         return;
       }
@@ -353,7 +356,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Reload order
       await loadOrder();
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
     } finally {
       setProcessing(false);
     }
@@ -373,13 +376,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       });
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save billing address");
+        setError(updateResult.error || t("failedToSaveBilling"));
         return false;
       }
 
       return true;
     } catch {
-      setError("Failed to save billing address. Please try again.");
+      setError(t("failedToSaveBillingRetry"));
       return false;
     }
   };
@@ -414,7 +417,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       const updatedOrder = await getCheckoutOrder(order.id);
 
       if (!updatedOrder) {
-        setError("Order not found after payment. Please contact support.");
+        setError(t("orderNotFoundAfterPayment"));
         setProcessing(false);
         return;
       }
@@ -422,7 +425,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       if (updatedOrder.state !== "complete") {
         const completeResult = await completeCheckoutOrder(order.id);
         if (!completeResult.success) {
-          setError(completeResult.error || "Failed to complete order");
+          setError(completeResult.error || t("failedToCompleteOrder"));
           setProcessing(false);
           return;
         }
@@ -431,7 +434,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Redirect to order placed page (cart cookie is cleared there)
       router.push(`${basePath}/order-placed/${order.id}`);
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
       setProcessing(false);
     }
   };
@@ -494,14 +497,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Checkout Error
+          {t("checkoutError")}
         </h1>
         <p className="text-gray-600 mb-6">{error}</p>
         <Link
           href={`${basePath}/cart`}
           className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
         >
-          Return to Cart
+          {t("returnToCart")}
         </Link>
       </div>
     );
@@ -514,25 +517,23 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Your Cart is Empty
+          {t("emptyCart")}
         </h1>
-        <p className="text-gray-600 mb-6">
-          Add some items to your cart before checking out.
-        </p>
+        <p className="text-gray-600 mb-6">{t("emptyCartDescription")}</p>
         <Link
           href={`${basePath}/products`}
           className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
         >
-          Continue Shopping
+          {tc("continueShopping")}
         </Link>
       </div>
     );
   }
 
   const steps = [
-    { id: "address", label: "Shipping" },
-    { id: "delivery", label: "Delivery" },
-    { id: "payment", label: "Payment" },
+    { id: "address", label: t("stepShipping") },
+    { id: "delivery", label: t("stepDelivery") },
+    { id: "payment", label: t("stepPayment") },
   ];
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
@@ -541,8 +542,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     <>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-        <p className="text-gray-500 mt-1">Order #{order.number}</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("checkout")}</h1>
+        <p className="text-gray-500 mt-1">
+          {t("orderNumber", { number: order.number })}
+        </p>
       </div>
 
       {/* Step indicator */}

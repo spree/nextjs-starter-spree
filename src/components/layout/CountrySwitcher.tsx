@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, ChevronDownIcon } from "@/components/icons";
 import { useCart } from "@/contexts/CartContext";
@@ -26,8 +27,8 @@ export function CountrySwitcher() {
   const { cart, refreshCart } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("common");
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -68,7 +69,9 @@ export function CountrySwitcher() {
     setCountry(entry.iso.toLowerCase());
 
     setIsOpen(false);
-    router.push(newPath);
+    // Hard navigation to force server components (NextIntlClientProvider)
+    // to re-render with the new locale from the updated cookie.
+    window.location.href = newPath;
   };
 
   if (loading) {
@@ -100,7 +103,7 @@ export function CountrySwitcher() {
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
           <div className="px-3 py-2 border-b border-gray-100">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Select Country
+              {t("selectCountry")}
             </p>
           </div>
           <ul className="max-h-64 overflow-auto py-1" role="listbox">

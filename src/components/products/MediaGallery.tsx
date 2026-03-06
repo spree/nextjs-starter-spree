@@ -2,6 +2,7 @@
 
 import type { StoreImage } from "@spree/sdk";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   ChevronLeftIcon,
@@ -21,13 +22,14 @@ interface MediaGalleryProps {
 }
 
 export function MediaGallery({ images, productName }: MediaGalleryProps) {
+  const t = useTranslations("products");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
   if (images.length === 0) {
     return (
       <div className="relative aspect-square bg-gray-100 rounded-xl flex items-center justify-center">
-        <span className="text-gray-400">No image available</span>
+        <span className="text-gray-400">{t("noImageAvailable")}</span>
       </div>
     );
   }
@@ -63,7 +65,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
         {mainImageUrl && (
           <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm text-gray-600 flex items-center gap-1.5">
             <SearchPlusIcon className="w-4 h-4" />
-            Click to zoom
+            {t("clickToZoom")}
           </div>
         )}
       </div>
