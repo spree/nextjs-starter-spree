@@ -12,6 +12,11 @@ export async function getOrders(params?: OrderListParams) {
       limit: 25,
       count: 0,
       pages: 0,
+      from: 0,
+      to: 0,
+      in: 0,
+      previous: null,
+      next: null,
     },
   });
 }
