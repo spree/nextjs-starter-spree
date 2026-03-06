@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { generateProductsMetadata } from "@/lib/metadata/products";
 import { ProductsContent } from "./ProductsContent";
 
 interface ProductsPageProps {
@@ -5,6 +7,13 @@ interface ProductsPageProps {
     country: string;
     locale: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProductsPageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  return generateProductsMetadata({ country, locale });
 }
 
 export default async function ProductsPage({ params }: ProductsPageProps) {
