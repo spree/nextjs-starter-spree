@@ -1,6 +1,9 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { cookies } from "next/headers";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import "./globals.css";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
@@ -17,21 +20,27 @@ export const metadata: Metadata = {
   description: "Next.js storefront powered by Spree Commerce",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("spree_locale")?.value || "en";
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}
       >
-        <CartProvider>
-          {children}
-          <CartDrawer />
-        </CartProvider>
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

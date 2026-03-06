@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import {
   CloseIcon,
@@ -30,6 +31,8 @@ export function CartDrawer() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const viewCartFiredRef = useRef(false);
   const prevPathnameRef = useRef(pathname);
+  const t = useTranslations("cart");
+  const tc = useTranslations("common");
 
   // Close on escape key
   useEffect(() => {
@@ -88,11 +91,11 @@ export function CartDrawer() {
           <button
             onClick={closeCart}
             className="p-2 -ml-2 text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label="Close cart"
+            aria-label={t("closeCart")}
           >
             <CloseIcon className="w-6 h-6" />
           </button>
-          <h2 className="text-lg font-semibold uppercase">Cart</h2>
+          <h2 className="text-lg font-semibold uppercase">{t("cart")}</h2>
           <div className="relative w-6 h-6">
             <ShoppingBagIcon className="w-6 h-6 text-gray-600" />
             {itemCount > 0 && (
@@ -123,13 +126,13 @@ export function CartDrawer() {
                 className="w-16 h-16 text-gray-300 mb-4"
                 strokeWidth={1}
               />
-              <p className="text-gray-500 mb-4">Your cart is empty</p>
+              <p className="text-gray-500 mb-4">{t("emptyCart")}</p>
               <Link
                 href={`${basePath}/products`}
                 className="text-primary-500 hover:text-primary-700 font-medium"
                 onClick={closeCart}
               >
-                Continue Shopping
+                {tc("continueShopping")}
               </Link>
             </div>
           ) : (
@@ -171,7 +174,7 @@ export function CartDrawer() {
                           }}
                           disabled={updating}
                           className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-                          aria-label="Remove item"
+                          aria-label={t("removeItem")}
                         >
                           <CloseIcon className="w-4 h-4" />
                         </button>
@@ -216,7 +219,7 @@ export function CartDrawer() {
                             }
                             disabled={updating || item.quantity <= 1}
                             className="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                            aria-label="Decrease quantity"
+                            aria-label={t("decreaseQuantity")}
                           >
                             <MinusIcon className="w-3 h-3" />
                           </button>
@@ -229,7 +232,7 @@ export function CartDrawer() {
                             }
                             disabled={updating}
                             className="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
-                            aria-label="Increase quantity"
+                            aria-label={t("increaseQuantity")}
                           >
                             <PlusIcon className="w-3 h-3" />
                           </button>
@@ -249,15 +252,15 @@ export function CartDrawer() {
             {/* Summary */}
             <div className="space-y-2">
               <p className="text-sm text-gray-500 text-center">
-                Shipping and taxes calculated at checkout
+                {t("shippingNote")}
               </p>
               <div className="flex justify-between items-center text-lg font-semibold">
-                <span>Total</span>
+                <span>{tc("total")}</span>
                 <span>{cart?.display_item_total}</span>
               </div>
               {cart?.promo_total && parseFloat(cart.promo_total) < 0 && (
                 <div className="flex justify-between items-center text-sm text-green-600">
-                  <span>Discount</span>
+                  <span>{tc("discount")}</span>
                   <span>{cart.display_promo_total}</span>
                 </div>
               )}
@@ -270,14 +273,14 @@ export function CartDrawer() {
                 className="block w-full bg-primary-500 text-white text-center py-3 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors"
                 onClick={closeCart}
               >
-                Checkout
+                {t("checkout")}
               </Link>
               <Link
                 href={`${basePath}/cart`}
                 className="block w-full text-center text-primary-500 hover:text-primary-700 font-medium py-2"
                 onClick={closeCart}
               >
-                View Cart
+                {t("viewCart")}
               </Link>
             </div>
           </div>

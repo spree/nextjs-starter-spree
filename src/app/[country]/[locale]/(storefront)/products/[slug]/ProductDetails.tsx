@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreImage, StoreProduct, StoreVariant } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import {
   CheckCircleSolidIcon,
@@ -24,6 +25,7 @@ interface ProductDetailsProps {
 export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const { addItem } = useCart();
   const { currency } = useStore();
+  const t = useTranslations("products");
 
   // Filter out master variant from variants list
   const variants = useMemo(() => {
@@ -142,7 +144,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                   {strikethroughPrice}
                 </span>
                 <span className="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded">
-                  Sale
+                  {t("sale")}
                 </span>
               </>
             )}
@@ -153,12 +155,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
             {inStock ? (
               <span className="inline-flex items-center gap-1.5 text-green-600">
                 <CheckCircleSolidIcon className="w-5 h-5" />
-                In Stock
+                {t("inStock")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 text-red-600">
                 <XCircleSolidIcon className="w-5 h-5" />
-                Out of Stock
+                {t("outOfStock")}
               </span>
             )}
           </div>
@@ -216,15 +218,15 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 {loading ? (
                   <>
                     <SpinnerIcon className="animate-spin h-5 w-5" />
-                    Adding...
+                    {t("adding")}
                   </>
                 ) : isPurchasable ? (
                   <>
                     <ShoppingBagIcon className="w-5 h-5" />
-                    Add to Cart
+                    {t("addToCart")}
                   </>
                 ) : (
-                  "Out of Stock"
+                  t("outOfStock")
                 )}
               </button>
             </div>
@@ -234,7 +236,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           {product.description && (
             <div className="mt-10 border-t pt-8">
               <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Description
+                {t("description")}
               </h2>
               <div
                 className="text-gray-600 prose prose-sm max-w-none"
@@ -245,11 +247,13 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
           {/* Product Details */}
           <div className="mt-8 border-t pt-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Details</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              {t("details")}
+            </h2>
             <dl className="space-y-3">
               {selectedVariant?.sku && (
                 <div className="flex">
-                  <dt className="w-32 text-gray-500 text-sm">SKU</dt>
+                  <dt className="w-32 text-gray-500 text-sm">{t("sku")}</dt>
                   <dd className="text-gray-900 text-sm">
                     {selectedVariant.sku}
                   </dd>
@@ -257,7 +261,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               )}
               {selectedVariant?.options_text && (
                 <div className="flex">
-                  <dt className="w-32 text-gray-500 text-sm">Options</dt>
+                  <dt className="w-32 text-gray-500 text-sm">{t("options")}</dt>
                   <dd className="text-gray-900 text-sm">
                     {selectedVariant.options_text}
                   </dd>

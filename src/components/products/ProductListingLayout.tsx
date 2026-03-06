@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProductFiltersResponse, StoreProduct } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import type { RefObject } from "react";
 import {
   CloseIcon,
@@ -48,10 +49,11 @@ export function ProductListingLayout({
   onFilterChange,
   loadMoreRef,
   taxonId,
-  emptyMessage = "Try adjusting your filters",
+  emptyMessage,
   listId,
   listName,
 }: ProductListingLayoutProps) {
+  const t = useTranslations("products");
   return (
     <div className="lg:grid lg:grid-cols-4 lg:gap-8">
       {/* Mobile filter button */}
@@ -61,7 +63,7 @@ export function ProductListingLayout({
           className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
         >
           <FilterIcon className="w-5 h-5" />
-          Filters
+          {t("filters")}
         </button>
       </div>
 
@@ -74,7 +76,9 @@ export function ProductListingLayout({
           />
           <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                {t("filters")}
+              </h2>
               <button
                 onClick={() => setShowMobileFilters(false)}
                 className="p-2 -mr-2 text-gray-400 hover:text-gray-500"
@@ -117,15 +121,20 @@ export function ProductListingLayout({
               strokeWidth={1.5}
             />
             <h3 className="mt-4 text-lg font-medium text-gray-900">
-              No products found
+              {t("noProductsFound")}
             </h3>
-            <p className="mt-2 text-gray-500">{emptyMessage}</p>
+            <p className="mt-2 text-gray-500">
+              {emptyMessage || t("tryAdjustingFilters")}
+            </p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm text-gray-500">
-                Showing {products.length} of {totalCount} products
+                {t("showingProducts", {
+                  shown: products.length,
+                  total: totalCount,
+                })}
               </p>
             </div>
 
@@ -144,13 +153,11 @@ export function ProductListingLayout({
               {loadingMore && (
                 <div className="flex items-center gap-2 text-gray-500">
                   <SpinnerIcon className="animate-spin h-5 w-5" />
-                  Loading more...
+                  {t("loadingMore")}
                 </div>
               )}
               {!hasMore && products.length > 0 && (
-                <p className="text-gray-500 text-sm">
-                  No more products to load
-                </p>
+                <p className="text-gray-500 text-sm">{t("noMoreProducts")}</p>
               )}
             </div>
           </>

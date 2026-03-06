@@ -1,6 +1,7 @@
 import type { StoreTaxon, StoreTaxonomy } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { GridIcon } from "@/components/icons";
 import { getTaxonomies } from "@/lib/data/taxonomies";
 
@@ -22,6 +23,7 @@ function getTopLevelTaxons(taxons: StoreTaxon[] | undefined): StoreTaxon[] {
 export default async function CategoriesPage({ params }: CategoriesPageProps) {
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
+  const t = await getTranslations("products");
 
   let taxonomies: StoreTaxonomy[] = [];
   try {
@@ -37,11 +39,13 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Categories</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        {t("categories")}
+      </h1>
 
       {taxonomies.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">No categories found.</p>
+          <p className="text-gray-500">{t("noCategoriesFound")}</p>
         </div>
       ) : (
         <div className="space-y-12">
@@ -85,7 +89,9 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                           </h3>
                           {taxon.children_count > 0 && (
                             <p className="text-sm text-gray-500">
-                              {taxon.children_count} subcategories
+                              {t("subcategories", {
+                                count: taxon.children_count,
+                              })}
                             </p>
                           )}
                         </Link>
@@ -93,7 +99,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                     })}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No categories in this group.</p>
+                  <p className="text-gray-500">{t("noCategoriesInGroup")}</p>
                 )}
               </div>
             );

@@ -6,23 +6,24 @@ import type {
   PriceRangeFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { memo, useState } from "react";
 import { ChevronDownIcon } from "@/components/icons";
 
-const SORT_LABELS: Record<string, string> = {
-  manual: "Manual",
-  best_selling: "Best Selling",
-  "price asc": "Price (low-high)",
-  "price desc": "Price (high-low)",
-  "available_on desc": "Newest",
-  "available_on asc": "Oldest",
-  "name asc": "Name (A-Z)",
-  "name desc": "Name (Z-A)",
+const SORT_KEYS: Record<string, string> = {
+  manual: "manual",
+  best_selling: "bestSelling",
+  price: "priceLowHigh",
+  "-price": "priceHighLow",
+  "-available_on": "newest",
+  available_on: "oldest",
+  name: "nameAZ",
+  "-name": "nameZA",
 };
 
-const AVAILABILITY_LABELS: Record<string, string> = {
-  in_stock: "In Stock",
-  out_of_stock: "Out of Stock",
+const AVAILABILITY_KEYS: Record<string, string> = {
+  in_stock: "inStock",
+  out_of_stock: "outOfStock",
 };
 
 interface ProductFiltersProps {
@@ -45,6 +46,7 @@ export const ProductFilters = memo(function ProductFilters({
   loading,
   onFilterChange,
 }: ProductFiltersProps) {
+  const t = useTranslations("products");
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     optionValues: [],
   });
@@ -125,7 +127,7 @@ export const ProductFilters = memo(function ProductFilters({
       {/* Sort */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Sort by
+          {t("sortBy")}
         </label>
         <select
           value={activeFilters.sortBy || filtersData.default_sort}
@@ -134,7 +136,9 @@ export const ProductFilters = memo(function ProductFilters({
         >
           {filtersData.sort_options.map((option) => (
             <option key={option.id} value={option.id}>
-              {SORT_LABELS[option.id] || option.id}
+              {SORT_KEYS[option.id]
+                ? t(SORT_KEYS[option.id] as any)
+                : option.id}
             </option>
           ))}
         </select>
@@ -146,7 +150,7 @@ export const ProductFilters = memo(function ProductFilters({
           onClick={clearFilters}
           className="text-sm text-primary-500 hover:text-primary-800"
         >
-          Reset filters
+          {t("resetFilters")}
         </button>
       )}
 
@@ -157,7 +161,7 @@ export const ProductFilters = memo(function ProductFilters({
             return (
               <FilterSection
                 key={filter.id}
-                title="Price"
+                title={t("price")}
                 expanded={expandedSections.has(filter.id)}
                 onToggle={() => toggleSection(filter.id)}
               >
@@ -174,7 +178,7 @@ export const ProductFilters = memo(function ProductFilters({
             return (
               <FilterSection
                 key={filter.id}
-                title="Availability"
+                title={t("availability")}
                 expanded={expandedSections.has(filter.id)}
                 onToggle={() => toggleSection(filter.id)}
               >
@@ -207,7 +211,7 @@ export const ProductFilters = memo(function ProductFilters({
 
       {/* Total count */}
       <div className="text-sm text-gray-500 pt-4 border-t">
-        {filtersData.total_count} products
+        {t("productCount", { count: filtersData.total_count })}
       </div>
     </div>
   );
@@ -253,6 +257,8 @@ function PriceFilter({
   maxValue?: number;
   onChange: (min?: number, max?: number) => void;
 }) {
+  const t = useTranslations("products");
+  const tc = useTranslations("common");
   const [localMin, setLocalMin] = useState(minValue?.toString() || "");
   const [localMax, setLocalMax] = useState(maxValue?.toString() || "");
 
@@ -266,13 +272,16 @@ function PriceFilter({
   return (
     <div className="space-y-3">
       <div className="text-xs text-gray-500">
-        Range: {filter.currency} {filter.min.toFixed(2)} -{" "}
-        {filter.max.toFixed(2)}
+        {t("range", {
+          currency: filter.currency,
+          min: filter.min.toFixed(2),
+          max: filter.max.toFixed(2),
+        })}
       </div>
       <div className="flex items-center gap-2">
         <input
           type="number"
-          placeholder="Min"
+          placeholder={t("min")}
           value={localMin}
           onChange={(e) => setLocalMin(e.target.value)}
           className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -280,7 +289,7 @@ function PriceFilter({
         <span className="text-gray-400">-</span>
         <input
           type="number"
-          placeholder="Max"
+          placeholder={t("max")}
           value={localMax}
           onChange={(e) => setLocalMax(e.target.value)}
           className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
@@ -290,7 +299,7 @@ function PriceFilter({
         onClick={handleApply}
         className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-1 rounded"
       >
-        Apply
+        {tc("apply")}
       </button>
     </div>
   );
@@ -306,6 +315,7 @@ function AvailabilityFilterSection({
   selected?: "in_stock" | "out_of_stock";
   onChange: (value?: "in_stock" | "out_of_stock") => void;
 }) {
+  const t = useTranslations("products");
   return (
     <div className="space-y-2">
       {filter.options.map((option) => (
@@ -321,7 +331,9 @@ function AvailabilityFilterSection({
             className="text-primary-500"
           />
           <span className="text-sm text-gray-700">
-            {AVAILABILITY_LABELS[option.id] || option.id}
+            {AVAILABILITY_KEYS[option.id]
+              ? t(AVAILABILITY_KEYS[option.id] as any)
+              : option.id}
           </span>
           <span className="text-xs text-gray-400">({option.count})</span>
         </label>
@@ -331,7 +343,7 @@ function AvailabilityFilterSection({
           onClick={() => onChange(undefined)}
           className="text-xs text-gray-500 hover:text-gray-700"
         >
-          Clear
+          {t("clear")}
         </button>
       )}
     </div>

@@ -11,6 +11,7 @@ import type {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { use, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { ChevronLeftIcon, ImagePlaceholderIcon } from "@/components/icons";
@@ -18,9 +19,9 @@ import { getOrder } from "@/lib/data/orders";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { extractBasePath } from "@/lib/utils/path";
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -45,6 +46,7 @@ function getShipmentStatusColor(state: string): string {
 }
 
 function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
+  const t = useTranslations("orders");
   const source = payment.source;
 
   if (payment.source_type === "credit_card" && source) {
@@ -58,10 +60,16 @@ function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
         />
         <div>
           <p className="text-sm font-medium text-gray-900">
-            {getCardLabel(card.cc_type)} ending in {card.last_digits}
+            {t("cardEndingIn", {
+              label: getCardLabel(card.cc_type),
+              digits: card.last_digits,
+            })}
           </p>
           <p className="text-xs text-gray-500">
-            Expires {String(card.month).padStart(2, "0")}/{card.year}
+            {t("cardExpires", {
+              month: String(card.month).padStart(2, "0"),
+              year: card.year,
+            })}
           </p>
         </div>
       </div>
@@ -72,10 +80,12 @@ function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
     const credit = source as StoreStoreCredit;
     return (
       <div>
-        <p className="text-sm font-medium text-gray-900">Store Credit</p>
+        <p className="text-sm font-medium text-gray-900">{t("storeCredit")}</p>
         <p className="text-xs text-gray-500">
-          Applied {payment.display_amount} — {credit.display_amount_remaining}{" "}
-          remaining
+          {t("storeCreditApplied", {
+            amount: payment.display_amount,
+            remaining: credit.display_amount_remaining,
+          })}
         </p>
       </div>
     );
@@ -117,6 +127,7 @@ function LineItemCard({
   item: StoreOrder["line_items"][number];
   basePath: string;
 }) {
+  const t = useTranslations("orders");
   return (
     <div className="flex gap-4">
       {/* Image */}
@@ -154,12 +165,14 @@ function LineItemCard({
         {item.options_text && (
           <p className="mt-1 text-xs text-gray-500">{item.options_text}</p>
         )}
-        <p className="mt-1 text-xs text-gray-500">Qty: {item.quantity}</p>
+        <p className="mt-1 text-xs text-gray-500">
+          {t("qty", { quantity: item.quantity })}
+        </p>
         <Link
           href={`${basePath}/products/${item.slug}`}
           className="mt-2 inline-block text-sm text-primary-500 hover:text-primary-700 font-medium"
         >
-          Order again
+          {t("orderAgain")}
         </Link>
       </div>
 
@@ -182,6 +195,7 @@ function ShipmentBlock({
   basePath: string;
   lineItems: StoreOrder["line_items"];
 }) {
+  const t = useTranslations("orders");
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
       {/* Shipment header */}
@@ -190,7 +204,7 @@ function ShipmentBlock({
           {shipAddress && (
             <div className="lg:w-1/2">
               <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Delivery Address
+                {t("deliveryAddress")}
               </h3>
               <AddressBlock address={shipAddress} />
             </div>
@@ -198,14 +212,14 @@ function ShipmentBlock({
           <div className="lg:w-1/2 lg:flex justify-between">
             <div>
               <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Shipping Method
+                {t("shippingMethod")}
               </h3>
               <p className="text-sm text-gray-900">
                 {shipment.shipping_method?.name || "Canceled"}
               </p>
               {shipment.stock_location && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Shipped from {shipment.stock_location.name}
+                  {t("shippedFrom", { location: shipment.stock_location.name })}
                 </p>
               )}
               <span
@@ -222,7 +236,7 @@ function ShipmentBlock({
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors"
                 >
-                  Track Items
+                  {t("trackItems")}
                 </a>
               ) : (
                 <button
@@ -230,7 +244,7 @@ function ShipmentBlock({
                   className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 rounded-xl text-sm font-medium cursor-not-allowed"
                   disabled
                 >
-                  Track Items
+                  {t("trackItems")}
                 </button>
               )}
             </div>
@@ -239,14 +253,14 @@ function ShipmentBlock({
 
         {shipment.state === "canceled" && !shipment.shipped_at && (
           <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-            <strong>Shipment canceled</strong> — a refund has been issued.
+            {t("shipmentCanceled")}
           </div>
         )}
         {shipment.state !== "canceled" &&
           shipment.state !== "shipped" &&
           !shipment.tracking && (
             <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
-              No tracking information present
+              {t("noTrackingInfo")}
             </div>
           )}
       </div>
@@ -277,6 +291,9 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   const basePath = extractBasePath(pathname);
   const [order, setOrder] = useState<StoreOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
+  const locale = useLocale();
 
   useEffect(() => {
     async function loadOrder() {
@@ -304,16 +321,14 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-medium text-gray-900 mb-2">
-          Order not found
+          {t("orderNotFound")}
         </h2>
-        <p className="text-gray-500 mb-6">
-          The order you&apos;re looking for doesn&apos;t exist.
-        </p>
+        <p className="text-gray-500 mb-6">{t("orderNotFoundDescription")}</p>
         <Link
           href={`${basePath}/account/orders`}
           className="text-primary-500 hover:text-primary-700 font-medium"
         >
-          Back to orders
+          {t("backToOrders")}
         </Link>
       </div>
     );
@@ -329,15 +344,15 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         className="text-sm text-gray-500 hover:text-gray-700 mb-4 inline-flex items-center gap-1"
       >
         <ChevronLeftIcon className="w-4 h-4" />
-        Back to orders
+        {t("backToOrders")}
       </Link>
 
       {/* Title */}
       <h1 className="text-2xl font-bold text-gray-900">
-        Order #{order.number}
+        {t("order")} #{order.number}
       </h1>
       <p className="text-sm text-gray-500 mt-1 mb-6">
-        Placed on {formatDate(order.completed_at)}
+        {t("placedOn", { date: formatDate(order.completed_at, locale) })}
       </p>
 
       {/* Shipments with line items */}
@@ -367,7 +382,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       {order.special_instructions && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
           <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-            Special Instructions
+            {t("specialInstructions")}
           </h3>
           <p className="text-sm text-gray-900">{order.special_instructions}</p>
         </div>
@@ -379,7 +394,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           {order.bill_address && (
             <div className="px-6 py-4">
               <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Billing Address
+                {t("billingAddress")}
               </h3>
               <AddressBlock address={order.bill_address} />
             </div>
@@ -387,7 +402,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           {order.payments && order.payments.length > 0 && (
             <div className="px-6 py-4">
               <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Payment Information
+                {t("paymentInformation")}
               </h3>
               {order.payments
                 .filter((p) => p.state !== "void" && p.state !== "invalid")
@@ -408,16 +423,16 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Subtotal</span>
+            <span className="text-gray-600">{tc("subtotal")}</span>
             <span className="text-gray-900">{order.display_item_total}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shipping</span>
+            <span className="text-gray-600">{tc("shipping")}</span>
             <span className="text-gray-900">{order.display_ship_total}</span>
           </div>
           {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Discount</span>
+              <span className="text-gray-600">{tc("discount")}</span>
               <span className="text-green-600">
                 {order.display_promo_total}
               </span>
@@ -425,12 +440,12 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           )}
           {Number.parseFloat(order.tax_total) > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax</span>
+              <span className="text-gray-600">{tc("tax")}</span>
               <span className="text-gray-900">{order.display_tax_total}</span>
             </div>
           )}
           <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
-            <span className="text-gray-900">Total</span>
+            <span className="text-gray-900">{tc("total")}</span>
             <span className="text-gray-900">{order.display_total}</span>
           </div>
         </div>

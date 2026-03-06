@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ShoppingBagIcon, UserIcon } from "@/components/icons";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useCart } from "@/contexts/CartContext";
@@ -12,6 +13,8 @@ export function Header() {
   const { itemCount, openCart } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const t = useTranslations("header");
+  const tc = useTranslations("common");
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -19,7 +22,9 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={basePath || "/"} className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-gray-900">Spree Store</span>
+            <span className="text-xl font-bold text-gray-900">
+              {tc("spreeStore")}
+            </span>
           </Link>
 
           {/* Search */}
@@ -33,7 +38,7 @@ export function Header() {
               href={`${basePath}/taxonomies`}
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Categories
+              {t("categories")}
             </Link>
           </nav>
 
@@ -46,7 +51,7 @@ export function Header() {
             <button
               onClick={openCart}
               className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
-              aria-label="Open cart"
+              aria-label={t("openCart")}
             >
               <ShoppingBagIcon className="w-6 h-6" />
               {itemCount > 0 && (
@@ -60,7 +65,7 @@ export function Header() {
             <Link
               href={`${basePath}/account`}
               className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
-              aria-label="Account"
+              aria-label={t("account")}
             >
               <UserIcon className="w-6 h-6" />
             </Link>

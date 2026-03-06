@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { useCallback, useRef, useState } from "react";
 import type Swiper from "swiper";
@@ -25,6 +26,7 @@ export function ProductCarousel({
   limit = 8,
   basePath,
 }: ProductCarouselProps): ReactElement {
+  const t = useTranslations("products");
   const { products, loading, error } = useCarouselProducts({ taxonId, limit });
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
@@ -69,7 +71,7 @@ export function ProductCarousel({
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No products found.</p>
+        <p className="text-gray-500">{t("noProductsFound")}</p>
       </div>
     );
   }
