@@ -7,32 +7,16 @@ import type {
   StoreProduct,
 } from "@spree/sdk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ActiveFilters } from "@/components/products/ProductFilters";
 import { getProductFilters } from "@/lib/data/products";
+import { filtersEqual } from "@/lib/utils/filters";
 import { buildProductQueryParams } from "@/lib/utils/product-query";
-
-/** Shallow compare two ActiveFilters objects. */
-function filtersEqual(a: ActiveFilters, b: ActiveFilters): boolean {
-  if (a.priceMin !== b.priceMin || a.priceMax !== b.priceMax) return false;
-  if (a.availability !== b.availability) return false;
-  if (a.sortBy !== b.sortBy) return false;
-  if (a.optionValues.length !== b.optionValues.length) return false;
-  const aVals = [...a.optionValues].sort();
-  const bVals = [...b.optionValues].sort();
-  for (let i = 0; i < aVals.length; i++) {
-    if (aVals[i] !== bVals[i]) return false;
-  }
-  return true;
-}
+import type { ActiveFilters } from "@/types/filters";
 
 interface UseProductListingOptions {
-  /** Function that fetches a page of products given query params. */
   fetchFn: (
     params: ProductListParams,
   ) => Promise<PaginatedResponse<StoreProduct>>;
-  /** Optional params passed to getProductFilters (e.g. { taxon_id }). */
   filterParams?: ProductListParams;
-  /** Optional search query string. */
   searchQuery?: string;
 }
 
@@ -53,7 +37,6 @@ export function useProductListing({
     null,
   );
   const [filtersLoading, setFiltersLoading] = useState(true);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(false);
@@ -104,11 +87,8 @@ export function useProductListing({
     [fetchProducts],
   );
 
-  // Fetch filters (scoped to search query when present)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filterParamsKey triggers re-fetch on soft-nav
   useEffect(() => {
-    // Track filterParams changes for re-fetching on soft-nav
-    void filterParamsKey;
-
     let cancelled = false;
 
     const fetchFilters = async () => {
@@ -138,10 +118,8 @@ export function useProductListing({
     };
   }, [searchQuery, filterParamsKey]);
 
-  // Load products when search query or filter params change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filterParamsKey triggers re-fetch on soft-nav
   useEffect(() => {
-    // Track filterParams changes for re-fetching on soft-nav
-    void filterParamsKey;
     loadProducts(filtersRef.current, searchQuery);
   }, [searchQuery, loadProducts, filterParamsKey]);
 
@@ -156,34 +134,49 @@ export function useProductListing({
     [loadProducts],
   );
 
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMoreRef.current) return;
+  const loadingMoreRef = useRef(false);
 
+  const loadMore = useCallback(async () => {
+    if (loadingMoreRef.current || !hasMoreRef.current) return;
+
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     const currentLoadId = loadIdRef.current;
     const nextPage = pageRef.current + 1;
 
-    const response = await fetchProducts(nextPage, activeFilters, searchQuery);
+    const response = await fetchProducts(
+      nextPage,
+      filtersRef.current,
+      searchQueryRef.current,
+    );
 
     if (response && loadIdRef.current === currentLoadId) {
-      setProducts((prev) => [...prev, ...response.data]);
+      setProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newProducts = response.data.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newProducts];
+      });
       const moreAvailable = nextPage < response.meta.pages;
       setHasMore(moreAvailable);
       hasMoreRef.current = moreAvailable;
       pageRef.current = nextPage;
     }
 
+    loadingMoreRef.current = false;
     setLoadingMore(false);
-  }, [fetchProducts, loadingMore, activeFilters, searchQuery]);
+  }, [fetchProducts]);
 
-  // Infinite scroll observer
   useEffect(() => {
     const currentRef = loadMoreRef.current;
     if (!currentRef || loading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreRef.current && !loadingMore) {
+        if (
+          entries[0].isIntersecting &&
+          hasMoreRef.current &&
+          !loadingMoreRef.current
+        ) {
           loadMore();
         }
       },
@@ -195,7 +188,7 @@ export function useProductListing({
     return () => {
       observer.disconnect();
     };
-  }, [loadMore, loading, loadingMore]);
+  }, [loadMore, loading]);
 
   return {
     products,
@@ -203,10 +196,9 @@ export function useProductListing({
     loadingMore,
     hasMore,
     totalCount,
+    activeFilters,
     filtersData,
     filtersLoading,
-    showMobileFilters,
-    setShowMobileFilters,
     handleFilterChange,
     loadMoreRef,
   };

@@ -60,7 +60,6 @@ export function CategoryProductsContent({
     <ProductListingLayout
       {...listing}
       basePath={basePath}
-      taxonId={taxonId}
       onFilterChange={listing.handleFilterChange}
       listId={listId}
       listName={listName}

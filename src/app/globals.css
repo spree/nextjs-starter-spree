@@ -10,8 +10,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist);
   --animate-slide-in-right: slide-in-right 0.3s ease-out;
+  --animate-slide-in-left: slide-in-left 0.3s ease-out;
 
-  /* Primary color palette based on #0077FF */
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;
@@ -34,6 +34,15 @@
   }
 }
 
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -41,7 +50,6 @@ body {
   font-weight: 400;
 }
 
-/* Hide default Swiper navigation (using custom buttons) */
 .product-carousel .swiper-button-next,
 .product-carousel .swiper-button-prev {
   display: none;

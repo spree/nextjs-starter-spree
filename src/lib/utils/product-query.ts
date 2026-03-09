@@ -1,5 +1,5 @@
 import type { ProductListParams } from "@spree/sdk";
-import type { ActiveFilters } from "@/components/products/ProductFilters";
+import type { ActiveFilters } from "@/types/filters";
 
 /**
  * Build query params from active product filters.
