@@ -21,7 +21,7 @@ export function getActiveFilterCount(filters: ActiveFilters): number {
   );
 }
 
-export const SORT_LABELS: Record<string, string> = {
+const SORT_LABELS_CANONICAL: Record<string, string> = {
   manual: "Manual",
   best_selling: "Best Selling",
   price: "Price: Low to High",
@@ -30,13 +30,22 @@ export const SORT_LABELS: Record<string, string> = {
   available_on: "Oldest",
   name: "Name (A-Z)",
   "-name": "Name (Z-A)",
-  "price asc": "Price: Low to High",
-  "price desc": "Price: High to Low",
-  "available_on desc": "Newest",
-  "available_on asc": "Oldest",
-  "name asc": "Name (A-Z)",
-  "name desc": "Name (Z-A)",
 };
+
+export function normalizeSortKey(key: string): string {
+  if (key in SORT_LABELS_CANONICAL) return key;
+  const match = key.match(/^(\w+)\s+(asc|desc)$/);
+  if (!match) return key;
+  const [, field, direction] = match;
+  const needsNegation =
+    (field === "available_on" && direction === "desc") ||
+    (field !== "available_on" && direction === "desc");
+  return needsNegation ? `-${field}` : field;
+}
+
+export function getSortLabel(key: string): string {
+  return SORT_LABELS_CANONICAL[normalizeSortKey(key)] || key;
+}
 
 export const AVAILABILITY_LABELS: Record<string, string> = {
   in_stock: "In Stock",

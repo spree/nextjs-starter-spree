@@ -5,12 +5,20 @@ import type {
   OptionFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
+import { useCallback, useEffect, useRef } from "react";
 import { CheckIcon, CloseIcon } from "@/components/icons";
 import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 import { AVAILABILITY_LABELS, getActiveFilterCount } from "@/lib/utils/filters";
 import type { PriceBucket } from "@/lib/utils/price-buckets";
 import { findMatchingBucket } from "@/lib/utils/price-buckets";
-import type { ActiveFilters, AvailabilityStatus } from "@/types/filters";
+import {
+  type ActiveFilters,
+  type AvailabilityStatus,
+  isAvailabilityStatus,
+} from "@/types/filters";
+
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 interface MobileFilterDrawerProps {
   isOpen: boolean;
@@ -35,19 +43,68 @@ export function MobileFilterDrawer({
   onAvailabilityChange,
   onClearAll,
 }: MobileFilterDrawerProps) {
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<Element | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      triggerRef.current = document.activeElement;
+      closeButtonRef.current?.focus();
+    } else if (triggerRef.current instanceof HTMLElement) {
+      triggerRef.current.focus();
+      triggerRef.current = null;
+    }
+  }, [isOpen]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !drawerRef.current) return;
+
+      const focusable = drawerRef.current.querySelectorAll(FOCUSABLE_SELECTOR);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [onClose],
+  );
+
   if (!isOpen) return null;
 
   const activeCount = getActiveFilterCount(activeFilters);
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden">
+    <div
+      className="fixed inset-0 z-50 md:hidden"
+      onKeyDown={handleKeyDown}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Filters"
+    >
       <div
         className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl flex flex-col animate-slide-in-left">
+      <div
+        ref={drawerRef}
+        className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl flex flex-col animate-slide-in-left"
+      >
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             className="p-2 -ml-2 text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Close filters"
@@ -266,8 +323,8 @@ function MobileAvailabilitySection({
               onClick={() => {
                 if (isSelected) {
                   onChange(undefined);
-                } else {
-                  onChange(option.id as AvailabilityStatus);
+                } else if (isAvailabilityStatus(option.id)) {
+                  onChange(option.id);
                 }
               }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors ${

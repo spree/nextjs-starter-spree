@@ -1,6 +1,6 @@
 import type { AvailabilityFilter } from "@spree/sdk";
 import { AVAILABILITY_LABELS } from "@/lib/utils/filters";
-import type { AvailabilityStatus } from "@/types/filters";
+import { type AvailabilityStatus, isAvailabilityStatus } from "@/types/filters";
 
 interface AvailabilityDropdownContentProps {
   filter: AvailabilityFilter;
@@ -25,8 +25,8 @@ export function AvailabilityDropdownContent({
                 onClick={() => {
                   if (isSelected) {
                     onChange(undefined);
-                  } else {
-                    onChange(option.id as AvailabilityStatus);
+                  } else if (isAvailabilityStatus(option.id)) {
+                    onChange(option.id);
                   }
                 }}
                 className={`w-full flex items-center justify-between px-2 py-1.5 text-sm rounded-lg transition-colors ${

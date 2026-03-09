@@ -1,4 +1,4 @@
-import { SORT_LABELS } from "@/lib/utils/filters";
+import { getSortLabel } from "@/lib/utils/filters";
 
 interface SortDropdownContentProps {
   sortOptions: { id: string }[];
@@ -28,7 +28,7 @@ export function SortDropdownContent({
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? "bg-primary-500" : "bg-transparent"}`}
               />
-              {SORT_LABELS[option.id] || option.id}
+              {getSortLabel(option.id)}
             </button>
           </li>
         );

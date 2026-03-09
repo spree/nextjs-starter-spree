@@ -78,8 +78,14 @@ export const FilterBar = memo(function FilterBar({
   );
 
   const clearFilters = useCallback(() => {
-    onFilterChange({ optionValues: [] });
-  }, [onFilterChange]);
+    onFilterChange({
+      optionValues: [],
+      priceMin: undefined,
+      priceMax: undefined,
+      availability: undefined,
+      sortBy: activeFilters.sortBy,
+    });
+  }, [onFilterChange, activeFilters.sortBy]);
 
   const priceBuckets = useMemo(() => {
     if (!filtersData) return [];
