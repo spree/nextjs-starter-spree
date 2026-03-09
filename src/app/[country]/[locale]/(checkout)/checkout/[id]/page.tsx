@@ -1,11 +1,11 @@
 "use client";
 
 import type {
+  Address,
   AddressParams,
-  StoreAddress,
-  StoreCountry,
-  StoreOrder,
-  StoreShipment,
+  Country,
+  Order,
+  Shipment,
 } from "@spree/sdk";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -72,7 +72,7 @@ function CheckoutSidebar({
   onApplyCoupon,
   onRemoveCoupon,
 }: {
-  order: StoreOrder;
+  order: Order;
   onApplyCoupon: (
     code: string,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -102,10 +102,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<StoreOrder | null>(null);
-  const [shipments, setShipments] = useState<StoreShipment[]>([]);
-  const [countries, setCountries] = useState<StoreCountry[]>([]);
-  const [savedAddresses, setSavedAddresses] = useState<StoreAddress[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -193,9 +193,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Fetch countries scoped to the resolved market
       const countriesData = market
         ? await getMarketCountries(market.id).catch(() => ({
-            data: [] as StoreCountry[],
+            data: [] as Country[],
           }))
-        : { data: [] as StoreCountry[] };
+        : { data: [] as Country[] };
 
       if (!orderData) {
         setError("Order not found or you don't have access to it.");
@@ -302,7 +302,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setProcessing(true);
     setError(null);
 
-    let trackingOrder: StoreOrder | null = null;
+    let trackingOrder: Order | null = null;
     let trackingRateName: string | undefined;
 
     try {
@@ -450,7 +450,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const handleUpdateSavedAddress = async (
     id: string,
     data: AddressParams,
-  ): Promise<StoreAddress> => {
+  ): Promise<Address> => {
     const result = await updateAddress(id, data);
 
     if (!result.success) {

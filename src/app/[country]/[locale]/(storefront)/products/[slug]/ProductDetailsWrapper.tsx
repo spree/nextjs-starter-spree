@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useStore } from "@/contexts/StoreContext";
@@ -18,7 +18,7 @@ export function ProductDetailsWrapper({
   basePath,
 }: ProductDetailsWrapperProps) {
   const { currency } = useStore();
-  const [product, setProduct] = useState<StoreProduct | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 

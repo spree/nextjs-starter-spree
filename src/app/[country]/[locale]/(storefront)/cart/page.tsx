@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreLineItem } from "@spree/sdk";
+import type { LineItem } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,7 +24,7 @@ export default function CartPage() {
     }
   }, [cart, loading]);
 
-  const handleRemove = async (item: StoreLineItem) => {
+  const handleRemove = async (item: LineItem) => {
     await removeItem(item.id);
     if (cart) {
       trackRemoveFromCart(item, cart.currency);

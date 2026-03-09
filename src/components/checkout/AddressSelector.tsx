@@ -1,19 +1,19 @@
 "use client";
 
-import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk";
+import type { Address, Country, State } from "@spree/sdk";
 import { useMemo } from "react";
 import type { AddressFormData } from "@/lib/utils/address";
 import { AddressFormFields } from "./AddressFormFields";
 
 interface AddressSelectorProps {
-  savedAddresses: StoreAddress[];
+  savedAddresses: Address[];
   currentAddress: AddressFormData;
-  countries: StoreCountry[];
-  states: StoreState[];
+  countries: Country[];
+  states: State[];
   loadingStates: boolean;
   onChange: (field: keyof AddressFormData, value: string) => void;
-  onSelectSavedAddress: (address: StoreAddress) => void;
-  onEditAddress?: (address: StoreAddress) => void;
+  onSelectSavedAddress: (address: Address) => void;
+  onEditAddress?: (address: Address) => void;
   idPrefix: string;
 }
 

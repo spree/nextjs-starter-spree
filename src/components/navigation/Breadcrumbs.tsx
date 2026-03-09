@@ -1,9 +1,9 @@
-import type { StoreTaxon } from "@spree/sdk";
+import type { Taxon } from "@spree/sdk";
 import Link from "next/link";
 import { ChevronRightIcon } from "@/components/icons";
 
 interface BreadcrumbsProps {
-  taxon: StoreTaxon;
+  taxon: Taxon;
   basePath: string;
 }
 

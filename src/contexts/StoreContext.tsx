@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCountry, StoreMarket } from "@spree/sdk";
+import type { Country, Market } from "@spree/sdk";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
@@ -17,7 +17,7 @@ import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 /** Country enriched with market info (currency, locale, etc.) */
-export interface CountryWithMarket extends StoreCountry {
+export interface CountryWithMarket extends Country {
   currency: string;
   default_locale: string;
   marketId: string | null;
@@ -42,9 +42,7 @@ interface StoreProviderProps {
 }
 
 /** Build a flat country list from markets, enriching each country with market info. */
-function buildCountriesFromMarkets(
-  markets: StoreMarket[],
-): CountryWithMarket[] {
+function buildCountriesFromMarkets(markets: Market[]): CountryWithMarket[] {
   const seen = new Set<string>();
   const result: CountryWithMarket[] = [];
 

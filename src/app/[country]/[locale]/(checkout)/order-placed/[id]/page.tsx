@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
+import type { Order } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -27,7 +27,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<StoreOrder | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,11 +1,11 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
+import type { Order } from "@spree/sdk";
 import Image from "next/image";
 import { ImagePlaceholderIcon } from "@/components/icons";
 
 interface OrderSummaryProps {
-  order: StoreOrder;
+  order: Order;
 }
 
 export function OrderSummary({ order }: OrderSummaryProps) {

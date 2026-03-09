@@ -1,4 +1,4 @@
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import { useEffect, useState } from "react";
 import { getProducts, getTaxonProducts } from "@/lib/data/products";
 
@@ -8,7 +8,7 @@ interface UseCarouselProductsOptions {
 }
 
 interface UseCarouselProductsResult {
-  products: StoreProduct[];
+  products: Product[];
   loading: boolean;
   error: string | null;
 }
@@ -17,7 +17,7 @@ export function useCarouselProducts({
   taxonId,
   limit = 8,
 }: UseCarouselProductsOptions = {}): UseCarouselProductsResult {
-  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

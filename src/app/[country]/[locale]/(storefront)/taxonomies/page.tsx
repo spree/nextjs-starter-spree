@@ -1,4 +1,4 @@
-import type { StoreTaxon, StoreTaxonomy } from "@spree/sdk";
+import type { Taxon, Taxonomy } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { GridIcon } from "@/components/icons";
@@ -13,7 +13,7 @@ interface CategoriesPageProps {
   }>;
 }
 
-function getTopLevelTaxons(taxons: StoreTaxon[] | undefined): StoreTaxon[] {
+function getTopLevelTaxons(taxons: Taxon[] | undefined): Taxon[] {
   if (!taxons) return [];
   // Filter to only show depth 1 taxons (direct children of root)
   return taxons.filter((taxon) => taxon.depth === 1);
@@ -23,7 +23,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
 
-  let taxonomies: StoreTaxonomy[] = [];
+  let taxonomies: Taxonomy[] = [];
   try {
     const response = await getTaxonomies({
       limit: 100,

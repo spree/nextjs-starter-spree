@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
 import { memo } from "react";
@@ -9,7 +9,7 @@ import { useStore } from "@/contexts/StoreContext";
 import { trackSelectItem } from "@/lib/analytics/gtm";
 
 interface ProductCardProps {
-  product: StoreProduct;
+  product: Product;
   basePath?: string;
   index?: number;
   listId?: string;

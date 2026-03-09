@@ -2,9 +2,9 @@
 
 import type {
   PaginatedResponse,
+  Product,
   ProductFiltersResponse,
   ProductListParams,
-  StoreProduct,
 } from "@spree/sdk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ActiveFilters } from "@/components/products/ProductFilters";
@@ -27,9 +27,7 @@ function filtersEqual(a: ActiveFilters, b: ActiveFilters): boolean {
 
 interface UseProductListingOptions {
   /** Function that fetches a page of products given query params. */
-  fetchFn: (
-    params: ProductListParams,
-  ) => Promise<PaginatedResponse<StoreProduct>>;
+  fetchFn: (params: ProductListParams) => Promise<PaginatedResponse<Product>>;
   /** Optional params passed to getProductFilters (e.g. { taxon_id }). */
   filterParams?: ProductListParams;
   /** Optional search query string. */
@@ -41,7 +39,7 @@ export function useProductListing({
   filterParams = {},
   searchQuery = "",
 }: UseProductListingOptions) {
-  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);

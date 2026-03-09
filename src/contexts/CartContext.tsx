@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreLineItem, StoreOrder } from "@spree/sdk";
+import type { LineItem, Order } from "@spree/sdk";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
@@ -19,7 +19,7 @@ import {
 } from "@/lib/data/cart";
 
 interface CartContextType {
-  cart: StoreOrder | null;
+  cart: Order | null;
   loading: boolean;
   updating: boolean;
   itemCount: number;
@@ -35,7 +35,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<StoreOrder | null>(null);
+  const [cart, setCart] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (
       action: () => Promise<{
         success: boolean;
-        cart?: StoreOrder | null;
+        cart?: Order | null;
         error?: string;
       }>,
       errorLabel: string,
@@ -134,7 +134,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemCount = useMemo<number>(
     () =>
       cart?.line_items?.reduce(
-        (sum: number, item: StoreLineItem) => sum + item.quantity,
+        (sum: number, item: LineItem) => sum + item.quantity,
         0,
       ) ?? 0,
     [cart],

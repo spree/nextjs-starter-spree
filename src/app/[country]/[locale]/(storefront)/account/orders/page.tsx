@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
+import type { Order } from "@spree/sdk";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -50,7 +50,7 @@ function getShipmentStatusColor(state: string | null): string {
 export default function OrdersPage() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
-  const [orders, setOrders] = useState<StoreOrder[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

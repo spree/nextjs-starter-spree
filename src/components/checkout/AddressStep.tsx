@@ -1,12 +1,6 @@
 "use client";
 
-import type {
-  AddressParams,
-  StoreAddress,
-  StoreCountry,
-  StoreOrder,
-  StoreState,
-} from "@spree/sdk";
+import type { Address, AddressParams, Country, Order, State } from "@spree/sdk";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import {
@@ -19,12 +13,12 @@ import { AddressFormFields } from "./AddressFormFields";
 import { AddressSelector } from "./AddressSelector";
 
 interface AddressStepProps {
-  order: StoreOrder;
-  countries: StoreCountry[];
-  savedAddresses: StoreAddress[];
+  order: Order;
+  countries: Country[];
+  savedAddresses: Address[];
   isAuthenticated: boolean;
   signInUrl: string;
-  fetchStates: (countryIso: string) => Promise<StoreState[]>;
+  fetchStates: (countryIso: string) => Promise<State[]>;
   onSubmit: (data: {
     email: string;
     ship_address?: AddressParams;
@@ -33,7 +27,7 @@ interface AddressStepProps {
   onUpdateSavedAddress?: (
     id: string,
     data: AddressParams,
-  ) => Promise<StoreAddress | null>;
+  ) => Promise<Address | null>;
   processing: boolean;
 }
 
@@ -52,12 +46,10 @@ export function AddressStep({
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     addressToFormData(order.ship_address),
   );
-  const [shipStates, setShipStates] = useState<StoreState[]>([]);
+  const [shipStates, setShipStates] = useState<State[]>([]);
   const [isPendingShip, startTransitionShip] = useTransition();
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
-  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
-    null,
-  );
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   // Load states when shipping country changes
   useEffect(() => {
@@ -102,7 +94,7 @@ export function AddressStep({
     });
   };
 
-  const handleSelectSavedAddress = (address: StoreAddress) => {
+  const handleSelectSavedAddress = (address: Address) => {
     setShipAddress(addressToFormData(address));
   };
 

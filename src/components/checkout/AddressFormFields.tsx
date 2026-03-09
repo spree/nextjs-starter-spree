@@ -1,12 +1,12 @@
 "use client";
 
-import type { StoreCountry, StoreState } from "@spree/sdk";
+import type { Country, State } from "@spree/sdk";
 import type { AddressFormData } from "@/lib/utils/address";
 
 interface AddressFormFieldsProps {
   address: AddressFormData;
-  countries: StoreCountry[];
-  states: StoreState[];
+  countries: Country[];
+  states: State[];
   loadingStates: boolean;
   onChange: (field: keyof AddressFormData, value: string) => void;
   idPrefix: string;

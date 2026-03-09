@@ -1,13 +1,13 @@
 "use client";
 
-import type { StoreOptionType, StoreVariant } from "@spree/sdk";
+import type { OptionType, Variant } from "@spree/sdk";
 import { useMemo } from "react";
 
 interface VariantPickerProps {
-  variants: StoreVariant[];
-  optionTypes: StoreOptionType[];
-  selectedVariant: StoreVariant | null;
-  onVariantChange: (variant: StoreVariant | null) => void;
+  variants: Variant[];
+  optionTypes: OptionType[];
+  selectedVariant: Variant | null;
+  onVariantChange: (variant: Variant | null) => void;
 }
 
 export function VariantPicker({
@@ -72,9 +72,7 @@ export function VariantPicker({
   }, [variants]);
 
   // Find variant matching selected options
-  const findVariant = (
-    newOptions: Record<string, string>,
-  ): StoreVariant | null => {
+  const findVariant = (newOptions: Record<string, string>): Variant | null => {
     const optionCount = Object.keys(newOptions).length;
     return (
       variantOptionMaps.find(
@@ -125,7 +123,7 @@ export function VariantPicker({
   const getOptionValueDetails = (
     optionTypeId: string,
     optionValueName: string,
-  ): StoreVariant["option_values"][0] | null => {
+  ): Variant["option_values"][0] | null => {
     return optionValueDetailsMap[`${optionTypeId}:${optionValueName}`] || null;
   };
 

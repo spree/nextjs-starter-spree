@@ -1,10 +1,5 @@
 import { sendGTMEvent } from "@next/third-parties/google";
-import type {
-  StoreLineItem,
-  StoreOrder,
-  StoreProduct,
-  StoreVariant,
-} from "@spree/sdk";
+import type { LineItem, Order, Product, Variant } from "@spree/sdk";
 
 interface GA4Item {
   item_id: string;
@@ -24,7 +19,7 @@ interface ItemMappingOptions {
   index?: number;
   listId?: string;
   listName?: string;
-  variant?: StoreVariant | null;
+  variant?: Variant | null;
 }
 
 function safeParseFloat(value: string | undefined | null): number {
@@ -33,7 +28,7 @@ function safeParseFloat(value: string | undefined | null): number {
 }
 
 export function mapProductToGA4Item(
-  product: StoreProduct,
+  product: Product,
   options: ItemMappingOptions = {},
 ): GA4Item {
   const { index, listId, listName, variant } = options;
@@ -89,7 +84,7 @@ export function mapProductToGA4Item(
 }
 
 export function mapLineItemToGA4Item(
-  lineItem: StoreLineItem,
+  lineItem: LineItem,
   options: { index?: number; listId?: string; listName?: string } = {},
 ): GA4Item {
   const item: GA4Item = {
@@ -133,7 +128,7 @@ function pushEcommerceEvent(
 let lastViewItemListKey: string | null = null;
 
 export function trackViewItemList(
-  products: StoreProduct[],
+  products: Product[],
   listId: string,
   listName: string,
   currency: string,
@@ -155,7 +150,7 @@ export function trackViewItemList(
 }
 
 export function trackSelectItem(
-  product: StoreProduct,
+  product: Product,
   listId: string,
   listName: string,
   index: number,
@@ -170,9 +165,9 @@ export function trackSelectItem(
 }
 
 export function trackViewItem(
-  product: StoreProduct,
+  product: Product,
   currency: string,
-  variant?: StoreVariant | null,
+  variant?: Variant | null,
 ): void {
   const item = mapProductToGA4Item(product, { variant });
   pushEcommerceEvent("view_item", {
@@ -183,8 +178,8 @@ export function trackViewItem(
 }
 
 export function trackAddToCart(
-  product: StoreProduct,
-  variant: StoreVariant | null,
+  product: Product,
+  variant: Variant | null,
   quantity: number,
   currency: string,
 ): void {
@@ -198,7 +193,7 @@ export function trackAddToCart(
 }
 
 export function trackRemoveFromCart(
-  lineItem: StoreLineItem,
+  lineItem: LineItem,
   currency: string,
 ): void {
   pushEcommerceEvent("remove_from_cart", {
@@ -208,7 +203,7 @@ export function trackRemoveFromCart(
   });
 }
 
-export function trackViewCart(order: StoreOrder): void {
+export function trackViewCart(order: Order): void {
   pushEcommerceEvent("view_cart", {
     currency: order.currency,
     value: safeParseFloat(order.item_total),
@@ -220,7 +215,7 @@ export function trackViewCart(order: StoreOrder): void {
 }
 
 function buildOrderEcommercePayload(
-  order: StoreOrder,
+  order: Order,
   extras?: Record<string, unknown>,
 ): Record<string, unknown> {
   const coupon = order.order_promotions?.[0]?.code;
@@ -236,12 +231,12 @@ function buildOrderEcommercePayload(
   };
 }
 
-export function trackBeginCheckout(order: StoreOrder): void {
+export function trackBeginCheckout(order: Order): void {
   pushEcommerceEvent("begin_checkout", buildOrderEcommercePayload(order));
 }
 
 export function trackAddShippingInfo(
-  order: StoreOrder,
+  order: Order,
   shippingTier?: string,
 ): void {
   pushEcommerceEvent(
@@ -252,10 +247,7 @@ export function trackAddShippingInfo(
   );
 }
 
-export function trackAddPaymentInfo(
-  order: StoreOrder,
-  paymentType?: string,
-): void {
+export function trackAddPaymentInfo(order: Order, paymentType?: string): void {
   pushEcommerceEvent(
     "add_payment_info",
     buildOrderEcommercePayload(order, {
@@ -264,7 +256,7 @@ export function trackAddPaymentInfo(
   );
 }
 
-export function trackPurchase(order: StoreOrder): void {
+export function trackPurchase(order: Order): void {
   const key = `gtm_purchase_${order.number}`;
   try {
     if (typeof window !== "undefined" && localStorage.getItem(key)) {
@@ -293,7 +285,7 @@ export function trackPurchase(order: StoreOrder): void {
 }
 
 export function trackQuickSearch(
-  products: StoreProduct[],
+  products: Product[],
   searchTerm: string,
   currency: string,
 ): void {
@@ -313,7 +305,7 @@ export function trackQuickSearch(
 let lastViewSearchResultsKey: string | null = null;
 
 export function trackViewSearchResults(
-  products: StoreProduct[],
+  products: Product[],
   searchTerm: string,
   currency: string,
 ): void {
