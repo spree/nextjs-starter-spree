@@ -21,7 +21,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={basePath || "/"} className="flex items-center space-x-2">
-            <Image src="/spree.png" alt="Spree Store" width={60} height={24} />
+            <Image src="/spree.png" alt="Spree Store" width={90} height={32} />
           </Link>
 
           {/* Search */}

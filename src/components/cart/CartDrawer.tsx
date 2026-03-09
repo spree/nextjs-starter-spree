@@ -143,7 +143,7 @@ export function CartDrawer() {
                           {item.name}
                         </Link>
                         <Button
-                          variant="ghost"
+                          variant="destructive"
                           size="icon-xs"
                           onClick={async () => {
                             await removeItem(item.id);

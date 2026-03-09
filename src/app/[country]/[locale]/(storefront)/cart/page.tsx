@@ -58,12 +58,11 @@ export default function CartPage() {
           <p className="mt-2 text-gray-500">
             Looks like you haven&apos;t added anything to your cart yet.
           </p>
-          <Link
-            href={`${basePath}/products`}
-            className="mt-6 inline-block bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-primary-700 transition-colors"
-          >
-            Continue Shopping
-          </Link>
+          <div className="mt-6">
+            <Button size="lg" asChild>
+              <Link href={`${basePath}/products`}>Continue Shopping</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -177,19 +176,16 @@ export default function CartPage() {
               </div>
             </dl>
 
-            <Link
-              href={`${basePath}/checkout/${cart.id}`}
-              className="mt-6 block w-full bg-primary text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
-            >
-              Proceed to Checkout
-            </Link>
-
-            <Link
-              href={`${basePath}/products`}
-              className="mt-4 block w-full text-center text-primary hover:text-primary font-medium"
-            >
-              Continue Shopping
-            </Link>
+            <div className="mt-6 space-y-3">
+              <Button size="lg" asChild className="w-full">
+                <Link href={`${basePath}/checkout/${cart.id}`}>
+                  Proceed to Checkout
+                </Link>
+              </Button>
+              <Button variant="link" asChild className="w-full">
+                <Link href={`${basePath}/products`}>Continue Shopping</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

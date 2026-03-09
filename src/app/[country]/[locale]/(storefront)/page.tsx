@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
+import { Button } from "@/components/ui/button";
 
 interface HomePageProps {
   params: Promise<{
@@ -26,18 +27,12 @@ export default async function HomePage({ params }: HomePageProps) {
               powered by Spree Commerce.
             </p>
             <div className="mt-8 flex justify-center gap-4">
-              <Link
-                href={`${basePath}/products`}
-                className="bg-gray-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
-              >
-                Shop Now
-              </Link>
-              <Link
-                href={`${basePath}/taxonomies`}
-                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors"
-              >
-                Browse Categories
-              </Link>
+              <Button size="lg" asChild>
+                <Link href={`${basePath}/products`}>Shop Now</Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href={`${basePath}/taxonomies`}>Browse Categories</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -49,12 +44,9 @@ export default async function HomePage({ params }: HomePageProps) {
           <h2 className="text-2xl font-bold text-gray-900">
             Featured Products
           </h2>
-          <Link
-            href={`${basePath}/products`}
-            className="text-primary hover:text-primary font-medium"
-          >
-            View all &rarr;
-          </Link>
+          <Button variant="link" asChild>
+            <Link href={`${basePath}/products`}>View all &rarr;</Link>
+          </Button>
         </div>
         <ProductCarousel basePath={basePath} />
       </section>

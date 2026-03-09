@@ -135,9 +135,10 @@ export const FilterBar = memo(function FilterBar({
     return (
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
         <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
-        <div className="h-10 w-16 bg-gray-200 rounded-lg animate-pulse" />
-        <div className="h-10 w-16 bg-gray-200 rounded-lg animate-pulse" />
-        <div className="ml-auto h-10 w-24 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="h-10 w-18 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="h-10 w-18 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse" />
+        <div className="ml-auto h-10 w-18 bg-gray-200 rounded-lg animate-pulse" />
       </div>
     );
   }

@@ -5,7 +5,11 @@ import { ImageIcon as ImagePlaceholder, Search } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { useStore } from "@/contexts/StoreContext";
 import { trackQuickSearch, trackSelectItem } from "@/lib/analytics/gtm";
 import { getProducts } from "@/lib/data/products";
@@ -141,8 +145,8 @@ export function SearchBar({ basePath }: SearchBarProps) {
   return (
     <div ref={containerRef} className="relative">
       <form onSubmit={handleSubmit}>
-        <div className="relative">
-          <Input
+        <InputGroup>
+          <InputGroupInput
             ref={inputRef}
             type="search"
             value={query}
@@ -162,8 +166,10 @@ export function SearchBar({ basePath }: SearchBarProps) {
             }
             aria-autocomplete="list"
           />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        </div>
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+        </InputGroup>
       </form>
 
       {/* Suggestions dropdown */}

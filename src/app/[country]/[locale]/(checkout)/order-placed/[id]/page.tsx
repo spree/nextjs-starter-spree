@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
 import { getCheckoutOrder } from "@/lib/data/checkout";
@@ -108,12 +109,9 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
           {error || "Order not found"}
         </h1>
-        <Link
-          href={`${basePath}/`}
-          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
-        >
-          Continue Shopping
-        </Link>
+        <Button asChild>
+          <Link href={`${basePath}/`}>Continue Shopping</Link>
+        </Button>
       </div>
     );
   }
@@ -277,12 +275,9 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
 
       {/* Actions */}
       <div className="text-center">
-        <Link
-          href={`${basePath}/`}
-          className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-        >
-          Continue Shopping
-        </Link>
+        <Button size="lg" asChild>
+          <Link href={`${basePath}/`}>Continue Shopping</Link>
+        </Button>
       </div>
     </div>
   );

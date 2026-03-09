@@ -85,7 +85,7 @@ export function AddressSelector({
                 key={address.id}
                 className={`flex items-start p-4 border rounded-xl transition-colors ${
                   selectedAddressId === address.id
-                    ? "border-gray-600 bg-gray-50"
+                    ? "border-gray-300 bg-gray-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -137,7 +137,7 @@ export function AddressSelector({
             <label
               className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${
                 selectedAddressId === "new"
-                  ? "border-gray-600 bg-gray-50"
+                  ? "border-gray-300 bg-gray-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >

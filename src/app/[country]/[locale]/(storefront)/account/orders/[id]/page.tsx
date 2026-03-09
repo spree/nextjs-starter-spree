@@ -217,14 +217,15 @@ function ShipmentBlock({
             </div>
             <div className="mt-4 lg:mt-0">
               {shipment.state === "shipped" && shipment.tracking_url ? (
-                <a
-                  href={shipment.tracking_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors"
-                >
-                  Track Items
-                </a>
+                <Button size="sm" asChild>
+                  <a
+                    href={shipment.tracking_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Track Items
+                  </a>
+                </Button>
               ) : (
                 <Button variant="outline" size="sm" disabled>
                   Track Items
