@@ -5,7 +5,7 @@ import type {
   OptionFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckIcon, CloseIcon } from "@/components/icons";
 import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 import { AVAILABILITY_LABELS, getActiveFilterCount } from "@/lib/utils/filters";
@@ -26,10 +26,7 @@ interface MobileFilterDrawerProps {
   filtersData: ProductFiltersResponse | null;
   activeFilters: ActiveFilters;
   priceBuckets: PriceBucket[];
-  onOptionValueToggle: (optionValueId: string) => void;
-  onPriceChange: (min?: number, max?: number) => void;
-  onAvailabilityChange: (value?: AvailabilityStatus) => void;
-  onClearAll: () => void;
+  onApply: (filters: ActiveFilters) => void;
 }
 
 export function MobileFilterDrawer({
@@ -38,24 +35,57 @@ export function MobileFilterDrawer({
   filtersData,
   activeFilters,
   priceBuckets,
-  onOptionValueToggle,
-  onPriceChange,
-  onAvailabilityChange,
-  onClearAll,
+  onApply,
 }: MobileFilterDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<Element | null>(null);
 
+  const [stagedFilters, setStagedFilters] =
+    useState<ActiveFilters>(activeFilters);
+
   useEffect(() => {
     if (isOpen) {
+      setStagedFilters(activeFilters);
       triggerRef.current = document.activeElement;
       closeButtonRef.current?.focus();
     } else if (triggerRef.current instanceof HTMLElement) {
       triggerRef.current.focus();
       triggerRef.current = null;
     }
-  }, [isOpen]);
+  }, [isOpen, activeFilters]);
+
+  const handleOptionValueToggle = useCallback((optionValueId: string) => {
+    setStagedFilters((prev) => {
+      const newOptionValues = prev.optionValues.includes(optionValueId)
+        ? prev.optionValues.filter((id) => id !== optionValueId)
+        : [...prev.optionValues, optionValueId];
+      return { ...prev, optionValues: newOptionValues };
+    });
+  }, []);
+
+  const handlePriceChange = useCallback((min?: number, max?: number) => {
+    setStagedFilters((prev) => ({ ...prev, priceMin: min, priceMax: max }));
+  }, []);
+
+  const handleAvailabilityChange = useCallback((value?: AvailabilityStatus) => {
+    setStagedFilters((prev) => ({ ...prev, availability: value }));
+  }, []);
+
+  const handleClearAll = useCallback(() => {
+    setStagedFilters((prev) => ({
+      optionValues: [],
+      priceMin: undefined,
+      priceMax: undefined,
+      availability: undefined,
+      sortBy: prev.sortBy,
+    }));
+  }, []);
+
+  const handleApply = useCallback(() => {
+    onApply(stagedFilters);
+    onClose();
+  }, [stagedFilters, onApply, onClose]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -84,7 +114,7 @@ export function MobileFilterDrawer({
 
   if (!isOpen) return null;
 
-  const activeCount = getActiveFilterCount(activeFilters);
+  const stagedCount = getActiveFilterCount(stagedFilters);
 
   return (
     <div
@@ -123,8 +153,8 @@ export function MobileFilterDrawer({
                   <MobileOptionSection
                     key={filter.id}
                     filter={filter as OptionFilter}
-                    selectedValues={activeFilters.optionValues}
-                    onToggle={onOptionValueToggle}
+                    selectedValues={stagedFilters.optionValues}
+                    onToggle={handleOptionValueToggle}
                   />
                 );
               case "price_range":
@@ -132,8 +162,8 @@ export function MobileFilterDrawer({
                   <MobilePriceSection
                     key={filter.id}
                     priceBuckets={priceBuckets}
-                    activeFilters={activeFilters}
-                    onPriceChange={onPriceChange}
+                    activeFilters={stagedFilters}
+                    onPriceChange={handlePriceChange}
                   />
                 );
               case "availability":
@@ -141,8 +171,8 @@ export function MobileFilterDrawer({
                   <MobileAvailabilitySection
                     key={filter.id}
                     filter={filter as AvailabilityFilter}
-                    selected={activeFilters.availability}
-                    onChange={onAvailabilityChange}
+                    selected={stagedFilters.availability}
+                    onChange={handleAvailabilityChange}
                   />
                 );
               default:
@@ -152,16 +182,16 @@ export function MobileFilterDrawer({
         </div>
 
         <div className="border-t border-gray-200 p-4 space-y-2">
-          {activeCount > 0 && (
+          {stagedCount > 0 && (
             <button
-              onClick={onClearAll}
+              onClick={handleClearAll}
               className="w-full py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
             >
-              Clear all filters ({activeCount})
+              Clear all filters ({stagedCount})
             </button>
           )}
           <button
-            onClick={onClose}
+            onClick={handleApply}
             className="w-full py-3 text-sm font-medium text-white bg-primary-500 rounded-xl hover:bg-primary-700 transition-colors"
           >
             Show results
@@ -195,6 +225,8 @@ function MobileOptionSection({
             return (
               <button
                 key={option.id}
+                type="button"
+                aria-pressed={isSelected}
                 onClick={() => onToggle(option.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
                   isSelected ? "bg-primary-50" : "hover:bg-gray-50"
@@ -230,6 +262,8 @@ function MobileOptionSection({
             return (
               <button
                 key={option.id}
+                type="button"
+                aria-pressed={isSelected}
                 onClick={() => onToggle(option.id)}
                 className={`px-3.5 py-2 text-sm rounded-xl border transition-colors ${
                   isSelected
@@ -275,6 +309,8 @@ function MobilePriceSection({
           return (
             <button
               key={bucket.id}
+              type="button"
+              aria-pressed={isSelected}
               onClick={() => {
                 if (isSelected) {
                   onPriceChange(undefined, undefined);
@@ -320,6 +356,8 @@ function MobileAvailabilitySection({
           return (
             <button
               key={option.id}
+              type="button"
+              aria-pressed={isSelected}
               onClick={() => {
                 if (isSelected) {
                   onChange(undefined);

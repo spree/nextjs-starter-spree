@@ -22,6 +22,8 @@ export function AvailabilityDropdownContent({
           return (
             <li key={option.id}>
               <button
+                type="button"
+                aria-pressed={isSelected}
                 onClick={() => {
                   if (isSelected) {
                     onChange(undefined);

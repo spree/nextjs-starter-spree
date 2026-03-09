@@ -18,6 +18,8 @@ export function SortDropdownContent({
         return (
           <li key={option.id}>
             <button
+              type="button"
+              aria-pressed={isActive}
               onClick={() => onSortChange(option.id)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
                 isActive

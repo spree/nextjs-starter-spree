@@ -8,16 +8,16 @@ import type {
 } from "@spree/sdk";
 import { memo, useCallback, useMemo, useState } from "react";
 import { FilterIcon } from "@/components/icons";
+import { AvailabilityDropdownContent } from "@/components/products/filters/AvailabilityDropdownContent";
+import { FilterChips } from "@/components/products/filters/FilterChips";
+import { FilterDropdown } from "@/components/products/filters/FilterDropdown";
+import { MobileFilterDrawer } from "@/components/products/filters/MobileFilterDrawer";
+import { OptionDropdownContent } from "@/components/products/filters/OptionDropdownContent";
+import { PriceDropdownContent } from "@/components/products/filters/PriceDropdownContent";
+import { SortDropdownContent } from "@/components/products/filters/SortDropdownContent";
 import { getActiveFilterCount } from "@/lib/utils/filters";
 import { generatePriceBuckets } from "@/lib/utils/price-buckets";
 import type { ActiveFilters, AvailabilityStatus } from "@/types/filters";
-import { AvailabilityDropdownContent } from "./AvailabilityDropdownContent";
-import { FilterChips } from "./FilterChips";
-import { FilterDropdown } from "./FilterDropdown";
-import { MobileFilterDrawer } from "./MobileFilterDrawer";
-import { OptionDropdownContent } from "./OptionDropdownContent";
-import { PriceDropdownContent } from "./PriceDropdownContent";
-import { SortDropdownContent } from "./SortDropdownContent";
 
 interface FilterBarProps {
   filtersData: ProductFiltersResponse | null;
@@ -278,10 +278,7 @@ export const FilterBar = memo(function FilterBar({
         filtersData={filtersData}
         activeFilters={activeFilters}
         priceBuckets={priceBuckets}
-        onOptionValueToggle={handleOptionValueToggle}
-        onPriceChange={handlePriceChange}
-        onAvailabilityChange={handleAvailabilityChange}
-        onClearAll={clearFilters}
+        onApply={onFilterChange}
       />
     </div>
   );
