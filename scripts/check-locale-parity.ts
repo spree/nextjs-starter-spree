@@ -23,7 +23,13 @@ function getNestedKeys(obj: Record<string, unknown>, prefix = ""): string[] {
 }
 
 const baseFile = path.join(MESSAGES_DIR, `${BASE_LOCALE}.json`);
-const baseMessages = JSON.parse(fs.readFileSync(baseFile, "utf-8"));
+let baseMessages: Record<string, unknown>;
+try {
+  baseMessages = JSON.parse(fs.readFileSync(baseFile, "utf-8"));
+} catch (err) {
+  console.error(`Failed to parse base locale file ${baseFile}:`, err);
+  process.exit(1);
+}
 const baseKeys = new Set(getNestedKeys(baseMessages));
 
 const localeFiles = fs
@@ -34,9 +40,16 @@ let hasError = false;
 
 for (const file of localeFiles) {
   const locale = file.replace(".json", "");
-  const messages = JSON.parse(
-    fs.readFileSync(path.join(MESSAGES_DIR, file), "utf-8"),
-  );
+  let messages: Record<string, unknown>;
+  try {
+    messages = JSON.parse(
+      fs.readFileSync(path.join(MESSAGES_DIR, file), "utf-8"),
+    );
+  } catch (err) {
+    console.error(`Failed to parse locale file ${file}:`, err);
+    hasError = true;
+    continue;
+  }
   const localeKeys = new Set(getNestedKeys(messages));
 
   const missing = [...baseKeys].filter((k) => !localeKeys.has(k));

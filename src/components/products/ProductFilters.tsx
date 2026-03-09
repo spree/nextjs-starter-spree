@@ -6,7 +6,7 @@ import type {
   PriceRangeFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { memo, useState } from "react";
 import { ChevronDownIcon } from "@/components/icons";
 
@@ -150,7 +150,7 @@ export const ProductFilters = memo(function ProductFilters({
             <option key={option.id} value={option.id}>
               {option.id in SORT_KEYS
                 ? t(SORT_KEYS[option.id as keyof typeof SORT_KEYS])
-                : option.id}
+                : t("sortUnknown")}
             </option>
           ))}
         </select>
@@ -271,8 +271,17 @@ function PriceFilter({
 }) {
   const t = useTranslations("products");
   const tc = useTranslations("common");
+  const format = useFormatter();
   const [localMin, setLocalMin] = useState(minValue?.toString() || "");
   const [localMax, setLocalMax] = useState(maxValue?.toString() || "");
+
+  const formatCurrency = (value: number) =>
+    format.number(value, {
+      style: "currency",
+      currency: filter.currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   const handleApply = () => {
     onChange(
@@ -285,9 +294,8 @@ function PriceFilter({
     <div className="space-y-3">
       <div className="text-xs text-gray-500">
         {t("range", {
-          currency: filter.currency,
-          min: filter.min.toFixed(2),
-          max: filter.max.toFixed(2),
+          min: formatCurrency(filter.min),
+          max: formatCurrency(filter.max),
         })}
       </div>
       <div className="flex items-center gap-2">

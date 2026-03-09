@@ -38,8 +38,9 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
       } else {
         setError(result.error || t("invalidCode"));
       }
-    } catch {
-      setError(t("invalidCode"));
+    } catch (err) {
+      console.error("Failed to apply coupon:", err);
+      setError(t("applyFailed"));
     } finally {
       setApplying(false);
     }
@@ -93,6 +94,9 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
                 type="button"
                 onClick={() => handleRemove(promotion.id)}
                 disabled={removingIds.has(promotion.id)}
+                aria-label={t("removeCoupon", {
+                  code: promotion.code || promotion.name,
+                })}
                 className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
               >
                 {removingIds.has(promotion.id) ? t("removing") : t("remove")}
@@ -105,7 +109,11 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
       {/* Apply new code - hidden when a code is already applied */}
       {!hasAppliedCode && (
         <form onSubmit={handleApply} className="flex gap-2">
+          <label htmlFor="coupon-code-input" className="sr-only">
+            {t("placeholder")}
+          </label>
           <input
+            id="coupon-code-input"
             type="text"
             value={code}
             onChange={(e) => {

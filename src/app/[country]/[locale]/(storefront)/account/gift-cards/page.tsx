@@ -114,7 +114,9 @@ function GiftCardItem({ card }: { card: StoreGiftCard }) {
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStateColor(card.state, card.expired)}`}
             >
-              {t(stateKeyMap[card.state] || "active")}
+              {t(
+                stateKeyMap[card.expired ? "expired" : card.state] || "active",
+              )}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
@@ -135,10 +137,10 @@ function GiftCardItem({ card }: { card: StoreGiftCard }) {
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
           <span className="text-gray-600">
-            {t("used")} {card.display_amount_used}
+            {t("usedAmount", { amount: card.display_amount_used })}
           </span>
           <span className="text-gray-600">
-            {t("totalAmount")} {card.display_amount}
+            {t("totalAmountWithValue", { amount: card.display_amount })}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -158,11 +160,13 @@ function GiftCardItem({ card }: { card: StoreGiftCard }) {
       <div className="pt-4 border-t border-gray-100">
         <div className="flex justify-between text-sm text-gray-500">
           <span>
-            {t("addedOn")} {formatDate(card.created_at, locale)}
+            {t("addedOnDate", { date: formatDate(card.created_at, locale) })}
           </span>
           {card.redeemed_at && (
             <span>
-              {t("fullyRedeemedOn")} {formatDate(card.redeemed_at, locale)}
+              {t("fullyRedeemedOnDate", {
+                date: formatDate(card.redeemed_at, locale),
+              })}
             </span>
           )}
         </div>

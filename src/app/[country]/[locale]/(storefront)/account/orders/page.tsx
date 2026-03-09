@@ -36,18 +36,22 @@ function getPaymentStatusColor(state: string | null): string {
 type OrderTranslationKey =
   | "paid"
   | "balanceDue"
+  | "creditOwed"
   | "failed"
   | "void"
   | "pending"
   | "shipped"
+  | "partiallyShipped"
   | "delivered"
   | "ready"
   | "canceled"
+  | "backorder"
   | "notAvailable";
 
 const paymentStateKeyMap: Record<string, OrderTranslationKey> = {
   paid: "paid",
   balance_due: "balanceDue",
+  credit_owed: "creditOwed",
   failed: "failed",
   void: "void",
   pending: "pending",
@@ -55,10 +59,12 @@ const paymentStateKeyMap: Record<string, OrderTranslationKey> = {
 
 const shipmentStateKeyMap: Record<string, OrderTranslationKey> = {
   shipped: "shipped",
+  partial: "partiallyShipped",
   delivered: "delivered",
   ready: "ready",
   pending: "pending",
   canceled: "canceled",
+  backorder: "backorder",
 };
 
 function getShipmentStatusColor(state: string | null): string {
