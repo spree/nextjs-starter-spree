@@ -6,6 +6,7 @@ import type {
   PriceRangeFilter,
   ProductFiltersResponse,
 } from "@spree/sdk";
+import type { JSX } from "react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { FilterIcon } from "@/components/icons";
 import { AvailabilityDropdownContent } from "@/components/products/filters/AvailabilityDropdownContent";
@@ -33,7 +34,7 @@ export const FilterBar = memo(function FilterBar({
   activeFilters,
   totalCount,
   onFilterChange,
-}: FilterBarProps) {
+}: FilterBarProps): JSX.Element | null {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [showMobileDrawer, setShowMobileDrawer] = useState(false);
 
@@ -227,6 +228,7 @@ export const FilterBar = memo(function FilterBar({
 
       <div className="flex items-center gap-3 md:hidden pb-4 border-b border-gray-100">
         <button
+          type="button"
           onClick={() => setShowMobileDrawer(true)}
           className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full border transition-colors ${
             hasActiveFilters
