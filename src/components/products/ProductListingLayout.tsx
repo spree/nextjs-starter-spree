@@ -1,6 +1,7 @@
 "use client";
 
 import type { Product, ProductFiltersResponse } from "@spree/sdk";
+import type React from "react";
 import type { RefObject } from "react";
 import { SearchIcon, SpinnerIcon } from "@/components/icons";
 import { FilterBar } from "@/components/products/filters";
@@ -40,7 +41,7 @@ export function ProductListingLayout({
   emptyMessage = "Try adjusting your filters",
   listId,
   listName,
-}: ProductListingLayoutProps) {
+}: ProductListingLayoutProps): React.ReactElement {
   return (
     <div>
       <FilterBar

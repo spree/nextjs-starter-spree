@@ -38,6 +38,7 @@ export function useProductListing({
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(false);
+  const loadingMoreRef = useRef(false);
   const filtersRef = useRef<ActiveFilters>({ optionValues: [] });
   const filterParamsRef = useRef(filterParams);
   filterParamsRef.current = filterParams;
@@ -131,8 +132,6 @@ export function useProductListing({
     },
     [loadProducts],
   );
-
-  const loadingMoreRef = useRef(false);
 
   const loadMore = useCallback(async () => {
     if (loadingMoreRef.current || !hasMoreRef.current) return;
