@@ -10,3 +10,4 @@ export * from "./customer";
 export * from "./orders";
 export * from "./products";
 export * from "./quick-checkout";
+export * from "./taxonomies";
