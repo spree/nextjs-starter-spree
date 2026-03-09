@@ -1,4 +1,25 @@
-import type { StoreProduct, StoreStore, StoreTaxon } from "@spree/sdk";
+import type { StoreProduct, StoreTaxon } from "@spree/sdk";
+
+/**
+ * Default social image path (stored in public/).
+ * Replace public/social-image.png with your own 1200x630 OG image.
+ */
+export const SOCIAL_IMAGE_PATH = "/social-image.png";
+
+/**
+ * Get the store URL from the STORE_URL environment variable.
+ * Returns undefined if not set.
+ */
+export function getStoreUrl(): string | undefined {
+  return process.env.STORE_URL || undefined;
+}
+
+/**
+ * Get the store name from environment variables.
+ */
+export function getStoreName(): string {
+  return process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+}
 
 /**
  * Ensure a URL has a protocol prefix.
@@ -126,47 +147,53 @@ export function buildBreadcrumbJsonLd(
 }
 
 /**
- * Build JSON-LD Organization schema from store data.
+ * Build JSON-LD Organization schema from environment variables.
  * https://schema.org/Organization
  */
-export function buildOrganizationJsonLd(
-  store: StoreStore,
-): Record<string, unknown> {
+export function buildOrganizationJsonLd(): Record<string, unknown> {
+  const storeName = getStoreName();
+  const storeUrl = getStoreUrl();
+  const logoUrl = process.env.STORE_LOGO_URL;
+  const facebook = process.env.STORE_FACEBOOK;
+  const twitter = process.env.STORE_TWITTER;
+  const instagram = process.env.STORE_INSTAGRAM;
+  const supportEmail = process.env.STORE_SUPPORT_EMAIL;
+
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: store.name,
-    url: ensureProtocol(store.url),
+    name: storeName,
+    ...(storeUrl ? { url: ensureProtocol(storeUrl) } : {}),
   };
 
-  if (store.logo_image_url) {
-    schema.logo = store.logo_image_url;
+  if (logoUrl) {
+    schema.logo = logoUrl;
   }
 
   const sameAs: string[] = [];
-  if (store.facebook) sameAs.push(store.facebook);
-  if (store.twitter) {
+  if (facebook) sameAs.push(facebook);
+  if (twitter) {
     sameAs.push(
-      store.twitter.startsWith("http")
-        ? store.twitter
-        : `https://twitter.com/${store.twitter.replace("@", "")}`,
+      twitter.startsWith("http")
+        ? twitter
+        : `https://twitter.com/${twitter.replace("@", "")}`,
     );
   }
-  if (store.instagram) {
+  if (instagram) {
     sameAs.push(
-      store.instagram.startsWith("http")
-        ? store.instagram
-        : `https://instagram.com/${store.instagram.replace("@", "")}`,
+      instagram.startsWith("http")
+        ? instagram
+        : `https://instagram.com/${instagram.replace("@", "")}`,
     );
   }
   if (sameAs.length > 0) {
     schema.sameAs = sameAs;
   }
 
-  if (store.customer_support_email) {
+  if (supportEmail) {
     schema.contactPoint = {
       "@type": "ContactPoint",
-      email: store.customer_support_email,
+      email: supportEmail,
       contactType: "customer service",
     };
   }

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { getCachedStore } from "@/lib/data/cached";
-import { buildCanonicalUrl } from "@/lib/seo";
+import {
+  buildCanonicalUrl,
+  getStoreName,
+  getStoreUrl,
+  SOCIAL_IMAGE_PATH,
+} from "@/lib/seo";
 
 interface HomeMetadataParams {
   country: string;
@@ -11,36 +15,25 @@ export async function generateHomeMetadata({
   country,
   locale,
 }: HomeMetadataParams): Promise<Metadata> {
-  let store;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
-
-  const storeName = store?.seo_title || store?.name || "Spree Store";
+  const storeName = process.env.STORE_SEO_TITLE || getStoreName();
   const description =
-    store?.meta_description ||
+    process.env.STORE_META_DESCRIPTION ||
     "Discover amazing products with our modern e-commerce experience.";
+  const storeUrl = getStoreUrl();
+  const canonicalUrl = storeUrl
+    ? buildCanonicalUrl(storeUrl, `/${country}/${locale}`)
+    : undefined;
 
   return {
     title: { absolute: storeName },
     description,
-    ...(store?.url
-      ? {
-          alternates: {
-            canonical: buildCanonicalUrl(store.url, `/${country}/${locale}`),
-          },
-        }
-      : {}),
+    ...(canonicalUrl ? { alternates: { canonical: canonicalUrl } } : {}),
     openGraph: {
       title: storeName,
       description,
-      ...(store?.url
-        ? { url: buildCanonicalUrl(store.url, `/${country}/${locale}`) }
-        : {}),
+      ...(canonicalUrl ? { url: canonicalUrl } : {}),
       type: "website",
-      ...(store?.social_image_url ? { images: [store.social_image_url] } : {}),
+      images: [SOCIAL_IMAGE_PATH],
     },
   };
 }

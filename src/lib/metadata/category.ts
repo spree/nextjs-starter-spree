@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getCachedStore, getCachedTaxon } from "@/lib/data/cached";
-import { buildCanonicalUrl } from "@/lib/seo";
+import { getCachedTaxon } from "@/lib/data/cached";
+import { buildCanonicalUrl, getStoreUrl } from "@/lib/seo";
 
 export interface CategoryMetadataParams {
   country: string;
@@ -26,21 +26,15 @@ export async function generateCategoryMetadata({
     return { title: "Category Not Found" };
   }
 
-  let store;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
-
   const title = taxon.meta_title || taxon.name;
   const description =
     taxon.meta_description ||
     taxon.description ||
     `Browse ${taxon.name} products.`;
 
-  const canonicalUrl = store?.url
-    ? buildCanonicalUrl(store.url, `/${country}/${locale}/t/${taxon.permalink}`)
+  const storeUrl = getStoreUrl();
+  const canonicalUrl = storeUrl
+    ? buildCanonicalUrl(storeUrl, `/${country}/${locale}/t/${taxon.permalink}`)
     : undefined;
 
   return {

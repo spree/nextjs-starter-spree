@@ -1,7 +1,10 @@
-import type { StoreStore } from "@spree/sdk";
 import type { Metadata } from "next";
-import { getCachedStore } from "@/lib/data/cached";
-import { ensureProtocol } from "@/lib/seo";
+import {
+  ensureProtocol,
+  getStoreName,
+  getStoreUrl,
+  SOCIAL_IMAGE_PATH,
+} from "@/lib/seo";
 
 function normalizeOpenGraphLocale(locale: string): string {
   const parts = locale.split(/[-_]/);
@@ -16,19 +19,18 @@ interface StoreMetadataParams {
 export async function generateStoreMetadata({
   locale,
 }: StoreMetadataParams): Promise<Metadata> {
-  let store: StoreStore | null;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
-
-  const storeName = store?.seo_title || store?.name || "Spree Store";
+  const storeName = process.env.STORE_SEO_TITLE || getStoreName();
+  const storeUrl = getStoreUrl();
+  const metaDescription =
+    process.env.STORE_META_DESCRIPTION ||
+    "Online store powered by Spree Commerce";
+  const metaKeywords = process.env.STORE_META_KEYWORDS;
+  const twitter = process.env.STORE_TWITTER;
 
   let metadataBaseSpread: Partial<{ metadataBase: URL }> = {};
-  if (store?.url) {
+  if (storeUrl) {
     try {
-      metadataBaseSpread = { metadataBase: new URL(ensureProtocol(store.url)) };
+      metadataBaseSpread = { metadataBase: new URL(ensureProtocol(storeUrl)) };
     } catch {
       metadataBaseSpread = {};
     }
@@ -40,22 +42,19 @@ export async function generateStoreMetadata({
       template: `%s | ${storeName}`,
       default: storeName,
     },
-    description:
-      store?.meta_description || "Online store powered by Spree Commerce",
-    ...(store?.meta_keywords ? { keywords: store.meta_keywords } : {}),
+    description: metaDescription,
+    ...(metaKeywords ? { keywords: metaKeywords } : {}),
     openGraph: {
-      siteName: store?.name || "Spree Store",
+      siteName: getStoreName(),
       locale: normalizeOpenGraphLocale(locale),
       type: "website",
-      ...(store?.social_image_url ? { images: [store.social_image_url] } : {}),
+      images: [SOCIAL_IMAGE_PATH],
     },
     twitter: {
       card: "summary_large_image",
-      ...(store?.twitter
+      ...(twitter
         ? {
-            site: store.twitter.startsWith("@")
-              ? store.twitter
-              : `@${store.twitter}`,
+            site: twitter.startsWith("@") ? twitter : `@${twitter}`,
           }
         : {}),
     },

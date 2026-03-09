@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { getCachedStore } from "@/lib/data/cached";
-import { buildCanonicalUrl } from "@/lib/seo";
+import { buildCanonicalUrl, getStoreUrl } from "@/lib/seo";
 
 interface ProductsMetadataParams {
   country: string;
@@ -11,15 +10,9 @@ export async function generateProductsMetadata({
   country,
   locale,
 }: ProductsMetadataParams): Promise<Metadata> {
-  let store;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
-
-  const canonicalUrl = store?.url
-    ? buildCanonicalUrl(store.url, `/${country}/${locale}/products`)
+  const storeUrl = getStoreUrl();
+  const canonicalUrl = storeUrl
+    ? buildCanonicalUrl(storeUrl, `/${country}/${locale}/products`)
     : undefined;
 
   return {

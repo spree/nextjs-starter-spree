@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getCachedProduct, getCachedStore } from "@/lib/data/cached";
-import { buildCanonicalUrl, stripHtml } from "@/lib/seo";
+import { getCachedProduct } from "@/lib/data/cached";
+import { buildCanonicalUrl, getStoreUrl, stripHtml } from "@/lib/seo";
 
 interface ProductMetadataParams {
   country: string;
@@ -20,13 +20,6 @@ export async function generateProductMetadata({
     return { title: "Product Not Found" };
   }
 
-  let store;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
-
   const title = product.name;
   const description = product.meta_description
     ? product.meta_description
@@ -34,9 +27,10 @@ export async function generateProductMetadata({
       ? stripHtml(product.description).slice(0, 160)
       : `Shop ${product.name}`;
 
-  const canonicalUrl = store?.url
+  const storeUrl = getStoreUrl();
+  const canonicalUrl = storeUrl
     ? buildCanonicalUrl(
-        store.url,
+        storeUrl,
         `/${country}/${locale}/products/${product.slug}`,
       )
     : undefined;

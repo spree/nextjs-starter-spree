@@ -3,9 +3,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getCachedStore, getCachedTaxon } from "@/lib/data/cached";
+import { getCachedTaxon } from "@/lib/data/cached";
 import { generateCategoryMetadata } from "@/lib/metadata/category";
-import { buildBreadcrumbJsonLd } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, getStoreUrl } from "@/lib/seo";
 import { CategoryProductsContent } from "./CategoryProductsContent";
 
 export const revalidate = 60;
@@ -46,17 +46,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  let store;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
+  const storeUrl = getStoreUrl();
 
   return (
     <div>
-      {store?.url && (
-        <JsonLd data={buildBreadcrumbJsonLd(taxon, basePath, store.url)} />
+      {storeUrl && (
+        <JsonLd data={buildBreadcrumbJsonLd(taxon, basePath, storeUrl)} />
       )}
 
       {/* Banner Image */}

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getCachedProduct, getCachedStore } from "@/lib/data/cached";
+import { getCachedProduct } from "@/lib/data/cached";
 import { generateProductMetadata } from "@/lib/metadata/product";
-import { buildCanonicalUrl, buildProductJsonLd } from "@/lib/seo";
+import { buildCanonicalUrl, buildProductJsonLd, getStoreUrl } from "@/lib/seo";
 import { ProductDetailsWrapper } from "./ProductDetailsWrapper";
 
 interface ProductPageProps {
@@ -31,17 +31,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product = null;
   }
 
-  let store;
-  try {
-    store = await getCachedStore(locale);
-  } catch {
-    store = null;
-  }
-
+  const storeUrl = getStoreUrl();
   const canonicalUrl =
-    product && store?.url
+    product && storeUrl
       ? buildCanonicalUrl(
-          store.url,
+          storeUrl,
           `/${country}/${locale}/products/${product.slug}`,
         )
       : undefined;
