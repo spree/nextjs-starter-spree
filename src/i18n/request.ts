@@ -3,9 +3,15 @@ import { getRequestConfig } from "next-intl/server";
 
 const supportedLocales = ["en", "de", "pl"];
 
-export default getRequestConfig(async () => {
-  const cookieStore = await cookies();
-  let locale = cookieStore.get("spree_locale")?.value;
+export default getRequestConfig(async ({ requestLocale }) => {
+  // Prefer the route-derived locale (from the [locale] path segment),
+  // fall back to the spree_locale cookie, then default to "en".
+  let locale = await requestLocale;
+
+  if (!locale || !supportedLocales.includes(locale)) {
+    const cookieStore = await cookies();
+    locale = cookieStore.get("spree_locale")?.value;
+  }
 
   if (!locale || !supportedLocales.includes(locale)) {
     locale = "en";
