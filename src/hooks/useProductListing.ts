@@ -2,9 +2,9 @@
 
 import type {
   PaginatedResponse,
+  Product,
   ProductFiltersResponse,
   ProductListParams,
-  StoreProduct,
 } from "@spree/sdk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getProductFilters } from "@/lib/data/products";
@@ -13,9 +13,7 @@ import { buildProductQueryParams } from "@/lib/utils/product-query";
 import type { ActiveFilters } from "@/types/filters";
 
 interface UseProductListingOptions {
-  fetchFn: (
-    params: ProductListParams,
-  ) => Promise<PaginatedResponse<StoreProduct>>;
+  fetchFn: (params: ProductListParams) => Promise<PaginatedResponse<Product>>;
   filterParams?: ProductListParams;
   searchQuery?: string;
 }
@@ -25,7 +23,7 @@ export function useProductListing({
   filterParams = {},
   searchQuery = "",
 }: UseProductListingOptions) {
-  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);

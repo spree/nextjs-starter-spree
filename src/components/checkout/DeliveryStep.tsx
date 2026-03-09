@@ -1,10 +1,10 @@
 "use client";
 
-import type { StoreOrder, StoreShipment } from "@spree/sdk";
+import type { Order, Shipment } from "@spree/sdk";
 
 interface DeliveryStepProps {
-  order: StoreOrder;
-  shipments: StoreShipment[];
+  order: Order;
+  shipments: Shipment[];
   onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>;
   onConfirm: () => Promise<void>;
   onBack: () => void;

@@ -1,12 +1,12 @@
 "use client";
 
 import type {
-  StoreAddress,
-  StoreCreditCard,
-  StoreOrder,
-  StorePayment,
-  StoreShipment,
-  StoreStoreCredit,
+  Address,
+  CreditCard,
+  Order,
+  Payment,
+  Shipment,
+  StoreCredit,
 } from "@spree/sdk";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,11 +44,11 @@ function getShipmentStatusColor(state: string): string {
   }
 }
 
-function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
+function PaymentSourceInfo({ payment }: { payment: Payment }) {
   const source = payment.source;
 
   if (payment.source_type === "credit_card" && source) {
-    const card = source as StoreCreditCard;
+    const card = source as CreditCard;
     return (
       <div className="flex items-center gap-3">
         <PaymentIcon
@@ -69,7 +69,7 @@ function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
   }
 
   if (payment.source_type === "store_credit" && source) {
-    const credit = source as StoreStoreCredit;
+    const credit = source as StoreCredit;
     return (
       <div>
         <p className="text-sm font-medium text-gray-900">Store Credit</p>
@@ -88,7 +88,7 @@ function PaymentSourceInfo({ payment }: { payment: StorePayment }) {
   );
 }
 
-function AddressBlock({ address }: { address: StoreAddress }) {
+function AddressBlock({ address }: { address: Address }) {
   return (
     <div>
       <p className="font-medium text-gray-900">{address.full_name}</p>
@@ -114,7 +114,7 @@ function LineItemCard({
   item,
   basePath,
 }: {
-  item: StoreOrder["line_items"][number];
+  item: Order["line_items"][number];
   basePath: string;
 }) {
   return (
@@ -177,10 +177,10 @@ function ShipmentBlock({
   basePath,
   lineItems,
 }: {
-  shipment: StoreShipment;
-  shipAddress: StoreAddress | null;
+  shipment: Shipment;
+  shipAddress: Address | null;
   basePath: string;
-  lineItems: StoreOrder["line_items"];
+  lineItems: Order["line_items"];
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
@@ -275,7 +275,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   const { id } = use(params);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
-  const [order, setOrder] = useState<StoreOrder | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreGiftCard } from "@spree/sdk";
+import type { GiftCard } from "@spree/sdk";
 import { useEffect, useState } from "react";
 import {
   CheckIcon,
@@ -95,7 +95,7 @@ function CopyButton({ code }: { code: string }) {
   );
 }
 
-function GiftCardItem({ card }: { card: StoreGiftCard }) {
+function GiftCardItem({ card }: { card: GiftCard }) {
   const usagePercentage =
     Number(card.amount) > 0
       ? Math.round((Number(card.amount_used) / Number(card.amount)) * 100)
@@ -163,7 +163,7 @@ function GiftCardItem({ card }: { card: StoreGiftCard }) {
 }
 
 export default function GiftCardsPage() {
-  const [cards, setCards] = useState<StoreGiftCard[]>([]);
+  const [cards, setCards] = useState<GiftCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

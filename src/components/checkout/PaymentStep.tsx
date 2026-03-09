@@ -2,10 +2,10 @@
 
 import type {
   AddressParams,
-  StoreCountry,
-  StoreCreditCard,
-  StoreOrder,
-  StoreState,
+  Country,
+  CreditCard,
+  Order,
+  State,
 } from "@spree/sdk";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
@@ -27,10 +27,10 @@ import {
 } from "./StripePaymentForm";
 
 interface PaymentStepProps {
-  order: StoreOrder;
-  countries: StoreCountry[];
+  order: Order;
+  countries: Country[];
   isAuthenticated: boolean;
-  fetchStates: (countryIso: string) => Promise<StoreState[]>;
+  fetchStates: (countryIso: string) => Promise<State[]>;
   onUpdateBillingAddress: (data: {
     bill_address: AddressParams;
   }) => Promise<boolean>;
@@ -62,11 +62,11 @@ export function PaymentStep({
   );
   const [useShippingForBilling, setUseShippingForBilling] =
     useState(initialUseShipping);
-  const [billStates, setBillStates] = useState<StoreState[]>([]);
+  const [billStates, setBillStates] = useState<State[]>([]);
   const [isPendingBill, startTransitionBill] = useTransition();
 
   // Saved cards state
-  const [savedCards, setSavedCards] = useState<StoreCreditCard[]>([]);
+  const [savedCards, setSavedCards] = useState<CreditCard[]>([]);
   // null = "add new payment method", string = gateway_payment_profile_id of selected card
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCountry, StoreState } from "@spree/sdk";
+import type { Country, State } from "@spree/sdk";
 import { useCallback, useEffect, useState } from "react";
 import {
   type AddressFormData,
@@ -25,8 +25,8 @@ interface AddressEditModalProps {
     state_abbr: string | null;
     state_name: string | null;
   } | null;
-  countries: StoreCountry[];
-  fetchStates: (countryIso: string) => Promise<StoreState[]>;
+  countries: Country[];
+  fetchStates: (countryIso: string) => Promise<State[]>;
   onSave: (
     data: ReturnType<typeof formDataToAddress>,
     id?: string,
@@ -46,7 +46,7 @@ export function AddressEditModal({
   const [formData, setFormData] = useState<AddressFormData>(
     address ? addressToFormData(address) : { ...emptyAddress },
   );
-  const [states, setStates] = useState<StoreState[]>([]);
+  const [states, setStates] = useState<State[]>([]);
   const [loadingStates, setLoadingStates] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");

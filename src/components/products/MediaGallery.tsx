@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreImage } from "@spree/sdk";
+import type { Image as SpreeImage } from "@spree/sdk";
 import Image from "next/image";
 import { useState } from "react";
 import {
@@ -16,7 +16,7 @@ const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIElEQVQYV2P4////MwwMDAxMDAwMDGQJMJCvkGwNZCsEAGebBwVss9lRAAAAAElFTkSuQmCC";
 
 interface MediaGalleryProps {
-  images: StoreImage[];
+  images: SpreeImage[];
   productName: string;
 }
 

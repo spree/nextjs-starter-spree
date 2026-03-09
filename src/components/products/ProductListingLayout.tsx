@@ -1,6 +1,6 @@
 "use client";
 
-import type { ProductFiltersResponse, StoreProduct } from "@spree/sdk";
+import type { Product, ProductFiltersResponse } from "@spree/sdk";
 import type { RefObject } from "react";
 import { SearchIcon, SpinnerIcon } from "@/components/icons";
 import { FilterBar } from "@/components/products/filters";
@@ -9,7 +9,7 @@ import { ProductGridSkeleton } from "@/components/products/ProductGridSkeleton";
 import type { ActiveFilters } from "@/types/filters";
 
 interface ProductListingLayoutProps {
-  products: StoreProduct[];
+  products: Product[];
   loading: boolean;
   loadingMore: boolean;
   hasMore: boolean;

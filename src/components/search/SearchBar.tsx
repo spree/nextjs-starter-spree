@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -17,7 +17,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<StoreProduct[]>([]);
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -100,7 +100,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
   };
 
   // Handle suggestion click
-  const handleSuggestionClick = (product: StoreProduct, index: number) => {
+  const handleSuggestionClick = (product: Product, index: number) => {
     trackSelectItem(product, "quick-search", "Quick Search", index, currency);
     router.push(`${basePath}/products/${product.slug}`);
     setIsOpen(false);

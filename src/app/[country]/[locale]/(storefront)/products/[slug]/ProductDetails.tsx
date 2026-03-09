@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreImage, StoreProduct, StoreVariant } from "@spree/sdk";
+import type { Product, Image as SpreeImage, Variant } from "@spree/sdk";
 import { useMemo, useState } from "react";
 import {
   CheckCircleSolidIcon,
@@ -17,7 +17,7 @@ import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart } from "@/lib/analytics/gtm";
 
 interface ProductDetailsProps {
-  product: StoreProduct;
+  product: Product;
   basePath: string;
 }
 
@@ -34,24 +34,22 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const optionTypes = product.option_types || [];
 
   // Initialize with default variant or first available variant
-  const [selectedVariant, setSelectedVariant] = useState<StoreVariant | null>(
-    () => {
-      if (product.default_variant && !product.default_variant.is_master) {
-        return product.default_variant;
-      }
-      if (hasVariants) {
-        return variants.find((v) => v.purchasable) || variants[0];
-      }
-      // For products without variants, use master variant
-      return product.master_variant || product.default_variant || null;
-    },
-  );
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(() => {
+    if (product.default_variant && !product.default_variant.is_master) {
+      return product.default_variant;
+    }
+    if (hasVariants) {
+      return variants.find((v) => v.purchasable) || variants[0];
+    }
+    // For products without variants, use master variant
+    return product.master_variant || product.default_variant || null;
+  });
 
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
   // Get images for the gallery - variant images take priority
-  const galleryImages = useMemo((): StoreImage[] => {
+  const galleryImages = useMemo((): SpreeImage[] => {
     // If selected variant has images, show those
     if (selectedVariant?.images && selectedVariant.images.length > 0) {
       return selectedVariant.images;

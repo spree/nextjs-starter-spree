@@ -1,11 +1,11 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
+import type { Order } from "@spree/sdk";
 import { useState } from "react";
 import { CheckCircleIcon } from "@/components/icons";
 
 interface CouponCodeProps {
-  order: StoreOrder;
+  order: Order;
   onApply: (code: string) => Promise<{ success: boolean; error?: string }>;
   onRemove: (
     promotionId: string,

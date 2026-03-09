@@ -1,6 +1,6 @@
 "use client";
 
-import type { AddressParams, StoreAddress, StoreCountry } from "@spree/sdk";
+import type { Address, AddressParams, Country } from "@spree/sdk";
 import { useCallback, useEffect, useState } from "react";
 import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import { MapPinIcon, PlusIcon } from "@/components/icons";
@@ -17,7 +17,7 @@ function AddressCard({
   onEdit,
   onDelete,
 }: {
-  address: StoreAddress;
+  address: Address;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -71,13 +71,11 @@ function AddressCard({
 }
 
 export default function AddressesPage() {
-  const [addresses, setAddresses] = useState<StoreAddress[]>([]);
-  const [countries, setCountries] = useState<StoreCountry[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
-    null,
-  );
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   const fetchStates = useCallback(async (countryIso: string) => {
     try {
@@ -101,7 +99,7 @@ export default function AddressesPage() {
     loadData();
   }, []);
 
-  const handleEdit = (address: StoreAddress) => {
+  const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setModalOpen(true);
   };

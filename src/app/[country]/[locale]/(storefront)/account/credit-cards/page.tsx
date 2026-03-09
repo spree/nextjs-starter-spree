@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCreditCard } from "@spree/sdk";
+import type { CreditCard } from "@spree/sdk";
 import { useCallback, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { CreditCardIcon, LockIcon } from "@/components/icons";
@@ -11,7 +11,7 @@ function CreditCardItem({
   card,
   onDelete,
 }: {
-  card: StoreCreditCard;
+  card: CreditCard;
   onDelete: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
@@ -67,7 +67,7 @@ function CreditCardItem({
 }
 
 export default function CreditCardsPage() {
-  const [cards, setCards] = useState<StoreCreditCard[]>([]);
+  const [cards, setCards] = useState<CreditCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadCards = useCallback(async () => {
