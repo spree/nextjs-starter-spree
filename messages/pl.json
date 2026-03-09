@@ -87,7 +87,7 @@
     "max": "Maks",
     "range": "Zakres: {currency} {min} - {max}",
     "clear": "Wyczyść",
-    "productCount": "{count} produktów",
+    "productCount": "{count, plural, =0 {0 produktów} one {# produkt} few {# produkty} many {# produktów} other {# produktów}}",
     "sale": "Wyprzedaż",
     "outOfStockVariant": "(Niedostępny)",
     "addToCart": "Dodaj do koszyka",
@@ -110,14 +110,22 @@
     "categories": "Kategorie",
     "noCategoriesFound": "Nie znaleziono kategorii.",
     "noCategoriesInGroup": "Brak kategorii w tej grupie.",
-    "subcategories": "{count} podkategorii",
+    "subcategories": "{count, plural, =0 {0 podkategorii} one {# podkategoria} few {# podkategorie} many {# podkategorii} other {# podkategorii}}",
     "noImageAvailable": "Brak zdjęcia",
     "clickToZoom": "Kliknij aby powiększyć",
-    "noProductsMatchingFilters": "Nie znaleziono produktów pasujących do wybranych filtrów."
+    "noProductsMatchingFilters": "Nie znaleziono produktów pasujących do wybranych filtrów.",
+    "decreaseQuantity": "Zmniejsz ilość",
+    "increaseQuantity": "Zwiększ ilość",
+    "carouselPrev": "Poprzednie produkty",
+    "carouselNext": "Następne produkty",
+    "lightboxClose": "Zamknij podgląd",
+    "lightboxPrev": "Poprzednie zdjęcie",
+    "lightboxNext": "Następne zdjęcie"
   },
   "navigation": {
     "home": "Strona główna",
-    "categories": "Kategorie"
+    "categories": "Kategorie",
+    "breadcrumb": "Ścieżka nawigacji"
   },
   "checkout": {
     "checkout": "Kasa",
@@ -167,7 +175,8 @@
     "failedToSaveBillingRetry": "Nie udało się zapisać adresu rozliczeniowego. Spróbuj ponownie.",
     "failedToCompleteOrder": "Nie udało się złożyć zamówienia",
     "stripeNotLoaded": "Stripe nie został jeszcze załadowany",
-    "paymentProcessingError": "Wystąpił błąd podczas przetwarzania płatności."
+    "paymentProcessingError": "Wystąpił błąd podczas przetwarzania płatności.",
+    "failedToCompletePaymentSession": "Nie udało się zakończyć sesji płatności"
   },
   "address": {
     "firstName": "Imię",
@@ -219,7 +228,9 @@
     "noAddressesDescription": "Adresy dodane podczas składania zamówienia pojawią się tutaj.",
     "defaultAddress": "Domyślny",
     "deleteConfirm": "Czy na pewno chcesz usunąć ten adres?",
-    "setAsDefault": "Ustaw jako domyślny"
+    "setAsDefault": "Ustaw jako domyślny",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło"
   },
   "register": {
     "createAccount": "Utwórz konto",
@@ -276,7 +287,8 @@
     "notAvailable": "Brak"
   },
   "orderPlaced": {
-    "thanksForOrder": "Dziękujemy za zamówienie{name, select, other {, {name}} empty {}}!",
+    "thanksForOrder": "Dziękujemy za zamówienie, {name}!",
+    "thanksForOrderAnonymous": "Dziękujemy za zamówienie!",
     "orderNumber": "Zamówienie #{number}",
     "emailConfirmation": "Wkrótce otrzymasz potwierdzenie e-mailem.",
     "orderItems": "Pozycje zamówienia",
@@ -311,7 +323,8 @@
     "profileUpdated": "Profil został zaktualizowany!",
     "accountInformation": "Informacje o koncie",
     "accountId": "ID konta",
-    "loadingProfile": "Ładowanie profilu..."
+    "loadingProfile": "Ładowanie profilu...",
+    "failedToUpdate": "Nie udało się zaktualizować profilu"
   },
   "creditCards": {
     "paymentMethods": "Metody płatności",
@@ -321,7 +334,8 @@
     "default": "Domyślna",
     "removing": "Usuwanie...",
     "secureInfo": "Twoje dane płatnicze są bezpiecznie przechowywane.",
-    "deleteConfirm": "Czy na pewno chcesz usunąć tę kartę?"
+    "deleteConfirm": "Czy na pewno chcesz usunąć tę kartę?",
+    "cardMaskedLabel": "{label} kończąca się na {digits}, ważna do {month}/{year}"
   },
   "giftCards": {
     "giftCards": "Karty podarunkowe",

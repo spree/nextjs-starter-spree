@@ -87,7 +87,7 @@
     "max": "Max",
     "range": "Range: {currency} {min} - {max}",
     "clear": "Clear",
-    "productCount": "{count} products",
+    "productCount": "{count, plural, one {# product} other {# products}}",
     "sale": "Sale",
     "outOfStockVariant": "(Out of stock)",
     "addToCart": "Add to Cart",
@@ -110,14 +110,22 @@
     "categories": "Categories",
     "noCategoriesFound": "No categories found.",
     "noCategoriesInGroup": "No categories in this group.",
-    "subcategories": "{count} subcategories",
+    "subcategories": "{count, plural, one {# subcategory} other {# subcategories}}",
     "noImageAvailable": "No image available",
     "clickToZoom": "Click to zoom",
-    "noProductsMatchingFilters": "No products found matching your filters."
+    "noProductsMatchingFilters": "No products found matching your filters.",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "carouselPrev": "Previous products",
+    "carouselNext": "Next products",
+    "lightboxClose": "Close lightbox",
+    "lightboxPrev": "Previous image",
+    "lightboxNext": "Next image"
   },
   "navigation": {
     "home": "Home",
-    "categories": "Categories"
+    "categories": "Categories",
+    "breadcrumb": "Breadcrumb"
   },
   "checkout": {
     "checkout": "Checkout",
@@ -167,7 +175,8 @@
     "failedToSaveBillingRetry": "Failed to save billing address. Please try again.",
     "failedToCompleteOrder": "Failed to complete order",
     "stripeNotLoaded": "Stripe has not loaded yet",
-    "paymentProcessingError": "An error occurred during payment."
+    "paymentProcessingError": "An error occurred during payment.",
+    "failedToCompletePaymentSession": "Failed to complete payment session"
   },
   "address": {
     "firstName": "First name",
@@ -219,7 +228,9 @@
     "noAddressesDescription": "Addresses you add during checkout will appear here.",
     "defaultAddress": "Default",
     "deleteConfirm": "Are you sure you want to delete this address?",
-    "setAsDefault": "Set as default"
+    "setAsDefault": "Set as default",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "register": {
     "createAccount": "Create Account",
@@ -276,7 +287,8 @@
     "notAvailable": "N/A"
   },
   "orderPlaced": {
-    "thanksForOrder": "Thanks for your order{name, select, other {, {name}} empty {}}!",
+    "thanksForOrder": "Thanks for your order, {name}!",
+    "thanksForOrderAnonymous": "Thanks for your order!",
     "orderNumber": "Order #{number}",
     "emailConfirmation": "You will receive an email confirmation shortly.",
     "orderItems": "Order Items",
@@ -311,7 +323,8 @@
     "profileUpdated": "Profile updated successfully!",
     "accountInformation": "Account Information",
     "accountId": "Account ID",
-    "loadingProfile": "Loading profile..."
+    "loadingProfile": "Loading profile...",
+    "failedToUpdate": "Failed to update profile"
   },
   "creditCards": {
     "paymentMethods": "Payment Methods",
@@ -321,7 +334,8 @@
     "default": "Default",
     "removing": "Removing...",
     "secureInfo": "Your payment information is securely stored.",
-    "deleteConfirm": "Are you sure you want to remove this card?"
+    "deleteConfirm": "Are you sure you want to remove this card?",
+    "cardMaskedLabel": "{label} ending in {digits}, expires {month}/{year}"
   },
   "giftCards": {
     "giftCards": "Gift Cards",

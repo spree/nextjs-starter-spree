@@ -42,7 +42,7 @@ function ProfileForm({
       await refreshUser();
       setTimeout(() => setSuccess(false), 3000);
     } else {
-      setError(result.error || "Failed to update profile");
+      setError(result.error || t("failedToUpdate"));
     }
 
     setSaving(false);

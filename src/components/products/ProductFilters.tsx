@@ -10,7 +10,19 @@ import { useTranslations } from "next-intl";
 import { memo, useState } from "react";
 import { ChevronDownIcon } from "@/components/icons";
 
-const SORT_KEYS: Record<string, string> = {
+type SortTranslationKey =
+  | "manual"
+  | "bestSelling"
+  | "priceLowHigh"
+  | "priceHighLow"
+  | "newest"
+  | "oldest"
+  | "nameAZ"
+  | "nameZA";
+
+type AvailabilityTranslationKey = "inStock" | "outOfStock";
+
+const SORT_KEYS = {
   manual: "manual",
   best_selling: "bestSelling",
   price: "priceLowHigh",
@@ -19,12 +31,12 @@ const SORT_KEYS: Record<string, string> = {
   available_on: "oldest",
   name: "nameAZ",
   "-name": "nameZA",
-};
+} as const satisfies Record<string, SortTranslationKey>;
 
-const AVAILABILITY_KEYS: Record<string, string> = {
+const AVAILABILITY_KEYS = {
   in_stock: "inStock",
   out_of_stock: "outOfStock",
-};
+} as const satisfies Record<string, AvailabilityTranslationKey>;
 
 interface ProductFiltersProps {
   taxonId?: string;
@@ -136,8 +148,8 @@ export const ProductFilters = memo(function ProductFilters({
         >
           {filtersData.sort_options.map((option) => (
             <option key={option.id} value={option.id}>
-              {SORT_KEYS[option.id]
-                ? t(SORT_KEYS[option.id] as any)
+              {option.id in SORT_KEYS
+                ? t(SORT_KEYS[option.id as keyof typeof SORT_KEYS])
                 : option.id}
             </option>
           ))}
@@ -331,8 +343,12 @@ function AvailabilityFilterSection({
             className="text-primary-500"
           />
           <span className="text-sm text-gray-700">
-            {AVAILABILITY_KEYS[option.id]
-              ? t(AVAILABILITY_KEYS[option.id] as any)
+            {option.id in AVAILABILITY_KEYS
+              ? t(
+                  AVAILABILITY_KEYS[
+                    option.id as keyof typeof AVAILABILITY_KEYS
+                  ],
+                )
               : option.id}
           </span>
           <span className="text-xs text-gray-400">({option.count})</span>

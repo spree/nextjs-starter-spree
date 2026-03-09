@@ -33,6 +33,34 @@ function getPaymentStatusColor(state: string | null): string {
   }
 }
 
+type OrderTranslationKey =
+  | "paid"
+  | "balanceDue"
+  | "failed"
+  | "void"
+  | "pending"
+  | "shipped"
+  | "delivered"
+  | "ready"
+  | "canceled"
+  | "notAvailable";
+
+const paymentStateKeyMap: Record<string, OrderTranslationKey> = {
+  paid: "paid",
+  balance_due: "balanceDue",
+  failed: "failed",
+  void: "void",
+  pending: "pending",
+};
+
+const shipmentStateKeyMap: Record<string, OrderTranslationKey> = {
+  shipped: "shipped",
+  delivered: "delivered",
+  ready: "ready",
+  pending: "pending",
+  canceled: "canceled",
+};
+
 function getShipmentStatusColor(state: string | null): string {
   switch (state) {
     case "shipped":
@@ -153,14 +181,8 @@ export default function OrdersPage() {
                       >
                         {order.payment_state
                           ? t(
-                              ({
-                                paid: "paid",
-                                balance_due: "balanceDue",
-                                failed: "failed",
-                                void: "void",
-                                pending: "pending",
-                              }[order.payment_state] ||
-                                order.payment_state) as any,
+                              paymentStateKeyMap[order.payment_state] ||
+                                "notAvailable",
                             )
                           : t("notAvailable")}
                       </span>
@@ -171,14 +193,8 @@ export default function OrdersPage() {
                       >
                         {order.shipment_state
                           ? t(
-                              ({
-                                shipped: "shipped",
-                                delivered: "delivered",
-                                ready: "ready",
-                                pending: "pending",
-                                canceled: "canceled",
-                              }[order.shipment_state] ||
-                                order.shipment_state) as any,
+                              shipmentStateKeyMap[order.shipment_state] ||
+                                "notAvailable",
                             )
                           : t("notAvailable")}
                       </span>

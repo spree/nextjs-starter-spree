@@ -71,7 +71,9 @@ export function CountrySwitcher() {
     setIsOpen(false);
     // Hard navigation to force server components (NextIntlClientProvider)
     // to re-render with the new locale from the updated cookie.
-    window.location.href = newPath;
+    // Preserve any query string and hash from the current URL.
+    const currentUrl = new URL(window.location.href);
+    window.location.href = newPath + currentUrl.search + currentUrl.hash;
   };
 
   if (loading) {

@@ -18,14 +18,11 @@ function CheckoutHeader() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const t = useTranslations("checkoutLayout");
-  const tc = useTranslations("common");
 
   return (
     <header className="py-4 lg:py-6 flex items-center justify-between">
       <Link href={basePath || "/"} className="inline-flex items-center">
-        <span className="text-xl font-bold text-gray-900">
-          {tc("spreeStore")}
-        </span>
+        <span className="text-xl font-bold text-gray-900">{storeName}</span>
       </Link>
       <Link
         href={basePath || "/"}

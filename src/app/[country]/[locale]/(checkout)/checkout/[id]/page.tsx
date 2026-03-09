@@ -401,7 +401,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       );
 
       if (!sessionResult.success) {
-        setError(sessionResult.error || "Failed to complete payment session");
+        setError(sessionResult.error || t("failedToCompletePaymentSession"));
         setProcessing(false);
         return;
       }

@@ -178,6 +178,11 @@ export function VariantPicker({
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
                       title={optionValue?.presentation || value}
+                      aria-label={
+                        !isPurchasable && isAvailable
+                          ? `${optionValue?.presentation || value} ${t("outOfStockVariant")}`
+                          : optionValue?.presentation || value
+                      }
                       className={`
                         w-10 h-10 rounded-full border-2 transition-all relative
                         ${isSelected ? "border-primary-600 ring-2 ring-primary-600 ring-offset-2" : "border-gray-200"}

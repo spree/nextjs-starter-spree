@@ -108,10 +108,11 @@ export async function confirmWithSavedCard(
   clientSecret: string,
   paymentMethodId: string,
   returnUrl: string,
+  messages?: { stripeNotLoaded: string; paymentError: string },
 ): Promise<{ error?: string }> {
   const stripe = await stripePromise;
   if (!stripe) {
-    return { error: "Stripe has not loaded yet" };
+    return { error: messages?.stripeNotLoaded || "Stripe has not loaded yet" };
   }
 
   const result = await stripe.confirmCardPayment(clientSecret, {
@@ -121,7 +122,10 @@ export async function confirmWithSavedCard(
 
   if (result.error) {
     return {
-      error: result.error.message || "An error occurred during payment.",
+      error:
+        result.error.message ||
+        messages?.paymentError ||
+        "An error occurred during payment.",
     };
   }
 

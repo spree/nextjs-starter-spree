@@ -27,7 +27,14 @@ function getStateColor(state: string, expired: boolean): string {
   }
 }
 
-const stateKeyMap: Record<string, string> = {
+type GiftCardStateKey =
+  | "active"
+  | "partiallyUsed"
+  | "fullyRedeemed"
+  | "canceled"
+  | "expired";
+
+const stateKeyMap: Record<string, GiftCardStateKey> = {
   active: "active",
   partially_redeemed: "partiallyUsed",
   redeemed: "fullyRedeemed",
@@ -107,7 +114,7 @@ function GiftCardItem({ card }: { card: StoreGiftCard }) {
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStateColor(card.state, card.expired)}`}
             >
-              {t((stateKeyMap[card.state] || card.state) as any)}
+              {t(stateKeyMap[card.state] || "active")}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">

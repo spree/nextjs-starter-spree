@@ -10,7 +10,8 @@
     "format": "biome format . --write",
     "check": "biome check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:locales": "tsx scripts/check-locale-parity.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.1.6",

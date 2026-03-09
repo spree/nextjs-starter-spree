@@ -81,7 +81,7 @@ export function ProductCarousel({
       <button
         ref={prevRef}
         type="button"
-        aria-label="Previous products"
+        aria-label={t("carouselPrev")}
         disabled={isBeginning}
         className={`${NAV_BUTTON_BASE} -left-5 ${isBeginning ? "opacity-0" : ""}`}
       >
@@ -90,7 +90,7 @@ export function ProductCarousel({
       <button
         ref={nextRef}
         type="button"
-        aria-label="Next products"
+        aria-label={t("carouselNext")}
         disabled={isEnd}
         className={`${NAV_BUTTON_BASE} -right-5 ${isEnd ? "opacity-0" : ""}`}
       >

@@ -17,7 +17,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
   const t = useTranslations("coupon");
   const [code, setCode] = useState("");
   const [applying, setApplying] = useState(false);
-  const [removing, setRemoving] = useState<string | null>(null);
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const appliedPromotions = order.order_promotions || [];
@@ -31,26 +31,38 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
     setApplying(true);
     setError(null);
 
-    const result = await onApply(code.trim());
-    if (result.success) {
-      setCode("");
-    } else {
-      setError(result.error || t("invalidCode"));
+    try {
+      const result = await onApply(code.trim());
+      if (result.success) {
+        setCode("");
+      } else {
+        setError(result.error || t("invalidCode"));
+      }
+    } catch {
+      setError(t("invalidCode"));
+    } finally {
+      setApplying(false);
     }
-
-    setApplying(false);
   };
 
   const handleRemove = async (promotionId: string) => {
-    setRemoving(promotionId);
+    setRemovingIds((prev) => new Set(prev).add(promotionId));
     setError(null);
 
-    const result = await onRemove(promotionId);
-    if (!result.success) {
-      setError(result.error || t("failedToRemove"));
+    try {
+      const result = await onRemove(promotionId);
+      if (!result.success) {
+        setError(result.error || t("failedToRemove"));
+      }
+    } catch {
+      setError(t("failedToRemove"));
+    } finally {
+      setRemovingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(promotionId);
+        return next;
+      });
     }
-
-    setRemoving(null);
   };
 
   // Check if there's already an applied code (only show one input at a time)
@@ -80,10 +92,10 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
               <button
                 type="button"
                 onClick={() => handleRemove(promotion.id)}
-                disabled={removing === promotion.id}
+                disabled={removingIds.has(promotion.id)}
                 className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
               >
-                {removing === promotion.id ? t("removing") : t("remove")}
+                {removingIds.has(promotion.id) ? t("removing") : t("remove")}
               </button>
             </div>
           ))}

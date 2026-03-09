@@ -113,7 +113,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
           <button
             className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
             onClick={() => setIsZoomed(false)}
-            aria-label="Close lightbox"
+            aria-label={t("lightboxClose")}
           >
             <CloseIcon className="w-8 h-8" />
           </button>
@@ -129,7 +129,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                     prev === 0 ? images.length - 1 : prev - 1,
                   );
                 }}
-                aria-label="Previous image"
+                aria-label={t("lightboxPrev")}
               >
                 <ChevronLeftIcon className="w-8 h-8" />
               </button>
@@ -141,7 +141,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
                     prev === images.length - 1 ? 0 : prev + 1,
                   );
                 }}
-                aria-label="Next image"
+                aria-label={t("lightboxNext")}
               >
                 <ChevronRightIcon className="w-8 h-8" />
               </button>

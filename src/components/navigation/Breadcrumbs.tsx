@@ -8,7 +8,10 @@ interface BreadcrumbsProps {
   basePath: string;
 }
 
-export async function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
+export async function Breadcrumbs({
+  taxon,
+  basePath,
+}: BreadcrumbsProps): Promise<React.JSX.Element> {
   const t = await getTranslations("navigation");
   // Build breadcrumb items from ancestors + current taxon
   const items = [
@@ -33,7 +36,7 @@ export async function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
   items.push({ name: taxon.name, href: "" });
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
+    <nav aria-label={t("breadcrumb")} className="mb-6">
       <ol className="flex items-center space-x-2 text-sm">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;

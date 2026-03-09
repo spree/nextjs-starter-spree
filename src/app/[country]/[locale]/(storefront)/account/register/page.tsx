@@ -52,13 +52,18 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const result = await register(email, password, passwordConfirmation);
-    if (result.success) {
-      router.push(`${basePath}/account`);
-    } else {
-      setError(result.error || t("registrationFailed"));
+    try {
+      const result = await register(email, password, passwordConfirmation);
+      if (result.success) {
+        router.push(`${basePath}/account`);
+      } else {
+        setError(result.error || t("registrationFailed"));
+      }
+    } catch {
+      setError(t("registrationFailed"));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -118,7 +123,9 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword ? ta("hidePassword") : ta("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeSlashIcon className="w-5 h-5" />
@@ -154,7 +161,9 @@ export default function RegisterPage() {
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 aria-label={
-                  showPasswordConfirmation ? "Hide password" : "Show password"
+                  showPasswordConfirmation
+                    ? ta("hidePassword")
+                    : ta("showPassword")
                 }
               >
                 {showPasswordConfirmation ? (

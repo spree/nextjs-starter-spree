@@ -241,6 +241,10 @@ export function PaymentStep({
           clientSecret,
           selectedCardId,
           returnUrl,
+          {
+            stripeNotLoaded: t("stripeNotLoaded"),
+            paymentError: t("paymentProcessingError"),
+          },
         );
         error = result.error;
       } else {

@@ -185,7 +185,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
-                  aria-label="Decrease quantity"
+                  aria-label={t("decreaseQuantity")}
                 >
                   <MinusIcon className="w-4 h-4" />
                 </button>
@@ -195,7 +195,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                 <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
-                  aria-label="Increase quantity"
+                  aria-label={t("increaseQuantity")}
                 >
                   <PlusIcon className="w-4 h-4" />
                 </button>

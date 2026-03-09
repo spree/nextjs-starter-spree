@@ -29,8 +29,11 @@ function AddressCard({
   const handleDelete = async () => {
     if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
-    await onDelete();
-    setDeleting(false);
+    try {
+      await onDelete();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (

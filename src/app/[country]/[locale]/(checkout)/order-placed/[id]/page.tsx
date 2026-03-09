@@ -131,9 +131,9 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       <div className="text-center mb-10">
         <CheckCircleSolidIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {t("thanksForOrder", {
-            name: customerName ? customerName.split(" ")[0] : "empty",
-          })}
+          {customerName
+            ? t("thanksForOrder", { name: customerName.split(" ")[0] })
+            : t("thanksForOrderAnonymous")}
         </h1>
         <p className="text-gray-500">
           {t("orderNumber", { number: order.number })}

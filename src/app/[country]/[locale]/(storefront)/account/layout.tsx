@@ -17,9 +17,17 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
 
+type AccountLabelKey =
+  | "overview"
+  | "orders"
+  | "addresses"
+  | "paymentMethods"
+  | "giftCards"
+  | "profile";
+
 const navItems: {
   href: string;
-  labelKey: string;
+  labelKey: AccountLabelKey;
   icon: FC<SVGProps<SVGSVGElement>>;
 }[] = [
   { href: "/account", labelKey: "overview", icon: HomeIcon },
@@ -114,7 +122,7 @@ function AccountShell({
                         }`}
                       >
                         <item.icon className="w-5 h-5" />
-                        {t(item.labelKey as any)}
+                        {t(item.labelKey)}
                       </Link>
                     </li>
                   );
