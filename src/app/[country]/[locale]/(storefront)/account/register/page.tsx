@@ -14,7 +14,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, loading: authLoading } = useAuth();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -25,16 +25,16 @@ export default function RegisterPage() {
   const [showPasswordConfirmation, setShowPasswordConfirmation] =
     useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Redirect if already authenticated
   // useEffect is needed here to prevent rendering issues.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!authLoading && isAuthenticated) {
       router.push(`${basePath}/account`);
     }
-  }, [isAuthenticated, router, basePath]);
-  if (isAuthenticated) {
+  }, [authLoading, isAuthenticated, router, basePath]);
+  if (authLoading || isAuthenticated) {
     return null;
   }
 
@@ -52,7 +52,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
 
     const result = await register({
       email,
@@ -66,7 +66,7 @@ export default function RegisterPage() {
     } else {
       setError(result.error || "Registration failed. Please try again.");
     }
-    setLoading(false);
+    setSubmitting(false);
   };
 
   return (
@@ -92,6 +92,7 @@ export default function RegisterPage() {
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                required
                 placeholder="John"
               />
             </Field>
@@ -103,6 +104,7 @@ export default function RegisterPage() {
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                required
                 placeholder="Doe"
               />
             </Field>
@@ -189,11 +191,11 @@ export default function RegisterPage() {
           <div className="w-full">
             <Button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               size="lg"
               className="w-full"
             >
-              {loading ? "Creating account..." : "Create Account"}
+              {submitting ? "Creating account..." : "Create Account"}
             </Button>
           </div>
         </form>
