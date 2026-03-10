@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { CategoryBanner } from "@/components/navigation/CategoryBanner";
@@ -58,13 +59,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             </h2>
             <div className="flex flex-wrap gap-2">
               {category.children.map((child) => (
-                <a
+                <Link
                   key={child.id}
                   href={`${basePath}/c/${child.permalink}`}
                   className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition-colors"
                 >
                   {child.name}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
