@@ -13,7 +13,7 @@ import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
 import { useCarouselProducts } from "@/hooks/useCarouselProducts";
 
 interface ProductCarouselProps {
-  taxonId?: string;
+  categoryId?: string;
   limit?: number;
   basePath: string;
 }
@@ -22,11 +22,14 @@ const NAV_BUTTON_BASE =
   "absolute top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center cursor-pointer rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors";
 
 export function ProductCarousel({
-  taxonId,
+  categoryId,
   limit = 8,
   basePath,
 }: ProductCarouselProps): ReactElement {
-  const { products, loading, error } = useCarouselProducts({ taxonId, limit });
+  const { products, loading, error } = useCarouselProducts({
+    categoryId,
+    limit,
+  });
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
 

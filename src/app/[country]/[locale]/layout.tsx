@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StoreProvider } from "@/contexts/StoreContext";
+import { getMarkets } from "@/lib/data/markets";
 
 interface CountryLocaleLayoutProps {
   children: React.ReactNode;
@@ -15,8 +16,16 @@ export default async function CountryLocaleLayout({
 }: CountryLocaleLayoutProps) {
   const { country, locale } = await params;
 
+  const markets = await getMarkets()
+    .then((res) => res.data)
+    .catch(() => []);
+
   return (
-    <StoreProvider initialCountry={country} initialLocale={locale}>
+    <StoreProvider
+      initialCountry={country}
+      initialLocale={locale}
+      initialMarkets={markets}
+    >
       <AuthProvider>{children}</AuthProvider>
     </StoreProvider>
   );

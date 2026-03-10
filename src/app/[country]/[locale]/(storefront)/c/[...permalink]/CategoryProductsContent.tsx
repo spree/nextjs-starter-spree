@@ -6,37 +6,41 @@ import { ProductListingLayout } from "@/components/products/ProductListingLayout
 import { useStore } from "@/contexts/StoreContext";
 import { useProductListing } from "@/hooks/useProductListing";
 import { trackViewItemList } from "@/lib/analytics/gtm";
-import { getTaxonProducts } from "@/lib/data/products";
+import { getCategoryProducts } from "@/lib/data/categories";
 
 interface CategoryProductsContentProps {
-  taxonPermalink: string;
-  taxonId: string;
-  taxonName: string;
+  categoryPermalink: string;
+  categoryId: string;
+  categoryName: string;
   basePath: string;
 }
 
 export function CategoryProductsContent({
-  taxonPermalink,
-  taxonId,
-  taxonName,
+  categoryPermalink,
+  categoryId,
+  categoryName,
   basePath,
 }: CategoryProductsContentProps) {
   const { currency } = useStore();
 
   const fetchFn = useCallback(
-    (params: ProductListParams) => getTaxonProducts(taxonPermalink, params),
-    [taxonPermalink],
+    (params: ProductListParams) =>
+      getCategoryProducts(categoryPermalink, params),
+    [categoryPermalink],
   );
 
-  const filterParams = useMemo(() => ({ taxon_id: taxonId }), [taxonId]);
+  const filterParams = useMemo(
+    () => ({ category_id: categoryId }),
+    [categoryId],
+  );
 
   const listing = useProductListing({
     fetchFn,
     filterParams,
   });
 
-  const listId = useMemo(() => `category-${taxonId}`, [taxonId]);
-  const listName = useMemo(() => `Category: ${taxonName}`, [taxonName]);
+  const listId = useMemo(() => `category-${categoryId}`, [categoryId]);
+  const listName = useMemo(() => `Category: ${categoryName}`, [categoryName]);
 
   // Track view_item_list only on fresh loads (not loadMore).
   const prevLoadingRef = useRef(true);

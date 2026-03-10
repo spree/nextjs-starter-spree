@@ -31,7 +31,7 @@ export default async function HomePage({ params }: HomePageProps) {
                 <Link href={`${basePath}/products`}>Shop Now</Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href={`${basePath}/taxonomies`}>Browse Categories</Link>
+                <Link href={`${basePath}/products`}>Browse Categories</Link>
               </Button>
             </div>
           </div>

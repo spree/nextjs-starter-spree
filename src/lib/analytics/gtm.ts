@@ -76,8 +76,8 @@ export function mapProductToGA4Item(
   if (listName) {
     item.item_list_name = listName;
   }
-  if (product.taxons && product.taxons.length > 0) {
-    item.item_category = product.taxons[0].name;
+  if (product.categories && product.categories.length > 0) {
+    item.item_category = product.categories[0].name;
   }
 
   return item;

@@ -1,5 +1,6 @@
 "use client";
 
+import type { Category } from "@spree/sdk";
 import { ShoppingBag, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +11,11 @@ import { useCart } from "@/contexts/CartContext";
 import { extractBasePath } from "@/lib/utils/path";
 import { CountrySwitcher } from "./CountrySwitcher";
 
-export function Header() {
+interface HeaderProps {
+  rootCategories: Category[];
+}
+
+export function Header({ rootCategories }: HeaderProps) {
   const { itemCount, openCart } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -43,13 +48,16 @@ export function Header() {
 
           <div className="flex items-center">
             {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 mr-6">
-              <Link
-                href={`${basePath}/taxonomies`}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Categories
-              </Link>
+            <nav className="hidden md:flex items-center space-x-6 mr-6">
+              {rootCategories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`${basePath}/c/${category.permalink}`}
+                  className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+                >
+                  {category.name}
+                </Link>
+              ))}
             </nav>
 
             {/* Actions */}

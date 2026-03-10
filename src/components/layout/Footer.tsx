@@ -28,7 +28,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/taxonomies"
+                  href="/products"
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   Categories

@@ -7,12 +7,10 @@ import {
   type ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { getMarkets as getMarketsAction } from "@/lib/data/markets";
 import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
 
@@ -39,6 +37,7 @@ interface StoreProviderProps {
   children: ReactNode;
   initialCountry: string;
   initialLocale: string;
+  initialMarkets: Market[];
 }
 
 /** Build a flat country list from markets, enriching each country with market info. */
@@ -116,59 +115,47 @@ export function StoreProvider({
   children,
   initialCountry,
   initialLocale,
+  initialMarkets,
 }: StoreProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [country, setCountryState] = useState(initialCountry);
-  const [locale, setLocaleState] = useState(initialLocale);
-  const [currency, setCurrency] = useState("USD");
-  const [countries, setCountries] = useState<CountryWithMarket[]>([]);
-  const [loading, setLoading] = useState(true);
   const pathnameRef = useRef(pathname);
   pathnameRef.current = pathname;
 
-  // Fetch store and markets data on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const marketsData = await getMarketsAction();
+  const initialCountries = useMemo(
+    () => buildCountriesFromMarkets(initialMarkets),
+    [initialMarkets],
+  );
 
-        const enrichedCountries = buildCountriesFromMarkets(marketsData.data);
-        setCountries(enrichedCountries);
+  const initialResolved = useMemo(
+    () => resolveCountryAndCurrency(initialCountries, initialCountry),
+    [initialCountries, initialCountry],
+  );
 
-        const resolved = resolveCountryAndCurrency(
-          enrichedCountries,
-          initialCountry,
-        );
+  const [country, setCountryState] = useState(
+    initialResolved.country?.iso.toLowerCase() || initialCountry,
+  );
+  const [locale, setLocaleState] = useState(
+    initialResolved.locale || initialLocale,
+  );
+  const [currency, setCurrency] = useState(initialResolved.currency);
+  const [countries] = useState(initialCountries);
+  const loading = false;
 
-        if (resolved.needsRedirect && resolved.country) {
-          const newLocale = resolved.locale;
-          const pathRest = getPathWithoutPrefix(pathnameRef.current);
-          const newPath = `/${resolved.country.iso.toLowerCase()}/${newLocale}${pathRest}`;
-
-          setStoreCookies(resolved.country.iso.toLowerCase(), newLocale);
-          setCountryState(resolved.country.iso.toLowerCase());
-          setLocaleState(newLocale);
-          setCurrency(resolved.currency);
-          router.replace(newPath);
-          setLoading(false);
-          return;
-        }
-
-        if (resolved.country) {
-          setCountryState(resolved.country.iso.toLowerCase());
-        }
-        setCurrency(resolved.currency);
-        setLocaleState(resolved.locale || initialLocale);
-      } catch (error) {
-        console.error("Failed to fetch store data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [initialCountry, initialLocale, router]);
+  // Handle redirect if country from URL is not valid
+  const redirectHandled = useRef(false);
+  if (
+    initialResolved.needsRedirect &&
+    initialResolved.country &&
+    !redirectHandled.current
+  ) {
+    redirectHandled.current = true;
+    const newLocale = initialResolved.locale;
+    const pathRest = getPathWithoutPrefix(pathname);
+    const newPath = `/${initialResolved.country.iso.toLowerCase()}/${newLocale}${pathRest}`;
+    setStoreCookies(initialResolved.country.iso.toLowerCase(), newLocale);
+    router.replace(newPath);
+  }
 
   const setCountry = useCallback(
     (newCountry: string): void => {
