@@ -135,6 +135,7 @@ export default function RegisterPage() {
                 required
                 minLength={6}
                 placeholder="••••••••"
+                className="pr-10"
               />
               <div className="absolute right-1 top-1/2 -translate-y-1/2">
                 <Button
@@ -167,6 +168,7 @@ export default function RegisterPage() {
                 required
                 minLength={6}
                 placeholder="••••••••"
+                className="pr-10"
               />
               <div className="absolute right-1 top-1/2 -translate-y-1/2">
                 <Button
@@ -206,7 +208,7 @@ export default function RegisterPage() {
           <span className="text-gray-500">Already have an account? </span>
           <Link
             href={`${basePath}/account`}
-            className="text-primary hover:text-primary font-medium"
+            className="text-primary hover:text-primary/70 font-medium"
           >
             Sign in
           </Link>

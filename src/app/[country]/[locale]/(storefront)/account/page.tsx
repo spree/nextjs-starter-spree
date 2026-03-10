@@ -111,6 +111,7 @@ export default function AccountPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
+                  className="pr-10"
                 />
                 <div className="absolute right-1 top-1/2 -translate-y-1/2">
                   <Button

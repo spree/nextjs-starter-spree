@@ -367,7 +367,7 @@ export function PaymentStep({
                   onChange={() =>
                     handleCardSelect(card.gateway_payment_profile_id)
                   }
-                  className="w-4 h-4 text-primary border-gray-300 focus:ring-gray-500"
+                  className="w-4 h-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
                 />
                 <PaymentIcon
                   type={getCardIconType(card.cc_type)}
@@ -403,7 +403,7 @@ export function PaymentStep({
                 name="payment_source"
                 checked={isAddingNew}
                 onChange={() => handleCardSelect(null)}
-                className="w-4 h-4 text-primary border-gray-300 focus:ring-gray-500"
+                className="w-4 h-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
               />
               <CreditCard className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
               <span className="text-sm font-medium text-gray-900">

@@ -91,6 +91,7 @@ export function MobileFilterDrawer({
         side="left"
         className="w-full max-w-sm flex flex-col p-0 gap-0"
         showCloseButton={false}
+        aria-describedby={undefined}
       >
         <SheetTitle className="sr-only">Filters</SheetTitle>
 
@@ -145,11 +146,13 @@ export function MobileFilterDrawer({
 
         <div className="border-t border-gray-200 p-4 space-y-2">
           {stagedCount > 0 && (
-            <Button variant="ghost" onClick={handleClearAll}>
+            <Button variant="ghost" className="w-full" onClick={handleClearAll}>
               Clear all filters ({stagedCount})
             </Button>
           )}
-          <Button onClick={handleApply}>Show results</Button>
+          <Button className="w-full" onClick={handleApply}>
+            Show results
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

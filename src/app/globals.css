@@ -159,7 +159,16 @@ body {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  :focus-visible {
+    outline: 1px solid black;
+    border-radius: 2px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :focus-visible {
+      outline-color: white;
+    }
   }
   body {
     @apply bg-background text-foreground;

@@ -162,14 +162,15 @@ export function VariantPicker({
 
                   return (
                     <button
+                      type="button"
                       key={value}
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
                       title={optionValue?.presentation || value}
                       className={`
-                        w-10 h-10 rounded-lg border-2 transition-all relative
-                        ${isSelected ? "border-gray-900 ring-2 ring-gray-400 ring-offset-2" : "border-gray-200"}
-                        ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:border-gray-400"}
+                        w-10 h-10 rounded-lg border-1 transition-all relative
+                        ${isSelected ? "border-gray-900 ring-2 ring-primary ring-offset-2" : "border-gray-200"}
+                        ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}
                         ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
                       style={{
@@ -201,10 +202,16 @@ export function VariantPicker({
 
                   return (
                     <Button
+                      type="button"
                       key={value}
-                      variant={isSelected ? "secondary" : "outline"}
+                      variant="outline"
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
+                      className={
+                        isSelected
+                          ? "ring-2 ring-primary ring-offset-2 border-primary"
+                          : ""
+                      }
                     >
                       {optionValue?.presentation || value}
                       {!isPurchasable && isAvailable && (

@@ -28,8 +28,9 @@ function CheckoutHeader() {
       <Link
         href={basePath || "/"}
         className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
+        aria-label="Back to store"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         <span className="hidden sm:inline">Back to store</span>
       </Link>
     </header>

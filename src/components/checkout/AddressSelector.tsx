@@ -96,7 +96,7 @@ export function AddressSelector({
                     value={address.id}
                     checked={selectedAddressId === address.id}
                     onChange={() => handleSelectAddress(address.id)}
-                    className="mt-1 h-4 w-4 text-primary border-gray-300 focus:ring-gray-500"
+                    className="mt-1 h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900">
@@ -147,7 +147,7 @@ export function AddressSelector({
                 value="new"
                 checked={selectedAddressId === "new"}
                 onChange={() => handleSelectAddress("new")}
-                className="h-4 w-4 text-primary border-gray-300 focus:ring-gray-500"
+                className="h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
               />
               <span className="ml-3 text-sm font-medium text-gray-900">
                 Use a different address

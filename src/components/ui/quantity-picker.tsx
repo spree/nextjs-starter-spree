@@ -28,6 +28,7 @@ export function QuantityPicker({
   return (
     <div className="flex items-center border border-gray-300 rounded-xl">
       <Button
+        type="button"
         variant="ghost"
         size={buttonSize}
         className="rounded-l-xl rounded-r-none disabled:opacity-30"
@@ -39,6 +40,7 @@ export function QuantityPicker({
       </Button>
       <span className={spanClass}>{quantity}</span>
       <Button
+        type="button"
         variant="ghost"
         size={buttonSize}
         className="rounded-r-xl rounded-l-none disabled:opacity-30"
