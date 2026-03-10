@@ -105,6 +105,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
                     setError(null);
                   }}
                   placeholder="Gift card or discount code"
+                  aria-label="Gift card or discount code"
                   aria-invalid={!!error}
                 />
               </div>

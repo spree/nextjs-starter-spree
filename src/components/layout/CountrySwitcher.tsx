@@ -62,7 +62,7 @@ export function CountrySwitcher() {
   if (loading) {
     return (
       <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400">
-        <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-lg animate-spin" />
+        <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -86,7 +86,7 @@ export function CountrySwitcher() {
           return (
             <DropdownMenuItem
               key={c.iso}
-              onClick={() => handleCountrySelect(c)}
+              onSelect={() => handleCountrySelect(c)}
             >
               <span className="text-lg leading-none">
                 {countryToFlag(c.iso)}

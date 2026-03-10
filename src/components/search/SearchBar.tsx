@@ -1,8 +1,7 @@
 "use client";
 
 import type { Product } from "@spree/sdk";
-import { ImageIcon as ImagePlaceholder, Search } from "lucide-react";
-import Image from "next/image";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { ProductImage } from "@/components/ui/product-image";
 import { useStore } from "@/contexts/StoreContext";
 import { trackQuickSearch, trackSelectItem } from "@/lib/analytics/gtm";
 import { getProducts } from "@/lib/data/products";
@@ -198,20 +198,14 @@ export function SearchBar({ basePath }: SearchBarProps) {
                     }`}
                   >
                     {/* Thumbnail */}
-                    <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                      {product.thumbnail_url ? (
-                        <Image
-                          src={product.thumbnail_url}
-                          alt={product.name}
-                          width={40}
-                          height={40}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                          <ImagePlaceholder className="w-5 h-5" />
-                        </div>
-                      )}
+                    <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
+                      <ProductImage
+                        src={product.thumbnail_url}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        iconClassName="w-5 h-5"
+                      />
                     </div>
                     {/* Name and price */}
                     <div className="flex-1 min-w-0">

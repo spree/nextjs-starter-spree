@@ -130,7 +130,7 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 export function resolveColor(name: string): string {
-  const key = name.toLowerCase().replace(/\s+/g, "");
+  const key = name.toLowerCase().replace(/[\s_-]+/g, "");
   return COLOR_MAP[key] || key;
 }
 

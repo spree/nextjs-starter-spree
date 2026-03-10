@@ -39,11 +39,12 @@ export function MobileFilterDrawer({
   const [stagedFilters, setStagedFilters] =
     useState<ActiveFilters>(activeFilters);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only sync when the drawer opens, not when activeFilters changes while open
   useEffect(() => {
     if (isOpen) {
       setStagedFilters(activeFilters);
     }
-  }, [isOpen, activeFilters]);
+  }, [isOpen]);
 
   const handleOptionValueToggle = useCallback((optionValueId: string) => {
     setStagedFilters((prev) => {

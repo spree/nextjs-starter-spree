@@ -7,7 +7,7 @@ import type {
   CreditCard as SpreeCreditCard,
   State,
 } from "@spree/sdk";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { Button } from "@/components/ui/button";
@@ -286,7 +286,7 @@ export function PaymentStep({
             <h2 className="text-lg font-semibold text-gray-900">
               Shipping Address
             </h2>
-            <Button variant="link" size="sm" onClick={onBack}>
+            <Button type="button" variant="link" size="sm" onClick={onBack}>
               Edit
             </Button>
           </div>
@@ -414,7 +414,7 @@ export function PaymentStep({
 
         {loading && (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-lg h-8 w-8 border-b-2 border-gray-600" />
+            <Loader2 className="animate-spin h-6 w-6 text-gray-400" />
             <span className="ml-3 text-sm text-gray-500">
               Loading payment form...
             </span>
@@ -451,6 +451,7 @@ export function PaymentStep({
       {/* Actions */}
       <div className="flex justify-between">
         <Button
+          type="button"
           variant="outline"
           size="lg"
           onClick={onBack}

@@ -103,13 +103,13 @@ export function AddressFormFields({
       </Field>
 
       <Field>
-        <FieldLabel>Country</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-country`}>Country</FieldLabel>
         <Select
           value={address.country_iso || undefined}
           onValueChange={(value) => onChange("country_iso", value)}
           required
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger id={`${idPrefix}-country`} className="w-full">
             <SelectValue placeholder="Select a country" />
           </SelectTrigger>
           <SelectContent>
@@ -123,10 +123,10 @@ export function AddressFormFields({
       </Field>
 
       <Field>
-        <FieldLabel>State / Province</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-state`}>State / Province</FieldLabel>
         {loadingStates ? (
           <Select disabled>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id={`${idPrefix}-state`} className="w-full">
               <SelectValue placeholder="Loading..." />
             </SelectTrigger>
             <SelectContent />
@@ -137,7 +137,7 @@ export function AddressFormFields({
             onValueChange={(value) => onChange("state_abbr", value)}
             required
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id={`${idPrefix}-state`} className="w-full">
               <SelectValue placeholder="Select a state" />
             </SelectTrigger>
             <SelectContent>

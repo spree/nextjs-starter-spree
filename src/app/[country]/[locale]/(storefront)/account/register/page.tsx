@@ -155,7 +155,12 @@ export default function RegisterPage() {
           </Field>
 
           <div className="w-full">
-            <Button type="submit" disabled={loading} size="lg">
+            <Button
+              type="submit"
+              disabled={loading}
+              size="lg"
+              className="w-full"
+            >
               {loading ? "Creating account..." : "Create Account"}
             </Button>
           </div>

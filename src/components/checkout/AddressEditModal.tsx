@@ -142,7 +142,7 @@ export function AddressEditModal({
             <Button type="submit" disabled={saving}>
               {saving ? "Saving..." : "Save Address"}
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
           </div>

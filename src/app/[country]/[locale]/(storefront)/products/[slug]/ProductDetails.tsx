@@ -1,18 +1,12 @@
 "use client";
 
 import type { Product, Image as SpreeImage, Variant } from "@spree/sdk";
-import {
-  CircleCheckBig,
-  CircleX,
-  Loader2,
-  Minus,
-  Plus,
-  ShoppingBag,
-} from "lucide-react";
+import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
+import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart } from "@/lib/analytics/gtm";
@@ -177,28 +171,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           {/* Quantity & Add to Cart */}
           <div className="mt-8">
             <div className="flex gap-4">
-              {/* Quantity Selector */}
-              <div className="flex items-center border border-gray-300 rounded-xl">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  aria-label="Decrease quantity"
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
-                <span className="px-4 py-3 font-medium min-w-[3rem] text-center">
-                  {quantity}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                  aria-label="Increase quantity"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
+              <QuantityPicker
+                quantity={quantity}
+                onDecrement={() => setQuantity(Math.max(1, quantity - 1))}
+                onIncrement={() => setQuantity(quantity + 1)}
+                size="lg"
+              />
 
               {/* Add to Cart Button */}
               <Button

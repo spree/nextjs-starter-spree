@@ -17,7 +17,13 @@ function CheckoutHeader() {
   return (
     <header className="py-4 lg:py-6 flex items-center justify-between">
       <Link href={basePath || "/"} className="flex items-center space-x-2">
-        <Image src="/spree.png" alt="Spree Store" width={90} height={32} />
+        <Image
+          src="/spree.png"
+          alt="Spree Store"
+          width={90}
+          height={32}
+          priority
+        />
       </Link>
       <Link
         href={basePath || "/"}

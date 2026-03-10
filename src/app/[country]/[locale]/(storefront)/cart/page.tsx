@@ -2,11 +2,12 @@
 
 import type { LineItem } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
+import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
@@ -51,7 +52,10 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
-          <ShoppingBag className="w-24 h-24 text-gray-300" strokeWidth={1} />
+          <ShoppingBag
+            className="w-24 h-24 text-gray-300 mx-auto"
+            strokeWidth={1}
+          />
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
             Your cart is empty
           </h1>
@@ -80,8 +84,8 @@ export default function CartPage() {
               <div key={item.id} className="p-6 flex gap-6">
                 {/* Image */}
                 <div className="relative w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                  <Image
-                    src={item.thumbnail_url || "/placeholder.svg"}
+                  <ProductImage
+                    src={item.thumbnail_url}
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -106,30 +110,17 @@ export default function CartPage() {
 
                 {/* Quantity & Actions */}
                 <div className="flex flex-col items-end gap-2">
-                  <div className="flex items-center border border-gray-300 rounded">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        updateItem(item.id, Math.max(1, item.quantity - 1))
-                      }
-                    >
-                      -
-                    </Button>
-                    <span className="px-3 py-1 font-medium">
-                      {item.quantity}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => updateItem(item.id, item.quantity + 1)}
-                    >
-                      +
-                    </Button>
-                  </div>
+                  <QuantityPicker
+                    quantity={item.quantity}
+                    onDecrement={() =>
+                      updateItem(item.id, Math.max(1, item.quantity - 1))
+                    }
+                    onIncrement={() => updateItem(item.id, item.quantity + 1)}
+                  />
                   <Button
                     variant="destructive"
                     size="sm"
+                    aria-label={`Remove ${item.name}`}
                     onClick={() => handleRemove(item)}
                   >
                     Remove

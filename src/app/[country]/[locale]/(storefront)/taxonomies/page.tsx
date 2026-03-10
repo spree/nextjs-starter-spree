@@ -1,10 +1,17 @@
 import type { Taxon, Taxonomy } from "@spree/sdk";
-import { LayoutGrid } from "lucide-react";
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { CategoryImage } from "@/components/ui/category-image";
 import { getTaxonomies } from "@/lib/data/taxonomies";
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Categories",
+    description: "Browse product categories",
+  };
+}
 
 interface CategoriesPageProps {
   params: Promise<{
@@ -66,19 +73,14 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                           className="group"
                         >
                           <div className="relative aspect-square bg-white border border-gray-200 rounded-xl overflow-hidden mb-3 group-hover:ring-2 group-hover:ring-gray-500 transition-all">
-                            {imageSrc ? (
-                              <Image
-                                src={imageSrc}
-                                alt={taxon.name}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <LayoutGrid className="w-12 h-12 text-gray-400" />
-                              </div>
-                            )}
+                            <CategoryImage
+                              src={imageSrc}
+                              alt={taxon.name}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                              iconClassName="w-12 h-12"
+                            />
                           </div>
                           <h3 className="font-medium text-gray-900 group-hover:text-primary transition-colors">
                             {taxon.name}

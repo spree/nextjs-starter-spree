@@ -1,12 +1,12 @@
 "use client";
 
 import type { Order } from "@spree/sdk";
-import { CircleCheckBig, ImageIcon as ImagePlaceholder } from "lucide-react";
-import Image from "next/image";
+import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
 import { getCheckoutOrder } from "@/lib/data/checkout";
@@ -142,20 +142,14 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         <ul className="divide-y divide-gray-200">
           {order.line_items?.map((item) => (
             <li key={item.id} className="px-6 py-4 flex gap-4">
-              <div className="w-14 h-14 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
-                {item.thumbnail_url ? (
-                  <Image
-                    src={item.thumbnail_url}
-                    alt={item.name}
-                    width={56}
-                    height={56}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <ImagePlaceholder className="w-6 h-6" strokeWidth={2} />
-                  </div>
-                )}
+              <div className="relative w-14 h-14 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
+                <ProductImage
+                  src={item.thumbnail_url}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                  iconClassName="w-6 h-6"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-gray-900">

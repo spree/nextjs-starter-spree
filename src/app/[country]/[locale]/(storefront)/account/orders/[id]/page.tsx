@@ -8,13 +8,13 @@ import type {
   Shipment,
   StoreCredit,
 } from "@spree/sdk";
-import { ChevronLeft, ImageIcon as ImagePlaceholder } from "lucide-react";
-import Image from "next/image";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
 import { getOrder } from "@/lib/data/orders";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { extractBasePath } from "@/lib/utils/path";
@@ -125,22 +125,13 @@ function LineItemCard({
         href={`${basePath}/products/${item.slug}`}
         className="relative w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0"
       >
-        {item.thumbnail_url ? (
-          <Image
-            src={item.thumbnail_url}
-            alt={item.name}
-            fill
-            className="object-cover"
-            sizes="96px"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImagePlaceholder
-              className="w-8 h-8 text-gray-400"
-              strokeWidth={2}
-            />
-          </div>
-        )}
+        <ProductImage
+          src={item.thumbnail_url}
+          alt={item.name}
+          fill
+          className="object-cover"
+          sizes="96px"
+        />
       </Link>
 
       {/* Details */}

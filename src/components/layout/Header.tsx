@@ -21,7 +21,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href={basePath || "/"} className="flex items-center space-x-2">
-            <Image src="/spree.png" alt="Spree Store" width={90} height={32} />
+            <Image
+              src="/spree.png"
+              alt="Spree Store"
+              width={90}
+              height={32}
+              style={{ width: "auto", height: "auto" }}
+              priority
+            />
           </Link>
 
           {/* Search */}
@@ -47,27 +54,25 @@ export function Header() {
             {/* Cart */}
             <Button
               variant="ghost"
-              size="icon"
+              size="icon-lg"
               onClick={openCart}
               aria-label="Open cart"
               className="relative"
             >
-              <ShoppingBag className="w-6 h-6" />
+              <ShoppingBag className="size-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute top-0 right-0 bg-primary text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">
                   {itemCount}
                 </span>
               )}
             </Button>
 
             {/* Account */}
-            <Link
-              href={`${basePath}/account`}
-              className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
-              aria-label="Account"
-            >
-              <User className="w-6 h-6" />
-            </Link>
+            <Button variant="ghost" size="icon-lg" asChild>
+              <Link href={`${basePath}/account`} aria-label="Account">
+                <User className="size-5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

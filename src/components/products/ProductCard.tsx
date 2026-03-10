@@ -1,10 +1,9 @@
 "use client";
 
 import type { Product } from "@spree/sdk";
-import { ImageIcon as ImagePlaceholder } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { memo } from "react";
+import { ProductImage } from "@/components/ui/product-image";
 import { useStore } from "@/contexts/StoreContext";
 import { trackSelectItem } from "@/lib/analytics/gtm";
 
@@ -64,19 +63,14 @@ export const ProductCard = memo(function ProductCard({
     >
       {/* Image */}
       <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden">
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-300">
-            <ImagePlaceholder className="w-16 h-16" />
-          </div>
-        )}
+        <ProductImage
+          src={imageUrl}
+          alt={product.name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
+          iconClassName="w-16 h-16"
+        />
         {onSale && (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
             Sale

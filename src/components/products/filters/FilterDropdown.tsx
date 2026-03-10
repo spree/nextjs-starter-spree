@@ -38,11 +38,7 @@ export function FilterDropdown({
       }}
     >
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          aria-expanded={isOpen}
-          aria-haspopup="listbox"
-        >
+        <Button variant="outline" aria-expanded={isOpen} aria-haspopup="menu">
           <span>{label}</span>
           {hasActive && (
             <span className="flex items-center justify-center w-5 h-5 text-xs bg-primary text-white rounded-lg">

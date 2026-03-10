@@ -1,11 +1,12 @@
 "use client";
 
-import { Minus, Plus, ShoppingBag, Trash, X } from "lucide-react";
-import Image from "next/image";
+import { ShoppingBag, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
+import { QuantityPicker } from "@/components/ui/quantity-picker";
 import {
   Sheet,
   SheetContent,
@@ -66,6 +67,7 @@ export function CartDrawer() {
         side="right"
         className="w-full max-w-md flex flex-col p-0 gap-0"
         showCloseButton={false}
+        aria-describedby={undefined}
       >
         <SheetHeader className="flex flex-row gap-2 items-center justify-between border-b">
           <SheetTitle className="flex flex-row gap-2 items-center">
@@ -123,8 +125,8 @@ export function CartDrawer() {
                       className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0"
                       onClick={closeCart}
                     >
-                      <Image
-                        src={item.thumbnail_url || "/placeholder.svg"}
+                      <ProductImage
+                        src={item.thumbnail_url}
                         alt={item.name}
                         fill
                         className="object-cover"
@@ -158,26 +160,6 @@ export function CartDrawer() {
                         </Button>
                       </div>
 
-                      {/* Price */}
-                      <div className="mt-1 text-sm">
-                        {item.compare_at_amount &&
-                        parseFloat(item.compare_at_amount) >
-                          parseFloat(item.price) ? (
-                          <>
-                            <span className="text-gray-400 line-through mr-2">
-                              {item.display_compare_at_amount}
-                            </span>
-                            <span className="text-red-600 font-medium">
-                              {item.display_price}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-gray-900">
-                            {item.display_price}
-                          </span>
-                        )}
-                      </div>
-
                       {/* Options */}
                       {item.options_text && (
                         <p className="mt-1 text-sm text-gray-500">
@@ -185,37 +167,36 @@ export function CartDrawer() {
                         </p>
                       )}
 
-                      {/* Quantity */}
-                      <div className="mt-3 flex items-center">
-                        <div className="flex items-center border border-gray-300 rounded">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              updateItem(
-                                item.id,
-                                Math.max(1, item.quantity - 1),
-                              )
-                            }
-                            disabled={updating || item.quantity <= 1}
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </Button>
-                          <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              updateItem(item.id, item.quantity + 1)
-                            }
-                            disabled={updating}
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </Button>
+                      {/* Quantity & Price */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <QuantityPicker
+                          quantity={item.quantity}
+                          onDecrement={() =>
+                            updateItem(item.id, Math.max(1, item.quantity - 1))
+                          }
+                          onIncrement={() =>
+                            updateItem(item.id, item.quantity + 1)
+                          }
+                          disabled={updating}
+                        />
+
+                        <div className="text-sm font-medium">
+                          {item.compare_at_amount &&
+                          parseFloat(item.compare_at_amount) >
+                            parseFloat(item.price) ? (
+                            <>
+                              <span className="text-gray-400 line-through mr-2">
+                                {item.display_compare_at_amount}
+                              </span>
+                              <span className="text-red-600">
+                                {item.display_price}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-gray-900">
+                              {item.display_price}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -243,7 +224,7 @@ export function CartDrawer() {
               )}
               <div className="flex justify-between items-center">
                 <span>Shipping</span>
-                <span className="text-gray-500">Ccalculated on checkout</span>
+                <span className="text-gray-500">Calculated on checkout</span>
               </div>
             </div>
 
@@ -269,7 +250,7 @@ export function CartDrawer() {
         {/* Loading overlay */}
         {updating && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-            <div className="w-8 h-8 border-4 border-gray-600 border-t-transparent rounded-lg animate-spin" />
+            <div className="w-8 h-8 border-4 border-gray-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </SheetContent>

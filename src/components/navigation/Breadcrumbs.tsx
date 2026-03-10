@@ -48,7 +48,7 @@ export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
               ) : (
                 <Link
                   href={item.href}
-                  className="text-primary hover:text-primary"
+                  className="text-primary hover:text-primary/70"
                 >
                   {item.name}
                 </Link>

@@ -87,6 +87,8 @@ export default function AccountPage() {
               <Input
                 type="email"
                 id="email"
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -100,6 +102,8 @@ export default function AccountPage() {
                 <Input
                   type={showPassword ? "text" : "password"}
                   id="password"
+                  name="current-password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -126,7 +130,12 @@ export default function AccountPage() {
             </Field>
 
             <div className="w-full">
-              <Button type="submit" disabled={loading} size="lg">
+              <Button
+                type="submit"
+                disabled={loading}
+                size="lg"
+                className="w-full"
+              >
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </div>
