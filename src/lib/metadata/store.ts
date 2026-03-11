@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   ensureProtocol,
+  getStoreDescription,
   getStoreName,
   getStoreUrl,
   SOCIAL_IMAGE_PATH,
@@ -22,8 +23,7 @@ export async function generateStoreMetadata({
   const storeName = process.env.STORE_SEO_TITLE || getStoreName();
   const storeUrl = getStoreUrl();
   const metaDescription =
-    process.env.STORE_META_DESCRIPTION ||
-    "Online store powered by Spree Commerce";
+    process.env.STORE_META_DESCRIPTION || getStoreDescription();
   const metaKeywords = process.env.STORE_META_KEYWORDS;
   const twitter = process.env.STORE_TWITTER;
 

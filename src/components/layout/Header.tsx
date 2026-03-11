@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { SearchBar } from "@/components/search/SearchBar";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";
 import { CountrySwitcher } from "./CountrySwitcher";
 
@@ -17,6 +18,7 @@ interface HeaderProps {
 
 export function Header({ rootCategories }: HeaderProps) {
   const { itemCount, openCart } = useCart();
+  const { storeName } = useStore();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
 
@@ -32,10 +34,10 @@ export function Header({ rootCategories }: HeaderProps) {
             >
               <Image
                 src="/spree.png"
-                alt="Spree Store"
+                alt={storeName}
                 width={90}
                 height={32}
-                style={{ width: "auto", height: "auto" }}
+                className="h-8 w-auto"
                 priority
               />
             </Link>

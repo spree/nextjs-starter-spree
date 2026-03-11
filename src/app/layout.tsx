@@ -13,12 +13,16 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
+const rootStoreName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+
 export const metadata: Metadata = {
   title: {
-    template: "%s | Spree Store",
-    default: "Spree Store",
+    template: `%s | ${rootStoreName}`,
+    default: rootStoreName,
   },
-  description: "Online store powered by Spree Commerce",
+  description:
+    process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
+    "A modern e-commerce storefront powered by Spree Commerce and Next.js.",
 };
 
 export default function RootLayout({

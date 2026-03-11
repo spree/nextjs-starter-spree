@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCachedTaxon } from "@/lib/data/cached";
+import { getCachedCategory } from "@/lib/data/cached";
 import { buildCanonicalUrl, getStoreUrl } from "@/lib/seo";
 
 export interface CategoryMetadataParams {
@@ -15,9 +15,9 @@ export async function generateCategoryMetadata({
 }: CategoryMetadataParams): Promise<Metadata> {
   const fullPermalink = permalink.join("/");
 
-  let taxon;
+  let category;
   try {
-    taxon = await getCachedTaxon(
+    category = await getCachedCategory(
       fullPermalink,
       ["ancestors", "children"],
       locale,
@@ -26,36 +26,39 @@ export async function generateCategoryMetadata({
     return { title: "Category Not Found" };
   }
 
-  const title = taxon.meta_title || taxon.name;
+  const title = category.meta_title || category.name;
   const description =
-    taxon.meta_description ||
-    taxon.description ||
-    `Browse ${taxon.name} products.`;
+    category.meta_description ||
+    category.description ||
+    `Browse ${category.name} products.`;
 
   const storeUrl = getStoreUrl();
   const canonicalUrl = storeUrl
-    ? buildCanonicalUrl(storeUrl, `/${country}/${locale}/t/${taxon.permalink}`)
+    ? buildCanonicalUrl(
+        storeUrl,
+        `/${country}/${locale}/c/${category.permalink}`,
+      )
     : undefined;
 
   return {
     title,
     description,
-    ...(taxon.meta_keywords ? { keywords: taxon.meta_keywords } : {}),
+    ...(category.meta_keywords ? { keywords: category.meta_keywords } : {}),
     ...(canonicalUrl ? { alternates: { canonical: canonicalUrl } } : {}),
     openGraph: {
       title,
       description,
       ...(canonicalUrl ? { url: canonicalUrl } : {}),
       type: "website",
-      ...(taxon.image_url
-        ? { images: [{ url: taxon.image_url, alt: taxon.name }] }
+      ...(category.image_url
+        ? { images: [{ url: category.image_url, alt: category.name }] }
         : {}),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(taxon.image_url ? { images: [taxon.image_url] } : {}),
+      ...(category.image_url ? { images: [category.image_url] } : {}),
     },
   };
 }

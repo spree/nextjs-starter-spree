@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { CategoryBanner } from "@/components/navigation/CategoryBanner";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategory } from "@/lib/data/categories";
+import { generateCategoryMetadata } from "@/lib/metadata/category";
+import { buildBreadcrumbJsonLd, getStoreUrl } from "@/lib/seo";
 import { CategoryProductsContent } from "./CategoryProductsContent";
 
 export const revalidate = 60;
@@ -13,6 +17,13 @@ interface CategoryPageProps {
     locale: string;
     permalink: string[];
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const { country, locale, permalink } = await params;
+  return generateCategoryMetadata({ country, locale, permalink });
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
@@ -34,8 +45,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  const storeUrl = getStoreUrl();
+
   return (
     <div>
+      {storeUrl && (
+        <JsonLd data={buildBreadcrumbJsonLd(category, basePath, storeUrl)} />
+      )}
+
       {/* Banner Image — returns null when image missing or fails to load */}
       <CategoryBanner imageUrl={category.image_url} name={category.name} />
 

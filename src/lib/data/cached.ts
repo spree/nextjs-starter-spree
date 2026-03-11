@@ -1,4 +1,4 @@
-import { getProduct, getTaxon } from "@spree/next";
+import { getCategory, getProduct } from "@spree/next";
 import { cache } from "react";
 
 export const getCachedProduct = cache(
@@ -6,7 +6,7 @@ export const getCachedProduct = cache(
     getProduct(slugOrId, { expand }, { locale }),
 );
 
-export const getCachedTaxon = cache(
+export const getCachedCategory = cache(
   (idOrPermalink: string, expand: string[], locale: string) =>
-    getTaxon(idOrPermalink, { expand }, { locale }),
+    getCategory(idOrPermalink, { expand }, { locale }),
 );

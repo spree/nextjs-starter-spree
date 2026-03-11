@@ -1,4 +1,4 @@
-import type { StoreProduct, StoreTaxon } from "@spree/sdk";
+import type { Category, StoreProduct } from "@spree/sdk";
 
 /**
  * Default social image path (stored in public/).
@@ -19,6 +19,16 @@ export function getStoreUrl(): string | undefined {
  */
 export function getStoreName(): string {
   return process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+}
+
+/**
+ * Get the store description from environment variables.
+ */
+export function getStoreDescription(): string {
+  return (
+    process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
+    "A modern e-commerce storefront powered by Spree Commerce and Next.js."
+  );
 }
 
 /**
@@ -99,30 +109,26 @@ export function buildProductJsonLd(
 }
 
 /**
- * Build JSON-LD BreadcrumbList schema from a taxon with ancestors.
+ * Build JSON-LD BreadcrumbList schema from a category with ancestors.
  * https://schema.org/BreadcrumbList
  */
 export function buildBreadcrumbJsonLd(
-  taxon: StoreTaxon,
+  category: Category,
   basePath: string,
   storeUrl: string,
 ): Record<string, unknown> {
   const items: Array<{ name: string; url: string }> = [
     { name: "Home", url: buildCanonicalUrl(storeUrl, basePath) },
-    {
-      name: "Categories",
-      url: buildCanonicalUrl(storeUrl, `${basePath}/taxonomies`),
-    },
   ];
 
-  if (taxon.ancestors) {
-    for (const ancestor of taxon.ancestors) {
+  if (category.ancestors) {
+    for (const ancestor of category.ancestors) {
       if (!ancestor.is_root) {
         items.push({
           name: ancestor.name,
           url: buildCanonicalUrl(
             storeUrl,
-            `${basePath}/t/${ancestor.permalink}`,
+            `${basePath}/c/${ancestor.permalink}`,
           ),
         });
       }
@@ -130,8 +136,8 @@ export function buildBreadcrumbJsonLd(
   }
 
   items.push({
-    name: taxon.name,
-    url: buildCanonicalUrl(storeUrl, `${basePath}/t/${taxon.permalink}`),
+    name: category.name,
+    url: buildCanonicalUrl(storeUrl, `${basePath}/c/${category.permalink}`),
   });
 
   return {

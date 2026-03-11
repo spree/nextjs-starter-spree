@@ -19,7 +19,7 @@ function CheckoutHeader() {
       <Link href={basePath || "/"} className="flex items-center space-x-2">
         <Image
           src="/spree.png"
-          alt="Spree Store"
+          alt={storeName}
           width={90}
           height={32}
           priority

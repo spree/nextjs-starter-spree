@@ -12,7 +12,7 @@ export async function generateCategoriesMetadata({
 }: CategoriesMetadataParams): Promise<Metadata> {
   const storeUrl = getStoreUrl();
   const canonicalUrl = storeUrl
-    ? buildCanonicalUrl(storeUrl, `/${country}/${locale}/taxonomies`)
+    ? buildCanonicalUrl(storeUrl, `/${country}/${locale}/c`)
     : undefined;
 
   return {
