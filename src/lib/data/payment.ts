@@ -3,6 +3,7 @@
 import {
   complete,
   completePaymentSession,
+  createPayment,
   createPaymentSession,
 } from "@spree/next";
 import { actionResult } from "./utils";
@@ -10,17 +11,29 @@ import { actionResult } from "./utils";
 export async function createCheckoutPaymentSession(
   orderId: string,
   paymentMethodId: string,
-  stripePaymentMethodId?: string,
+  externalData?: Record<string, unknown>,
 ) {
   return actionResult(async () => {
     const session = await createPaymentSession(orderId, {
       payment_method_id: paymentMethodId,
-      ...(stripePaymentMethodId && {
-        external_data: { stripe_payment_method_id: stripePaymentMethodId },
-      }),
+      ...(externalData && { external_data: externalData }),
     });
     return { session };
   }, "Failed to create payment session");
+}
+
+export async function createCheckoutPayment(
+  orderId: string,
+  paymentMethodId: string,
+  metadata?: Record<string, unknown>,
+) {
+  return actionResult(async () => {
+    const payment = await createPayment(orderId, {
+      payment_method_id: paymentMethodId,
+      ...(metadata && { metadata }),
+    });
+    return { payment };
+  }, "Failed to create payment");
 }
 
 export async function completeCheckoutPaymentSession(

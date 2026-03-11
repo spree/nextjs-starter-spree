@@ -38,6 +38,7 @@ import { getMarketCountries, resolveMarket } from "@/lib/data/markets";
 import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
+  createCheckoutPayment,
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
@@ -392,23 +393,40 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
   };
 
-  // Handle payment completion (called by PaymentStep after Stripe confirms)
-  const handlePaymentComplete = async (paymentSessionId: string) => {
+  // Handle payment completion (called by PaymentStep after gateway confirms)
+  const handlePaymentComplete = async (
+    paymentSessionId: string | null,
+    paymentMethodId: string,
+  ) => {
     if (!order) return;
 
     setError(null);
 
     try {
-      // Complete the payment session on the backend
-      const sessionResult = await completeCheckoutPaymentSession(
-        order.id,
-        paymentSessionId,
-      );
+      if (paymentSessionId) {
+        // Session-based methods (Stripe, etc.) — complete the payment session
+        const sessionResult = await completeCheckoutPaymentSession(
+          order.id,
+          paymentSessionId,
+        );
 
-      if (!sessionResult.success) {
-        setError(sessionResult.error || "Failed to complete payment session");
-        setProcessing(false);
-        return;
+        if (!sessionResult.success) {
+          setError(sessionResult.error || "Failed to complete payment session");
+          setProcessing(false);
+          return;
+        }
+      } else {
+        // Non-session methods (Check, Bank Transfer, etc.) — create a payment record
+        const paymentResult = await createCheckoutPayment(
+          order.id,
+          paymentMethodId,
+        );
+
+        if (!paymentResult.success) {
+          setError(paymentResult.error || "Failed to create payment");
+          setProcessing(false);
+          return;
+        }
       }
 
       try {
