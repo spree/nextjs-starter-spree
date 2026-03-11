@@ -25,9 +25,9 @@ import {
 } from "@/lib/analytics/gtm";
 import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
-  advanceCheckout,
   applyCouponCode,
   getCheckoutOrder,
+  nextCheckoutStep,
   removeCouponCode,
   selectShippingRate,
   updateOrderAddresses,
@@ -41,24 +41,20 @@ import {
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
-// Checkout steps
-type CheckoutStep = "address" | "delivery" | "payment";
-
-// Map Spree order state to checkout step
-function getCheckoutStep(orderState: string): CheckoutStep {
-  switch (orderState) {
-    case "cart":
-    case "address":
-      return "address";
-    case "delivery":
-      return "delivery";
-    case "payment":
-    case "confirm":
-      return "payment";
-    default:
-      return "address";
-  }
+// Map order state to the corresponding checkout step
+// "cart" maps to the first checkout step, "confirm" maps to "payment"
+function getCheckoutStep(orderState: string, checkoutSteps: string[]): string {
+  if (orderState === "cart") return checkoutSteps[0] || "address";
+  if (orderState === "confirm") return "payment";
+  if (checkoutSteps.includes(orderState)) return orderState;
+  return checkoutSteps[0] || "address";
 }
+
+const STEP_LABELS: Record<string, string> = {
+  address: "Shipping",
+  delivery: "Delivery",
+  payment: "Payment",
+};
 
 interface CheckoutPageProps {
   params: Promise<{
@@ -112,7 +108,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState<CheckoutStep>("address");
+  const [currentStep, setCurrentStep] = useState<string>("address");
 
   // Use ref to store the current order for stable callback references
   const orderRef = useRef(order);
@@ -215,7 +211,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      setCurrentStep(getCheckoutStep(orderData.state));
+      setCurrentStep(
+        getCheckoutStep(orderData.state, orderData.checkout_steps),
+      );
 
       if (!beginCheckoutFiredRef.current) {
         try {
@@ -277,10 +275,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         return;
       }
 
-      // Advance to delivery step
-      const advanceResult = await advanceCheckout(order.id);
-      if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed to next step");
+      // Move to next checkout step
+      const nextResult = await nextCheckoutStep(order.id);
+      if (!nextResult.success) {
+        setError(nextResult.error || "Failed to proceed to next step");
         setProcessing(false);
         return;
       }
@@ -344,10 +342,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(null);
 
     try {
-      // Advance to payment step
-      const advanceResult = await advanceCheckout(order.id);
-      if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed");
+      // Move to next checkout step
+      const nextResult = await nextCheckoutStep(order.id);
+      if (!nextResult.success) {
+        setError(nextResult.error || "Failed to proceed");
         setProcessing(false);
         return;
       }
@@ -472,7 +470,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   };
 
   // Navigate back to a previous step
-  const goToStep = (step: CheckoutStep) => {
+  const goToStep = (step: string) => {
     setCurrentStep(step);
   };
 
@@ -531,11 +529,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     );
   }
 
-  const steps = [
-    { id: "address", label: "Shipping" },
-    { id: "delivery", label: "Delivery" },
-    { id: "payment", label: "Payment" },
-  ];
+  const steps = order.checkout_steps
+    .filter((step) => step !== "complete" && step !== "confirm")
+    .map((step) => ({
+      id: step,
+      label: STEP_LABELS[step] || step.charAt(0).toUpperCase() + step.slice(1),
+    }));
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
 
@@ -544,7 +543,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-        <p className="text-gray-500 mt-1">Order #{order.number}</p>
       </div>
 
       {/* Step indicator */}

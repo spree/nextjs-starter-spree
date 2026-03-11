@@ -4,6 +4,7 @@ vi.mock("@spree/next", () => ({
   getCheckout: vi.fn(),
   updateOrder: vi.fn(),
   advance: vi.fn(),
+  next: vi.fn(),
   getShipments: vi.fn(),
   selectShippingRate: vi.fn(),
   applyCoupon: vi.fn(),
@@ -17,6 +18,7 @@ import {
   complete,
   getCheckout,
   getShipments as getShipmentsSdk,
+  next,
   removeCoupon,
   selectShippingRate as selectShippingRateSdk,
   updateOrder,
@@ -28,6 +30,7 @@ import {
   completeOrder,
   getCheckoutOrder,
   getShipments,
+  nextCheckoutStep,
   removeCouponCode,
   selectShippingRate,
   updateOrderAddresses,
@@ -38,6 +41,7 @@ import {
 const mockGetCheckout = getCheckout as any;
 const mockUpdateOrder = updateOrder as any;
 const mockAdvance = advance as any;
+const mockNext = next as any;
 const mockGetShipments = getShipmentsSdk as any;
 const mockSelectShippingRate = selectShippingRateSdk as any;
 const mockApplyCoupon = applyCoupon as any;
@@ -147,6 +151,28 @@ describe("checkout server actions", () => {
       expect(result).toEqual({
         success: false,
         error: "Failed to update order market",
+      });
+    });
+  });
+
+  describe("nextCheckoutStep", () => {
+    it("returns success with order", async () => {
+      mockNext.mockResolvedValue(mockOrder);
+
+      const result = await nextCheckoutStep("order-1");
+
+      expect(mockNext).toHaveBeenCalledWith("order-1");
+      expect(result).toEqual({ success: true, order: mockOrder });
+    });
+
+    it("returns error on failure", async () => {
+      mockNext.mockRejectedValue(new Error("Cannot advance"));
+
+      const result = await nextCheckoutStep("order-1");
+
+      expect(result).toEqual({
+        success: false,
+        error: "Cannot advance",
       });
     });
   });

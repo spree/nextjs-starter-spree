@@ -7,6 +7,7 @@ import {
   applyCoupon,
   complete,
   getCheckout,
+  next,
   removeCoupon,
   updateOrder,
 } from "@spree/next";
@@ -53,6 +54,13 @@ export async function updateOrderMarket(
     const order = await updateOrder(orderId, params);
     return { order };
   }, "Failed to update order market");
+}
+
+export async function nextCheckoutStep(orderId: string) {
+  return actionResult(async () => {
+    const order = await next(orderId);
+    return { order };
+  }, "Failed to advance checkout");
 }
 
 export async function advanceCheckout(orderId: string) {
