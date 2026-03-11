@@ -64,7 +64,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
       {couponPromotions.length > 0 && (
         <div className="space-y-2 mb-4">
           {couponPromotions.map((promotion) => (
-            <Alert key={promotion.id}>
+            <Alert key={promotion.id} role="status">
               <CheckCircle />
               <AlertDescription>
                 <span className="font-medium">

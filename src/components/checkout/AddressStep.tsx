@@ -124,7 +124,7 @@ export function AddressStep({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Sign-in prompt for guests */}
         {!isAuthenticated && (
-          <Alert>
+          <Alert role="status">
             <InfoIcon />
             <AlertDescription>
               Already have an account?
