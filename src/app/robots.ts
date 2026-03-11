@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getStore } from "@/lib/data/store";
+import { getStoreUrl } from "@/lib/seo";
 import { generateSitemaps } from "./sitemap";
 
 /**
@@ -60,13 +60,13 @@ const AI_CRAWLERS = [
 ];
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const store = await getStore();
-  const baseUrl = (store.url || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
+  const storeUrl = getStoreUrl();
+  const baseUrl = (storeUrl || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
     /\/$/,
     "",
   );
   const sitemaps = await generateSitemaps();
-  const blockAi = process.env.ROBOTS_DISALLOW_AI !== "false";
+  const blockAi = process.env.ROBOTS_DISALLOW_AI === "true";
 
   const rules: MetadataRoute.Robots["rules"] = [
     {

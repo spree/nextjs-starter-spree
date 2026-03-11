@@ -1,9 +1,7 @@
-import type { StoreProduct, StoreTaxon } from "@spree/sdk";
+import { listCategories, listCountries, listProducts } from "@spree/next";
+import type { Category, StoreProduct } from "@spree/sdk";
 import type { MetadataRoute } from "next";
-import { getCountries } from "@/lib/data/countries";
-import { getProducts } from "@/lib/data/products";
-import { getStore } from "@/lib/data/store";
-import { getTaxons } from "@/lib/data/taxonomies";
+import { getStoreUrl } from "@/lib/seo";
 
 /**
  * Sitemap locale mode — controls which country/locale combinations are
@@ -14,7 +12,7 @@ import { getTaxons } from "@/lib/data/taxonomies";
  *   - "selected" — only the countries listed in SITEMAP_COUNTRIES (comma-separated ISO codes)
  *   - "all"      — every country available in the Spree store
  *
- * Each country resolves its locale from country.default_locale, falling back
+ * Each country resolves its locale from country.market.default_locale, falling back
  * to the store's default locale.
  */
 type SitemapLocaleMode = "default" | "selected" | "all";
@@ -31,12 +29,24 @@ const VALID_LOCALE_MODES: SitemapLocaleMode[] = ["default", "selected", "all"];
 const MAX_PAGES = 1000;
 
 /**
+ * Default locale options for build-time API calls.
+ * During build (generateSitemaps / sitemap), cookies() is not available,
+ * so we pass explicit locale options to bypass the cookie-based resolution.
+ */
+function getDefaultLocaleOptions() {
+  return {
+    locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en",
+    country: process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us",
+  };
+}
+
+/**
  * Module-level cache so that multiple sitemap({id}) calls during the same
  * `next build` process reuse already-fetched data instead of hitting the
  * API O(chunks) times.
  */
 let cachedProducts: Promise<StoreProduct[]> | null = null;
-let cachedTaxons: Promise<StoreTaxon[]> | null = null;
+let cachedCategories: Promise<Category[]> | null = null;
 let cachedCountryLocales: Promise<CountryLocale[]> | null = null;
 
 function getCachedProducts(): Promise<StoreProduct[]> {
@@ -49,21 +59,19 @@ function getCachedProducts(): Promise<StoreProduct[]> {
   return cachedProducts;
 }
 
-function getCachedTaxons(): Promise<StoreTaxon[]> {
-  if (!cachedTaxons) {
-    cachedTaxons = fetchAllTaxons().catch((err) => {
-      cachedTaxons = null;
+function getCachedCategories(): Promise<Category[]> {
+  if (!cachedCategories) {
+    cachedCategories = fetchAllCategories().catch((err) => {
+      cachedCategories = null;
       throw err;
     });
   }
-  return cachedTaxons;
+  return cachedCategories;
 }
 
-function getCachedCountryLocales(
-  store: Awaited<ReturnType<typeof getStore>>,
-): Promise<CountryLocale[]> {
+function getCachedCountryLocales(): Promise<CountryLocale[]> {
   if (!cachedCountryLocales) {
-    cachedCountryLocales = resolveCountryLocales(store).catch((err) => {
+    cachedCountryLocales = resolveCountryLocales().catch((err) => {
       cachedCountryLocales = null;
       throw err;
     });
@@ -81,22 +89,28 @@ function getCachedCountryLocales(
  * @see https://nextjs.org/docs/app/api-reference/functions/generate-sitemaps
  */
 export async function generateSitemaps() {
-  const store = await getStore();
-  const countryLocales = await getCachedCountryLocales(store);
+  try {
+    const countryLocales = await getCachedCountryLocales();
 
-  // Lightweight count — fetch only 1 record per request to read meta.count.
-  // Taxon count is approximate (includes root taxons filtered out during generation),
-  // so we may produce one extra sitemap file at most — harmless for SEO.
-  const [productCount, taxonCount] = await Promise.all([
-    fetchTotalCount("products"),
-    fetchTotalCount("taxons"),
-  ]);
+    // Lightweight count — fetch only 1 record per request to read meta.count.
+    // Category count is approximate (includes root categories filtered out during generation),
+    // so we may produce one extra sitemap file at most — harmless for SEO.
+    const [productCount, categoryCount] = await Promise.all([
+      fetchTotalCount("products"),
+      fetchTotalCount("categories"),
+    ]);
 
-  const urlsPerLocale = STATIC_PAGES_PER_LOCALE + productCount + taxonCount;
-  const totalUrls = urlsPerLocale * countryLocales.length;
-  const sitemapCount = Math.max(1, Math.ceil(totalUrls / URLS_PER_SITEMAP));
+    const urlsPerLocale =
+      STATIC_PAGES_PER_LOCALE + productCount + categoryCount;
+    const totalUrls = urlsPerLocale * countryLocales.length;
+    const sitemapCount = Math.max(1, Math.ceil(totalUrls / URLS_PER_SITEMAP));
 
-  return Array.from({ length: sitemapCount }, (_, i) => ({ id: i }));
+    return Array.from({ length: sitemapCount }, (_, i) => ({ id: i }));
+  } catch {
+    // API may be unavailable at build time — return a single sitemap chunk
+    // that will be populated at request time.
+    return [{ id: 0 }];
+  }
 }
 
 export default async function sitemap(props: {
@@ -104,28 +118,36 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
 
-  const store = await getStore();
-  const baseUrl = (store.url || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
+  const storeUrl = getStoreUrl();
+  const baseUrl = (storeUrl || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
     /\/$/,
     "",
   );
 
   if (!baseUrl) {
     console.error(
-      "Sitemap generation skipped: neither store.url nor NEXT_PUBLIC_SITE_URL is set. " +
+      "Sitemap generation skipped: neither STORE_URL nor NEXT_PUBLIC_SITE_URL is set. " +
         "Sitemaps require absolute URLs.",
     );
     return [];
   }
 
-  const countryLocales = await getCachedCountryLocales(store);
+  let countryLocales: CountryLocale[];
+  let allProducts: StoreProduct[];
+  let allCategories: Category[];
 
-  const [allProducts, allTaxons] = await Promise.all([
-    getCachedProducts(),
-    getCachedTaxons(),
-  ]);
+  try {
+    [countryLocales, allProducts, allCategories] = await Promise.all([
+      getCachedCountryLocales(),
+      getCachedProducts(),
+      getCachedCategories(),
+    ]);
+  } catch (err) {
+    console.error("Sitemap generation failed: API unavailable.", err);
+    return [];
+  }
 
-  const nonRootTaxons = allTaxons.filter((t) => !t.is_root);
+  const nonRootCategories = allCategories.filter((c) => !c.is_root);
 
   // Build entries for all locales, then slice to the requested chunk.
   // For most stores (< 50k URLs) this produces a single chunk so no slicing occurs.
@@ -150,7 +172,7 @@ export default async function sitemap(props: {
         priority: 0.8,
       },
       {
-        url: `${basePath}/taxonomies`,
+        url: `${basePath}/c`,
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.7,
@@ -174,11 +196,11 @@ export default async function sitemap(props: {
       });
     }
 
-    // Category/taxon pages
-    for (const taxon of nonRootTaxons) {
+    // Category pages
+    for (const category of nonRootCategories) {
       entries.push({
-        url: `${basePath}/t/${taxon.permalink}`,
-        ...safeLastModified(taxon.updated_at),
+        url: `${basePath}/c/${category.permalink}`,
+        ...safeLastModified(category.updated_at),
         changeFrequency: "weekly",
         priority: 0.5,
       });
@@ -197,9 +219,7 @@ export default async function sitemap(props: {
  * Resolves the list of country/locale pairs to include in the sitemap
  * based on the SITEMAP_LOCALE_MODE environment variable.
  */
-async function resolveCountryLocales(
-  store: Awaited<ReturnType<typeof getStore>>,
-): Promise<CountryLocale[]> {
+async function resolveCountryLocales(): Promise<CountryLocale[]> {
   const rawMode = process.env.SITEMAP_LOCALE_MODE || "default";
   let mode: SitemapLocaleMode;
   if (VALID_LOCALE_MODES.includes(rawMode as SitemapLocaleMode)) {
@@ -211,8 +231,7 @@ async function resolveCountryLocales(
     mode = "default";
   }
 
-  const storeDefaultLocale =
-    store.default_locale || process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
+  const storeDefaultLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
 
   if (mode === "default") {
     const defaultCountry = (
@@ -223,7 +242,8 @@ async function resolveCountryLocales(
   }
 
   // For "all" and "selected" modes we need the countries from the API
-  const countriesResponse = await getCountries();
+  const localeOptions = getDefaultLocaleOptions();
+  const countriesResponse = await listCountries(localeOptions);
   const allCountries = countriesResponse.data;
 
   if (mode === "selected") {
@@ -246,7 +266,7 @@ async function resolveCountryLocales(
       const found = allCountries.find((c) => c.iso.toLowerCase() === iso);
       return {
         country: iso,
-        locale: found?.default_locale || storeDefaultLocale,
+        locale: found?.market?.default_locale || storeDefaultLocale,
       };
     });
   }
@@ -254,19 +274,20 @@ async function resolveCountryLocales(
   // mode === "all"
   return allCountries.map((c) => ({
     country: c.iso.toLowerCase(),
-    locale: c.default_locale || storeDefaultLocale,
+    locale: c.market?.default_locale || storeDefaultLocale,
   }));
 }
 
 /**
- * Fetches only the total count for products or taxons without loading all data.
+ * Fetches only the total count for products or categories without loading all data.
  * Used by generateSitemaps() to calculate the number of sitemap files needed.
  */
 async function fetchTotalCount(
-  resource: "products" | "taxons",
+  resource: "products" | "categories",
 ): Promise<number> {
-  const fetcher = resource === "products" ? getProducts : getTaxons;
-  const response = await fetcher({ page: 1, per_page: 1 });
+  const localeOptions = getDefaultLocaleOptions();
+  const fetcher = resource === "products" ? listProducts : listCategories;
+  const response = await fetcher({ page: 1, limit: 1 }, localeOptions);
   return response.meta.count;
 }
 
@@ -280,16 +301,16 @@ function safeLastModified(
 }
 
 async function fetchAllProducts(): Promise<StoreProduct[]> {
+  const localeOptions = getDefaultLocaleOptions();
   const allProducts: StoreProduct[] = [];
   let page = 1;
   let totalPages = 1;
 
   do {
-    const response = await getProducts({
-      page,
-      per_page: 100,
-      includes: "images",
-    });
+    const response = await listProducts(
+      { page, limit: 100, expand: ["images"] },
+      localeOptions,
+    );
     allProducts.push(...response.data);
     totalPages = response.meta.pages;
     page++;
@@ -298,17 +319,18 @@ async function fetchAllProducts(): Promise<StoreProduct[]> {
   return allProducts;
 }
 
-async function fetchAllTaxons(): Promise<StoreTaxon[]> {
-  const allTaxons: StoreTaxon[] = [];
+async function fetchAllCategories(): Promise<Category[]> {
+  const localeOptions = getDefaultLocaleOptions();
+  const allCategories: Category[] = [];
   let page = 1;
   let totalPages = 1;
 
   do {
-    const response = await getTaxons({ page, per_page: 100 });
-    allTaxons.push(...response.data);
+    const response = await listCategories({ page, limit: 100 }, localeOptions);
+    allCategories.push(...response.data);
     totalPages = response.meta.pages;
     page++;
   } while (page <= totalPages && page <= MAX_PAGES);
 
-  return allTaxons;
+  return allCategories;
 }
