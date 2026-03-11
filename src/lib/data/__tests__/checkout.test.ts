@@ -175,6 +175,17 @@ describe("checkout server actions", () => {
         error: "Cannot advance",
       });
     });
+
+    it("returns fallback message for non-Error throws", async () => {
+      mockNext.mockRejectedValue("unexpected");
+
+      const result = await nextCheckoutStep("order-1");
+
+      expect(result).toEqual({
+        success: false,
+        error: "Failed to advance checkout",
+      });
+    });
   });
 
   describe("advanceCheckout", () => {

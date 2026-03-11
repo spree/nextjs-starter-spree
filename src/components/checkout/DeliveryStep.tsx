@@ -8,7 +8,7 @@ interface DeliveryStepProps {
   shipments: Shipment[];
   onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>;
   onConfirm: () => Promise<void>;
-  onBack: () => void;
+  onBack?: () => void;
   processing: boolean;
 }
 
@@ -38,9 +38,11 @@ export function DeliveryStep({
             <h2 className="text-lg font-semibold text-gray-900">
               Shipping Address
             </h2>
-            <Button variant="link" size="sm" onClick={onBack}>
-              Edit
-            </Button>
+            {onBack && (
+              <Button variant="link" size="sm" onClick={onBack}>
+                Edit
+              </Button>
+            )}
           </div>
           <div className="text-sm text-gray-600">
             <p className="font-medium text-gray-900">
@@ -128,14 +130,16 @@ export function DeliveryStep({
 
       {/* Actions */}
       <div className="flex justify-between">
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={onBack}
-          disabled={processing}
-        >
-          Back
-        </Button>
+        {onBack && (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            disabled={processing}
+          >
+            Back
+          </Button>
+        )}
         <Button
           size="lg"
           onClick={onConfirm}

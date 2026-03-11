@@ -41,13 +41,21 @@ import {
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
-// Map order state to the corresponding checkout step
-// "cart" maps to the first checkout step, "confirm" maps to "payment"
+function getVisibleCheckoutSteps(checkoutSteps: string[]): string[] {
+  return checkoutSteps.filter(
+    (step) => step !== "complete" && step !== "confirm",
+  );
+}
+
+// Map order state to the corresponding visible checkout step
 function getCheckoutStep(orderState: string, checkoutSteps: string[]): string {
-  if (orderState === "cart") return checkoutSteps[0] || "address";
-  if (orderState === "confirm") return "payment";
-  if (checkoutSteps.includes(orderState)) return orderState;
-  return checkoutSteps[0] || "address";
+  const visibleSteps = getVisibleCheckoutSteps(checkoutSteps);
+  if (orderState === "cart") return visibleSteps[0] || "address";
+  if (orderState === "confirm") {
+    return visibleSteps[visibleSteps.length - 1] || "address";
+  }
+  if (visibleSteps.includes(orderState)) return orderState;
+  return visibleSteps[0] || "address";
 }
 
 const STEP_LABELS: Record<string, string> = {
@@ -529,14 +537,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     );
   }
 
-  const steps = order.checkout_steps
-    .filter((step) => step !== "complete" && step !== "confirm")
-    .map((step) => ({
-      id: step,
-      label: STEP_LABELS[step] || step.charAt(0).toUpperCase() + step.slice(1),
-    }));
+  const steps = getVisibleCheckoutSteps(order.checkout_steps).map((step) => ({
+    id: step,
+    label: STEP_LABELS[step] || step.charAt(0).toUpperCase() + step.slice(1),
+  }));
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
+  const previousStepId =
+    currentStepIndex > 0 ? steps[currentStepIndex - 1].id : undefined;
 
   return (
     <>
@@ -625,7 +633,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           shipments={shipments}
           onShippingRateSelect={handleShippingRateSelect}
           onConfirm={handleDeliveryConfirm}
-          onBack={() => goToStep("address")}
+          onBack={previousStepId ? () => goToStep(previousStepId) : undefined}
           processing={processing}
         />
       )}
@@ -638,7 +646,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           fetchStates={fetchStates}
           onUpdateBillingAddress={handleUpdateBillingAddress}
           onPaymentComplete={handlePaymentComplete}
-          onBack={() => goToStep("delivery")}
+          onBack={previousStepId ? () => goToStep(previousStepId) : undefined}
           processing={processing}
           setProcessing={setProcessing}
         />

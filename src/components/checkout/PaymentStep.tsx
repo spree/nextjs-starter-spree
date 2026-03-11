@@ -39,7 +39,7 @@ interface PaymentStepProps {
     bill_address: AddressParams;
   }) => Promise<boolean>;
   onPaymentComplete: (paymentSessionId: string) => Promise<void>;
-  onBack: () => void;
+  onBack?: () => void;
   processing: boolean;
   setProcessing: (processing: boolean) => void;
 }
@@ -287,9 +287,11 @@ export function PaymentStep({
             <h2 className="text-lg font-semibold text-gray-900">
               Shipping Address
             </h2>
-            <Button type="button" variant="link" size="sm" onClick={onBack}>
-              Edit
-            </Button>
+            {onBack && (
+              <Button type="button" variant="link" size="sm" onClick={onBack}>
+                Edit
+              </Button>
+            )}
           </div>
           <div className="text-sm text-gray-600">
             <p className="font-medium text-gray-900">
@@ -452,15 +454,17 @@ export function PaymentStep({
 
       {/* Actions */}
       <div className="flex justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          onClick={onBack}
-          disabled={processing}
-        >
-          Back
-        </Button>
+        {onBack && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            disabled={processing}
+          >
+            Back
+          </Button>
+        )}
         <Button
           type="submit"
           size="lg"
