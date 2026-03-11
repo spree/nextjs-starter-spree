@@ -1,77 +1,38 @@
 "use client";
 
 import type { Address, Country, State } from "@spree/sdk";
-import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { AddressFormData } from "@/lib/utils/address";
 import { AddressFormFields } from "./AddressFormFields";
 
 interface AddressSelectorProps {
   savedAddresses: Address[];
+  selectedAddressId: string | null;
   currentAddress: AddressFormData;
   countries: Country[];
   states: State[];
   loadingStates: boolean;
   onChange: (field: keyof AddressFormData, value: string) => void;
   onSelectSavedAddress: (address: Address) => void;
+  onSelectNew: () => void;
   onEditAddress?: (address: Address) => void;
   idPrefix: string;
 }
 
 export function AddressSelector({
   savedAddresses,
+  selectedAddressId,
   currentAddress,
   countries,
   states,
   loadingStates,
   onChange,
   onSelectSavedAddress,
+  onSelectNew,
   onEditAddress,
   idPrefix,
 }: AddressSelectorProps) {
-  // Derive selected address from current form data — no useEffect needed
-  const selectedAddressId = useMemo((): string => {
-    if (savedAddresses.length === 0) return "new";
-    const match = savedAddresses.find(
-      (addr) =>
-        addr.address1 === currentAddress.address1 &&
-        addr.city === currentAddress.city &&
-        addr.zipcode === currentAddress.zipcode &&
-        addr.country_iso === currentAddress.country_iso,
-    );
-    if (match) return match.id;
-    return "new";
-  }, [
-    savedAddresses,
-    currentAddress.address1,
-    currentAddress.city,
-    currentAddress.zipcode,
-    currentAddress.country_iso,
-  ]);
-
-  const handleSelectAddress = (addressId: string) => {
-    if (addressId === "new") {
-      // Clear form for new address
-      onChange("firstname", "");
-      onChange("lastname", "");
-      onChange("address1", "");
-      onChange("address2", "");
-      onChange("city", "");
-      onChange("zipcode", "");
-      onChange("phone", "");
-      onChange("company", "");
-      onChange("country_iso", "");
-      onChange("state_abbr", "");
-      onChange("state_name", "");
-    } else {
-      const selectedAddress = savedAddresses.find((a) => a.id === addressId);
-      if (selectedAddress) {
-        onSelectSavedAddress(selectedAddress);
-      }
-    }
-  };
-
-  const showForm = selectedAddressId === "new" || savedAddresses.length === 0;
+  const showForm = !selectedAddressId || savedAddresses.length === 0;
 
   return (
     <div className="space-y-4">
@@ -95,8 +56,8 @@ export function AddressSelector({
                     name={`${idPrefix}-address-selection`}
                     value={address.id}
                     checked={selectedAddressId === address.id}
-                    onChange={() => handleSelectAddress(address.id)}
-                    className="mt-1 h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
+                    onChange={() => onSelectSavedAddress(address)}
+                    className="mt-1 h-4 w-4 text-primary border-gray-300"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900">
@@ -136,7 +97,7 @@ export function AddressSelector({
             ))}
             <label
               className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${
-                selectedAddressId === "new"
+                !selectedAddressId
                   ? "border-gray-300 bg-gray-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
@@ -145,9 +106,9 @@ export function AddressSelector({
                 type="radio"
                 name={`${idPrefix}-address-selection`}
                 value="new"
-                checked={selectedAddressId === "new"}
-                onChange={() => handleSelectAddress("new")}
-                className="h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
+                checked={!selectedAddressId}
+                onChange={onSelectNew}
+                className="h-4 w-4 text-primary border-gray-300"
               />
               <span className="ml-3 text-sm font-medium text-gray-900">
                 Use a different address

@@ -108,7 +108,7 @@ export function DeliveryStep({
                             handleRateChange(shipment.id, rate.id)
                           }
                           disabled={processing}
-                          className="w-4 h-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
+                          className="w-4 h-4 text-primary border-gray-300"
                         />
                         <div className="ml-3">
                           <span className="block text-sm font-medium text-gray-900">

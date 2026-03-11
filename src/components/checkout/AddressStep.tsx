@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import {
   type AddressFormData,
   addressToFormData,
+  emptyAddress,
   formDataToAddress,
 } from "@/lib/utils/address";
 import { AddressEditModal } from "./AddressEditModal";
@@ -51,6 +52,21 @@ export function AddressStep({
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     addressToFormData(order.ship_address),
   );
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
+    string | null
+  >(() => {
+    // Check if the current order address matches a saved address
+    if (initialSavedAddresses.length === 0 || !order.ship_address) return null;
+    const formData = addressToFormData(order.ship_address);
+    const match = initialSavedAddresses.find(
+      (addr) =>
+        addr.address1 === formData.address1 &&
+        addr.city === formData.city &&
+        addr.zipcode === formData.zipcode &&
+        addr.country_iso === formData.country_iso,
+    );
+    return match?.id ?? null;
+  });
   const [shipStates, setShipStates] = useState<State[]>([]);
   const [isPendingShip, startTransitionShip] = useTransition();
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
@@ -81,13 +97,15 @@ export function AddressStep({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      email,
-      ship_address: formDataToAddress(shipAddress),
-    });
+    if (selectedSavedAddressId) {
+      onSubmit({ email, ship_address_id: selectedSavedAddressId });
+    } else {
+      onSubmit({ email, ship_address: formDataToAddress(shipAddress) });
+    }
   };
 
   const updateShipAddress = (field: keyof AddressFormData, value: string) => {
+    setSelectedSavedAddressId(null);
     setShipAddress((prev) => {
       const updated = { ...prev, [field]: value };
       // Clear state when country changes
@@ -100,7 +118,13 @@ export function AddressStep({
   };
 
   const handleSelectSavedAddress = (address: Address) => {
+    setSelectedSavedAddressId(address.id);
     setShipAddress(addressToFormData(address));
+  };
+
+  const handleSelectNew = () => {
+    setSelectedSavedAddressId(null);
+    setShipAddress({ ...emptyAddress });
   };
 
   const handleSaveEditedAddress = async (data: AddressParams, id?: string) => {
@@ -167,12 +191,14 @@ export function AddressStep({
           {isAuthenticated && savedAddresses.length > 0 ? (
             <AddressSelector
               savedAddresses={savedAddresses}
+              selectedAddressId={selectedSavedAddressId}
               currentAddress={shipAddress}
               countries={countries}
               states={shipStates}
               loadingStates={isPendingShip}
               onChange={updateShipAddress}
               onSelectSavedAddress={handleSelectSavedAddress}
+              onSelectNew={handleSelectNew}
               onEditAddress={
                 onUpdateSavedAddress
                   ? (address) => setEditingAddress(address)
