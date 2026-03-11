@@ -4,12 +4,9 @@ import type { Country, State } from "@spree/sdk";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import type { AddressFormData } from "@/lib/utils/address";
 
 interface AddressFormFieldsProps {
@@ -104,50 +101,47 @@ export function AddressFormFields({
 
       <Field>
         <FieldLabel htmlFor={`${idPrefix}-country`}>Country</FieldLabel>
-        <Select
-          value={address.country_iso || undefined}
-          onValueChange={(value) => onChange("country_iso", value)}
+        <NativeSelect
+          id={`${idPrefix}-country`}
+          className="w-full"
+          value={address.country_iso}
+          onChange={(e) => onChange("country_iso", e.target.value)}
           required
         >
-          <SelectTrigger id={`${idPrefix}-country`} className="w-full">
-            <SelectValue placeholder="Select a country" />
-          </SelectTrigger>
-          <SelectContent>
-            {countries.map((country) => (
-              <SelectItem key={country.iso} value={country.iso}>
-                {country.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <NativeSelectOption value="" disabled>
+            Select a country
+          </NativeSelectOption>
+          {countries.map((country) => (
+            <NativeSelectOption key={country.iso} value={country.iso}>
+              {country.name}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
       </Field>
 
       <Field>
         <FieldLabel htmlFor={`${idPrefix}-state`}>State / Province</FieldLabel>
         {loadingStates ? (
-          <Select disabled>
-            <SelectTrigger id={`${idPrefix}-state`} className="w-full">
-              <SelectValue placeholder="Loading..." />
-            </SelectTrigger>
-            <SelectContent />
-          </Select>
+          <NativeSelect id={`${idPrefix}-state`} className="w-full" disabled>
+            <NativeSelectOption value="">Loading...</NativeSelectOption>
+          </NativeSelect>
         ) : hasStates ? (
-          <Select
-            value={address.state_abbr || undefined}
-            onValueChange={(value) => onChange("state_abbr", value)}
+          <NativeSelect
+            id={`${idPrefix}-state`}
+            className="w-full"
+            value={address.state_abbr}
+            onChange={(e) => onChange("state_abbr", e.target.value)}
             required
           >
-            <SelectTrigger id={`${idPrefix}-state`} className="w-full">
-              <SelectValue placeholder="Select a state" />
-            </SelectTrigger>
-            <SelectContent>
-              {states.map((state) => (
-                <SelectItem key={state.abbr} value={state.abbr}>
-                  {state.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <NativeSelectOption value="" disabled>
+              Select a state
+            </NativeSelectOption>
+            {states.map((state) => (
+              <NativeSelectOption key={state.abbr} value={state.abbr}>
+                {state.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
         ) : (
           <Input
             type="text"

@@ -1,8 +1,10 @@
 "use client";
 
 import type { Address, AddressParams, Country, Order, State } from "@spree/sdk";
+import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -122,18 +124,15 @@ export function AddressStep({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Sign-in prompt for guests */}
         {!isAuthenticated && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-sm text-blue-800">
-              Already have an account?{" "}
-              <Link
-                href={signInUrl}
-                className="font-medium text-blue-600 hover:text-blue-700 underline"
-              >
-                Sign in
-              </Link>{" "}
-              to access your saved addresses and order history.
-            </p>
-          </div>
+          <Alert>
+            <InfoIcon />
+            <AlertDescription>
+              Already have an account?
+              <br />
+              <Link href={signInUrl}>Sign in</Link> to access your saved
+              addresses and order history.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Contact Information */}
