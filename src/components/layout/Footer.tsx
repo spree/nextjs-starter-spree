@@ -1,37 +1,36 @@
+"use client";
+
 import Link from "next/link";
+import { useStore } from "@/contexts/StoreContext";
 
 export function Footer() {
+  const { storeName, storeDescription } = useStore();
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-primary text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <span className="text-xl font-bold text-white">Spree Store</span>
-            <p className="mt-4 text-sm">
-              A modern e-commerce storefront powered by Spree Commerce and
-              Next.js.
-            </p>
+            <span className="text-xl font-bold text-white">{storeName}</span>
+            <p className="mt-4 text-sm text-neutral-400">{storeDescription}</p>
           </div>
 
           {/* Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-              Shop
-            </h3>
-            <ul className="mt-4 space-y-2">
+            <h3 className="text-sm font-medium text-neutral-300">Shop</h3>
+            <ul className="mt-4 space-y-3">
               <li>
                 <Link
                   href="/products"
-                  className="hover:text-white transition-colors"
+                  className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   All Products
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/taxonomies"
-                  className="hover:text-white transition-colors"
+                  href="/products"
+                  className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   Categories
                 </Link>
@@ -41,14 +40,12 @@ export function Footer() {
 
           {/* Account */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
-              Account
-            </h3>
-            <ul className="mt-4 space-y-2">
+            <h3 className="text-sm font-medium text-neutral-300">Account</h3>
+            <ul className="mt-4 space-y-3">
               <li>
                 <Link
                   href="/account"
-                  className="hover:text-white transition-colors"
+                  className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   My Account
                 </Link>
@@ -56,7 +53,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/account/orders"
-                  className="hover:text-white transition-colors"
+                  className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   Order History
                 </Link>
@@ -64,7 +61,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/cart"
-                  className="hover:text-white transition-colors"
+                  className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   Cart
                 </Link>
@@ -73,9 +70,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-800 text-sm text-center">
+        <div className="mt-8 pt-8 border-t border-neutral-800 text-xs text-neutral-500 text-center">
           <p>
-            &copy; {new Date().getFullYear()} Spree Store. Powered by Spree
+            &copy; {new Date().getFullYear()} {storeName}. Powered by Spree
             Commerce.
           </p>
         </div>

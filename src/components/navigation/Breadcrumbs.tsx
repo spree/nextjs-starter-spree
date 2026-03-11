@@ -1,34 +1,28 @@
-import type { StoreTaxon } from "@spree/sdk";
+import type { Category } from "@spree/sdk";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { ChevronRightIcon } from "@/components/icons";
 
 interface BreadcrumbsProps {
-  taxon: StoreTaxon;
+  category: Category;
   basePath: string;
 }
 
-export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
-  // Build breadcrumb items from ancestors + current taxon
-  const items = [
-    { name: "Home", href: basePath },
-    { name: "Categories", href: `${basePath}/taxonomies` },
-  ];
+export function Breadcrumbs({ category, basePath }: BreadcrumbsProps) {
+  // Build breadcrumb items from ancestors + current category
+  const items = [{ name: "Home", href: basePath }];
 
   // Add ancestors (they come from the API in order from root to parent)
-  if (taxon.ancestors && taxon.ancestors.length > 0) {
-    taxon.ancestors.forEach((ancestor) => {
-      // Skip the root taxon (it's usually just the taxonomy name)
-      if (!ancestor.is_root) {
-        items.push({
-          name: ancestor.name,
-          href: `${basePath}/t/${ancestor.permalink}`,
-        });
-      }
+  if (category.ancestors && category.ancestors.length > 0) {
+    category.ancestors.forEach((ancestor) => {
+      items.push({
+        name: ancestor.name,
+        href: `${basePath}/c/${ancestor.permalink}`,
+      });
     });
   }
 
-  // Add current taxon (not a link)
-  items.push({ name: taxon.name, href: "" });
+  // Add current category (not a link)
+  items.push({ name: category.name, href: "" });
 
   return (
     <nav aria-label="Breadcrumb" className="mb-6">
@@ -39,7 +33,7 @@ export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
           return (
             <li key={index} className="flex items-center">
               {index > 0 && (
-                <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-2" />
+                <ChevronRight className="w-4 h-4 text-gray-400 mx-2" />
               )}
               {isLast ? (
                 <span className="text-gray-500" aria-current="page">
@@ -48,7 +42,7 @@ export function Breadcrumbs({ taxon, basePath }: BreadcrumbsProps) {
               ) : (
                 <Link
                   href={item.href}
-                  className="text-primary-500 hover:text-primary-700"
+                  className="text-primary hover:text-primary/70"
                 >
                   {item.name}
                 </Link>

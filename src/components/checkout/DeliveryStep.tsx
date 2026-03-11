@@ -1,13 +1,14 @@
 "use client";
 
-import type { StoreOrder, StoreShipment } from "@spree/sdk";
+import type { Order, Shipment } from "@spree/sdk";
+import { Button } from "@/components/ui/button";
 
 interface DeliveryStepProps {
-  order: StoreOrder;
-  shipments: StoreShipment[];
+  order: Order;
+  shipments: Shipment[];
   onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>;
   onConfirm: () => Promise<void>;
-  onBack: () => void;
+  onBack?: () => void;
   processing: boolean;
 }
 
@@ -37,13 +38,11 @@ export function DeliveryStep({
             <h2 className="text-lg font-semibold text-gray-900">
               Shipping Address
             </h2>
-            <button
-              type="button"
-              onClick={onBack}
-              className="text-sm text-primary-500 hover:text-primary-700"
-            >
-              Edit
-            </button>
+            {onBack && (
+              <Button variant="link" size="sm" onClick={onBack}>
+                Edit
+              </Button>
+            )}
           </div>
           <div className="text-sm text-gray-600">
             <p className="font-medium text-gray-900">
@@ -96,7 +95,7 @@ export function DeliveryStep({
                       key={rate.id}
                       className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-colors ${
                         rate.selected
-                          ? "border-primary-600 bg-primary-50"
+                          ? "border-gray-600 bg-gray-50"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -109,7 +108,7 @@ export function DeliveryStep({
                             handleRateChange(shipment.id, rate.id)
                           }
                           disabled={processing}
-                          className="w-4 h-4 text-primary-500 border-gray-300 focus:ring-primary-500"
+                          className="w-4 h-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
                         />
                         <div className="ml-3">
                           <span className="block text-sm font-medium text-gray-900">
@@ -131,22 +130,23 @@ export function DeliveryStep({
 
       {/* Actions */}
       <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={processing}
-          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Back
-        </button>
-        <button
-          type="button"
+        {onBack && (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            disabled={processing}
+          >
+            Back
+          </Button>
+        )}
+        <Button
+          size="lg"
           onClick={onConfirm}
           disabled={processing || !allRatesSelected}
-          className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {processing ? "Processing..." : "Continue"}
-        </button>
+        </Button>
       </div>
     </div>
   );

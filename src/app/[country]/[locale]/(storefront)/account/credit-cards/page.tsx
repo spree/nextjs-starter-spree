@@ -1,9 +1,21 @@
 "use client";
 
-import type { StoreCreditCard } from "@spree/sdk";
+import type { CreditCard as SpreeCreditCard } from "@spree/sdk";
+import { CreditCard, Lock } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
-import { CreditCardIcon, LockIcon } from "@/components/icons";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { deleteCreditCard, getCreditCards } from "@/lib/data/credit-cards";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 
@@ -11,13 +23,12 @@ function CreditCardItem({
   card,
   onDelete,
 }: {
-  card: StoreCreditCard;
+  card: SpreeCreditCard;
   onDelete: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to remove this card?")) return;
     setDeleting(true);
     try {
       await onDelete();
@@ -49,17 +60,33 @@ function CreditCardItem({
         </div>
         <div className="flex items-center gap-3">
           {card.default && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-green-100 text-green-800">
               Default
             </span>
           )}
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
-          >
-            {deleting ? "Removing..." : "Remove"}
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" disabled={deleting}>
+                {deleting ? "Removing..." : "Remove"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove payment method?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove the {getCardLabel(card.cc_type)} ending in{" "}
+                  {card.last_digits} from your account. This action cannot be
+                  undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={handleDelete}>
+                  Remove
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
@@ -67,7 +94,7 @@ function CreditCardItem({
 }
 
 export default function CreditCardsPage() {
-  const [cards, setCards] = useState<StoreCreditCard[]>([]);
+  const [cards, setCards] = useState<SpreeCreditCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadCards = useCallback(async () => {
@@ -121,7 +148,7 @@ export default function CreditCardsPage() {
 
       {cards.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No payment methods saved
           </h3>
@@ -143,7 +170,7 @@ export default function CreditCardsPage() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-xl">
         <p className="text-sm text-gray-600">
-          <LockIcon className="w-4 h-4 inline mr-1" />
+          <Lock className="w-4 h-4 inline mr-1" />
           Your payment information is securely stored and encrypted. We never
           store your full card number.
         </p>

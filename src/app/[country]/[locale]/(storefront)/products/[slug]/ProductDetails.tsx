@@ -1,23 +1,18 @@
 "use client";
 
-import type { StoreImage, StoreProduct, StoreVariant } from "@spree/sdk";
+import type { Product, Image as SpreeImage, Variant } from "@spree/sdk";
+import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
-import {
-  CheckCircleSolidIcon,
-  MinusIcon,
-  PlusIcon,
-  ShoppingBagIcon,
-  SpinnerIcon,
-  XCircleSolidIcon,
-} from "@/components/icons";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { VariantPicker } from "@/components/products/VariantPicker";
+import { Button } from "@/components/ui/button";
+import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { trackAddToCart } from "@/lib/analytics/gtm";
 
 interface ProductDetailsProps {
-  product: StoreProduct;
+  product: Product;
   basePath: string;
 }
 
@@ -34,24 +29,22 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const optionTypes = product.option_types || [];
 
   // Initialize with default variant or first available variant
-  const [selectedVariant, setSelectedVariant] = useState<StoreVariant | null>(
-    () => {
-      if (product.default_variant && !product.default_variant.is_master) {
-        return product.default_variant;
-      }
-      if (hasVariants) {
-        return variants.find((v) => v.purchasable) || variants[0];
-      }
-      // For products without variants, use master variant
-      return product.master_variant || product.default_variant || null;
-    },
-  );
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(() => {
+    if (product.default_variant && !product.default_variant.is_master) {
+      return product.default_variant;
+    }
+    if (hasVariants) {
+      return variants.find((v) => v.purchasable) || variants[0];
+    }
+    // For products without variants, use master variant
+    return product.master_variant || product.default_variant || null;
+  });
 
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
   // Get images for the gallery - variant images take priority
-  const galleryImages = useMemo((): StoreImage[] => {
+  const galleryImages = useMemo((): SpreeImage[] => {
     // If selected variant has images, show those
     if (selectedVariant?.images && selectedVariant.images.length > 0) {
       return selectedVariant.images;
@@ -152,12 +145,12 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           <div className="mt-4">
             {inStock ? (
               <span className="inline-flex items-center gap-1.5 text-green-600">
-                <CheckCircleSolidIcon className="w-5 h-5" />
+                <CircleCheckBig className="w-5 h-5" />
                 In Stock
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 text-red-600">
-                <XCircleSolidIcon className="w-5 h-5" />
+                <CircleX className="w-5 h-5" />
                 Out of Stock
               </span>
             )}
@@ -178,55 +171,33 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           {/* Quantity & Add to Cart */}
           <div className="mt-8">
             <div className="flex gap-4">
-              {/* Quantity Selector */}
-              <div className="flex items-center border border-gray-300 rounded-xl">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
-                  aria-label="Decrease quantity"
-                >
-                  <MinusIcon className="w-4 h-4" />
-                </button>
-                <span className="px-4 py-3 font-medium min-w-[3rem] text-center">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors"
-                  aria-label="Increase quantity"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                </button>
-              </div>
+              <QuantityPicker
+                quantity={quantity}
+                onDecrement={() => setQuantity(Math.max(1, quantity - 1))}
+                onIncrement={() => setQuantity(quantity + 1)}
+                size="lg"
+              />
 
               {/* Add to Cart Button */}
-              <button
+              <Button
+                size="lg"
                 onClick={handleAddToCart}
                 disabled={loading || !isPurchasable}
-                className={`
-                  flex-1 py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2
-                  ${
-                    isPurchasable
-                      ? "bg-primary-500 text-white hover:bg-primary-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                `}
               >
                 {loading ? (
                   <>
-                    <SpinnerIcon className="animate-spin h-5 w-5" />
+                    <Loader2 className="animate-spin h-5 w-5" />
                     Adding...
                   </>
                 ) : isPurchasable ? (
                   <>
-                    <ShoppingBagIcon className="w-5 h-5" />
+                    <ShoppingBag className="w-5 h-5" />
                     Add to Cart
                   </>
                 ) : (
                   "Out of Stock"
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 

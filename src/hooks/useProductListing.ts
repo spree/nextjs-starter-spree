@@ -2,24 +2,19 @@
 
 import type {
   PaginatedResponse,
+  Product,
   ProductFiltersResponse,
-  StoreProduct,
+  ProductListParams,
 } from "@spree/sdk";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ActiveFilters } from "@/components/products/ProductFilters";
-import { useStore } from "@/contexts/StoreContext";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getProductFilters } from "@/lib/data/products";
+import { filtersEqual } from "@/lib/utils/filters";
 import { buildProductQueryParams } from "@/lib/utils/product-query";
+import type { ActiveFilters } from "@/types/filters";
 
 interface UseProductListingOptions {
-  /** Function that fetches a page of products given query params and store options. */
-  fetchFn: (
-    params: Record<string, unknown>,
-    options: { currency: string; locale: string },
-  ) => Promise<PaginatedResponse<StoreProduct>>;
-  /** Optional params passed to getProductFilters (e.g. { taxon_id }). */
-  filterParams?: Record<string, unknown>;
-  /** Optional search query string. */
+  fetchFn: (params: ProductListParams) => Promise<PaginatedResponse<Product>>;
+  filterParams?: ProductListParams;
   searchQuery?: string;
 }
 
@@ -28,9 +23,7 @@ export function useProductListing({
   filterParams = {},
   searchQuery = "",
 }: UseProductListingOptions) {
-  const { currency, locale, loading: storeLoading } = useStore();
-
-  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -42,30 +35,32 @@ export function useProductListing({
     null,
   );
   const [filtersLoading, setFiltersLoading] = useState(true);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(false);
+  const loadingMoreRef = useRef(false);
   const filtersRef = useRef<ActiveFilters>({ optionValues: [] });
   const filterParamsRef = useRef(filterParams);
   filterParamsRef.current = filterParams;
-  const filterParamsKey = JSON.stringify(filterParams);
+  const filterParamsKey = useMemo(
+    () => JSON.stringify(filterParams),
+    [filterParams],
+  );
   const loadIdRef = useRef(0);
+  const searchQueryRef = useRef(searchQuery);
+  searchQueryRef.current = searchQuery;
 
   const fetchProducts = useCallback(
     async (page: number, filters: ActiveFilters, query: string) => {
       try {
         const queryParams = buildProductQueryParams(filters, query);
-        return await fetchFn(
-          { page, per_page: 12, ...queryParams },
-          { currency, locale },
-        );
+        return await fetchFn({ page, limit: 12, ...queryParams });
       } catch (error) {
         console.error("Failed to fetch products:", error);
         return null;
       }
     },
-    [fetchFn, currency, locale],
+    [fetchFn],
   );
 
   const loadProducts = useCallback(
@@ -91,12 +86,8 @@ export function useProductListing({
     [fetchProducts],
   );
 
-  // Fetch filters (scoped to search query when present)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filterParamsKey triggers re-fetch on soft-nav
   useEffect(() => {
-    if (storeLoading) return;
-    // Track filterParams changes for re-fetching on soft-nav
-    void filterParamsKey;
-
     let cancelled = false;
 
     const fetchFilters = async () => {
@@ -104,12 +95,9 @@ export function useProductListing({
       try {
         const params = { ...filterParamsRef.current };
         if (searchQuery) {
-          params["q[multi_search]"] = searchQuery;
+          params.multi_search = searchQuery;
         }
-        const response = await getProductFilters(params, {
-          currency,
-          locale,
-        });
+        const response = await getProductFilters(params);
         if (!cancelled) {
           setFiltersData(response);
         }
@@ -127,55 +115,65 @@ export function useProductListing({
     return () => {
       cancelled = true;
     };
-  }, [currency, locale, storeLoading, searchQuery, filterParamsKey]);
+  }, [searchQuery, filterParamsKey]);
 
-  // Load products when search query, store context, or filter params change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filterParamsKey triggers re-fetch on soft-nav
   useEffect(() => {
-    if (storeLoading) return;
-    // Track filterParams changes for re-fetching on soft-nav
-    void filterParamsKey;
     loadProducts(filtersRef.current, searchQuery);
-  }, [storeLoading, searchQuery, loadProducts, filterParamsKey]);
+  }, [searchQuery, loadProducts, filterParamsKey]);
 
   const handleFilterChange = useCallback(
     (newFilters: ActiveFilters) => {
-      if (JSON.stringify(filtersRef.current) !== JSON.stringify(newFilters)) {
+      if (!filtersEqual(filtersRef.current, newFilters)) {
         filtersRef.current = newFilters;
         setActiveFilters(newFilters);
-        loadProducts(newFilters, searchQuery);
+        loadProducts(newFilters, searchQueryRef.current);
       }
     },
-    [loadProducts, searchQuery],
+    [loadProducts],
   );
 
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMoreRef.current) return;
+    if (loadingMoreRef.current || !hasMoreRef.current) return;
 
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     const currentLoadId = loadIdRef.current;
     const nextPage = pageRef.current + 1;
 
-    const response = await fetchProducts(nextPage, activeFilters, searchQuery);
+    const response = await fetchProducts(
+      nextPage,
+      filtersRef.current,
+      searchQueryRef.current,
+    );
 
     if (response && loadIdRef.current === currentLoadId) {
-      setProducts((prev) => [...prev, ...response.data]);
+      setProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newProducts = response.data.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newProducts];
+      });
       const moreAvailable = nextPage < response.meta.pages;
       setHasMore(moreAvailable);
       hasMoreRef.current = moreAvailable;
       pageRef.current = nextPage;
     }
 
+    loadingMoreRef.current = false;
     setLoadingMore(false);
-  }, [fetchProducts, loadingMore, activeFilters, searchQuery]);
+  }, [fetchProducts]);
 
-  // Infinite scroll observer
   useEffect(() => {
     const currentRef = loadMoreRef.current;
     if (!currentRef || loading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreRef.current && !loadingMore) {
+        if (
+          entries[0].isIntersecting &&
+          hasMoreRef.current &&
+          !loadingMoreRef.current
+        ) {
           loadMore();
         }
       },
@@ -187,7 +185,7 @@ export function useProductListing({
     return () => {
       observer.disconnect();
     };
-  }, [loadMore, loading, loadingMore]);
+  }, [loadMore, loading]);
 
   return {
     products,
@@ -195,10 +193,9 @@ export function useProductListing({
     loadingMore,
     hasMore,
     totalCount,
+    activeFilters,
     filtersData,
     filtersLoading,
-    showMobileFilters,
-    setShowMobileFilters,
     handleFilterChange,
     loadMoreRef,
   };

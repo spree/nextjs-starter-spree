@@ -7,22 +7,10 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["@spree/next", "@spree/sdk"],
   turbopack: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
-      },
-    },
-  },
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ["@svgr/webpack"],
-    });
-    return config;
+    root: __dirname,
   },
   images: {
-    qualities: [25, 50, 75, 100],
+    qualities: [25, 50, 75, 85, 100],
     dangerouslyAllowLocalIP: true, // Allow localhost images in development
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

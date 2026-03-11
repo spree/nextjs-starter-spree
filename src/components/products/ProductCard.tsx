@@ -1,21 +1,21 @@
 "use client";
 
-import type { StoreProduct } from "@spree/sdk";
-import Image from "next/image";
+import type { Product } from "@spree/sdk";
 import Link from "next/link";
-import { ImagePlaceholderIcon } from "@/components/icons";
+import { memo } from "react";
+import { ProductImage } from "@/components/ui/product-image";
 import { useStore } from "@/contexts/StoreContext";
 import { trackSelectItem } from "@/lib/analytics/gtm";
 
 interface ProductCardProps {
-  product: StoreProduct;
+  product: Product;
   basePath?: string;
   index?: number;
   listId?: string;
   listName?: string;
 }
 
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
   product,
   basePath = "",
   index,
@@ -58,24 +58,19 @@ export function ProductCard({
   return (
     <Link
       href={`${basePath}/products/${product.slug}`}
-      className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      className="group block"
       onClick={handleClick}
     >
       {/* Image */}
-      <div className="relative aspect-square bg-gray-100">
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            <ImagePlaceholderIcon className="w-16 h-16" />
-          </div>
-        )}
+      <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden">
+        <ProductImage
+          src={imageUrl}
+          alt={product.name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
+          iconClassName="w-16 h-16"
+        />
         {onSale && (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
             Sale
@@ -85,7 +80,7 @@ export function ProductCard({
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary-500 transition-colors line-clamp-2">
+        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
           {product.name}
         </h3>
 
@@ -108,4 +103,4 @@ export function ProductCard({
       </div>
     </Link>
   );
-}
+});

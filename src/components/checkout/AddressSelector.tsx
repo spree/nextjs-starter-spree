@@ -1,19 +1,20 @@
 "use client";
 
-import type { StoreAddress, StoreCountry, StoreState } from "@spree/sdk";
+import type { Address, Country, State } from "@spree/sdk";
 import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import type { AddressFormData } from "@/lib/utils/address";
 import { AddressFormFields } from "./AddressFormFields";
 
 interface AddressSelectorProps {
-  savedAddresses: StoreAddress[];
+  savedAddresses: Address[];
   currentAddress: AddressFormData;
-  countries: StoreCountry[];
-  states: StoreState[];
+  countries: Country[];
+  states: State[];
   loadingStates: boolean;
   onChange: (field: keyof AddressFormData, value: string) => void;
-  onSelectSavedAddress: (address: StoreAddress) => void;
-  onEditAddress?: (address: StoreAddress) => void;
+  onSelectSavedAddress: (address: Address) => void;
+  onEditAddress?: (address: Address) => void;
   idPrefix: string;
 }
 
@@ -84,7 +85,7 @@ export function AddressSelector({
                 key={address.id}
                 className={`flex items-start p-4 border rounded-xl transition-colors ${
                   selectedAddressId === address.id
-                    ? "border-primary-600 bg-primary-50"
+                    ? "border-gray-300 bg-gray-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -95,7 +96,7 @@ export function AddressSelector({
                     value={address.id}
                     checked={selectedAddressId === address.id}
                     onChange={() => handleSelectAddress(address.id)}
-                    className="mt-1 h-4 w-4 text-primary-500 border-gray-300 focus:ring-primary-500"
+                    className="mt-1 h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-900">
@@ -120,23 +121,23 @@ export function AddressSelector({
                   </div>
                 </label>
                 {onEditAddress && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="link"
+                    size="sm"
                     onClick={(e) => {
                       e.preventDefault();
                       onEditAddress(address);
                     }}
-                    className="ml-2 text-sm text-primary-500 hover:text-primary-700 font-medium"
                   >
                     Edit
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}
             <label
               className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${
                 selectedAddressId === "new"
-                  ? "border-primary-600 bg-primary-50"
+                  ? "border-gray-300 bg-gray-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -146,7 +147,7 @@ export function AddressSelector({
                 value="new"
                 checked={selectedAddressId === "new"}
                 onChange={() => handleSelectAddress("new")}
-                className="h-4 w-4 text-primary-500 border-gray-300 focus:ring-primary-500"
+                className="h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
               />
               <span className="ml-3 text-sm font-medium text-gray-900">
                 Use a different address

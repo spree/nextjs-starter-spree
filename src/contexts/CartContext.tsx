@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreLineItem, StoreOrder } from "@spree/sdk";
+import type { LineItem, Order } from "@spree/sdk";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
@@ -8,6 +8,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -18,7 +19,7 @@ import {
 } from "@/lib/data/cart";
 
 interface CartContextType {
-  cart: StoreOrder | null;
+  cart: Order | null;
   loading: boolean;
   updating: boolean;
   itemCount: number;
@@ -34,7 +35,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<StoreOrder | null>(null);
+  const [cart, setCart] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -59,7 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async (
       action: () => Promise<{
         success: boolean;
-        cart?: StoreOrder | null;
+        cart?: Order | null;
         error?: string;
       }>,
       errorLabel: string,
@@ -116,37 +117,59 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   // Re-fetch cart on navigation (e.g., after checkout completes, the stale
-  // cart token will be cleared by getCart and the cart state will update)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname triggers re-fetch on navigation
+  // cart token will be cleared by getCart and the cart state will update).
+  // On the order-placed page, skip refreshCart to avoid a race condition:
+  // getCart() auto-clears the cart token cookie on error (completed order
+  // is no longer a cart), which removes the only auth token guest users
+  // have before getCheckoutOrder() can use it.
   useEffect(() => {
+    if (pathname.includes("/order-placed/")) {
+      setCart(null);
+      setLoading(false);
+      return;
+    }
     refreshCart();
   }, [refreshCart, pathname]);
 
-  const itemCount =
-    cart?.line_items?.reduce(
-      (sum: number, item: StoreLineItem) => sum + item.quantity,
-      0,
-    ) ?? 0;
-
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        loading,
-        updating,
-        itemCount,
-        isOpen,
-        openCart,
-        closeCart,
-        addItem,
-        updateItem,
-        removeItem,
-        refreshCart,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  const itemCount = useMemo<number>(
+    () =>
+      cart?.line_items?.reduce(
+        (sum: number, item: LineItem) => sum + item.quantity,
+        0,
+      ) ?? 0,
+    [cart],
   );
+
+  const value = useMemo<CartContextType>(
+    () => ({
+      cart,
+      loading,
+      updating,
+      itemCount,
+      isOpen,
+      openCart,
+      closeCart,
+      addItem,
+      updateItem,
+      removeItem,
+      refreshCart,
+    }),
+    [
+      cart,
+      loading,
+      updating,
+      itemCount,
+      isOpen,
+      openCart,
+      closeCart,
+      addItem,
+      updateItem,
+      removeItem,
+      refreshCart,
+    ],
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

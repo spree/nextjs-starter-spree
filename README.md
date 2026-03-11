@@ -1,20 +1,16 @@
-> [!IMPORTANT]
->
-> Work in progress, please check our progress here: https://github.com/orgs/spree/projects/3
+# Spree Storefront
 
-# Spree Next.js Storefront
-
-A modern, headless e-commerce storefront built with Next.js 16, React 19, and the Spree Commerce API v3.
+A modern, headless e-commerce storefront built with Next.js 16, React 19, and the [Spree API v3](https://spreecommerce.org/docs/api-reference).
 
 ## Tech Stack
 
 - **Next.js 16** - App Router, Server Actions, Turbopack
 - **React 19** - Latest React with improved Server Components
 - **Tailwind CSS 4** - Utility-first styling
-- **TypeScript 5** - Full type safety
+- **TypeScript** - Full type safety
 - **Sentry** - Error tracking and performance monitoring with source maps
-- [@spree/sdk](https://github.com/spree/spree/tree/main/packages/sdk) - Official Spree Commerce SDK
-- [@spree/next](https://github.com/spree/spree/tree/main/packages/next) - Server actions, caching, and cookie-based auth
+- [@spree/sdk](https://spreecommerce.org/docs/developer/sdk/quickstart) - Official Spree Commerce SDK
+- [@spree/next](https://spreecommerce.org/docs/developer/storefront/nextjs/spree-next-package) - Server actions, caching, and cookie-based auth
 
 ## Features
 
@@ -23,7 +19,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 - **Product Catalog** - Browse, search, filter products by categories and with faceted navigation
 - **Product Details** - View product information with variant selection and images
 - **Shopping Cart** - Add, update, and remove items with server-side state
-- **Multi-Step Checkout** - Guest visitors and signed in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
+- **Multi-Step Checkout** - Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
 - **Stripe payments** - native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe)
 - **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
 - **Customer Account** - Full account management:
@@ -130,6 +126,7 @@ src/
 │       │   ├── credit-cards/   # Saved payment methods
 │       │   ├── orders/         # Order history
 │       │   │   └── [id]/       # Order details
+│       │   ├── register/       # Registration
 │       │   └── profile/        # Profile settings
 │       ├── cart/               # Shopping cart
 │       ├── products/           # Product listing
@@ -141,6 +138,7 @@ src/
 │   ├── products/               # ProductCard, ProductGrid, Filters
 │   └── search/                 # SearchBar
 ├── contexts/
+│   ├── AuthContext.tsx         # Client-side auth state
 │   └── CartContext.tsx         # Client-side cart state sync
 └── lib/
     ├── spree.ts                # SDK client configuration
@@ -165,8 +163,8 @@ All data fetching is done through server actions in `src/lib/data/`:
 // Products
 import { getProducts, getProduct, getProductFilters } from '@/lib/data/products'
 
-const products = await getProducts({ per_page: 12 })
-const product = await getProduct('product-slug', { includes: 'variants,images' })
+const products = await getProducts({ limit: 12 })
+const product = await getProduct('product-slug', { expand: ['variants', 'images'] })
 const filters = await getProductFilters({ taxon_id: 'txn_xxx' })
 
 // Cart
@@ -181,6 +179,13 @@ await removeCartItem('li_xxx')
 import { login, register, logout, getCustomer } from '@/lib/data/customer'
 
 const result = await login('user@example.com', 'password')
+await register({
+  email: 'user@example.com',
+  password: 'password',
+  password_confirmation: 'password',
+  first_name: 'John',
+  last_name: 'Doe',
+})
 const customer = await getCustomer()
 await logout()
 
@@ -255,4 +260,4 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 
 ## License
 
-BSD-3-Clause
+MIT

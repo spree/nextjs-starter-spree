@@ -1,36 +1,37 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
+import {
+  CreditCard,
+  Gift,
+  Home,
+  LogOut,
+  MapPin,
+  ShoppingBag,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { FC, SVGProps } from "react";
 import { useEffect } from "react";
-import {
-  CreditCardIcon,
-  GiftIcon,
-  HomeIcon,
-  MapPinIcon,
-  ShoppingBagIcon,
-  SignOutIcon,
-  UserIcon,
-} from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
 
 const navItems: {
   href: string;
   label: string;
-  icon: FC<SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
 }[] = [
-  { href: "/account", label: "Overview", icon: HomeIcon },
-  { href: "/account/orders", label: "Orders", icon: ShoppingBagIcon },
-  { href: "/account/addresses", label: "Addresses", icon: MapPinIcon },
+  { href: "/account", label: "Overview", icon: Home },
+  { href: "/account/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/account/addresses", label: "Addresses", icon: MapPin },
   {
     href: "/account/credit-cards",
     label: "Payment Methods",
-    icon: CreditCardIcon,
+    icon: CreditCard,
   },
-  { href: "/account/gift-cards", label: "Gift Cards", icon: GiftIcon },
-  { href: "/account/profile", label: "Profile", icon: UserIcon },
+  { href: "/account/gift-cards", label: "Gift Cards", icon: Gift },
+  { href: "/account/profile", label: "Profile", icon: User },
 ];
 
 function ContentSkeleton() {
@@ -107,7 +108,7 @@ function AccountShell({
                         href={href}
                         className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-primary-50 text-primary-700"
+                            ? "bg-gray-50 text-primary"
                             : "text-gray-700 hover:bg-gray-50"
                         }`}
                       >
@@ -122,14 +123,10 @@ function AccountShell({
 
             {/* Logout */}
             <div className="p-2 border-t border-gray-200">
-              <button
-                onClick={onLogout}
-                disabled={isLoading}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <SignOutIcon className="w-5 h-5" />
+              <Button variant="ghost" onClick={onLogout} disabled={isLoading}>
+                <LogOut className="w-5 h-5" />
                 Sign Out
-              </button>
+              </Button>
             </div>
           </div>
         </aside>

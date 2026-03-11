@@ -1,7 +1,11 @@
 "use client";
 
-import type { StoreCountry, StoreState } from "@spree/sdk";
-import { useCallback, useEffect, useState } from "react";
+import type { Country, State } from "@spree/sdk";
+import { CircleAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   type AddressFormData,
   addressToFormData,
@@ -25,8 +29,8 @@ interface AddressEditModalProps {
     state_abbr: string | null;
     state_name: string | null;
   } | null;
-  countries: StoreCountry[];
-  fetchStates: (countryIso: string) => Promise<StoreState[]>;
+  countries: Country[];
+  fetchStates: (countryIso: string) => Promise<State[]>;
   onSave: (
     data: ReturnType<typeof formDataToAddress>,
     id?: string,
@@ -46,23 +50,10 @@ export function AddressEditModal({
   const [formData, setFormData] = useState<AddressFormData>(
     address ? addressToFormData(address) : { ...emptyAddress },
   );
-  const [states, setStates] = useState<StoreState[]>([]);
+  const [states, setStates] = useState<State[]>([]);
   const [loadingStates, setLoadingStates] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  // Close on Escape key
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose],
-  );
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+  const [error, setError] = useState<string | null>(null);
 
   // Load states when country changes
   useEffect(() => {
@@ -103,7 +94,7 @@ export function AddressEditModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError(null);
     setSaving(true);
 
     try {
@@ -120,63 +111,46 @@ export function AddressEditModal({
     title ?? (address?.id ? "Edit Address" : "Add New Address");
 
   return (
-    <div
-      className="fixed inset-0 z-50 overflow-y-auto"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="address-modal-title"
+    <Dialog
+      open={true}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div
-          className="fixed inset-0 bg-gray-500 opacity-50 transition-opacity"
-          onClick={onClose}
-        />
+      <DialogContent className="sm:max-w-lg p-0 gap-0" showCloseButton={false}>
+        <form onSubmit={handleSubmit}>
+          <div className="px-4 pt-5 pb-4 sm:p-6">
+            <DialogTitle className="text-lg font-medium text-gray-900 mb-4">
+              {modalTitle}
+            </DialogTitle>
 
-        <div className="relative inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <form onSubmit={handleSubmit}>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
-              <h3
-                id="address-modal-title"
-                className="text-lg font-medium text-gray-900 mb-4"
-              >
-                {modalTitle}
-              </h3>
+            {error && (
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                  {error}
-                </div>
-              )}
+            <AddressFormFields
+              address={formData}
+              countries={countries}
+              states={states}
+              loadingStates={loadingStates}
+              onChange={handleChange}
+              idPrefix="modal"
+            />
+          </div>
 
-              <AddressFormFields
-                address={formData}
-                countries={countries}
-                states={states}
-                loadingStates={loadingStates}
-                onChange={handleChange}
-                idPrefix="modal"
-              />
-            </div>
-
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-500 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
-              >
-                {saving ? "Saving..." : "Save Address"}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          <div className="border-t border-gray-200 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Save Address"}
+            </Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import type {
+  Address,
   AddressParams,
-  StoreAddress,
-  StoreCountry,
-  StoreOrder,
-  StoreShipment,
+  Country,
+  Order,
+  Shipment,
 } from "@spree/sdk";
+import { CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
@@ -15,6 +16,7 @@ import { CouponCode } from "@/components/checkout/CouponCode";
 import { DeliveryStep } from "@/components/checkout/DeliveryStep";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { PaymentStep } from "@/components/checkout/PaymentStep";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
   trackAddPaymentInfo,
@@ -23,39 +25,44 @@ import {
 } from "@/lib/analytics/gtm";
 import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
-  advanceCheckout,
   applyCouponCode,
   getCheckoutOrder,
+  nextCheckoutStep,
   removeCouponCode,
   selectShippingRate,
   updateOrderAddresses,
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
-import { getCountries, getCountry } from "@/lib/data/countries";
+import { getCountry } from "@/lib/data/countries";
+import { getMarketCountries, resolveMarket } from "@/lib/data/markets";
 import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
-// Checkout steps
-type CheckoutStep = "address" | "delivery" | "payment";
-
-// Map Spree order state to checkout step
-function getCheckoutStep(orderState: string): CheckoutStep {
-  switch (orderState) {
-    case "cart":
-    case "address":
-      return "address";
-    case "delivery":
-      return "delivery";
-    case "payment":
-    case "confirm":
-      return "payment";
-    default:
-      return "address";
-  }
+function getVisibleCheckoutSteps(checkoutSteps: string[]): string[] {
+  return checkoutSteps.filter(
+    (step) => step !== "complete" && step !== "confirm",
+  );
 }
+
+// Map order state to the corresponding visible checkout step
+function getCheckoutStep(orderState: string, checkoutSteps: string[]): string {
+  const visibleSteps = getVisibleCheckoutSteps(checkoutSteps);
+  if (orderState === "cart") return visibleSteps[0] || "address";
+  if (orderState === "confirm") {
+    return visibleSteps[visibleSteps.length - 1] || "address";
+  }
+  if (visibleSteps.includes(orderState)) return orderState;
+  return visibleSteps[0] || "address";
+}
+
+const STEP_LABELS: Record<string, string> = {
+  address: "Shipping",
+  delivery: "Delivery",
+  payment: "Payment",
+};
 
 interface CheckoutPageProps {
   params: Promise<{
@@ -71,7 +78,7 @@ function CheckoutSidebar({
   onApplyCoupon,
   onRemoveCoupon,
 }: {
-  order: StoreOrder;
+  order: Order;
   onApplyCoupon: (
     code: string,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -95,21 +102,21 @@ function CheckoutSidebar({
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
   // use() must be called before all other hooks to avoid hook order issues
-  const { id: orderId } = use(params);
+  const { id: orderId, country: urlCountry } = use(params);
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<StoreOrder | null>(null);
-  const [shipments, setShipments] = useState<StoreShipment[]>([]);
-  const [countries, setCountries] = useState<StoreCountry[]>([]);
-  const [savedAddresses, setSavedAddresses] = useState<StoreAddress[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState<CheckoutStep>("address");
+  const [currentStep, setCurrentStep] = useState<string>("address");
 
   // Use ref to store the current order for stable callback references
   const orderRef = useRef(order);
@@ -176,19 +183,25 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     handleRemoveCoupon,
   ]);
 
-  // Load order and countries
+  // Load order and market-scoped countries
   const loadOrder = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [orderData, countriesData, addressesData, authStatus] =
-        await Promise.all([
-          getCheckoutOrder(orderId),
-          getCountries(),
-          getAddresses(),
-          checkAuth(),
-        ]);
+      const [orderData, market, addressesData, authStatus] = await Promise.all([
+        getCheckoutOrder(orderId),
+        resolveMarket(urlCountry).catch(() => null),
+        getAddresses(),
+        checkAuth(),
+      ]);
+
+      // Fetch countries scoped to the resolved market
+      const countriesData = market
+        ? await getMarketCountries(market.id).catch(() => ({
+            data: [] as Country[],
+          }))
+        : { data: [] as Country[] };
 
       if (!orderData) {
         setError("Order not found or you don't have access to it.");
@@ -206,7 +219,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      setCurrentStep(getCheckoutStep(orderData.state));
+      setCurrentStep(
+        getCheckoutStep(orderData.state, orderData.checkout_steps),
+      );
 
       if (!beginCheckoutFiredRef.current) {
         try {
@@ -233,7 +248,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [orderId, basePath, router]);
+  }, [orderId, urlCountry, basePath, router]);
 
   useEffect(() => {
     loadOrder();
@@ -268,10 +283,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         return;
       }
 
-      // Advance to delivery step
-      const advanceResult = await advanceCheckout(order.id);
-      if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed to next step");
+      // Move to next checkout step
+      const nextResult = await nextCheckoutStep(order.id);
+      if (!nextResult.success) {
+        setError(nextResult.error || "Failed to proceed to next step");
         setProcessing(false);
         return;
       }
@@ -295,7 +310,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setProcessing(true);
     setError(null);
 
-    let trackingOrder: StoreOrder | null = null;
+    let trackingOrder: Order | null = null;
     let trackingRateName: string | undefined;
 
     try {
@@ -335,10 +350,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(null);
 
     try {
-      // Advance to payment step
-      const advanceResult = await advanceCheckout(order.id);
-      if (!advanceResult.success) {
-        setError(advanceResult.error || "Failed to proceed");
+      // Move to next checkout step
+      const nextResult = await nextCheckoutStep(order.id);
+      if (!nextResult.success) {
+        setError(nextResult.error || "Failed to proceed");
         setProcessing(false);
         return;
       }
@@ -443,7 +458,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const handleUpdateSavedAddress = async (
     id: string,
     data: AddressParams,
-  ): Promise<StoreAddress> => {
+  ): Promise<Address> => {
     const result = await updateAddress(id, data);
 
     if (!result.success) {
@@ -463,7 +478,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   };
 
   // Navigate back to a previous step
-  const goToStep = (step: CheckoutStep) => {
+  const goToStep = (step: string) => {
     setCurrentStep(step);
   };
 
@@ -492,7 +507,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <p className="text-gray-600 mb-6">{error}</p>
         <Link
           href={`${basePath}/cart`}
-          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
           Return to Cart
         </Link>
@@ -514,7 +529,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         </p>
         <Link
           href={`${basePath}/products`}
-          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
           Continue Shopping
         </Link>
@@ -522,20 +537,20 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     );
   }
 
-  const steps = [
-    { id: "address", label: "Shipping" },
-    { id: "delivery", label: "Delivery" },
-    { id: "payment", label: "Payment" },
-  ];
+  const steps = getVisibleCheckoutSteps(order.checkout_steps).map((step) => ({
+    id: step,
+    label: STEP_LABELS[step] || step.charAt(0).toUpperCase() + step.slice(1),
+  }));
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
+  const previousStepId =
+    currentStepIndex > 0 ? steps[currentStepIndex - 1].id : undefined;
 
   return (
     <>
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
-        <p className="text-gray-500 mt-1">Order #{order.number}</p>
       </div>
 
       {/* Step indicator */}
@@ -549,11 +564,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               >
                 <div className="flex items-center pr-2">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
                       index < currentStepIndex
-                        ? "bg-primary-500 text-white"
+                        ? "bg-black text-white"
                         : index === currentStepIndex
-                          ? "bg-primary-500 text-white"
+                          ? "bg-primary text-white"
                           : "bg-gray-200 text-gray-500"
                     }`}
                   >
@@ -562,7 +577,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <span
                     className={`ml-2 text-sm font-medium ${
                       index === currentStepIndex
-                        ? "text-primary-500"
+                        ? "text-primary"
                         : index < currentStepIndex
                           ? "text-gray-900"
                           : "text-gray-500"
@@ -574,7 +589,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 {index < steps.length - 1 && (
                   <div className="w-full h-0.5 bg-gray-200">
                     <div
-                      className={`h-full ${index < currentStepIndex ? "bg-primary-500" : "bg-gray-200"}`}
+                      className={`h-full ${index < currentStepIndex ? "bg-primary" : "bg-gray-200"}`}
                       style={{
                         width: index < currentStepIndex ? "100%" : "0%",
                       }}
@@ -589,9 +604,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Main content */}
@@ -617,7 +633,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           shipments={shipments}
           onShippingRateSelect={handleShippingRateSelect}
           onConfirm={handleDeliveryConfirm}
-          onBack={() => goToStep("address")}
+          onBack={previousStepId ? () => goToStep(previousStepId) : undefined}
           processing={processing}
         />
       )}
@@ -630,7 +646,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           fetchStates={fetchStates}
           onUpdateBillingAddress={handleUpdateBillingAddress}
           onPaymentComplete={handlePaymentComplete}
-          onBack={() => goToStep("delivery")}
+          onBack={previousStepId ? () => goToStep(previousStepId) : undefined}
           processing={processing}
           setProcessing={setProcessing}
         />

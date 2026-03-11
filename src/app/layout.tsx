@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/contexts/CartContext";
 
 const gtmId = process.env.GTM_ID;
@@ -12,9 +13,16 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
+const rootStoreName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+
 export const metadata: Metadata = {
-  title: "Spree Storefront",
-  description: "Next.js storefront powered by Spree Commerce",
+  title: {
+    template: `%s | ${rootStoreName}`,
+    default: rootStoreName,
+  },
+  description:
+    process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
+    "A modern e-commerce storefront powered by Spree Commerce and Next.js.",
 };
 
 export default function RootLayout({
@@ -31,6 +39,7 @@ export default function RootLayout({
         <CartProvider>
           {children}
           <CartDrawer />
+          <Toaster />
         </CartProvider>
       </body>
     </html>

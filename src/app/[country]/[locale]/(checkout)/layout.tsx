@@ -1,31 +1,36 @@
 "use client";
 
+import { ArrowLeft, ChevronDown, ShoppingBag } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  ArrowLeftIcon,
-  ChevronDownIcon,
-  ShoppingBagIcon,
-} from "@/components/icons";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
-import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";
+
+const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
 
 function CheckoutHeader() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
 
   return (
-    <header className="py-4 lg:py-6 flex items-center justify-between">
-      <Link href={basePath || "/"} className="inline-flex items-center">
-        <span className="text-xl font-bold text-gray-900">Spree Store</span>
+    <header className="flex items-center justify-between">
+      <Link href={basePath || "/"} className="flex items-center space-x-2">
+        <Image
+          src="/spree.png"
+          alt={storeName}
+          width={90}
+          height={32}
+          priority
+        />
       </Link>
       <Link
         href={basePath || "/"}
         className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
+        aria-label="Back to store"
       >
-        <ArrowLeftIcon className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         <span className="hidden sm:inline">Back to store</span>
       </Link>
     </header>
@@ -33,14 +38,12 @@ function CheckoutHeader() {
 }
 
 function CheckoutFooter() {
-  const { store } = useStore();
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="py-4 text-sm text-gray-500 border-t border-gray-200 mt-auto">
       <p>
-        &copy; {currentYear} {store?.name || "Spree Store"}. All rights
-        reserved.
+        &copy; {currentYear} {storeName}. All rights reserved.
       </p>
     </footer>
   );
@@ -50,17 +53,17 @@ function MobileSummaryToggle() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="lg:hidden bg-gray-50 border-b border-gray-200">
+    <div className="lg:hidden border-b border-gray-200">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center justify-between text-left"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
-          <ShoppingBagIcon className="w-5 h-5 text-gray-600" />
+          <ShoppingBag className="w-5 h-5 text-gray-600" />
           {isOpen ? "Hide order summary" : "Show order summary"}
         </span>
-        <ChevronDownIcon
+        <ChevronDown
           className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
@@ -107,7 +110,7 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
         </div>
 
         {/* Desktop summary sidebar */}
-        <div className="hidden lg:block lg:col-start-3 bg-gray-50">
+        <div className="hidden lg:block lg:col-start-3 border-l border-gray-200">
           <div className="sticky top-0 px-10 py-10">
             <CheckoutSummary />
           </div>

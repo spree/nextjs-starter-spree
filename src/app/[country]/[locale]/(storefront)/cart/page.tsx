@@ -1,11 +1,13 @@
 "use client";
 
-import type { StoreLineItem } from "@spree/sdk";
-import Image from "next/image";
+import type { LineItem } from "@spree/sdk";
+import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { ShoppingBagIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
+import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
@@ -24,7 +26,7 @@ export default function CartPage() {
     }
   }, [cart, loading]);
 
-  const handleRemove = async (item: StoreLineItem) => {
+  const handleRemove = async (item: LineItem) => {
     await removeItem(item.id);
     if (cart) {
       trackRemoveFromCart(item, cart.currency);
@@ -50,8 +52,8 @@ export default function CartPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
-          <ShoppingBagIcon
-            className="w-24 h-24 text-gray-300"
+          <ShoppingBag
+            className="w-24 h-24 text-gray-300 mx-auto"
             strokeWidth={1}
           />
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
@@ -60,12 +62,11 @@ export default function CartPage() {
           <p className="mt-2 text-gray-500">
             Looks like you haven&apos;t added anything to your cart yet.
           </p>
-          <Link
-            href={`${basePath}/products`}
-            className="mt-6 inline-block bg-primary-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-primary-700 transition-colors"
-          >
-            Continue Shopping
-          </Link>
+          <div className="mt-6">
+            <Button size="lg" asChild>
+              <Link href={`${basePath}/products`}>Continue Shopping</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -83,8 +84,8 @@ export default function CartPage() {
               <div key={item.id} className="p-6 flex gap-6">
                 {/* Image */}
                 <div className="relative w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                  <Image
-                    src={item.thumbnail_url || "/placeholder.svg"}
+                  <ProductImage
+                    src={item.thumbnail_url}
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -109,31 +110,21 @@ export default function CartPage() {
 
                 {/* Quantity & Actions */}
                 <div className="flex flex-col items-end gap-2">
-                  <div className="flex items-center border border-gray-300 rounded">
-                    <button
-                      onClick={() =>
-                        updateItem(item.id, Math.max(1, item.quantity - 1))
-                      }
-                      className="px-3 py-1 text-gray-600 hover:text-gray-900"
-                    >
-                      -
-                    </button>
-                    <span className="px-3 py-1 font-medium">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateItem(item.id, item.quantity + 1)}
-                      className="px-3 py-1 text-gray-600 hover:text-gray-900"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <button
+                  <QuantityPicker
+                    quantity={item.quantity}
+                    onDecrement={() =>
+                      updateItem(item.id, Math.max(1, item.quantity - 1))
+                    }
+                    onIncrement={() => updateItem(item.id, item.quantity + 1)}
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    aria-label={`Remove ${item.name}`}
                     onClick={() => handleRemove(item)}
-                    className="text-sm text-red-600 hover:text-red-700"
                   >
                     Remove
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -176,19 +167,16 @@ export default function CartPage() {
               </div>
             </dl>
 
-            <Link
-              href={`${basePath}/checkout/${cart.id}`}
-              className="mt-6 block w-full bg-primary-500 text-white text-center py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
-            >
-              Proceed to Checkout
-            </Link>
-
-            <Link
-              href={`${basePath}/products`}
-              className="mt-4 block w-full text-center text-primary-500 hover:text-primary-700 font-medium"
-            >
-              Continue Shopping
-            </Link>
+            <div className="mt-6 space-y-3">
+              <Button size="lg" asChild className="w-full">
+                <Link href={`${basePath}/checkout/${cart.id}`}>
+                  Proceed to Checkout
+                </Link>
+              </Button>
+              <Button variant="link" asChild className="w-full">
+                <Link href={`${basePath}/products`}>Continue Shopping</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

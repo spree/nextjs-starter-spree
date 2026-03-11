@@ -1,11 +1,10 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
-import Image from "next/image";
-import { ImagePlaceholderIcon } from "@/components/icons";
+import type { Order } from "@spree/sdk";
+import { ProductImage } from "@/components/ui/product-image";
 
 interface OrderSummaryProps {
-  order: StoreOrder;
+  order: Order;
 }
 
 export function OrderSummary({ order }: OrderSummaryProps) {
@@ -22,24 +21,20 @@ export function OrderSummary({ order }: OrderSummaryProps) {
         {lineItems.map((item) => (
           <div key={item.id} className="flex gap-4">
             <div className="relative w-16 h-16 flex-shrink-0">
-              {item.thumbnail_url ? (
-                <Image
+              <div className="relative w-full h-full rounded-xl overflow-hidden">
+                <ProductImage
                   src={item.thumbnail_url}
                   alt={item.name}
                   fill
-                  className="object-cover rounded-xl"
+                  className="object-cover"
+                  iconClassName="w-6 h-6"
                 />
-              ) : (
-                <div className="w-full h-full bg-gray-100 rounded-xl flex items-center justify-center">
-                  <ImagePlaceholderIcon
-                    className="w-6 h-6 text-gray-400"
-                    strokeWidth={2}
-                  />
+              </div>
+              {item.quantity > 1 && (
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {item.quantity}
                 </div>
               )}
-              <div className="absolute -top-2 -right-2 w-5 h-5 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center">
-                {item.quantity}
-              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">

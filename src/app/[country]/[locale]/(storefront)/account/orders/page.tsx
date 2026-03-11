@@ -1,10 +1,11 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
+import type { Order } from "@spree/sdk";
+import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ShoppingBagIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import { getOrders } from "@/lib/data/orders";
 import { extractBasePath } from "@/lib/utils/path";
 
@@ -50,12 +51,12 @@ function getShipmentStatusColor(state: string | null): string {
 export default function OrdersPage() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
-  const [orders, setOrders] = useState<StoreOrder[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadOrders() {
-      const response = await getOrders({ per_page: 50 });
+      const response = await getOrders({ limit: 50 });
       // Filter to only show completed orders
       setOrders(response.data.filter((o) => o.state === "complete"));
       setLoading(false);
@@ -88,19 +89,16 @@ export default function OrdersPage() {
 
       {orders.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <ShoppingBagIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No orders yet
           </h3>
           <p className="text-gray-500 mb-6">
             When you place orders, they will appear here.
           </p>
-          <Link
-            href={`${basePath}/products`}
-            className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-          >
-            Start Shopping
-          </Link>
+          <Button asChild>
+            <Link href={`${basePath}/products`}>Start Shopping</Link>
+          </Button>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -143,14 +141,14 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_state)}`}
                       >
                         {order.payment_state?.replace("_", " ") || "N/A"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getShipmentStatusColor(order.shipment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(order.shipment_state)}`}
                       >
                         {order.shipment_state || "N/A"}
                       </span>
@@ -161,12 +159,11 @@ export default function OrdersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <Link
-                        href={`${basePath}/account/orders/${order.id}`}
-                        className="text-primary-500 hover:text-primary-900 text-sm font-medium"
-                      >
-                        View
-                      </Link>
+                      <Button variant="link" size="sm" asChild>
+                        <Link href={`${basePath}/account/orders/${order.id}`}>
+                          View
+                        </Link>
+                      </Button>
                     </td>
                   </tr>
                 ))}

@@ -1,7 +1,8 @@
 "use client";
 
+import type { ProductListParams } from "@spree/sdk";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ProductListingLayout } from "@/components/products/ProductListingLayout";
 import { useStore } from "@/contexts/StoreContext";
 import { useProductListing } from "@/hooks/useProductListing";
@@ -18,10 +19,7 @@ export function ProductsContent({ basePath }: ProductsContentProps) {
   const query = searchParams.get("q") || "";
 
   const fetchFn = useCallback(
-    (
-      params: Record<string, unknown>,
-      options: { currency: string; locale: string },
-    ) => getProducts(params, options),
+    (params: ProductListParams) => getProducts(params),
     [],
   );
 
@@ -30,12 +28,23 @@ export function ProductsContent({ basePath }: ProductsContentProps) {
     searchQuery: query,
   });
 
-  const listId = query ? "search-results" : "all-products";
-  const listName = query ? "Search Results" : "All Products";
+  const listId = useMemo(
+    () => (query ? "search-results" : "all-products"),
+    [query],
+  );
+  const listName = useMemo(
+    () => (query ? "Search Results" : "All Products"),
+    [query],
+  );
 
-  // Track view_item_list / view_search_results when products load
+  // Track view_item_list / view_search_results only on fresh loads (not loadMore).
+  // loading transitions true→false on initial/filter/search loads; loadMore uses loadingMore instead.
+  const prevLoadingRef = useRef(true);
   useEffect(() => {
-    if (listing.loading || listing.totalCount === 0) return;
+    const wasLoading = prevLoadingRef.current;
+    prevLoadingRef.current = listing.loading;
+
+    if (!wasLoading || listing.loading || listing.totalCount === 0) return;
 
     if (query) {
       trackViewSearchResults(listing.products, query, currency);
@@ -43,8 +52,8 @@ export function ProductsContent({ basePath }: ProductsContentProps) {
       trackViewItemList(listing.products, listId, listName, currency);
     }
   }, [
-    listing.products,
     listing.loading,
+    listing.products,
     listing.totalCount,
     query,
     listId,

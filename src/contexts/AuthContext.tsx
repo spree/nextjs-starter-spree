@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -30,11 +31,13 @@ interface AuthContextType {
     email: string,
     password: string,
   ) => Promise<{ success: boolean; error?: string }>;
-  register: (
-    email: string,
-    password: string,
-    passwordConfirmation: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  register: (params: {
+    email: string;
+    password: string;
+    password_confirmation: string;
+    first_name?: string;
+    last_name?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
@@ -90,12 +93,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Register
   const register = useCallback(
-    async (email: string, password: string, passwordConfirmation: string) => {
-      const result = await registerAction(
-        email,
-        password,
-        passwordConfirmation,
-      );
+    async (params: {
+      email: string;
+      password: string;
+      password_confirmation: string;
+      first_name?: string;
+      last_name?: string;
+    }) => {
+      const result = await registerAction(params);
       if (result.success && result.user) {
         setUser(toUser(result.user));
         router.refresh();
@@ -112,21 +117,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.refresh();
   }, [router]);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        register,
-        logout,
-        refreshUser,
-        isAuthenticated: !!user,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      loading,
+      login,
+      register,
+      logout,
+      refreshUser,
+      isAuthenticated: !!user,
+    }),
+    [user, loading, login, register, logout, refreshUser],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

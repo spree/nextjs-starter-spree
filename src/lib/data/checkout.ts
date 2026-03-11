@@ -7,8 +7,9 @@ import {
   applyCoupon,
   complete,
   getCheckout,
+  next,
   removeCoupon,
-  updateAddresses,
+  updateOrder,
 } from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
 import { cookies } from "next/headers";
@@ -40,9 +41,26 @@ export async function updateOrderAddresses(
   },
 ) {
   return actionResult(async () => {
-    const order = await updateAddresses(orderId, addresses);
+    const order = await updateOrder(orderId, addresses);
     return { order };
   }, "Failed to update addresses");
+}
+
+export async function updateOrderMarket(
+  orderId: string,
+  params: { currency: string; locale: string },
+) {
+  return actionResult(async () => {
+    const order = await updateOrder(orderId, params);
+    return { order };
+  }, "Failed to update order market");
+}
+
+export async function nextCheckoutStep(orderId: string) {
+  return actionResult(async () => {
+    const order = await next(orderId);
+    return { order };
+  }, "Failed to advance checkout");
 }
 
 export async function advanceCheckout(orderId: string) {

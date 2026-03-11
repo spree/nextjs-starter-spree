@@ -7,7 +7,9 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { CircleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -72,7 +74,12 @@ function StripePaymentFormInner({
           layout: "tabs",
         }}
       />
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && (
+        <Alert variant="destructive" className="mt-3">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
