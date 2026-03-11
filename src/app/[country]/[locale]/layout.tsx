@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StoreProvider } from "@/contexts/StoreContext";
+import { getMarkets } from "@/lib/data/markets";
 import { generateStoreMetadata } from "@/lib/metadata/store";
 import { buildOrganizationJsonLd } from "@/lib/seo";
 
@@ -26,8 +27,16 @@ export default async function CountryLocaleLayout({
 }: CountryLocaleLayoutProps) {
   const { country, locale } = await params;
 
+  const markets = await getMarkets()
+    .then((res) => res.data)
+    .catch(() => []);
+
   return (
-    <StoreProvider initialCountry={country} initialLocale={locale}>
+    <StoreProvider
+      initialCountry={country}
+      initialLocale={locale}
+      initialMarkets={markets}
+    >
       <AuthProvider>
         <JsonLd data={buildOrganizationJsonLd()} />
         {children}

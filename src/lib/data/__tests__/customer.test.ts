@@ -66,16 +66,24 @@ describe("customer server actions", () => {
   });
 
   describe("register", () => {
-    it("delegates with email, password, and confirmation", async () => {
+    it("delegates with params object", async () => {
       mockRegister.mockResolvedValue(mockUser);
 
-      const result = await register("test@example.com", "pass", "pass");
+      const result = await register({
+        email: "test@example.com",
+        password: "pass",
+        password_confirmation: "pass",
+        first_name: "Test",
+        last_name: "User",
+      });
 
-      expect(mockRegister).toHaveBeenCalledWith(
-        "test@example.com",
-        "pass",
-        "pass",
-      );
+      expect(mockRegister).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "pass",
+        password_confirmation: "pass",
+        first_name: "Test",
+        last_name: "User",
+      });
       expect(result).toBe(mockUser);
     });
   });

@@ -116,6 +116,7 @@ src/
 │       │   ├── credit-cards/   # Saved payment methods
 │       │   ├── orders/         # Order history
 │       │   │   └── [id]/       # Order details
+│       │   ├── register/       # Registration
 │       │   └── profile/        # Profile settings
 │       ├── cart/               # Shopping cart
 │       ├── products/           # Product listing
@@ -127,6 +128,7 @@ src/
 │   ├── products/               # ProductCard, ProductGrid, Filters
 │   └── search/                 # SearchBar
 ├── contexts/
+│   ├── AuthContext.tsx         # Client-side auth state
 │   └── CartContext.tsx         # Client-side cart state sync
 └── lib/
     ├── spree.ts                # SDK client configuration
@@ -151,8 +153,8 @@ All data fetching is done through server actions in `src/lib/data/`:
 // Products
 import { getProducts, getProduct, getProductFilters } from '@/lib/data/products'
 
-const products = await getProducts({ per_page: 12 })
-const product = await getProduct('product-slug', { includes: 'variants,images' })
+const products = await getProducts({ limit: 12 })
+const product = await getProduct('product-slug', { expand: ['variants', 'images'] })
 const filters = await getProductFilters({ taxon_id: 'txn_xxx' })
 
 // Cart
@@ -167,6 +169,13 @@ await removeCartItem('li_xxx')
 import { login, register, logout, getCustomer } from '@/lib/data/customer'
 
 const result = await login('user@example.com', 'password')
+await register({
+  email: 'user@example.com',
+  password: 'password',
+  password_confirmation: 'password',
+  first_name: 'John',
+  last_name: 'Doe',
+})
 const customer = await getCustomer()
 await logout()
 

@@ -1,8 +1,8 @@
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {
-  products: StoreProduct[];
+  products: Product[];
   basePath?: string;
   listId?: string;
   listName?: string;

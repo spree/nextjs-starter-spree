@@ -1,11 +1,15 @@
 "use client";
 
-import type { StoreOrder } from "@spree/sdk";
+import type { Order } from "@spree/sdk";
+import { CheckCircle } from "lucide-react";
 import { useState } from "react";
-import { CheckCircleIcon } from "@/components/icons";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 interface CouponCodeProps {
-  order: StoreOrder;
+  order: Order;
   onApply: (code: string) => Promise<{ success: boolean; error?: string }>;
   onRemove: (
     promotionId: string,
@@ -60,58 +64,56 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
       {couponPromotions.length > 0 && (
         <div className="space-y-2 mb-4">
           {couponPromotions.map((promotion) => (
-            <div
-              key={promotion.id}
-              className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl"
-            >
-              <div className="flex items-center">
-                <CheckCircleIcon className="w-5 h-5 text-green-600 mr-2" />
-                <div>
-                  <span className="text-sm font-medium text-green-800">
-                    {promotion.code || promotion.name}
-                  </span>
-                  <span className="text-sm text-green-600 ml-2">
-                    {promotion.display_amount}
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
+            <Alert key={promotion.id} role="status">
+              <CheckCircle />
+              <AlertDescription>
+                <span className="font-medium">
+                  {promotion.code || promotion.name}
+                </span>
+                <span className="text-muted-foreground ml-2">
+                  {promotion.display_amount}
+                </span>
+              </AlertDescription>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="absolute top-2 right-2"
                 onClick={() => handleRemove(promotion.id)}
                 disabled={removing === promotion.id}
-                className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
               >
                 {removing === promotion.id ? "..." : "Remove"}
-              </button>
-            </div>
+              </Button>
+            </Alert>
           ))}
         </div>
       )}
 
       {/* Apply new code - hidden when a code is already applied */}
       {!hasAppliedCode && (
-        <form onSubmit={handleApply} className="flex gap-2">
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => {
-              setCode(e.target.value);
-              setError(null);
-            }}
-            placeholder="Gift card or discount code"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-primary-500 focus:outline-primary-500"
-          />
-          <button
-            type="submit"
-            disabled={applying || !code.trim()}
-            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {applying ? "..." : "Apply"}
-          </button>
+        <form onSubmit={handleApply}>
+          <Field data-invalid={!!error || undefined}>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Input
+                  type="text"
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="Gift card or discount code"
+                  aria-label="Gift card or discount code"
+                  aria-invalid={!!error}
+                />
+              </div>
+              <Button type="submit" disabled={applying || !code.trim()}>
+                {applying ? "..." : "Apply"}
+              </Button>
+            </div>
+            {error && <FieldError>{error}</FieldError>}
+          </Field>
         </form>
       )}
-
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
   );
 }

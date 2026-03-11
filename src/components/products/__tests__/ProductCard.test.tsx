@@ -1,4 +1,4 @@
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ProductCard } from "@/components/products/ProductCard";
@@ -7,7 +7,7 @@ vi.mock("@/contexts/StoreContext", () => ({
   useStore: () => ({ currency: "USD", locale: "en", loading: false }),
 }));
 
-// Minimal product fixtures — cast to StoreProduct for component props
+// Minimal product fixtures — cast to Product for component props
 const baseProduct = {
   id: "prod-1",
   name: "Classic T-Shirt",
@@ -24,7 +24,7 @@ const baseProduct = {
     display_amount: "$25.00",
     amount_in_cents: 2500,
   },
-} as unknown as StoreProduct;
+} as unknown as Product;
 
 const saleProduct = {
   id: "prod-2",
@@ -42,7 +42,7 @@ const saleProduct = {
     display_amount: "$25.00",
     amount_in_cents: 2500,
   },
-} as unknown as StoreProduct;
+} as unknown as Product;
 
 const outOfStockProduct = {
   id: "prod-3",
@@ -60,7 +60,7 @@ const outOfStockProduct = {
     display_amount: "$25.00",
     amount_in_cents: 2500,
   },
-} as unknown as StoreProduct;
+} as unknown as Product;
 
 const noImageProduct = {
   id: "prod-4",
@@ -78,7 +78,7 @@ const noImageProduct = {
     display_amount: "$25.00",
     amount_in_cents: 2500,
   },
-} as unknown as StoreProduct;
+} as unknown as Product;
 
 describe("ProductCard", () => {
   it("renders product name and price", () => {

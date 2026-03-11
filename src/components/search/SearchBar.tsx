@@ -1,10 +1,15 @@
 "use client";
 
-import type { StoreProduct } from "@spree/sdk";
-import Image from "next/image";
+import type { Product } from "@spree/sdk";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlaceholderIcon, SearchIcon } from "@/components/icons";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { ProductImage } from "@/components/ui/product-image";
 import { useStore } from "@/contexts/StoreContext";
 import { trackQuickSearch, trackSelectItem } from "@/lib/analytics/gtm";
 import { getProducts } from "@/lib/data/products";
@@ -17,7 +22,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<StoreProduct[]>([]);
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -100,7 +105,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
   };
 
   // Handle suggestion click
-  const handleSuggestionClick = (product: StoreProduct, index: number) => {
+  const handleSuggestionClick = (product: Product, index: number) => {
     trackSelectItem(product, "quick-search", "Quick Search", index, currency);
     router.push(`${basePath}/products/${product.slug}`);
     setIsOpen(false);
@@ -140,8 +145,8 @@ export function SearchBar({ basePath }: SearchBarProps) {
   return (
     <div ref={containerRef} className="relative">
       <form onSubmit={handleSubmit}>
-        <div className="relative">
-          <input
+        <InputGroup>
+          <InputGroupInput
             ref={inputRef}
             type="search"
             value={query}
@@ -153,7 +158,6 @@ export function SearchBar({ basePath }: SearchBarProps) {
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search..."
-            className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
             role="combobox"
             aria-expanded={showSuggestions}
             aria-controls="search-suggestions"
@@ -161,14 +165,17 @@ export function SearchBar({ basePath }: SearchBarProps) {
               selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined
             }
             aria-autocomplete="list"
+            aria-label="Search"
           />
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        </div>
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+        </InputGroup>
       </form>
 
       {/* Suggestions dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl z-50 overflow-hidden">
           {loading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
               Searching...
@@ -192,20 +199,14 @@ export function SearchBar({ basePath }: SearchBarProps) {
                     }`}
                   >
                     {/* Thumbnail */}
-                    <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                      {product.thumbnail_url ? (
-                        <Image
-                          src={product.thumbnail_url}
-                          alt={product.name}
-                          width={40}
-                          height={40}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                          <ImagePlaceholderIcon className="w-5 h-5" />
-                        </div>
-                      )}
+                    <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
+                      <ProductImage
+                        src={product.thumbnail_url}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        iconClassName="w-5 h-5"
+                      />
                     </div>
                     {/* Name and price */}
                     <div className="flex-1 min-w-0">
@@ -232,7 +233,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
                       );
                       setIsOpen(false);
                     }}
-                    className="w-full p-3 text-sm text-primary-500 hover:bg-gray-50 text-center font-medium"
+                    className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
                   >
                     View all results for &ldquo;{query}&rdquo;
                   </button>

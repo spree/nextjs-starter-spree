@@ -1,9 +1,13 @@
 "use client";
 
+import { CircleAlert, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { EyeIcon, EyeSlashIcon } from "@/components/icons";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
 
@@ -11,31 +15,33 @@ export default function RegisterPage() {
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, loading: authLoading } = useAuth();
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [showPasswordConfirmation, setShowPasswordConfirmation] =
     useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Redirect if already authenticated
   // useEffect is needed here to prevent rendering issues.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!authLoading && isAuthenticated) {
       router.push(`${basePath}/account`);
     }
-  }, [isAuthenticated, router, basePath]);
-  if (isAuthenticated) {
+  }, [authLoading, isAuthenticated, router, basePath]);
+  if (authLoading || isAuthenticated) {
     return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError(null);
 
     if (password !== passwordConfirmation) {
       setError("Passwords do not match");
@@ -47,15 +53,26 @@ export default function RegisterPage() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
 
-    const result = await register(email, password, passwordConfirmation);
-    if (result.success) {
-      router.push(`${basePath}/account`);
-    } else {
-      setError(result.error || "Registration failed. Please try again.");
+    try {
+      const result = await register({
+        email,
+        password,
+        password_confirmation: passwordConfirmation,
+        ...(firstName && { first_name: firstName }),
+        ...(lastName && { last_name: lastName }),
+      });
+      if (result.success) {
+        router.push(`${basePath}/account`);
+      } else {
+        setError(result.error || "Registration failed. Please try again.");
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -68,113 +85,135 @@ export default function RegisterPage() {
       <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-              {error}
-            </div>
+            <Alert variant="destructive">
+              <CircleAlert />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
+          <div className="grid grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel htmlFor="firstName">First name</FieldLabel>
+              <Input
+                type="text"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                placeholder="John"
+              />
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="lastName">Last name</FieldLabel>
+              <Input
+                type="text"
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                placeholder="Doe"
+              />
+            </Field>
+          </div>
+
+          <Field>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
               placeholder="you@example.com"
             />
-          </div>
+          </Field>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
+          <Field>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
             <div className="relative">
-              <input
+              <Input
                 type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
                 placeholder="••••••••"
+                className="pr-10"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeSlashIcon className="w-5 h-5" />
-                ) : (
-                  <EyeIcon className="w-5 h-5" />
-                )}
-              </button>
+              <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
+          </Field>
 
-          <div>
-            <label
-              htmlFor="passwordConfirmation"
-              className="block text-sm font-medium text-gray-700"
-            >
+          <Field>
+            <FieldLabel htmlFor="passwordConfirmation">
               Confirm Password
-            </label>
+            </FieldLabel>
             <div className="relative">
-              <input
+              <Input
                 type={showPasswordConfirmation ? "text" : "password"}
                 id="passwordConfirmation"
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                 required
                 minLength={6}
-                className="mt-1 block w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500"
                 placeholder="••••••••"
+                className="pr-10"
               />
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPasswordConfirmation(!showPasswordConfirmation)
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                aria-label={
-                  showPasswordConfirmation ? "Hide password" : "Show password"
-                }
-              >
-                {showPasswordConfirmation ? (
-                  <EyeSlashIcon className="w-5 h-5" />
-                ) : (
-                  <EyeIcon className="w-5 h-5" />
-                )}
-              </button>
+              <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() =>
+                    setShowPasswordConfirmation(!showPasswordConfirmation)
+                  }
+                  aria-label={
+                    showPasswordConfirmation ? "Hide password" : "Show password"
+                  }
+                >
+                  {showPasswordConfirmation ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
+          </Field>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
+          <div className="w-full">
+            <Button
+              type="submit"
+              disabled={submitting}
+              size="lg"
+              className="w-full"
+            >
+              {submitting ? "Creating account..." : "Create Account"}
+            </Button>
+          </div>
         </form>
 
         <div className="mt-6 text-center text-sm">
           <span className="text-gray-500">Already have an account? </span>
           <Link
             href={`${basePath}/account`}
-            className="text-primary-500 hover:text-primary-700 font-medium"
+            className="text-primary hover:text-primary/70 font-medium"
           >
             Sign in
           </Link>

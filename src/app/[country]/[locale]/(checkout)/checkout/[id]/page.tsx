@@ -1,12 +1,13 @@
 "use client";
 
 import type {
+  Address,
   AddressParams,
-  StoreAddress,
-  StoreCountry,
-  StoreOrder,
-  StoreShipment,
+  Country,
+  Order,
+  Shipment,
 } from "@spree/sdk";
+import { CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
@@ -15,6 +16,7 @@ import { CouponCode } from "@/components/checkout/CouponCode";
 import { DeliveryStep } from "@/components/checkout/DeliveryStep";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { PaymentStep } from "@/components/checkout/PaymentStep";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
   trackAddPaymentInfo,
@@ -72,7 +74,7 @@ function CheckoutSidebar({
   onApplyCoupon,
   onRemoveCoupon,
 }: {
-  order: StoreOrder;
+  order: Order;
   onApplyCoupon: (
     code: string,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -102,10 +104,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<StoreOrder | null>(null);
-  const [shipments, setShipments] = useState<StoreShipment[]>([]);
-  const [countries, setCountries] = useState<StoreCountry[]>([]);
-  const [savedAddresses, setSavedAddresses] = useState<StoreAddress[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -193,9 +195,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Fetch countries scoped to the resolved market
       const countriesData = market
         ? await getMarketCountries(market.id).catch(() => ({
-            data: [] as StoreCountry[],
+            data: [] as Country[],
           }))
-        : { data: [] as StoreCountry[] };
+        : { data: [] as Country[] };
 
       if (!orderData) {
         setError("Order not found or you don't have access to it.");
@@ -302,7 +304,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setProcessing(true);
     setError(null);
 
-    let trackingOrder: StoreOrder | null = null;
+    let trackingOrder: Order | null = null;
     let trackingRateName: string | undefined;
 
     try {
@@ -450,7 +452,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const handleUpdateSavedAddress = async (
     id: string,
     data: AddressParams,
-  ): Promise<StoreAddress> => {
+  ): Promise<Address> => {
     const result = await updateAddress(id, data);
 
     if (!result.success) {
@@ -499,7 +501,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <p className="text-gray-600 mb-6">{error}</p>
         <Link
           href={`${basePath}/cart`}
-          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
           Return to Cart
         </Link>
@@ -521,7 +523,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         </p>
         <Link
           href={`${basePath}/products`}
-          className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-700"
+          className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
           Continue Shopping
         </Link>
@@ -556,11 +558,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               >
                 <div className="flex items-center pr-2">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ${
                       index < currentStepIndex
-                        ? "bg-primary-500 text-white"
+                        ? "bg-black text-white"
                         : index === currentStepIndex
-                          ? "bg-primary-500 text-white"
+                          ? "bg-primary text-white"
                           : "bg-gray-200 text-gray-500"
                     }`}
                   >
@@ -569,7 +571,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                   <span
                     className={`ml-2 text-sm font-medium ${
                       index === currentStepIndex
-                        ? "text-primary-500"
+                        ? "text-primary"
                         : index < currentStepIndex
                           ? "text-gray-900"
                           : "text-gray-500"
@@ -581,7 +583,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
                 {index < steps.length - 1 && (
                   <div className="w-full h-0.5 bg-gray-200">
                     <div
-                      className={`h-full ${index < currentStepIndex ? "bg-primary-500" : "bg-gray-200"}`}
+                      className={`h-full ${index < currentStepIndex ? "bg-primary" : "bg-gray-200"}`}
                       style={{
                         width: index < currentStepIndex ? "100%" : "0%",
                       }}
@@ -596,9 +598,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Main content */}

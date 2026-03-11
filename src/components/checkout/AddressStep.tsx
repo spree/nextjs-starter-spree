@@ -1,14 +1,13 @@
 "use client";
 
-import type {
-  AddressParams,
-  StoreAddress,
-  StoreCountry,
-  StoreOrder,
-  StoreState,
-} from "@spree/sdk";
+import type { Address, AddressParams, Country, Order, State } from "@spree/sdk";
+import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   type AddressFormData,
   addressToFormData,
@@ -19,12 +18,12 @@ import { AddressFormFields } from "./AddressFormFields";
 import { AddressSelector } from "./AddressSelector";
 
 interface AddressStepProps {
-  order: StoreOrder;
-  countries: StoreCountry[];
-  savedAddresses: StoreAddress[];
+  order: Order;
+  countries: Country[];
+  savedAddresses: Address[];
   isAuthenticated: boolean;
   signInUrl: string;
-  fetchStates: (countryIso: string) => Promise<StoreState[]>;
+  fetchStates: (countryIso: string) => Promise<State[]>;
   onSubmit: (data: {
     email: string;
     ship_address?: AddressParams;
@@ -33,7 +32,7 @@ interface AddressStepProps {
   onUpdateSavedAddress?: (
     id: string,
     data: AddressParams,
-  ) => Promise<StoreAddress | null>;
+  ) => Promise<Address | null>;
   processing: boolean;
 }
 
@@ -52,12 +51,10 @@ export function AddressStep({
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     addressToFormData(order.ship_address),
   );
-  const [shipStates, setShipStates] = useState<StoreState[]>([]);
+  const [shipStates, setShipStates] = useState<State[]>([]);
   const [isPendingShip, startTransitionShip] = useTransition();
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
-  const [editingAddress, setEditingAddress] = useState<StoreAddress | null>(
-    null,
-  );
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   // Load states when shipping country changes
   useEffect(() => {
@@ -102,7 +99,7 @@ export function AddressStep({
     });
   };
 
-  const handleSelectSavedAddress = (address: StoreAddress) => {
+  const handleSelectSavedAddress = (address: Address) => {
     setShipAddress(addressToFormData(address));
   };
 
@@ -127,18 +124,15 @@ export function AddressStep({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Sign-in prompt for guests */}
         {!isAuthenticated && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-sm text-blue-800">
-              Already have an account?{" "}
-              <Link
-                href={signInUrl}
-                className="font-medium text-blue-600 hover:text-blue-700 underline"
-              >
-                Sign in
-              </Link>{" "}
-              to access your saved addresses and order history.
-            </p>
-          </div>
+          <Alert role="status">
+            <InfoIcon />
+            <AlertDescription>
+              Already have an account?
+              <br />
+              <Link href={signInUrl}>Sign in</Link> to access your saved
+              addresses and order history.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Contact Information */}
@@ -146,29 +140,23 @@ export function AddressStep({
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Contact Information
           </h2>
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
-            </label>
-            <input
+          <Field>
+            <FieldLabel htmlFor="email">Email address</FieldLabel>
+            <Input
               type="email"
               id="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isAuthenticated}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-primary-500 focus:outline-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
               placeholder="you@example.com"
             />
             {isAuthenticated && (
-              <p className="mt-1 text-xs text-gray-500">
+              <FieldDescription>
                 Using your account email address
-              </p>
+              </FieldDescription>
             )}
-          </div>
+          </Field>
         </div>
 
         {/* Shipping Address */}
@@ -206,13 +194,9 @@ export function AddressStep({
 
         {/* Submit */}
         <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={processing}
-            className="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <Button type="submit" disabled={processing}>
             {processing ? "Saving..." : "Continue to Delivery"}
-          </button>
+          </Button>
         </div>
       </form>
 

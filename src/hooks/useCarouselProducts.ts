@@ -1,23 +1,24 @@
-import type { StoreProduct } from "@spree/sdk";
+import type { Product } from "@spree/sdk";
 import { useEffect, useState } from "react";
-import { getProducts, getTaxonProducts } from "@/lib/data/products";
+import { getCategoryProducts } from "@/lib/data/categories";
+import { getProducts } from "@/lib/data/products";
 
 interface UseCarouselProductsOptions {
-  taxonId?: string;
+  categoryId?: string;
   limit?: number;
 }
 
 interface UseCarouselProductsResult {
-  products: StoreProduct[];
+  products: Product[];
   loading: boolean;
   error: string | null;
 }
 
 export function useCarouselProducts({
-  taxonId,
+  categoryId,
   limit = 8,
 }: UseCarouselProductsOptions = {}): UseCarouselProductsResult {
-  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +31,8 @@ export function useCarouselProducts({
       try {
         const params = { limit };
 
-        const response = taxonId
-          ? await getTaxonProducts(taxonId, params)
+        const response = categoryId
+          ? await getCategoryProducts(categoryId, params)
           : await getProducts(params);
 
         if (!cancelled) {
@@ -54,7 +55,7 @@ export function useCarouselProducts({
     return () => {
       cancelled = true;
     };
-  }, [taxonId, limit]);
+  }, [categoryId, limit]);
 
   return { products, loading, error };
 }

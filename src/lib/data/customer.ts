@@ -17,12 +17,14 @@ export async function login(email: string, password: string) {
   return _login(email, password);
 }
 
-export async function register(
-  email: string,
-  password: string,
-  passwordConfirmation: string,
-) {
-  return _register(email, password, passwordConfirmation);
+export async function register(params: {
+  email: string;
+  password: string;
+  password_confirmation: string;
+  first_name?: string;
+  last_name?: string;
+}) {
+  return _register(params);
 }
 
 export async function logout() {
