@@ -1,6 +1,13 @@
 "use client";
 
-import type { Address, AddressParams, Country, Order, State } from "@spree/sdk";
+import type {
+  Address,
+  AddressParams,
+  Cart,
+  Country,
+  Order,
+  State,
+} from "@spree/sdk";
 import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
@@ -18,7 +25,7 @@ import { AddressFormFields } from "./AddressFormFields";
 import { AddressSelector } from "./AddressSelector";
 
 interface AddressStepProps {
-  order: Order;
+  order: Cart | Order;
   countries: Country[];
   savedAddresses: Address[];
   isAuthenticated: boolean;

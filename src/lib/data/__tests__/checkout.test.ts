@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@spree/next", () => ({
   getCheckout: vi.fn(),
-  updateOrder: vi.fn(),
-  advance: vi.fn(),
-  next: vi.fn(),
+  updateCheckout: vi.fn(),
   getShipments: vi.fn(),
   selectShippingRate: vi.fn(),
   applyCoupon: vi.fn(),
@@ -13,15 +11,13 @@ vi.mock("@spree/next", () => ({
 }));
 
 import {
-  advance,
   applyCoupon,
   complete,
   getCheckout,
   getShipments as getShipmentsSdk,
-  next,
   removeCoupon,
   selectShippingRate as selectShippingRateSdk,
-  updateOrder,
+  updateCheckout,
 } from "@spree/next";
 
 import {
@@ -39,16 +35,18 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fixtures are intentionally partial
 const mockGetCheckout = getCheckout as any;
-const mockUpdateOrder = updateOrder as any;
-const mockAdvance = advance as any;
-const mockNext = next as any;
+const mockUpdateCheckout = updateCheckout as any;
 const mockGetShipments = getShipmentsSdk as any;
 const mockSelectShippingRate = selectShippingRateSdk as any;
 const mockApplyCoupon = applyCoupon as any;
 const mockRemoveCoupon = removeCoupon as any;
 const mockComplete = complete as any;
 
-const mockOrder = { id: "order-1", number: "R100", state: "address" };
+const mockOrder = {
+  id: "order-1",
+  number: "R100",
+  current_step: "address",
+};
 const mockShipments = [{ id: "ship-1", shipping_rates: [] }];
 
 describe("checkout server actions", () => {
@@ -62,7 +60,7 @@ describe("checkout server actions", () => {
 
       const result = await getCheckoutOrder("order-1");
 
-      expect(mockGetCheckout).toHaveBeenCalledWith("order-1");
+      expect(mockGetCheckout).toHaveBeenCalled();
       expect(result).toBe(mockOrder);
     });
 
@@ -77,17 +75,17 @@ describe("checkout server actions", () => {
 
   describe("updateOrderAddresses", () => {
     it("returns success with order", async () => {
-      mockUpdateOrder.mockResolvedValue(mockOrder);
+      mockUpdateCheckout.mockResolvedValue(mockOrder);
       const addresses = { email: "test@example.com" };
 
       const result = await updateOrderAddresses("order-1", addresses);
 
-      expect(mockUpdateOrder).toHaveBeenCalledWith("order-1", addresses);
+      expect(mockUpdateCheckout).toHaveBeenCalledWith(addresses);
       expect(result).toEqual({ success: true, order: mockOrder });
     });
 
     it("returns error on failure", async () => {
-      mockUpdateOrder.mockRejectedValue(new Error("Invalid address"));
+      mockUpdateCheckout.mockRejectedValue(new Error("Invalid address"));
 
       const result = await updateOrderAddresses("order-1", {});
 
@@ -98,7 +96,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns fallback message for non-Error throws", async () => {
-      mockUpdateOrder.mockRejectedValue("unexpected");
+      mockUpdateCheckout.mockRejectedValue("unexpected");
 
       const result = await updateOrderAddresses("order-1", {});
 
@@ -112,14 +110,14 @@ describe("checkout server actions", () => {
   describe("updateOrderMarket", () => {
     it("returns success with updated order", async () => {
       const updatedOrder = { ...mockOrder, currency: "EUR", locale: "de" };
-      mockUpdateOrder.mockResolvedValue(updatedOrder);
+      mockUpdateCheckout.mockResolvedValue(updatedOrder);
 
       const result = await updateOrderMarket("order-1", {
         currency: "EUR",
         locale: "de",
       });
 
-      expect(mockUpdateOrder).toHaveBeenCalledWith("order-1", {
+      expect(mockUpdateCheckout).toHaveBeenCalledWith({
         currency: "EUR",
         locale: "de",
       });
@@ -127,7 +125,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns error on failure", async () => {
-      mockUpdateOrder.mockRejectedValue(new Error("Currency not supported"));
+      mockUpdateCheckout.mockRejectedValue(new Error("Currency not supported"));
 
       const result = await updateOrderMarket("order-1", {
         currency: "XYZ",
@@ -141,7 +139,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns fallback message for non-Error throws", async () => {
-      mockUpdateOrder.mockRejectedValue("unexpected");
+      mockUpdateCheckout.mockRejectedValue("unexpected");
 
       const result = await updateOrderMarket("order-1", {
         currency: "EUR",
@@ -157,16 +155,16 @@ describe("checkout server actions", () => {
 
   describe("nextCheckoutStep", () => {
     it("returns success with order", async () => {
-      mockNext.mockResolvedValue(mockOrder);
+      mockGetCheckout.mockResolvedValue(mockOrder);
 
       const result = await nextCheckoutStep("order-1");
 
-      expect(mockNext).toHaveBeenCalledWith("order-1");
+      expect(mockGetCheckout).toHaveBeenCalled();
       expect(result).toEqual({ success: true, order: mockOrder });
     });
 
     it("returns error on failure", async () => {
-      mockNext.mockRejectedValue(new Error("Cannot advance"));
+      mockGetCheckout.mockRejectedValue(new Error("Cannot advance"));
 
       const result = await nextCheckoutStep("order-1");
 
@@ -177,7 +175,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns fallback message for non-Error throws", async () => {
-      mockNext.mockRejectedValue("unexpected");
+      mockGetCheckout.mockRejectedValue("unexpected");
 
       const result = await nextCheckoutStep("order-1");
 
@@ -190,16 +188,16 @@ describe("checkout server actions", () => {
 
   describe("advanceCheckout", () => {
     it("returns success with order", async () => {
-      mockAdvance.mockResolvedValue(mockOrder);
+      mockGetCheckout.mockResolvedValue(mockOrder);
 
       const result = await advanceCheckout("order-1");
 
-      expect(mockAdvance).toHaveBeenCalledWith("order-1");
+      expect(mockGetCheckout).toHaveBeenCalled();
       expect(result).toEqual({ success: true, order: mockOrder });
     });
 
     it("returns error on failure", async () => {
-      mockAdvance.mockRejectedValue(new Error("Cannot advance"));
+      mockGetCheckout.mockRejectedValue(new Error("Cannot advance"));
 
       const result = await advanceCheckout("order-1");
 
@@ -216,7 +214,7 @@ describe("checkout server actions", () => {
 
       const result = await getShipments("order-1");
 
-      expect(mockGetShipments).toHaveBeenCalledWith("order-1");
+      expect(mockGetShipments).toHaveBeenCalled();
       expect(result).toBe(mockShipments);
     });
 
@@ -235,11 +233,7 @@ describe("checkout server actions", () => {
 
       const result = await selectShippingRate("order-1", "ship-1", "rate-1");
 
-      expect(mockSelectShippingRate).toHaveBeenCalledWith(
-        "order-1",
-        "ship-1",
-        "rate-1",
-      );
+      expect(mockSelectShippingRate).toHaveBeenCalledWith("ship-1", "rate-1");
       expect(result).toEqual({ success: true });
     });
 
@@ -261,7 +255,7 @@ describe("checkout server actions", () => {
 
       const result = await applyCouponCode("order-1", "SAVE10");
 
-      expect(mockApplyCoupon).toHaveBeenCalledWith("order-1", "SAVE10");
+      expect(mockApplyCoupon).toHaveBeenCalledWith("SAVE10");
       expect(result).toEqual({ success: true, order: mockOrder });
     });
 
@@ -294,7 +288,7 @@ describe("checkout server actions", () => {
 
       const result = await removeCouponCode("order-1", "promo-1");
 
-      expect(mockRemoveCoupon).toHaveBeenCalledWith("order-1", "promo-1");
+      expect(mockRemoveCoupon).toHaveBeenCalledWith("promo-1");
       expect(result).toEqual({ success: true, order: mockOrder });
     });
 
@@ -316,7 +310,7 @@ describe("checkout server actions", () => {
 
       const result = await completeOrder("order-1");
 
-      expect(mockComplete).toHaveBeenCalledWith("order-1");
+      expect(mockComplete).toHaveBeenCalled();
       expect(result).toEqual({ success: true, order: mockOrder });
     });
 

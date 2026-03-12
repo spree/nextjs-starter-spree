@@ -2,6 +2,7 @@
 
 import type {
   AddressParams,
+  Cart,
   Country,
   Order,
   CreditCard as SpreeCreditCard,
@@ -31,7 +32,7 @@ import {
 } from "./StripePaymentForm";
 
 interface PaymentStepProps {
-  order: Order;
+  order: Cart;
   countries: Country[];
   isAuthenticated: boolean;
   fetchStates: (countryIso: string) => Promise<State[]>;

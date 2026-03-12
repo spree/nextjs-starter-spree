@@ -3,8 +3,8 @@
 import type {
   Address,
   AddressParams,
+  Cart,
   Country,
-  Order,
   Shipment,
 } from "@spree/sdk";
 import { CircleAlert } from "lucide-react";
@@ -41,28 +41,11 @@ import {
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
-function getVisibleCheckoutSteps(checkoutSteps: string[]): string[] {
-  return checkoutSteps.filter(
-    (step) => step !== "complete" && step !== "confirm",
-  );
-}
-
-// Map order state to the corresponding visible checkout step
-function getCheckoutStep(orderState: string, checkoutSteps: string[]): string {
-  const visibleSteps = getVisibleCheckoutSteps(checkoutSteps);
-  if (orderState === "cart") return visibleSteps[0] || "address";
-  if (orderState === "confirm") {
-    return visibleSteps[visibleSteps.length - 1] || "address";
-  }
-  if (visibleSteps.includes(orderState)) return orderState;
-  return visibleSteps[0] || "address";
-}
-
-const STEP_LABELS: Record<string, string> = {
-  address: "Shipping",
-  delivery: "Delivery",
-  payment: "Payment",
-};
+const CHECKOUT_STEPS = [
+  { id: "address", label: "Shipping" },
+  { id: "delivery", label: "Delivery" },
+  { id: "payment", label: "Payment" },
+];
 
 interface CheckoutPageProps {
   params: Promise<{
@@ -78,7 +61,7 @@ function CheckoutSidebar({
   onApplyCoupon,
   onRemoveCoupon,
 }: {
-  order: Order;
+  order: Cart;
   onApplyCoupon: (
     code: string,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -108,7 +91,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<Cart | null>(null);
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
@@ -210,7 +193,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       }
 
       // Check if order is already complete
-      if (orderData.state === "complete") {
+      if (orderData.current_step === "complete") {
         router.push(`${basePath}/order-placed/${orderId}`);
         return;
       }
@@ -219,9 +202,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      setCurrentStep(
-        getCheckoutStep(orderData.state, orderData.checkout_steps),
-      );
+      setCurrentStep(orderData.current_step);
 
       if (!beginCheckoutFiredRef.current) {
         try {
@@ -233,11 +214,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       }
 
       // Set shipments from order data (already included via getCheckoutOrder)
-      if (
-        orderData.state === "delivery" ||
-        orderData.state === "payment" ||
-        orderData.state === "confirm"
-      ) {
+      if (orderData.completed_steps.includes("address")) {
         setShipments(orderData.shipments || []);
       }
 
@@ -310,7 +287,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setProcessing(true);
     setError(null);
 
-    let trackingOrder: Order | null = null;
+    let trackingOrder: Cart | null = null;
     let trackingRateName: string | undefined;
 
     try {
@@ -427,7 +404,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         return;
       }
 
-      if (updatedOrder.state !== "complete") {
+      if (updatedOrder.current_step !== "complete") {
         const completeResult = await completeCheckoutOrder(order.id);
         if (!completeResult.success) {
           setError(completeResult.error || "Failed to complete order");
@@ -518,7 +495,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   if (!order) return null;
 
   // Check if order has items
-  if (!order.line_items || order.line_items.length === 0) {
+  if (!order.items || order.items.length === 0) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
@@ -537,11 +514,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     );
   }
 
-  const steps = getVisibleCheckoutSteps(order.checkout_steps).map((step) => ({
-    id: step,
-    label: STEP_LABELS[step] || step.charAt(0).toUpperCase() + step.slice(1),
-  }));
-
+  const steps = CHECKOUT_STEPS;
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
   const previousStepId =
     currentStepIndex > 0 ? steps[currentStepIndex - 1].id : undefined;

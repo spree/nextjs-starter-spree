@@ -1,6 +1,6 @@
 "use client";
 
-import type { Order } from "@spree/sdk";
+import type { Cart, Order } from "@spree/sdk";
 import { CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -9,7 +9,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 interface CouponCodeProps {
-  order: Order;
+  order: Cart | Order;
   onApply: (code: string) => Promise<{ success: boolean; error?: string }>;
   onRemove: (
     promotionId: string,
@@ -22,7 +22,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
   const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const appliedPromotions = order.order_promotions || [];
+  const appliedPromotions = order.promotions || [];
   // Filter to only show promotions with codes (coupon codes)
   const couponPromotions = appliedPromotions.filter((p) => p.code);
 

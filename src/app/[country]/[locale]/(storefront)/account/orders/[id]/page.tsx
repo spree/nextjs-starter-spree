@@ -116,7 +116,7 @@ function LineItemCard({
   item,
   basePath,
 }: {
-  item: Order["line_items"][number];
+  item: Order["items"][number];
   basePath: string;
 }) {
   return (
@@ -173,7 +173,7 @@ function ShipmentBlock({
   shipment: Shipment;
   shipAddress: Address | null;
   basePath: string;
-  lineItems: Order["line_items"];
+  lineItems: Order["items"];
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
@@ -341,13 +341,13 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
             shipment={shipment}
             shipAddress={order.ship_address}
             basePath={basePath}
-            lineItems={order.line_items || []}
+            lineItems={order.items || []}
           />
         ))
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
           <div className="divide-y divide-gray-200">
-            {order.line_items?.map((item) => (
+            {order.items?.map((item) => (
               <div key={item.id} className="px-6 py-4">
                 <LineItemCard item={item} basePath={basePath} />
               </div>

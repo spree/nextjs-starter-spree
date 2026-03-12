@@ -3,13 +3,11 @@
 import {
   getShipments as _getShipments,
   selectShippingRate as _selectShippingRate,
-  advance,
   applyCoupon,
   complete,
   getCheckout,
-  next,
   removeCoupon,
-  updateOrder,
+  updateCheckout,
 } from "@spree/next";
 import type { AddressParams } from "@spree/sdk";
 import { cookies } from "next/headers";
@@ -26,12 +24,12 @@ export async function clearCartCookie() {
   cookieStore.set(CART_TOKEN_KEY, "", { maxAge: -1, path: "/" });
 }
 
-export async function getCheckoutOrder(orderId: string) {
-  return withFallback(() => getCheckout(orderId), null);
+export async function getCheckoutOrder(_orderId: string) {
+  return withFallback(() => getCheckout(), null);
 }
 
 export async function updateOrderAddresses(
-  orderId: string,
+  _orderId: string,
   addresses: {
     ship_address?: AddressParams;
     bill_address?: AddressParams;
@@ -41,74 +39,71 @@ export async function updateOrderAddresses(
   },
 ) {
   return actionResult(async () => {
-    const order = await updateOrder(orderId, addresses);
+    const order = await updateCheckout(addresses);
     return { order };
   }, "Failed to update addresses");
 }
 
 export async function updateOrderMarket(
-  orderId: string,
+  _orderId: string,
   params: { currency: string; locale: string },
 ) {
   return actionResult(async () => {
-    const order = await updateOrder(orderId, params);
+    const order = await updateCheckout(params);
     return { order };
   }, "Failed to update order market");
 }
 
-export async function nextCheckoutStep(orderId: string) {
+export async function nextCheckoutStep(_orderId: string) {
+  // v3 API auto-advances on update; reload cart to get updated step
   return actionResult(async () => {
-    const order = await next(orderId);
+    const order = await getCheckout();
     return { order };
   }, "Failed to advance checkout");
 }
 
-export async function advanceCheckout(orderId: string) {
+export async function advanceCheckout(_orderId: string) {
   return actionResult(async () => {
-    const order = await advance(orderId);
+    const order = await getCheckout();
     return { order };
   }, "Failed to advance checkout");
 }
 
-export async function getShipments(orderId: string) {
+export async function getShipments(_orderId: string) {
   return withFallback(async () => {
-    const response = await _getShipments(orderId);
+    const response = await _getShipments();
     return response.data;
   }, []);
 }
 
 export async function selectShippingRate(
-  orderId: string,
+  _orderId: string,
   shipmentId: string,
   shippingRateId: string,
 ) {
   return actionResult(async () => {
-    const order = await _selectShippingRate(
-      orderId,
-      shipmentId,
-      shippingRateId,
-    );
+    const order = await _selectShippingRate(shipmentId, shippingRateId);
     return { order };
   }, "Failed to select shipping rate");
 }
 
-export async function applyCouponCode(orderId: string, couponCode: string) {
+export async function applyCouponCode(_orderId: string, couponCode: string) {
   return actionResult(async () => {
-    const order = await applyCoupon(orderId, couponCode);
+    const order = await applyCoupon(couponCode);
     return { order };
   }, "Failed to apply coupon code");
 }
 
-export async function removeCouponCode(orderId: string, promotionId: string) {
+export async function removeCouponCode(_orderId: string, promotionId: string) {
   return actionResult(async () => {
-    const order = await removeCoupon(orderId, promotionId);
+    const order = await removeCoupon(promotionId);
     return { order };
   }, "Failed to remove coupon code");
 }
 
-export async function completeOrder(orderId: string) {
+export async function completeOrder(_orderId: string) {
   return actionResult(async () => {
-    const order = await complete(orderId);
+    const order = await complete();
     return { order };
   }, "Failed to complete order");
 }

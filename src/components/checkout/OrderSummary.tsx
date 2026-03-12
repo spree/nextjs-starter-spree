@@ -1,14 +1,14 @@
 "use client";
 
-import type { Order } from "@spree/sdk";
+import type { Cart, Order } from "@spree/sdk";
 import { ProductImage } from "@/components/ui/product-image";
 
 interface OrderSummaryProps {
-  order: Order;
+  order: Cart | Order;
 }
 
 export function OrderSummary({ order }: OrderSummaryProps) {
-  const lineItems = order.line_items || [];
+  const lineItems = order.items || [];
 
   return (
     <div>

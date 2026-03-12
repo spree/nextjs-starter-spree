@@ -48,7 +48,7 @@ export default function CartPage() {
     );
   }
 
-  if (!cart || !cart.line_items || cart.line_items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
@@ -80,7 +80,7 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl border border-gray-200 divide-y">
-            {cart.line_items.map((item) => (
+            {cart.items.map((item) => (
               <div key={item.id} className="p-6 flex gap-6">
                 {/* Image */}
                 <div className="relative w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">

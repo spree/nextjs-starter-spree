@@ -1,10 +1,10 @@
 "use client";
 
-import type { Order, Shipment } from "@spree/sdk";
+import type { Cart, Order, Shipment } from "@spree/sdk";
 import { Button } from "@/components/ui/button";
 
 interface DeliveryStepProps {
-  order: Order;
+  order: Cart | Order;
   shipments: Shipment[];
   onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>;
   onConfirm: () => Promise<void>;

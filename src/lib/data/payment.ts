@@ -8,12 +8,12 @@ import {
 import { actionResult } from "./utils";
 
 export async function createCheckoutPaymentSession(
-  orderId: string,
+  _orderId: string,
   paymentMethodId: string,
   stripePaymentMethodId?: string,
 ) {
   return actionResult(async () => {
-    const session = await createPaymentSession(orderId, {
+    const session = await createPaymentSession({
       payment_method_id: paymentMethodId,
       ...(stripePaymentMethodId && {
         external_data: { stripe_payment_method_id: stripePaymentMethodId },
@@ -24,18 +24,18 @@ export async function createCheckoutPaymentSession(
 }
 
 export async function completeCheckoutPaymentSession(
-  orderId: string,
+  _orderId: string,
   sessionId: string,
 ) {
   return actionResult(async () => {
-    const session = await completePaymentSession(orderId, sessionId);
+    const session = await completePaymentSession(sessionId);
     return { session };
   }, "Failed to complete payment session");
 }
 
-export async function completeCheckoutOrder(orderId: string) {
+export async function completeCheckoutOrder(_orderId: string) {
   return actionResult(async () => {
-    const order = await complete(orderId);
+    const order = await complete();
     return { order };
   }, "Failed to complete order");
 }

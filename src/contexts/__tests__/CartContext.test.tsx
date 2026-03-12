@@ -24,7 +24,7 @@ const mockRemoveCartItem = vi.mocked(removeCartItem);
 
 const mockCart = {
   id: "cart-1",
-  line_items: [
+  items: [
     { id: "li-1", quantity: 2, name: "Shirt" },
     { id: "li-2", quantity: 1, name: "Pants" },
   ],
@@ -32,7 +32,7 @@ const mockCart = {
 
 const updatedCart = {
   id: "cart-1",
-  line_items: [
+  items: [
     { id: "li-1", quantity: 2, name: "Shirt" },
     { id: "li-2", quantity: 1, name: "Pants" },
     { id: "li-3", quantity: 1, name: "Hat" },
@@ -66,7 +66,7 @@ describe("CartContext", () => {
     expect(result.current.cart).toBe(mockCart);
   });
 
-  it("computes itemCount from line_items", async () => {
+  it("computes itemCount from cart items", async () => {
     const { result } = renderHook(() => useCart(), { wrapper });
 
     await waitFor(() => {
@@ -167,7 +167,7 @@ describe("CartContext", () => {
     it("updates cart on success", async () => {
       const cartAfterRemoval = {
         id: "cart-1",
-        line_items: [{ id: "li-2", quantity: 1, name: "Pants" }],
+        items: [{ id: "li-2", quantity: 1, name: "Pants" }],
       } as never;
 
       mockRemoveCartItem.mockResolvedValue({

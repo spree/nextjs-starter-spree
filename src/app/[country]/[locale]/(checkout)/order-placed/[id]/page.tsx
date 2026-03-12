@@ -1,6 +1,6 @@
 "use client";
 
-import type { Order } from "@spree/sdk";
+import type { Cart } from "@spree/sdk";
 import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -28,7 +28,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +52,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         if (paymentIntent) {
           // Find the payment session and complete it
           const orderData = await getCheckoutOrder(orderId);
-          if (orderData && orderData.state !== "complete") {
+          if (orderData && orderData.current_step !== "complete") {
             // Look for a pending payment session matching this payment intent
             // The backend will find it via the webhook, but we also try to complete via API
             // to ensure the user sees the confirmation immediately
@@ -140,7 +140,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           <h2 className="text-lg font-medium text-gray-900">Order Items</h2>
         </div>
         <ul className="divide-y divide-gray-200">
-          {order.line_items?.map((item) => (
+          {order.items?.map((item) => (
             <li key={item.id} className="px-6 py-4 flex gap-4">
               <div className="relative w-14 h-14 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
                 <ProductImage

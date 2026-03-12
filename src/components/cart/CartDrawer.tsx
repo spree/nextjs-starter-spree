@@ -53,7 +53,7 @@ export function CartDrawer() {
     }
   }, [isOpen, cart]);
 
-  const lineItems = cart?.line_items || [];
+  const lineItems = cart?.items || [];
   const isEmpty = lineItems.length === 0;
 
   return (

@@ -1,5 +1,5 @@
 import { sendGTMEvent } from "@next/third-parties/google";
-import type { LineItem, Order, Product, Variant } from "@spree/sdk";
+import type { Cart, LineItem, Order, Product, Variant } from "@spree/sdk";
 
 interface GA4Item {
   item_id: string;
@@ -203,40 +203,40 @@ export function trackRemoveFromCart(
   });
 }
 
-export function trackViewCart(order: Order): void {
+export function trackViewCart(order: Cart | Order): void {
   pushEcommerceEvent("view_cart", {
     currency: order.currency,
     value: safeParseFloat(order.item_total),
     items:
-      order.line_items?.map((item, index) =>
+      order.items?.map((item, index) =>
         mapLineItemToGA4Item(item, { index }),
       ) ?? [],
   });
 }
 
 function buildOrderEcommercePayload(
-  order: Order,
+  order: Cart | Order,
   extras?: Record<string, unknown>,
 ): Record<string, unknown> {
-  const coupon = order.order_promotions?.[0]?.code;
+  const coupon = order.promotions?.[0]?.code;
   return {
     currency: order.currency,
     value: safeParseFloat(order.total),
     ...(coupon && { coupon }),
     ...extras,
     items:
-      order.line_items?.map((item, index) =>
+      order.items?.map((item, index) =>
         mapLineItemToGA4Item(item, { index }),
       ) ?? [],
   };
 }
 
-export function trackBeginCheckout(order: Order): void {
+export function trackBeginCheckout(order: Cart | Order): void {
   pushEcommerceEvent("begin_checkout", buildOrderEcommercePayload(order));
 }
 
 export function trackAddShippingInfo(
-  order: Order,
+  order: Cart | Order,
   shippingTier?: string,
 ): void {
   pushEcommerceEvent(
@@ -247,7 +247,10 @@ export function trackAddShippingInfo(
   );
 }
 
-export function trackAddPaymentInfo(order: Order, paymentType?: string): void {
+export function trackAddPaymentInfo(
+  order: Cart | Order,
+  paymentType?: string,
+): void {
   pushEcommerceEvent(
     "add_payment_info",
     buildOrderEcommercePayload(order, {
@@ -256,7 +259,7 @@ export function trackAddPaymentInfo(order: Order, paymentType?: string): void {
   );
 }
 
-export function trackPurchase(order: Order): void {
+export function trackPurchase(order: Cart | Order): void {
   const key = `gtm_purchase_${order.number}`;
   try {
     if (typeof window !== "undefined" && localStorage.getItem(key)) {
