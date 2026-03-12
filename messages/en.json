@@ -367,7 +367,9 @@
     "deleteConfirm": "Are you sure you want to remove this card?",
     "cardMaskedLabel": "{label} ending in {digits}, expires {month}/{year}",
     "removePaymentMethodTitle": "Remove payment method?",
-    "endingIn": "ending in"
+    "endingIn": "ending in",
+    "cardEndingIn": "{label} ending in {digits}",
+    "cardExpires": "Expires {month}/{year}"
   },
   "giftCards": {
     "giftCards": "Gift Cards",

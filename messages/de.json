@@ -367,7 +367,9 @@
     "deleteConfirm": "Sind Sie sicher, dass Sie diese Karte entfernen möchten?",
     "cardMaskedLabel": "{label} endet auf {digits}, gültig bis {month}/{year}",
     "removePaymentMethodTitle": "Zahlungsmethode entfernen?",
-    "endingIn": "endet auf"
+    "endingIn": "endet auf",
+    "cardEndingIn": "{label} endet auf {digits}",
+    "cardExpires": "Gültig bis {month}/{year}"
   },
   "giftCards": {
     "giftCards": "Geschenkkarten",

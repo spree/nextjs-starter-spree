@@ -51,10 +51,16 @@ function CreditCardItem({
           />
           <div>
             <p className="font-medium text-gray-900">
-              {getCardLabel(card.cc_type)} {t("endingIn")} {card.last_digits}
+              {t("cardEndingIn", {
+                label: getCardLabel(card.cc_type),
+                digits: card.last_digits,
+              })}
             </p>
             <p className="text-sm text-gray-500">
-              {t("expires")} {String(card.month).padStart(2, "0")}/{card.year}
+              {t("cardExpires", {
+                month: String(card.month).padStart(2, "0"),
+                year: card.year,
+              })}
             </p>
             {card.name && (
               <p className="text-sm text-gray-500 mt-1">{card.name}</p>
