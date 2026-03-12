@@ -167,7 +167,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
               selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined
             }
             aria-autocomplete="list"
-            aria-label="Search"
+            aria-label={t("search")}
           />
           <InputGroupAddon>
             <Search />

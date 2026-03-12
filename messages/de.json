@@ -37,7 +37,7 @@
     "copyright": "© {year} {storeName}. Unterstützt durch Spree Commerce."
   },
   "home": {
-    "welcome": "Willkommen bei Spree Store",
+    "welcome": "Willkommen bei {storeName}",
     "heroDescription": "Entdecken Sie großartige Produkte mit unserem modernen E-Commerce-Erlebnis powered by Spree Commerce.",
     "shopNow": "Jetzt einkaufen",
     "browseCategories": "Kategorien durchsuchen",
@@ -64,7 +64,8 @@
     "shoppingCart": "Warenkorb",
     "proceedToCheckout": "Zur Kasse gehen",
     "itemCount": "{count, plural, one {# Artikel} other {# Artikel}}",
-    "shippingCalculatedAtCheckout": "Wird an der Kasse berechnet"
+    "shippingCalculatedAtCheckout": "Wird an der Kasse berechnet",
+    "removeItemLabel": "{name} entfernen"
   },
   "products": {
     "allProducts": "Alle Produkte",
@@ -189,7 +190,8 @@
     "failedToCompleteOrder": "Bestellung konnte nicht abgeschlossen werden",
     "stripeNotLoaded": "Stripe wurde noch nicht geladen",
     "paymentProcessingError": "Bei der Zahlung ist ein Fehler aufgetreten.",
-    "failedToCompletePaymentSession": "Zahlungssitzung konnte nicht abgeschlossen werden"
+    "failedToCompletePaymentSession": "Zahlungssitzung konnte nicht abgeschlossen werden",
+    "noOrder": "Keine Bestellung"
   },
   "address": {
     "firstName": "Vorname",
@@ -211,7 +213,10 @@
     "editAddress": "Adresse bearbeiten",
     "addNewAddress": "Neue Adresse hinzufügen",
     "saveAddress": "Adresse speichern",
-    "failedToSave": "Adresse konnte nicht gespeichert werden"
+    "failedToSave": "Adresse konnte nicht gespeichert werden",
+    "deleteAddressTitle": "Adresse löschen?",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht..."
   },
   "account": {
     "myAccount": "Mein Konto",
@@ -254,7 +259,10 @@
     "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen lang sein",
     "registrationFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "firstName": "Vorname",
+    "lastName": "Nachname"
   },
   "orders": {
     "orderHistory": "Bestellverlauf",
@@ -300,7 +308,9 @@
     "creditOwed": "Guthaben geschuldet",
     "failed": "Fehlgeschlagen",
     "void": "Storniert",
-    "notAvailable": "k. A."
+    "notAvailable": "k. A.",
+    "orderTitle": "Bestellung #{number}",
+    "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst."
   },
   "orderPlaced": {
     "thanksForOrder": "Vielen Dank für Ihre Bestellung, {name}!",
@@ -312,7 +322,8 @@
     "shippingAddress": "Lieferadresse",
     "billingAddress": "Rechnungsadresse",
     "orderNotFound": "Bestellung nicht gefunden",
-    "failedToLoad": "Bestelldetails konnten nicht geladen werden."
+    "failedToLoad": "Bestelldetails konnten nicht geladen werden.",
+    "qty": "Menge: {quantity}"
   },
   "coupon": {
     "placeholder": "Geschenkkarte oder Rabattcode",
@@ -342,7 +353,8 @@
     "accountInformation": "Kontoinformationen",
     "accountId": "Konto-ID",
     "loadingProfile": "Profil wird geladen...",
-    "failedToUpdate": "Profil konnte nicht aktualisiert werden"
+    "failedToUpdate": "Profil konnte nicht aktualisiert werden",
+    "email": "E-Mail"
   },
   "creditCards": {
     "paymentMethods": "Zahlungsmethoden",
@@ -353,7 +365,9 @@
     "removing": "Wird entfernt...",
     "secureInfo": "Ihre Zahlungsinformationen werden sicher gespeichert.",
     "deleteConfirm": "Sind Sie sicher, dass Sie diese Karte entfernen möchten?",
-    "cardMaskedLabel": "{label} endet auf {digits}, gültig bis {month}/{year}"
+    "cardMaskedLabel": "{label} endet auf {digits}, gültig bis {month}/{year}",
+    "removePaymentMethodTitle": "Zahlungsmethode entfernen?",
+    "endingIn": "endet auf"
   },
   "giftCards": {
     "giftCards": "Geschenkkarten",

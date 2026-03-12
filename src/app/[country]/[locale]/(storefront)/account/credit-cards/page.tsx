@@ -51,7 +51,7 @@ function CreditCardItem({
           />
           <div>
             <p className="font-medium text-gray-900">
-              {getCardLabel(card.cc_type)} ending in {card.last_digits}
+              {getCardLabel(card.cc_type)} {t("endingIn")} {card.last_digits}
             </p>
             <p className="text-sm text-gray-500">
               {t("expires")} {String(card.month).padStart(2, "0")}/{card.year}
@@ -75,13 +75,15 @@ function CreditCardItem({
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Remove payment method?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t("removePaymentMethodTitle")}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   {t("deleteConfirm")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
                 <AlertDialogAction variant="destructive" onClick={handleDelete}>
                   {tc("remove")}
                 </AlertDialogAction>

@@ -36,6 +36,7 @@ function AddressCard({
 }) {
   const t = useTranslations("account");
   const tc = useTranslations("common");
+  const ta = useTranslations("address");
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -71,20 +72,20 @@ function AddressCard({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={deleting}>
-                {deleting ? "Deleting..." : tc("remove")}
+                {deleting ? ta("deleting") : tc("remove")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete address?</AlertDialogTitle>
+                <AlertDialogTitle>{ta("deleteAddressTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
                   {t("deleteConfirm")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
                 <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                  Delete
+                  {ta("delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

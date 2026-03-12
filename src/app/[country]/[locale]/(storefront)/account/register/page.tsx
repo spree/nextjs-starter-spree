@@ -72,7 +72,7 @@ export default function RegisterPage() {
         setError(result.error || t("registrationFailed"));
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(t("unexpectedError"));
     } finally {
       setSubmitting(false);
     }
@@ -98,7 +98,7 @@ export default function RegisterPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="firstName">First name</FieldLabel>
+              <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
               <Input
                 type="text"
                 id="firstName"
@@ -110,7 +110,7 @@ export default function RegisterPage() {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="lastName">Last name</FieldLabel>
+              <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
               <Input
                 type="text"
                 id="lastName"

@@ -125,7 +125,7 @@ export default function CartPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    aria-label={`${t("removeItem")} ${item.name}`}
+                    aria-label={t("removeItemLabel", { name: item.name })}
                     onClick={() => handleRemove(item)}
                   >
                     {tc("remove")}

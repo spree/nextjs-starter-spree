@@ -8,6 +8,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getOrders } from "@/lib/data/orders";
+import {
+  getPaymentStatusColor,
+  getShipmentStatusColor,
+  PAYMENT_STATE_KEY,
+  SHIPMENT_STATE_KEY,
+} from "@/lib/utils/order-status";
 import { extractBasePath } from "@/lib/utils/path";
 
 function formatDate(dateString: string | null, locale: string): string {
@@ -17,55 +23,6 @@ function formatDate(dateString: string | null, locale: string): string {
     month: "short",
     day: "numeric",
   });
-}
-
-const PAYMENT_STATE_KEY: Record<string, string> = {
-  paid: "paid",
-  balance_due: "balanceDue",
-  credit_owed: "creditOwed",
-  pending: "pending",
-  failed: "failed",
-  void: "void",
-};
-
-const SHIPMENT_STATE_KEY: Record<string, string> = {
-  shipped: "shipped",
-  partial: "partiallyShipped",
-  delivered: "delivered",
-  ready: "ready",
-  pending: "pending",
-  canceled: "canceled",
-  backorder: "backorder",
-};
-
-function getPaymentStatusColor(state: string | null): string {
-  switch (state) {
-    case "paid":
-      return "bg-green-100 text-green-800";
-    case "balance_due":
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "failed":
-    case "void":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-}
-
-function getShipmentStatusColor(state: string | null): string {
-  switch (state) {
-    case "shipped":
-    case "delivered":
-      return "bg-green-100 text-green-800";
-    case "ready":
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "canceled":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
 }
 
 export default function OrdersPage() {

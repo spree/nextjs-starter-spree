@@ -11,7 +11,7 @@ import type {
 import { ChevronLeft, CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { use, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -19,32 +19,21 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { getOrder } from "@/lib/data/orders";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
+import {
+  getShipmentStatusColor,
+  SHIPMENT_STATE_KEY,
+} from "@/lib/utils/order-status";
 import { extractBasePath } from "@/lib/utils/path";
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function getShipmentStatusColor(state: string): string {
-  switch (state) {
-    case "shipped":
-    case "delivered":
-      return "bg-green-100 text-green-800";
-    case "ready":
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "canceled":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
 }
 
 function PaymentSourceInfo({ payment }: { payment: Payment }) {
@@ -84,8 +73,10 @@ function PaymentSourceInfo({ payment }: { payment: Payment }) {
       <div>
         <p className="text-sm font-medium text-gray-900">{t("storeCredit")}</p>
         <p className="text-xs text-gray-500">
-          Applied {payment.display_amount} — {credit.display_amount_remaining}{" "}
-          remaining
+          {t("storeCreditApplied", {
+            amount: payment.display_amount,
+            remaining: credit.display_amount_remaining,
+          })}
         </p>
       </div>
     );
@@ -163,7 +154,7 @@ function LineItemCard({
           href={`${basePath}/products/${item.slug}`}
           className="mt-2 inline-block text-sm text-primary hover:text-primary font-medium"
         >
-          Order again
+          {t("orderAgain")}
         </Link>
       </div>
 
@@ -206,17 +197,17 @@ function ShipmentBlock({
                 {t("shippingMethod")}
               </h3>
               <p className="text-sm text-gray-900">
-                {shipment.shipping_method?.name || "Canceled"}
+                {shipment.shipping_method?.name || t("canceled")}
               </p>
               {shipment.stock_location && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Shipped from {shipment.stock_location.name}
+                  {t("shippedFrom", { location: shipment.stock_location.name })}
                 </p>
               )}
               <span
                 className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(shipment.state)}`}
               >
-                {shipment.state}
+                {t(SHIPMENT_STATE_KEY[shipment.state] || shipment.state)}
               </span>
             </div>
             <div className="mt-4 lg:mt-0">
@@ -242,16 +233,14 @@ function ShipmentBlock({
         {shipment.state === "canceled" && !shipment.shipped_at && (
           <Alert variant="destructive" className="mt-3">
             <CircleAlert />
-            <AlertDescription>
-              <strong>Shipment canceled</strong> — a refund has been issued.
-            </AlertDescription>
+            <AlertDescription>{t("shipmentCanceledRefund")}</AlertDescription>
           </Alert>
         )}
         {shipment.state !== "canceled" &&
           shipment.state !== "shipped" &&
           !shipment.tracking && (
             <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
-              No tracking information present
+              {t("noTrackingInfo")}
             </div>
           )}
       </div>
@@ -279,6 +268,7 @@ interface OrderDetailPageProps {
 export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   const t = useTranslations("orders");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const { id } = use(params);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -313,9 +303,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         <h2 className="text-xl font-medium text-gray-900 mb-2">
           {t("orderNotFound")}
         </h2>
-        <p className="text-gray-500 mb-6">
-          The order you&apos;re looking for doesn&apos;t exist.
-        </p>
+        <p className="text-gray-500 mb-6">{t("orderNotFoundDescription")}</p>
         <Link
           href={`${basePath}/account/orders`}
           className="text-primary hover:text-primary font-medium"
@@ -341,10 +329,10 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
       {/* Title */}
       <h1 className="text-2xl font-bold text-gray-900">
-        Order #{order.number}
+        {t("orderTitle", { number: order.number })}
       </h1>
       <p className="text-sm text-gray-500 mt-1 mb-6">
-        {t("placedOn", { date: formatDate(order.completed_at) })}
+        {t("placedOn", { date: formatDate(order.completed_at, locale) })}
       </p>
 
       {/* Shipments with line items */}

@@ -2,7 +2,7 @@
 
 import type { GiftCard } from "@spree/sdk";
 import { Check, ClipboardCopy, Gift, Info } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getGiftCards } from "@/lib/data/gift-cards";
@@ -23,10 +23,10 @@ function getStateColor(state: string, expired: boolean): string {
   }
 }
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return "";
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -60,7 +60,7 @@ function CopyButton({ code }: { code: string }) {
       variant="ghost"
       size="sm"
       onClick={handleCopy}
-      title="Copy code to clipboard"
+      title={t("copyCodeToClipboard")}
     >
       {copied ? (
         <>
@@ -79,6 +79,7 @@ function CopyButton({ code }: { code: string }) {
 
 function GiftCardItem({ card }: { card: GiftCard }) {
   const t = useTranslations("giftCards");
+  const locale = useLocale();
   const usagePercentage =
     Number(card.amount) > 0
       ? Math.round((Number(card.amount_used) / Number(card.amount)) * 100)
@@ -118,7 +119,7 @@ function GiftCardItem({ card }: { card: GiftCard }) {
           </div>
           <p className="text-sm text-gray-500 mt-1">
             {card.expires_at
-              ? t("expiresOn", { date: formatDate(card.expires_at) })
+              ? t("expiresOn", { date: formatDate(card.expires_at, locale) })
               : t("noExpiration")}
           </p>
         </div>
@@ -156,9 +157,15 @@ function GiftCardItem({ card }: { card: GiftCard }) {
       {/* Additional info */}
       <div className="pt-4 border-t border-gray-100">
         <div className="flex justify-between text-sm text-gray-500">
-          <span>{t("addedOnDate", { date: formatDate(card.created_at) })}</span>
+          <span>
+            {t("addedOnDate", { date: formatDate(card.created_at, locale) })}
+          </span>
           {card.redeemed_at && (
-            <span>Fully redeemed on {formatDate(card.redeemed_at)}</span>
+            <span>
+              {t("fullyRedeemedOnDate", {
+                date: formatDate(card.redeemed_at, locale),
+              })}
+            </span>
           )}
         </div>
       </div>
@@ -255,8 +262,7 @@ export default function GiftCardsPage() {
       <div className="mt-6 p-4 bg-gray-50 rounded-xl">
         <p className="text-sm text-gray-600">
           <Info className="w-4 h-4 inline mr-1" />
-          Gift cards can be used during checkout to pay for your orders. The
-          remaining balance will be saved for future purchases.
+          {t("giftCardsHelpText")}
         </p>
       </div>
     </div>

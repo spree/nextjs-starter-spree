@@ -62,6 +62,8 @@ function MobileSummaryToggle() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center justify-between text-left"
+        aria-expanded={isOpen}
+        aria-controls="checkout-summary-panel"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
           <ShoppingBag className="w-5 h-5 text-gray-600" />
@@ -72,7 +74,7 @@ function MobileSummaryToggle() {
         />
       </button>
       {isOpen && (
-        <div className="px-5 pb-4">
+        <div id="checkout-summary-panel" className="px-5 pb-4">
           <CheckoutSummary />
         </div>
       )}

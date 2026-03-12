@@ -1,3 +1,5 @@
+"use client";
+
 import type { Category } from "@spree/sdk";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";

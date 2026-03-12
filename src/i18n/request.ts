@@ -8,13 +8,16 @@ export default getRequestConfig(async ({ requestLocale }) => {
   // fall back to the spree_locale cookie, then default to "en".
   let locale = await requestLocale;
 
-  if (!locale || !supportedLocales.includes(locale)) {
+  if (locale && !supportedLocales.includes(locale)) {
+    // Invalid locale from route — default to "en" directly
+    locale = "en";
+  } else if (!locale) {
+    // No locale from route — try cookie, then default to "en"
     const cookieStore = await cookies();
     locale = cookieStore.get("spree_locale")?.value;
-  }
-
-  if (!locale || !supportedLocales.includes(locale)) {
-    locale = "en";
+    if (!locale || !supportedLocales.includes(locale)) {
+      locale = "en";
+    }
   }
 
   let messages: IntlMessages;

@@ -80,10 +80,10 @@ export function AddressSelector({
     <div className="space-y-4">
       {/* Saved addresses selection */}
       {savedAddresses.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-medium text-gray-700">
             {t("selectAnAddress")}
-          </p>
+          </legend>
           <div className="grid gap-3">
             {savedAddresses.map((address) => (
               <div
@@ -159,7 +159,7 @@ export function AddressSelector({
               </span>
             </label>
           </div>
-        </div>
+        </fieldset>
       )}
 
       {/* Address form (shown when "new" is selected or no saved addresses) */}

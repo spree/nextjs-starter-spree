@@ -128,7 +128,9 @@ function ProfileForm({
               <dd className="mt-1 text-sm text-gray-900">{user.id}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Email</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t("email")}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
             </div>
           </dl>

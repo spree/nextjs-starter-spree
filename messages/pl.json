@@ -37,7 +37,7 @@
     "copyright": "© {year} {storeName}. Zasilany przez Spree Commerce."
   },
   "home": {
-    "welcome": "Witaj w Sklepie Spree",
+    "welcome": "Witaj w {storeName}",
     "heroDescription": "Odkryj niesamowite produkty dzięki nowoczesnemu sklepowi internetowemu opartemu na Spree Commerce.",
     "shopNow": "Kup teraz",
     "browseCategories": "Przeglądaj kategorie",
@@ -64,7 +64,8 @@
     "shoppingCart": "Koszyk zakupowy",
     "proceedToCheckout": "Przejdź do kasy",
     "itemCount": "{count, plural, one {# produkt} few {# produkty} many {# produktów} other {# produktów}}",
-    "shippingCalculatedAtCheckout": "Obliczona przy kasie"
+    "shippingCalculatedAtCheckout": "Obliczona przy kasie",
+    "removeItemLabel": "Usuń {name}"
   },
   "products": {
     "allProducts": "Wszystkie produkty",
@@ -189,7 +190,8 @@
     "failedToCompleteOrder": "Nie udało się złożyć zamówienia",
     "stripeNotLoaded": "Stripe nie został jeszcze załadowany",
     "paymentProcessingError": "Wystąpił błąd podczas przetwarzania płatności.",
-    "failedToCompletePaymentSession": "Nie udało się zakończyć sesji płatności"
+    "failedToCompletePaymentSession": "Nie udało się zakończyć sesji płatności",
+    "noOrder": "Brak zamówienia"
   },
   "address": {
     "firstName": "Imię",
@@ -211,7 +213,10 @@
     "editAddress": "Edytuj adres",
     "addNewAddress": "Dodaj nowy adres",
     "saveAddress": "Zapisz adres",
-    "failedToSave": "Nie udało się zapisać adresu"
+    "failedToSave": "Nie udało się zapisać adresu",
+    "deleteAddressTitle": "Usunąć adres?",
+    "delete": "Usuń",
+    "deleting": "Usuwanie..."
   },
   "account": {
     "myAccount": "Moje konto",
@@ -254,7 +259,10 @@
     "passwordTooShort": "Hasło musi mieć co najmniej 6 znaków",
     "registrationFailed": "Rejestracja nie powiodła się. Spróbuj ponownie.",
     "alreadyHaveAccount": "Masz już konto?",
-    "signIn": "Zaloguj się"
+    "signIn": "Zaloguj się",
+    "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
+    "firstName": "Imię",
+    "lastName": "Nazwisko"
   },
   "orders": {
     "orderHistory": "Historia zamówień",
@@ -300,7 +308,9 @@
     "creditOwed": "Należny kredyt",
     "failed": "Nieudane",
     "void": "Unieważnione",
-    "notAvailable": "Brak"
+    "notAvailable": "Brak",
+    "orderTitle": "Zamówienie #{number}",
+    "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony."
   },
   "orderPlaced": {
     "thanksForOrder": "Dziękujemy za zamówienie, {name}!",
@@ -312,7 +322,8 @@
     "shippingAddress": "Adres wysyłki",
     "billingAddress": "Adres rozliczeniowy",
     "orderNotFound": "Zamówienie nie zostało znalezione",
-    "failedToLoad": "Nie udało się załadować szczegółów zamówienia."
+    "failedToLoad": "Nie udało się załadować szczegółów zamówienia.",
+    "qty": "Ilość: {quantity}"
   },
   "coupon": {
     "placeholder": "Karta podarunkowa lub kod rabatowy",
@@ -342,7 +353,8 @@
     "accountInformation": "Informacje o koncie",
     "accountId": "ID konta",
     "loadingProfile": "Ładowanie profilu...",
-    "failedToUpdate": "Nie udało się zaktualizować profilu"
+    "failedToUpdate": "Nie udało się zaktualizować profilu",
+    "email": "E-mail"
   },
   "creditCards": {
     "paymentMethods": "Metody płatności",
@@ -353,7 +365,9 @@
     "removing": "Usuwanie...",
     "secureInfo": "Twoje dane płatnicze są bezpiecznie przechowywane.",
     "deleteConfirm": "Czy na pewno chcesz usunąć tę kartę?",
-    "cardMaskedLabel": "{label} kończąca się na {digits}, ważna do {month}/{year}"
+    "cardMaskedLabel": "{label} kończąca się na {digits}, ważna do {month}/{year}",
+    "removePaymentMethodTitle": "Usunąć metodę płatności?",
+    "endingIn": "kończąca się na"
   },
   "giftCards": {
     "giftCards": "Karty podarunkowe",

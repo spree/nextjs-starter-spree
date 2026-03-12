@@ -88,6 +88,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
   const t = useTranslations("checkout");
+  const tc = useTranslations("common");
 
   const stepLabels: Record<string, string> = {
     address: t("stepShipping"),
@@ -113,28 +114,34 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const beginCheckoutFiredRef = useRef(false);
 
   // Handle coupon code application - uses ref to avoid stale closures
-  const handleApplyCoupon = useCallback(async (code: string) => {
-    const currentOrder = orderRef.current;
-    if (!currentOrder) return { success: false, error: "No order" };
+  const handleApplyCoupon = useCallback(
+    async (code: string) => {
+      const currentOrder = orderRef.current;
+      if (!currentOrder) return { success: false, error: t("noOrder") };
 
-    const result = await applyCouponCode(currentOrder.id, code);
-    if (result.success && result.order) {
-      setOrder(result.order);
-    }
-    return result;
-  }, []); // No dependencies - uses ref
+      const result = await applyCouponCode(currentOrder.id, code);
+      if (result.success && result.order) {
+        setOrder(result.order);
+      }
+      return result;
+    },
+    [t],
+  ); // t is stable from useTranslations
 
   // Handle coupon code removal
-  const handleRemoveCoupon = useCallback(async (promotionId: string) => {
-    const currentOrder = orderRef.current;
-    if (!currentOrder) return { success: false, error: "No order" };
+  const handleRemoveCoupon = useCallback(
+    async (promotionId: string) => {
+      const currentOrder = orderRef.current;
+      if (!currentOrder) return { success: false, error: t("noOrder") };
 
-    const result = await removeCouponCode(currentOrder.id, promotionId);
-    if (result.success && result.order) {
-      setOrder(result.order);
-    }
-    return result;
-  }, []); // No dependencies - uses ref
+      const result = await removeCouponCode(currentOrder.id, promotionId);
+      if (result.success && result.order) {
+        setOrder(result.order);
+      }
+      return result;
+    },
+    [t],
+  ); // t is stable from useTranslations
 
   // Track order key for sidebar updates (only update when order changes meaningfully)
   const orderKey = order ? `${order.id}-${order.updated_at}` : null;
@@ -259,7 +266,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       });
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save address");
+        setError(updateResult.error || t("failedToSaveAddress"));
         setProcessing(false);
         return;
       }
@@ -267,7 +274,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Move to next checkout step
       const nextResult = await nextCheckoutStep(order.id);
       if (!nextResult.success) {
-        setError(nextResult.error || "Failed to proceed to next step");
+        setError(nextResult.error || t("failedToProceed"));
         setProcessing(false);
         return;
       }
@@ -275,7 +282,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Reload order to get updated state
       await loadOrder();
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
     } finally {
       setProcessing(false);
     }
@@ -297,7 +304,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     try {
       const result = await selectShippingRate(order.id, shipmentId, rateId);
       if (!result.success) {
-        setError(result.error || "Failed to select shipping rate");
+        setError(result.error || t("failedToSelectRate"));
       } else if (result.order) {
         setOrder(result.order);
         setShipments(result.order.shipments || []);
@@ -309,7 +316,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         trackingRateName = selectedRate?.name;
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
     } finally {
       setProcessing(false);
     }
@@ -334,7 +341,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Move to next checkout step
       const nextResult = await nextCheckoutStep(order.id);
       if (!nextResult.success) {
-        setError(nextResult.error || "Failed to proceed");
+        setError(nextResult.error || t("failedToProceed"));
         setProcessing(false);
         return;
       }
@@ -342,7 +349,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Reload order
       await loadOrder();
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
     } finally {
       setProcessing(false);
     }
@@ -362,13 +369,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       });
 
       if (!updateResult.success) {
-        setError(updateResult.error || "Failed to save billing address");
+        setError(updateResult.error || t("failedToSaveBilling"));
         return false;
       }
 
       return true;
     } catch {
-      setError("Failed to save billing address. Please try again.");
+      setError(t("failedToSaveBillingRetry"));
       return false;
     }
   };
@@ -387,7 +394,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       );
 
       if (!sessionResult.success) {
-        setError(sessionResult.error || "Failed to complete payment session");
+        setError(sessionResult.error || t("failedToCompletePaymentSession"));
         setProcessing(false);
         return;
       }
@@ -403,7 +410,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       const updatedOrder = await getCheckoutOrder(order.id);
 
       if (!updatedOrder) {
-        setError("Order not found after payment. Please contact support.");
+        setError(t("orderNotFoundAfterPayment"));
         setProcessing(false);
         return;
       }
@@ -411,7 +418,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       if (updatedOrder.current_step !== "complete") {
         const completeResult = await completeCheckoutOrder(order.id);
         if (!completeResult.success) {
-          setError(completeResult.error || "Failed to complete order");
+          setError(completeResult.error || t("failedToCompleteOrder"));
           setProcessing(false);
           return;
         }
@@ -420,7 +427,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       // Redirect to order placed page (cart cookie is cleared there)
       router.push(`${basePath}/order-placed/${order.id}`);
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("generalError"));
       setProcessing(false);
     }
   };
@@ -443,11 +450,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     const result = await updateAddress(id, data);
 
     if (!result.success) {
-      throw new Error(result.error || "Failed to update address");
+      throw new Error(result.error || t("failedToSaveAddress"));
     }
 
     if (!result.address) {
-      throw new Error("Update succeeded but address payload is missing");
+      throw new Error(t("generalError"));
     }
 
     const updatedAddress = result.address;
@@ -510,7 +517,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           href={`${basePath}/products`}
           className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
-          {t("returnToCart")}
+          {tc("continueShopping")}
         </Link>
       </div>
     );

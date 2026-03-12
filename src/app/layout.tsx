@@ -1,9 +1,8 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { Toaster } from "@/components/ui/sonner";
@@ -32,8 +31,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const locale = cookieStore.get("spree_locale")?.value || "en";
+  const locale = await getLocale();
   const messages = await getMessages();
 
   return (

@@ -37,7 +37,7 @@
     "copyright": "© {year} {storeName}. Powered by Spree Commerce."
   },
   "home": {
-    "welcome": "Welcome to Spree Store",
+    "welcome": "Welcome to {storeName}",
     "heroDescription": "Discover amazing products with our modern e-commerce experience powered by Spree Commerce.",
     "shopNow": "Shop Now",
     "browseCategories": "Browse Categories",
@@ -64,7 +64,8 @@
     "shoppingCart": "Shopping Cart",
     "proceedToCheckout": "Proceed to Checkout",
     "itemCount": "{count, plural, one {# item} other {# items}}",
-    "shippingCalculatedAtCheckout": "Calculated at checkout"
+    "shippingCalculatedAtCheckout": "Calculated at checkout",
+    "removeItemLabel": "Remove {name}"
   },
   "products": {
     "allProducts": "All Products",
@@ -189,7 +190,8 @@
     "failedToCompleteOrder": "Failed to complete order",
     "stripeNotLoaded": "Stripe has not loaded yet",
     "paymentProcessingError": "An error occurred during payment.",
-    "failedToCompletePaymentSession": "Failed to complete payment session"
+    "failedToCompletePaymentSession": "Failed to complete payment session",
+    "noOrder": "No order"
   },
   "address": {
     "firstName": "First name",
@@ -211,7 +213,10 @@
     "editAddress": "Edit Address",
     "addNewAddress": "Add New Address",
     "saveAddress": "Save Address",
-    "failedToSave": "Failed to save address"
+    "failedToSave": "Failed to save address",
+    "deleteAddressTitle": "Delete address?",
+    "delete": "Delete",
+    "deleting": "Deleting..."
   },
   "account": {
     "myAccount": "My Account",
@@ -254,7 +259,10 @@
     "passwordTooShort": "Password must be at least 6 characters",
     "registrationFailed": "Registration failed. Please try again.",
     "alreadyHaveAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "firstName": "First name",
+    "lastName": "Last name"
   },
   "orders": {
     "orderHistory": "Order History",
@@ -300,7 +308,9 @@
     "creditOwed": "Credit Owed",
     "failed": "Failed",
     "void": "Void",
-    "notAvailable": "N/A"
+    "notAvailable": "N/A",
+    "orderTitle": "Order #{number}",
+    "shipmentCanceledRefund": "Shipment canceled — a refund has been issued."
   },
   "orderPlaced": {
     "thanksForOrder": "Thanks for your order, {name}!",
@@ -312,7 +322,8 @@
     "shippingAddress": "Shipping Address",
     "billingAddress": "Billing Address",
     "orderNotFound": "Order not found",
-    "failedToLoad": "Failed to load order details."
+    "failedToLoad": "Failed to load order details.",
+    "qty": "Qty: {quantity}"
   },
   "coupon": {
     "placeholder": "Gift card or discount code",
@@ -342,7 +353,8 @@
     "accountInformation": "Account Information",
     "accountId": "Account ID",
     "loadingProfile": "Loading profile...",
-    "failedToUpdate": "Failed to update profile"
+    "failedToUpdate": "Failed to update profile",
+    "email": "Email"
   },
   "creditCards": {
     "paymentMethods": "Payment Methods",
@@ -353,7 +365,9 @@
     "removing": "Removing...",
     "secureInfo": "Your payment information is securely stored.",
     "deleteConfirm": "Are you sure you want to remove this card?",
-    "cardMaskedLabel": "{label} ending in {digits}, expires {month}/{year}"
+    "cardMaskedLabel": "{label} ending in {digits}, expires {month}/{year}",
+    "removePaymentMethodTitle": "Remove payment method?",
+    "endingIn": "ending in"
   },
   "giftCards": {
     "giftCards": "Gift Cards",
