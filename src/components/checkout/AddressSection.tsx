@@ -1,0 +1,313 @@
+"use client";
+
+import type { Address, AddressParams, Cart, Country, State } from "@spree/sdk";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  type AddressFormData,
+  addressToFormData,
+  formDataToAddress,
+} from "@/lib/utils/address";
+import { AddressEditModal } from "./AddressEditModal";
+import { AddressFormFields } from "./AddressFormFields";
+import { AddressSelector } from "./AddressSelector";
+
+interface AddressSectionProps {
+  order: Cart;
+  countries: Country[];
+  savedAddresses: Address[];
+  isAuthenticated: boolean;
+  signInUrl: string;
+  fetchStates: (countryIso: string) => Promise<State[]>;
+  onEmailBlur: (email: string) => void;
+  onAutoSave: (data: {
+    email: string;
+    ship_address?: AddressParams;
+    ship_address_id?: string;
+  }) => void;
+  onUpdateSavedAddress?: (
+    id: string,
+    data: AddressParams,
+  ) => Promise<Address | null>;
+  errors?: string[];
+  saving?: boolean;
+}
+
+const REQUIRED_ADDRESS_FIELDS: (keyof AddressFormData)[] = [
+  "lastname",
+  "address1",
+  "city",
+  "zipcode",
+  "country_iso",
+];
+
+function isAddressComplete(address: AddressFormData): boolean {
+  return REQUIRED_ADDRESS_FIELDS.every((field) => address[field].trim() !== "");
+}
+
+function buildAutoSaveHash(
+  email: string,
+  address: AddressFormData,
+  savedAddressId?: string,
+): string {
+  if (savedAddressId) {
+    return JSON.stringify({ email, ship_address_id: savedAddressId });
+  }
+  return JSON.stringify({ email, ship_address: formDataToAddress(address) });
+}
+
+export function AddressSection({
+  order,
+  countries,
+  savedAddresses: initialSavedAddresses,
+  isAuthenticated,
+  signInUrl,
+  fetchStates,
+  onEmailBlur,
+  onAutoSave,
+  onUpdateSavedAddress,
+  errors,
+  saving,
+}: AddressSectionProps) {
+  // Determine initial saved address: use the first saved address when the
+  // order doesn't have a shipping address yet (authenticated users).
+  const initialSavedAddress =
+    !order.ship_address && isAuthenticated && initialSavedAddresses.length > 0
+      ? initialSavedAddresses[0]
+      : undefined;
+
+  const [email, setEmail] = useState(order.email || "");
+  const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
+    initialSavedAddress
+      ? addressToFormData(initialSavedAddress)
+      : addressToFormData(order.ship_address),
+  );
+  const [shipStates, setShipStates] = useState<State[]>([]);
+  const [isPendingShip, startTransitionShip] = useTransition();
+  const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
+    string | undefined
+  >(initialSavedAddress?.id);
+
+  const lastSavedRef = useRef<string>("");
+  const mountAutoSaveFiredRef = useRef(false);
+
+  // Load states when shipping country changes
+  useEffect(() => {
+    if (!shipAddress.country_iso) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShipStates([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    startTransitionShip(() => {
+      fetchStates(shipAddress.country_iso).then((states) => {
+        if (!cancelled) {
+          setShipStates(states);
+        }
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shipAddress.country_iso, fetchStates]);
+
+  const tryAutoSave = useCallback(
+    (
+      currentEmail: string,
+      currentAddress: AddressFormData,
+      savedAddrId?: string,
+    ) => {
+      if (!currentEmail.trim()) return;
+
+      if (savedAddrId) {
+        const hash = buildAutoSaveHash(
+          currentEmail,
+          currentAddress,
+          savedAddrId,
+        );
+        if (hash === lastSavedRef.current) return;
+        lastSavedRef.current = hash;
+        onAutoSave({ email: currentEmail, ship_address_id: savedAddrId });
+        return;
+      }
+
+      if (!isAddressComplete(currentAddress)) return;
+
+      const hash = buildAutoSaveHash(currentEmail, currentAddress);
+      if (hash === lastSavedRef.current) return;
+      lastSavedRef.current = hash;
+      onAutoSave({
+        email: currentEmail,
+        ship_address: formDataToAddress(currentAddress),
+      });
+    },
+    [onAutoSave],
+  );
+
+  // Auto-save the pre-selected saved address on mount
+  useEffect(() => {
+    if (mountAutoSaveFiredRef.current) return;
+    if (!initialSavedAddress || !email.trim()) return;
+
+    mountAutoSaveFiredRef.current = true;
+    tryAutoSave(
+      email,
+      addressToFormData(initialSavedAddress),
+      initialSavedAddress.id,
+    );
+  }, [initialSavedAddress, email, tryAutoSave]);
+
+  const updateShipAddress = (field: keyof AddressFormData, value: string) => {
+    setShipAddress((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Clear state when country changes
+      if (field === "country_iso") {
+        updated.state_abbr = "";
+        updated.state_name = "";
+      }
+      return updated;
+    });
+    // When selecting a new address manually, clear the saved address selection
+    if (selectedSavedAddressId) {
+      setSelectedSavedAddressId(undefined);
+    }
+  };
+
+  const handleFieldBlur = () => {
+    tryAutoSave(email, shipAddress, selectedSavedAddressId);
+  };
+
+  const handleEmailBlur = () => {
+    onEmailBlur(email);
+    tryAutoSave(email, shipAddress, selectedSavedAddressId);
+  };
+
+  const handleSelectSavedAddress = (address: Address) => {
+    setShipAddress(addressToFormData(address));
+    setSelectedSavedAddressId(address.id);
+    // Saved address has all fields filled, trigger auto-save immediately
+    tryAutoSave(email, addressToFormData(address), address.id);
+  };
+
+  const handleSaveEditedAddress = async (data: AddressParams, id?: string) => {
+    if (!id || !onUpdateSavedAddress) {
+      throw new Error("Cannot update address");
+    }
+
+    const updatedAddress = await onUpdateSavedAddress(id, data);
+    if (!updatedAddress) {
+      throw new Error("Failed to update address");
+    }
+
+    setSavedAddresses((prev) =>
+      prev.map((addr) => (addr.id === id ? updatedAddress : addr)),
+    );
+    handleSelectSavedAddress(updatedAddress);
+  };
+
+  return (
+    <>
+      {/* Errors */}
+      {errors && errors.length > 0 && (
+        <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3 mb-4">
+          {errors.map((err, i) => (
+            <p key={i} className="text-sm text-red-700">
+              {err}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Contact section */}
+      <div className="mb-6">
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-[1.15rem] font-bold text-gray-900">Contact</h2>
+          {!isAuthenticated && (
+            <Link
+              href={signInUrl}
+              className="text-[13px] text-gray-700 underline underline-offset-2 hover:text-black"
+            >
+              Sign in
+            </Link>
+          )}
+        </div>
+        <Input
+          type="email"
+          id="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={handleEmailBlur}
+          disabled={isAuthenticated}
+          placeholder="Email"
+        />
+        {isAuthenticated && (
+          <p className="text-xs text-gray-500 mt-1.5">
+            Using your account email address
+          </p>
+        )}
+      </div>
+
+      {/* Delivery section */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[1.15rem] font-bold text-gray-900">Delivery</h2>
+          {saving && (
+            <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Saving
+            </span>
+          )}
+        </div>
+        {isAuthenticated && savedAddresses.length > 0 ? (
+          <AddressSelector
+            savedAddresses={savedAddresses}
+            currentAddress={shipAddress}
+            countries={countries}
+            states={shipStates}
+            loadingStates={isPendingShip}
+            onChange={updateShipAddress}
+            onSelectSavedAddress={handleSelectSavedAddress}
+            onEditAddress={
+              onUpdateSavedAddress
+                ? (address) => setEditingAddress(address)
+                : undefined
+            }
+            onFieldBlur={handleFieldBlur}
+            idPrefix="ship"
+          />
+        ) : (
+          <div onBlur={handleFieldBlur}>
+            <AddressFormFields
+              address={shipAddress}
+              countries={countries}
+              states={shipStates}
+              loadingStates={isPendingShip}
+              onChange={updateShipAddress}
+              idPrefix="ship"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Edit Address Modal */}
+      {editingAddress && (
+        <AddressEditModal
+          address={editingAddress}
+          countries={countries}
+          fetchStates={fetchStates}
+          onSave={handleSaveEditedAddress}
+          onClose={() => setEditingAddress(null)}
+          title="Edit Address"
+        />
+      )}
+    </>
+  );
+}

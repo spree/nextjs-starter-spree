@@ -54,21 +54,6 @@ export async function updateOrderMarket(
   }, "Failed to update order market");
 }
 
-export async function nextCheckoutStep(_orderId: string) {
-  // v3 API auto-advances on update; reload cart to get updated step
-  return actionResult(async () => {
-    const order = await getCheckout();
-    return { order };
-  }, "Failed to advance checkout");
-}
-
-export async function advanceCheckout(_orderId: string) {
-  return actionResult(async () => {
-    const order = await getCheckout();
-    return { order };
-  }, "Failed to advance checkout");
-}
-
 export async function getShipments(_orderId: string) {
   return withFallback(async () => {
     const response = await _getShipments();
@@ -94,9 +79,9 @@ export async function applyCouponCode(_orderId: string, couponCode: string) {
   }, "Failed to apply coupon code");
 }
 
-export async function removeCouponCode(_orderId: string, promotionId: string) {
+export async function removeCouponCode(_orderId: string, couponCode: string) {
   return actionResult(async () => {
-    const order = await removeCoupon(promotionId);
+    const order = await removeCoupon(couponCode);
     return { order };
   }, "Failed to remove coupon code");
 }

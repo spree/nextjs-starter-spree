@@ -21,12 +21,10 @@ import {
 } from "@spree/next";
 
 import {
-  advanceCheckout,
   applyCouponCode,
   completeOrder,
   getCheckoutOrder,
   getShipments,
-  nextCheckoutStep,
   removeCouponCode,
   selectShippingRate,
   updateOrderAddresses,
@@ -149,61 +147,6 @@ describe("checkout server actions", () => {
       expect(result).toEqual({
         success: false,
         error: "Failed to update order market",
-      });
-    });
-  });
-
-  describe("nextCheckoutStep", () => {
-    it("returns success with order", async () => {
-      mockGetCheckout.mockResolvedValue(mockOrder);
-
-      const result = await nextCheckoutStep("order-1");
-
-      expect(mockGetCheckout).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, order: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockGetCheckout.mockRejectedValue(new Error("Cannot advance"));
-
-      const result = await nextCheckoutStep("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Cannot advance",
-      });
-    });
-
-    it("returns fallback message for non-Error throws", async () => {
-      mockGetCheckout.mockRejectedValue("unexpected");
-
-      const result = await nextCheckoutStep("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Failed to advance checkout",
-      });
-    });
-  });
-
-  describe("advanceCheckout", () => {
-    it("returns success with order", async () => {
-      mockGetCheckout.mockResolvedValue(mockOrder);
-
-      const result = await advanceCheckout("order-1");
-
-      expect(mockGetCheckout).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, order: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockGetCheckout.mockRejectedValue(new Error("Cannot advance"));
-
-      const result = await advanceCheckout("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Cannot advance",
       });
     });
   });

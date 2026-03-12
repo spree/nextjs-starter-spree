@@ -1,0 +1,509 @@
+"use client";
+
+import type {
+  AddressParams,
+  Cart,
+  Country,
+  Order,
+  CreditCard as SpreeCreditCard,
+  State,
+} from "@spree/sdk";
+import { CircleAlert, CreditCard, Loader2 } from "lucide-react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import { PaymentIcon } from "react-svg-credit-card-payment-icons";
+import { getCreditCards } from "@/lib/data/credit-cards";
+import { createCheckoutPaymentSession } from "@/lib/data/payment";
+import {
+  type AddressFormData,
+  addressesMatch,
+  addressToFormData,
+  formDataToAddress,
+} from "@/lib/utils/address";
+import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
+import { AddressFormFields } from "./AddressFormFields";
+import {
+  confirmWithSavedCard,
+  StripePaymentForm,
+  type StripePaymentFormHandle,
+} from "./StripePaymentForm";
+
+export interface PaymentSectionHandle {
+  submit: () => Promise<{ error?: string }>;
+}
+
+interface PaymentSectionProps {
+  order: Cart;
+  countries: Country[];
+  isAuthenticated: boolean;
+  fetchStates: (countryIso: string) => Promise<State[]>;
+  onUpdateBillingAddress: (data: {
+    bill_address: AddressParams;
+  }) => Promise<boolean>;
+  onPaymentComplete: (paymentSessionId: string) => Promise<void>;
+  processing: boolean;
+  setProcessing: (processing: boolean) => void;
+  errors?: string[];
+}
+
+export const PaymentSection = forwardRef<
+  PaymentSectionHandle,
+  PaymentSectionProps
+>(function PaymentSection(
+  {
+    order,
+    countries,
+    isAuthenticated,
+    fetchStates,
+    onUpdateBillingAddress,
+    onPaymentComplete,
+    processing,
+    setProcessing,
+    errors,
+  },
+  ref,
+) {
+  // Initialize billing address from order, check if it matches shipping
+  const shipAddressData = addressToFormData(order.ship_address);
+  const billAddressData = addressToFormData(order.bill_address);
+  const initialUseShipping =
+    !order.bill_address || addressesMatch(shipAddressData, order.bill_address);
+
+  const [billAddress, setBillAddress] = useState<AddressFormData>(
+    initialUseShipping ? shipAddressData : billAddressData,
+  );
+  const [useShippingForBilling, setUseShippingForBilling] =
+    useState(initialUseShipping);
+  const [billStates, setBillStates] = useState<State[]>([]);
+  const [isPendingBill, startTransitionBill] = useTransition();
+
+  // Saved cards state
+  const [savedCards, setSavedCards] = useState<SpreeCreditCard[]>([]);
+  // null = "add new payment method", string = gateway_payment_profile_id of selected card
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+
+  // Payment gateway state
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
+  const [gatewayError, setGatewayError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [gatewayReady, setGatewayReady] = useState(false);
+  const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
+  const initRef = useRef(false);
+
+  const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
+    gatewayHandleRef.current = handle;
+    setGatewayReady(true);
+  }, []);
+
+  // Find the payment method that requires a session (e.g. Stripe, Adyen)
+  const sessionPaymentMethod = order.payment_methods?.find(
+    (pm) => pm.session_required,
+  );
+
+  // Helper: create a payment session
+  const createSession = useCallback(
+    async (cardId: string | null) => {
+      if (!sessionPaymentMethod) return;
+
+      setLoading(true);
+      setGatewayError(null);
+      setClientSecret(null);
+      setPaymentSessionId(null);
+      gatewayHandleRef.current = null;
+      setGatewayReady(false);
+
+      try {
+        const result = await createCheckoutPaymentSession(
+          order.id,
+          sessionPaymentMethod.id,
+          cardId ?? undefined,
+        );
+
+        if (result.success && result.session) {
+          const secret = result.session.external_data?.client_secret as
+            | string
+            | undefined;
+          if (secret) {
+            setClientSecret(secret);
+            setPaymentSessionId(result.session.id);
+          } else {
+            setGatewayError("Failed to initialize payment. Please try again.");
+          }
+        } else if (!result.success) {
+          setGatewayError(result.error || "Failed to create payment session.");
+        }
+      } catch {
+        setGatewayError("Failed to initialize payment. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [sessionPaymentMethod, order.id],
+  );
+
+  // Track the order total so we can recreate the session when it changes
+  const lastTotalRef = useRef<string | null>(null);
+  const selectedCardRef = useRef<string | null>(null);
+
+  // On mount: load saved cards (if authenticated), then create initial session — once.
+  useEffect(() => {
+    if (initRef.current || !sessionPaymentMethod) return;
+    initRef.current = true;
+
+    const init = async () => {
+      setLoading(true);
+
+      let initialCardId: string | null = null;
+
+      // Load saved cards for authenticated users
+      if (isAuthenticated) {
+        try {
+          const result = await getCreditCards();
+          const gatewayCards = result.data.filter(
+            (card) => card.gateway_payment_profile_id,
+          );
+          setSavedCards(gatewayCards);
+
+          if (gatewayCards.length > 0) {
+            const defaultCard =
+              gatewayCards.find((c) => c.default) || gatewayCards[0];
+            initialCardId = defaultCard.gateway_payment_profile_id;
+            setSelectedCardId(initialCardId);
+          }
+        } catch {
+          // Cards failed to load — proceed without saved cards
+        }
+      }
+
+      selectedCardRef.current = initialCardId;
+      lastTotalRef.current = order.total;
+
+      // Create the initial payment session
+      await createSession(initialCardId);
+    };
+
+    init();
+  }, [sessionPaymentMethod, isAuthenticated, createSession, order.total]);
+
+  // Recreate payment session when order total changes (shipping rate, coupon, etc.)
+  useEffect(() => {
+    if (!initRef.current) return;
+    if (lastTotalRef.current === order.total) return;
+
+    lastTotalRef.current = order.total;
+    createSession(selectedCardRef.current);
+  }, [order.total, createSession]);
+
+  // Load states when billing country changes
+  useEffect(() => {
+    if (useShippingForBilling || !billAddress.country_iso) {
+      setBillStates([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    startTransitionBill(() => {
+      fetchStates(billAddress.country_iso)
+        .then((states) => {
+          if (!cancelled) setBillStates(states);
+        })
+        .catch(() => {
+          if (!cancelled) setBillStates([]);
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [billAddress.country_iso, useShippingForBilling, fetchStates]);
+
+  const handleUseShippingChange = (checked: boolean) => {
+    setUseShippingForBilling(checked);
+    if (checked) {
+      setBillAddress(shipAddressData);
+    }
+  };
+
+  const handleCardSelect = (cardId: string | null) => {
+    if (cardId === selectedCardId) return;
+    setSelectedCardId(cardId);
+    selectedCardRef.current = cardId;
+    createSession(cardId);
+  };
+
+  const updateBillAddress = (field: keyof AddressFormData, value: string) => {
+    setBillAddress((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === "country_iso") {
+        updated.state_abbr = "";
+        updated.state_name = "";
+      }
+      return updated;
+    });
+  };
+
+  // Expose submit handle to parent via ref
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: async () => {
+        if (!paymentSessionId || !clientSecret) {
+          return { error: "Payment not ready" };
+        }
+        if (!selectedCardId && !gatewayHandleRef.current) {
+          return { error: "Payment not ready" };
+        }
+
+        setProcessing(true);
+        setGatewayError(null);
+
+        try {
+          // 1. Update billing address
+          const billingData = formDataToAddress(
+            useShippingForBilling ? shipAddressData : billAddress,
+          );
+          const addressSuccess = await onUpdateBillingAddress({
+            bill_address: billingData,
+          });
+
+          if (!addressSuccess) {
+            setProcessing(false);
+            return { error: "Failed to save billing address" };
+          }
+
+          // 2. Confirm payment with gateway
+          const returnUrl = `${window.location.origin}${window.location.pathname.replace(/\/checkout\/.*/, `/order-placed/${order.id}`)}`;
+
+          let error: string | undefined;
+
+          if (selectedCardId) {
+            const result = await confirmWithSavedCard(
+              clientSecret,
+              selectedCardId,
+              returnUrl,
+            );
+            error = result.error;
+          } else {
+            const result =
+              await gatewayHandleRef.current!.confirmPayment(returnUrl);
+            error = result.error;
+          }
+
+          if (error) {
+            setGatewayError(error);
+            setProcessing(false);
+            return { error };
+          }
+
+          // 3. Payment succeeded — complete session and order
+          await onPaymentComplete(paymentSessionId);
+          return {};
+        } catch {
+          const msg = "An error occurred during payment. Please try again.";
+          setGatewayError(msg);
+          setProcessing(false);
+          return { error: msg };
+        }
+      },
+    }),
+    [
+      paymentSessionId,
+      clientSecret,
+      selectedCardId,
+      useShippingForBilling,
+      shipAddressData,
+      billAddress,
+      onUpdateBillingAddress,
+      onPaymentComplete,
+      order.id,
+      setProcessing,
+    ],
+  );
+
+  const isAddingNew = selectedCardId === null;
+
+  return (
+    <div>
+      {/* Section Header */}
+      <h2 className="text-[1.15rem] font-bold text-gray-900">Payment</h2>
+      <p className="text-sm text-gray-500 mt-0.5 mb-3">
+        All transactions are secure and encrypted.
+      </p>
+
+      {/* Inline requirement errors from parent */}
+      {errors && errors.length > 0 && (
+        <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3 mb-3">
+          {errors.map((err, i) => (
+            <p key={i} className="text-sm text-red-700">
+              {err}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Payment method bordered container — Shopify style */}
+      <div className="rounded-[5px] border border-[#d9d9d9] overflow-hidden">
+        {/* Saved Cards */}
+        {savedCards.length > 0 && (
+          <>
+            {savedCards.map((card, index) => (
+              <label
+                key={card.id}
+                className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
+                  selectedCardId === card.gateway_payment_profile_id
+                    ? "bg-[#f0f5ff]"
+                    : "bg-white hover:bg-gray-50"
+                } ${index > 0 ? "border-t border-[#d9d9d9]" : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="payment_source"
+                  checked={selectedCardId === card.gateway_payment_profile_id}
+                  onChange={() =>
+                    handleCardSelect(card.gateway_payment_profile_id)
+                  }
+                  className="h-[18px] w-[18px] accent-black"
+                />
+                <PaymentIcon
+                  type={getCardIconType(card.cc_type)}
+                  format="flatRounded"
+                  width={34}
+                />
+                <span className="text-sm text-gray-900 flex-1">
+                  {getCardLabel(card.cc_type)} ending in {card.last_digits}
+                </span>
+                <span className="text-xs text-gray-500">
+                  Exp {String(card.month).padStart(2, "0")}/{card.year}
+                </span>
+                {card.default && (
+                  <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                    Default
+                  </span>
+                )}
+              </label>
+            ))}
+
+            {/* Add new card option */}
+            <label
+              className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t border-[#d9d9d9] transition-colors ${
+                isAddingNew ? "bg-[#f0f5ff]" : "bg-white hover:bg-gray-50"
+              }`}
+            >
+              <input
+                type="radio"
+                name="payment_source"
+                checked={isAddingNew}
+                onChange={() => handleCardSelect(null)}
+                className="h-[18px] w-[18px] accent-black"
+              />
+              <CreditCard className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+              <span className="text-sm text-gray-900">
+                Add new payment method
+              </span>
+            </label>
+          </>
+        )}
+
+        {/* Credit card header when no saved cards */}
+        {savedCards.length === 0 && (
+          <div className="flex items-center justify-between px-4 py-3.5 bg-[#f0f5ff]">
+            <div className="flex items-center gap-3">
+              <input
+                type="radio"
+                name="payment_source"
+                checked
+                readOnly
+                className="h-[18px] w-[18px] accent-black"
+              />
+              <span className="text-sm font-medium text-gray-900">
+                Credit card
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Card form area — inside the bordered container */}
+        <div className="border-t border-[#d9d9d9] bg-[#fafafa]">
+          {loading && (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
+              <span className="ml-2 text-sm text-gray-500">
+                Loading payment form...
+              </span>
+            </div>
+          )}
+
+          {gatewayError && !loading && (
+            <div className="px-4 py-3">
+              <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3">
+                <p className="text-sm text-red-700 flex items-center gap-2">
+                  <CircleAlert className="h-4 w-4 flex-shrink-0" />
+                  {gatewayError}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {clientSecret && !loading && isAddingNew && (
+            <div className="p-4">
+              <StripePaymentForm
+                key={clientSecret}
+                clientSecret={clientSecret}
+                onReady={handleGatewayReady}
+              />
+            </div>
+          )}
+
+          {!sessionPaymentMethod && !loading && (
+            <div className="px-4 py-8 text-center">
+              <CreditCard
+                className="w-10 h-10 text-gray-300 mx-auto mb-3"
+                strokeWidth={1.5}
+              />
+              <p className="text-sm text-gray-500">
+                No payment methods available for this order.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Billing address — Shopify checkbox below payment box */}
+      <div className="mt-4">
+        <label className="flex items-center gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useShippingForBilling}
+            onChange={(e) => handleUseShippingChange(e.target.checked)}
+            className="h-[18px] w-[18px] rounded-[3px] accent-black"
+          />
+          <span className="text-sm text-gray-900">
+            Use shipping address as billing address
+          </span>
+        </label>
+
+        {!useShippingForBilling && (
+          <div className="mt-4">
+            <AddressFormFields
+              address={billAddress}
+              countries={countries}
+              states={billStates}
+              loadingStates={isPendingBill}
+              onChange={updateBillAddress}
+              idPrefix="bill"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});

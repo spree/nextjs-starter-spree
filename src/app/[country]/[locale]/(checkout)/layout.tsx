@@ -41,7 +41,7 @@ function CheckoutFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="py-4 text-sm text-gray-500 border-t border-gray-200 mt-auto">
+    <footer className="py-4 text-xs text-gray-500 border-t border-gray-200 mt-auto">
       <p>
         &copy; {currentYear} {storeName}. All rights reserved.
       </p>
@@ -53,7 +53,7 @@ function MobileSummaryToggle() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="lg:hidden border-b border-gray-200">
+    <div className="lg:hidden border-b border-gray-200 bg-[#fafafa]">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -83,7 +83,7 @@ interface CheckoutLayoutProps {
 function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Mobile header - visible on small screens */}
+      {/* Mobile header */}
       <div className="lg:hidden border-b border-gray-200">
         <div className="px-5">
           <CheckoutHeader />
@@ -93,24 +93,24 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
       {/* Mobile summary toggle */}
       <MobileSummaryToggle />
 
-      {/* Main checkout grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,650px)_minmax(0,455px)_1fr]">
-        {/* Main content area */}
+      {/* Main checkout grid — Shopify proportions */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_minmax(0,640px)_minmax(0,440px)_1fr]">
+        {/* Main content area — white bg */}
         <div className="lg:col-start-2 flex flex-col">
-          <div className="flex-1 px-5 py-6 lg:px-10 lg:py-10">
-            {/* Desktop header - hidden on mobile */}
-            <div className="hidden lg:block mb-6">
+          <div className="flex-1 px-5 py-6 lg:pl-10 lg:pr-12 lg:py-10">
+            {/* Desktop header */}
+            <div className="hidden lg:block mb-8">
               <CheckoutHeader />
             </div>
             {children}
           </div>
-          <div className="px-5 lg:px-10 pb-4">
+          <div className="px-5 lg:pl-10 lg:pr-12 pb-4">
             <CheckoutFooter />
           </div>
         </div>
 
-        {/* Desktop summary sidebar */}
-        <div className="hidden lg:block lg:col-start-3 border-l border-gray-200">
+        {/* Desktop summary sidebar — Shopify: light gray bg with left border */}
+        <div className="hidden lg:block lg:col-start-3 border-l border-gray-200 bg-[#fafafa]">
           <div className="sticky top-0 px-10 py-10">
             <CheckoutSummary />
           </div>
