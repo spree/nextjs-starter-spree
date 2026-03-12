@@ -204,26 +204,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         beginCheckoutFiredRef.current = true;
       }
 
-      // If the order already has an address + email but no shipments,
-      // re-submit to push the backend state machine forward and generate shipments.
-      if (
-        orderData.ship_address &&
-        orderData.email &&
-        !orderData.shipments?.length
-      ) {
-        try {
-          const result = await updateOrderAddresses(orderData.id, {
-            email: orderData.email,
-          });
-          if (result.success && result.order) {
-            setOrder(result.order);
-            setShipments(result.order.shipments || []);
-          }
-        } catch {
-          // Non-critical — user can still trigger via address interaction
-        }
-      }
-
       return orderData;
     } catch {
       setError("Failed to load checkout. Please try again.");
