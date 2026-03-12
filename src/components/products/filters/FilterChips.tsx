@@ -2,8 +2,9 @@
 
 import type { OptionFilter, ProductFiltersResponse } from "@spree/sdk";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { AVAILABILITY_LABELS } from "@/lib/utils/filters";
+import { getAvailabilityLabel } from "@/lib/utils/filters";
 import {
   findMatchingBucket,
   type PriceBucket,
@@ -29,6 +30,7 @@ export function FilterChips({
   onRemoveAvailability,
   onClearAll,
 }: FilterChipsProps) {
+  const t = useTranslations("products");
   const chips: { key: string; label: string; onRemove: () => void }[] = [];
 
   if (filtersData) {
@@ -63,7 +65,7 @@ export function FilterChips({
     );
     chips.push({
       key: "price",
-      label: `Price: ${matchingBucket?.label || "Custom"}`,
+      label: `${t("price")}: ${matchingBucket?.label || t("customPrice")}`,
       onRemove: onRemovePrice,
     });
   }
@@ -71,7 +73,7 @@ export function FilterChips({
   if (activeFilters.availability) {
     chips.push({
       key: "availability",
-      label: `${AVAILABILITY_LABELS[activeFilters.availability] || activeFilters.availability}`,
+      label: getAvailabilityLabel(activeFilters.availability, t),
       onRemove: onRemoveAvailability,
     });
   }
@@ -89,14 +91,14 @@ export function FilterChips({
           <button
             onClick={chip.onRemove}
             className="p-0.5 text-primary hover:text-primary transition-colors"
-            aria-label={`Remove ${chip.label}`}
+            aria-label={`${t("clear")} ${chip.label}`}
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </span>
       ))}
       <Button variant="link" size="sm" onClick={onClearAll}>
-        Clear all
+        {t("clearAll")}
       </Button>
     </div>
   );

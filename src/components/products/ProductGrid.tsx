@@ -6,6 +6,7 @@ interface ProductGridProps {
   basePath?: string;
   listId?: string;
   listName?: string;
+  emptyMessage?: string;
 }
 
 export function ProductGrid({
@@ -13,11 +14,12 @@ export function ProductGrid({
   basePath = "",
   listId,
   listName,
+  emptyMessage,
 }: ProductGridProps) {
-  if (products.length === 0) {
+  if (products.length === 0 && emptyMessage) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No products found.</p>
+        <p className="text-gray-500">{emptyMessage}</p>
       </div>
     );
   }

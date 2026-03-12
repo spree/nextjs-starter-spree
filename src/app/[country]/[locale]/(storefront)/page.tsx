@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
 import { Button } from "@/components/ui/button";
 import { generateHomeMetadata } from "@/lib/metadata/home";
-import { getStoreDescription, getStoreName } from "@/lib/seo";
 
 interface HomePageProps {
   params: Promise<{
@@ -22,6 +22,7 @@ export async function generateMetadata({
 export default async function HomePage({ params }: HomePageProps) {
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
+  const t = await getTranslations("home");
 
   return (
     <div>
@@ -30,17 +31,19 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
-              Welcome to {getStoreName()}
+              {t("welcome")}
             </h1>
             <p className="mt-4 text-xl text-gray-500 max-w-2xl mx-auto">
-              {getStoreDescription()}
+              {t("heroDescription")}
             </p>
             <div className="mt-8 flex justify-center gap-4">
               <Button size="lg" asChild>
-                <Link href={`${basePath}/products`}>Shop Now</Link>
+                <Link href={`${basePath}/products`}>{t("shopNow")}</Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href={`${basePath}/products`}>Browse Categories</Link>
+                <Link href={`${basePath}/products`}>
+                  {t("browseCategories")}
+                </Link>
               </Button>
             </div>
           </div>
@@ -51,10 +54,10 @@ export default async function HomePage({ params }: HomePageProps) {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">
-            Featured Products
+            {t("featuredProducts")}
           </h2>
           <Button variant="link" asChild>
-            <Link href={`${basePath}/products`}>View all &rarr;</Link>
+            <Link href={`${basePath}/products`}>{t("viewAll")} &rarr;</Link>
           </Button>
         </div>
         <ProductCarousel basePath={basePath} />

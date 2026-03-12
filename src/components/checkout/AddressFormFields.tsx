@@ -1,6 +1,7 @@
 "use client";
 
 import type { Country, State } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,12 +27,16 @@ export function AddressFormFields({
   onChange,
   idPrefix,
 }: AddressFormFieldsProps) {
+  const t = useTranslations("address");
+  const tc = useTranslations("common");
   const hasStates = states.length > 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Field>
-        <FieldLabel htmlFor={`${idPrefix}-firstname`}>First name</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-firstname`}>
+          {t("firstName")}
+        </FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-firstname`}
@@ -42,7 +47,9 @@ export function AddressFormFields({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor={`${idPrefix}-lastname`}>Last name</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-lastname`}>
+          {t("lastName")}
+        </FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-lastname`}
@@ -53,9 +60,7 @@ export function AddressFormFields({
       </Field>
 
       <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-company`}>
-          Company (optional)
-        </FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-company`}>{t("company")}</FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-company`}
@@ -65,20 +70,22 @@ export function AddressFormFields({
       </Field>
 
       <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-address1`}>Address</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-address1`}>
+          {t("streetAddress")}
+        </FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-address1`}
           required
           value={address.address1}
           onChange={(e) => onChange("address1", e.target.value)}
-          placeholder="Street address"
+          placeholder={t("streetAddress")}
         />
       </Field>
 
       <Field className="sm:col-span-2">
         <FieldLabel htmlFor={`${idPrefix}-address2`}>
-          Apartment, suite, etc. (optional)
+          {t("apartment")}
         </FieldLabel>
         <Input
           type="text"
@@ -89,7 +96,7 @@ export function AddressFormFields({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor={`${idPrefix}-city`}>City</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-city`}>{t("city")}</FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-city`}
@@ -100,7 +107,7 @@ export function AddressFormFields({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor={`${idPrefix}-country`}>Country</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-country`}>{t("country")}</FieldLabel>
         <NativeSelect
           id={`${idPrefix}-country`}
           className="w-full"
@@ -109,7 +116,7 @@ export function AddressFormFields({
           required
         >
           <NativeSelectOption value="" disabled>
-            Select a country
+            {t("selectCountry")}
           </NativeSelectOption>
           {countries.map((country) => (
             <NativeSelectOption key={country.iso} value={country.iso}>
@@ -120,10 +127,12 @@ export function AddressFormFields({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor={`${idPrefix}-state`}>State / Province</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-state`}>
+          {t("stateProvince")}
+        </FieldLabel>
         {loadingStates ? (
           <NativeSelect id={`${idPrefix}-state`} className="w-full" disabled>
-            <NativeSelectOption value="">Loading...</NativeSelectOption>
+            <NativeSelectOption value="">{tc("loading")}</NativeSelectOption>
           </NativeSelect>
         ) : hasStates ? (
           <NativeSelect
@@ -134,7 +143,7 @@ export function AddressFormFields({
             required
           >
             <NativeSelectOption value="" disabled>
-              Select a state
+              {t("selectState")}
             </NativeSelectOption>
             {states.map((state) => (
               <NativeSelectOption key={state.abbr} value={state.abbr}>
@@ -148,15 +157,13 @@ export function AddressFormFields({
             id={`${idPrefix}-state`}
             value={address.state_name}
             onChange={(e) => onChange("state_name", e.target.value)}
-            placeholder="State or province"
+            placeholder={t("stateOrProvince")}
           />
         )}
       </Field>
 
       <Field>
-        <FieldLabel htmlFor={`${idPrefix}-zipcode`}>
-          ZIP / Postal code
-        </FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-zipcode`}>{t("zipCode")}</FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-zipcode`}
@@ -167,7 +174,7 @@ export function AddressFormFields({
       </Field>
 
       <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-phone`}>Phone (optional)</FieldLabel>
+        <FieldLabel htmlFor={`${idPrefix}-phone`}>{t("phone")}</FieldLabel>
         <Input
           type="tel"
           id={`${idPrefix}-phone`}

@@ -8,6 +8,7 @@ import { Swiper as SwiperComponent, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
 import { useCarouselProducts } from "@/hooks/useCarouselProducts";
@@ -26,6 +27,7 @@ export function ProductCarousel({
   limit = 8,
   basePath,
 }: ProductCarouselProps): ReactElement {
+  const t = useTranslations("products");
   const { products, loading, error } = useCarouselProducts({
     categoryId,
     limit,
@@ -79,7 +81,7 @@ export function ProductCarousel({
       <button
         ref={prevRef}
         type="button"
-        aria-label="Previous products"
+        aria-label={t("carouselPrev")}
         disabled={isBeginning}
         className={`${NAV_BUTTON_BASE} -left-5 ${isBeginning ? "opacity-0" : ""}`}
       >
@@ -88,7 +90,7 @@ export function ProductCarousel({
       <button
         ref={nextRef}
         type="button"
-        aria-label="Next products"
+        aria-label={t("carouselNext")}
         disabled={isEnd}
         className={`${NAV_BUTTON_BASE} -right-5 ${isEnd ? "opacity-0" : ""}`}
       >

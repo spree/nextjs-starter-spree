@@ -1,6 +1,7 @@
 "use client";
 
 import type { Cart, Order } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { ProductImage } from "@/components/ui/product-image";
 
 interface OrderSummaryProps {
@@ -8,12 +9,13 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ order }: OrderSummaryProps) {
+  const tc = useTranslations("common");
   const lineItems = order.items || [];
 
   return (
     <div>
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Order Summary
+        {tc("orderSummary")}
       </h3>
 
       {/* Line items */}
@@ -56,20 +58,20 @@ export function OrderSummary({ order }: OrderSummaryProps) {
       {/* Totals */}
       <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Subtotal</span>
+          <span className="text-gray-600">{tc("subtotal")}</span>
           <span className="text-gray-900">{order.display_item_total}</span>
         </div>
 
         {parseFloat(order.ship_total) > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shipping</span>
+            <span className="text-gray-600">{tc("shipping")}</span>
             <span className="text-gray-900">{order.display_ship_total}</span>
           </div>
         )}
 
         {parseFloat(order.adjustment_total) !== 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Adjustments</span>
+            <span className="text-gray-600">{tc("adjustments")}</span>
             <span
               className={
                 parseFloat(order.adjustment_total) < 0
@@ -84,20 +86,20 @@ export function OrderSummary({ order }: OrderSummaryProps) {
 
         {parseFloat(order.promo_total) !== 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Discount</span>
+            <span className="text-gray-600">{tc("discount")}</span>
             <span className="text-green-600">{order.display_promo_total}</span>
           </div>
         )}
 
         {parseFloat(order.tax_total) > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Tax</span>
+            <span className="text-gray-600">{tc("tax")}</span>
             <span className="text-gray-900">{order.display_tax_total}</span>
           </div>
         )}
 
         <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
-          <span className="text-gray-900">Total</span>
+          <span className="text-gray-900">{tc("total")}</span>
           <span className="text-gray-900">{order.display_total}</span>
         </div>
       </div>

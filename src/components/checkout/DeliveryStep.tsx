@@ -1,6 +1,7 @@
 "use client";
 
 import type { Cart, Order, Shipment } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 interface DeliveryStepProps {
@@ -20,6 +21,8 @@ export function DeliveryStep({
   onBack,
   processing,
 }: DeliveryStepProps) {
+  const t = useTranslations("checkout");
+  const tc = useTranslations("common");
   // Check if all shipments have a selected rate
   const allRatesSelected = shipments.every((shipment) =>
     shipment.shipping_rates.some((rate) => rate.selected),
@@ -36,11 +39,11 @@ export function DeliveryStep({
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              Shipping Address
+              {t("shippingAddress")}
             </h2>
             {onBack && (
               <Button variant="link" size="sm" onClick={onBack}>
-                Edit
+                {tc("edit")}
               </Button>
             )}
           </div>
@@ -60,7 +63,9 @@ export function DeliveryStep({
             </p>
             <p>{order.ship_address.country_name}</p>
             {order.ship_address.phone && (
-              <p className="mt-2">Phone: {order.ship_address.phone}</p>
+              <p className="mt-2">
+                {t("phone", { phone: order.ship_address.phone })}
+              </p>
             )}
           </div>
         </div>
@@ -69,22 +74,28 @@ export function DeliveryStep({
       {/* Shipping Methods */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Shipping Method
+          {t("shippingMethod")}
         </h2>
 
         {shipments.length === 0 ? (
-          <p className="text-gray-500">Loading shipping options...</p>
+          <p className="text-gray-500">{t("loadingShippingOptions")}</p>
         ) : (
           <div className="space-y-6">
             {shipments.map((shipment, index) => (
               <div key={shipment.id}>
                 {shipments.length > 1 && (
                   <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    Shipment {index + 1} of {shipments.length}
+                    {t("shipmentOf", {
+                      current: index + 1,
+                      total: shipments.length,
+                    })}
                     {shipment.stock_location?.name && (
                       <span className="font-normal text-gray-500">
                         {" "}
-                        &mdash; Ships from {shipment.stock_location.name}
+                        &mdash;{" "}
+                        {t("shipsFrom", {
+                          location: shipment.stock_location.name,
+                        })}
                       </span>
                     )}
                   </h3>
@@ -137,7 +148,7 @@ export function DeliveryStep({
             onClick={onBack}
             disabled={processing}
           >
-            Back
+            {tc("back")}
           </Button>
         )}
         <Button
@@ -145,7 +156,7 @@ export function DeliveryStep({
           onClick={onConfirm}
           disabled={processing || !allRatesSelected}
         >
-          {processing ? "Processing..." : "Continue"}
+          {processing ? tc("processing") : tc("continue")}
         </Button>
       </div>
     </div>

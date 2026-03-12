@@ -2,6 +2,7 @@
 
 import type { CreditCard as SpreeCreditCard } from "@spree/sdk";
 import { CreditCard, Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import {
@@ -26,6 +27,8 @@ function CreditCardItem({
   card: SpreeCreditCard;
   onDelete: () => void;
 }) {
+  const t = useTranslations("creditCards");
+  const tc = useTranslations("common");
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -51,7 +54,7 @@ function CreditCardItem({
               {getCardLabel(card.cc_type)} ending in {card.last_digits}
             </p>
             <p className="text-sm text-gray-500">
-              Expires {String(card.month).padStart(2, "0")}/{card.year}
+              {t("expires")} {String(card.month).padStart(2, "0")}/{card.year}
             </p>
             {card.name && (
               <p className="text-sm text-gray-500 mt-1">{card.name}</p>
@@ -61,28 +64,26 @@ function CreditCardItem({
         <div className="flex items-center gap-3">
           {card.default && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-green-100 text-green-800">
-              Default
+              {t("default")}
             </span>
           )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={deleting}>
-                {deleting ? "Removing..." : "Remove"}
+                {deleting ? t("removing") : tc("remove")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Remove payment method?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will remove the {getCardLabel(card.cc_type)} ending in{" "}
-                  {card.last_digits} from your account. This action cannot be
-                  undone.
+                  {t("deleteConfirm")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                  Remove
+                  {tc("remove")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -94,6 +95,7 @@ function CreditCardItem({
 }
 
 export default function CreditCardsPage() {
+  const t = useTranslations("creditCards");
   const [cards, setCards] = useState<SpreeCreditCard[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -125,7 +127,7 @@ export default function CreditCardsPage() {
     return (
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Payment Methods
+          {t("paymentMethods")}
         </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
@@ -144,17 +146,17 @@ export default function CreditCardsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Payment Methods</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        {t("paymentMethods")}
+      </h1>
 
       {cards.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No payment methods saved
+            {t("noCards")}
           </h3>
-          <p className="text-gray-500">
-            Payment methods are saved automatically when you make a purchase.
-          </p>
+          <p className="text-gray-500">{t("noCardsDescription")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -171,8 +173,7 @@ export default function CreditCardsPage() {
       <div className="mt-6 p-4 bg-gray-50 rounded-xl">
         <p className="text-sm text-gray-600">
           <Lock className="w-4 h-4 inline mr-1" />
-          Your payment information is securely stored and encrypted. We never
-          store your full card number.
+          {t("secureInfo")}
         </p>
       </div>
     </div>

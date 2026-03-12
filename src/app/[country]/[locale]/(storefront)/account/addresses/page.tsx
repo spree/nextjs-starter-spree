@@ -2,6 +2,7 @@
 
 import type { Address, AddressParams, Country } from "@spree/sdk";
 import { MapPin, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import {
@@ -33,6 +34,8 @@ function AddressCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const t = useTranslations("account");
+  const tc = useTranslations("common");
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -63,20 +66,19 @@ function AddressCard({
         </div>
         <div className="flex gap-2">
           <Button variant="link" size="sm" onClick={onEdit}>
-            Edit
+            {tc("edit")}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={deleting}>
-                {deleting ? "Deleting..." : "Delete"}
+                {deleting ? "Deleting..." : tc("remove")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete address?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete this address. This action cannot
-                  be undone.
+                  {t("deleteConfirm")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -94,6 +96,7 @@ function AddressCard({
 }
 
 export default function AddressesPage() {
+  const t = useTranslations("account");
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +170,9 @@ export default function AddressesPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Addresses</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          {t("addresses")}
+        </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2].map((i) => (
             <div
@@ -186,10 +191,10 @@ export default function AddressesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t("addresses")}</h1>
         <Button onClick={handleAdd}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Address
+          {t("addNewAddress")}
         </Button>
       </div>
 
@@ -197,12 +202,10 @@ export default function AddressesPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No addresses saved
+            {t("noAddresses")}
           </h3>
-          <p className="text-gray-500 mb-6">
-            Add an address for faster checkout.
-          </p>
-          <Button onClick={handleAdd}>Add Your First Address</Button>
+          <p className="text-gray-500 mb-6">{t("noAddressesDescription")}</p>
+          <Button onClick={handleAdd}>{t("addNewAddress")}</Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

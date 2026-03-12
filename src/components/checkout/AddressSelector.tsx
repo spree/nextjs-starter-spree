@@ -1,6 +1,7 @@
 "use client";
 
 import type { Address, Country, State } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { AddressFormData } from "@/lib/utils/address";
@@ -29,6 +30,8 @@ export function AddressSelector({
   onEditAddress,
   idPrefix,
 }: AddressSelectorProps) {
+  const t = useTranslations("address");
+  const tc = useTranslations("common");
   // Derive selected address from current form data — no useEffect needed
   const selectedAddressId = useMemo((): string => {
     if (savedAddresses.length === 0) return "new";
@@ -78,7 +81,9 @@ export function AddressSelector({
       {/* Saved addresses selection */}
       {savedAddresses.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">Select an address</p>
+          <p className="text-sm font-medium text-gray-700">
+            {t("selectAnAddress")}
+          </p>
           <div className="grid gap-3">
             {savedAddresses.map((address) => (
               <div
@@ -129,7 +134,7 @@ export function AddressSelector({
                       onEditAddress(address);
                     }}
                   >
-                    Edit
+                    {tc("edit")}
                   </Button>
                 )}
               </div>
@@ -150,7 +155,7 @@ export function AddressSelector({
                 className="h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
               />
               <span className="ml-3 text-sm font-medium text-gray-900">
-                Use a different address
+                {t("useDifferentAddress")}
               </span>
             </label>
           </div>

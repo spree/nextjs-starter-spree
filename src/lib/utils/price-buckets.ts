@@ -7,9 +7,13 @@ export interface PriceBucket {
 
 const THRESHOLDS = [50, 100, 200];
 
-function formatCurrency(amount: number, currency: string): string {
+function formatCurrency(
+  amount: number,
+  currency: string,
+  locale?: string,
+): string {
   try {
-    return new Intl.NumberFormat("en", {
+    return new Intl.NumberFormat(locale || "en", {
       style: "currency",
       currency,
       minimumFractionDigits: 0,
@@ -20,26 +24,41 @@ function formatCurrency(amount: number, currency: string): string {
   }
 }
 
+/**
+ * Optional translation helpers for bucket labels.
+ * Pass `t` from `useTranslations("products")` and a locale string
+ * to get labels like "Poniżej $50" instead of "Under $50".
+ */
+interface BucketLabelOptions {
+  t?: (key: string, values?: Record<string, string>) => string;
+  locale?: string;
+}
+
 export function generatePriceBuckets(
   filterMin: number,
   filterMax: number,
   currency: string,
+  options?: BucketLabelOptions,
 ): PriceBucket[] {
+  const { t, locale } = options || {};
   const buckets: PriceBucket[] = [];
 
   if (filterMin < THRESHOLDS[0]) {
+    const price = formatCurrency(THRESHOLDS[0], currency, locale);
     buckets.push({
       id: `under-${THRESHOLDS[0]}`,
-      label: `Under ${formatCurrency(THRESHOLDS[0], currency)}`,
+      label: t ? t("priceUnder", { price }) : `Under ${price}`,
       max: THRESHOLDS[0],
     });
   }
 
   for (let i = 0; i < THRESHOLDS.length - 1; i++) {
     if (filterMax > THRESHOLDS[i] && filterMin < THRESHOLDS[i + 1]) {
+      const min = formatCurrency(THRESHOLDS[i], currency, locale);
+      const max = formatCurrency(THRESHOLDS[i + 1], currency, locale);
       buckets.push({
         id: `${THRESHOLDS[i]}-${THRESHOLDS[i + 1]}`,
-        label: `${formatCurrency(THRESHOLDS[i], currency)} - ${formatCurrency(THRESHOLDS[i + 1], currency)}`,
+        label: t ? t("priceRangeBucket", { min, max }) : `${min} - ${max}`,
         min: THRESHOLDS[i],
         max: THRESHOLDS[i + 1],
       });
@@ -48,9 +67,10 @@ export function generatePriceBuckets(
 
   const lastThreshold = THRESHOLDS[THRESHOLDS.length - 1];
   if (filterMax > lastThreshold) {
+    const price = formatCurrency(lastThreshold, currency, locale);
     buckets.push({
       id: `${lastThreshold}-plus`,
-      label: `${formatCurrency(lastThreshold, currency)}+`,
+      label: t ? t("priceAbove", { price }) : `${price}+`,
       min: lastThreshold,
     });
   }

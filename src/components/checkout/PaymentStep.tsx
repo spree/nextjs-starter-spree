@@ -9,6 +9,7 @@ import type {
   State,
 } from "@spree/sdk";
 import { CircleAlert, CreditCard, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -56,6 +57,8 @@ export function PaymentStep({
   processing,
   setProcessing,
 }: PaymentStepProps) {
+  const t = useTranslations("checkout");
+  const tc = useTranslations("common");
   // Initialize billing address from order, check if it matches shipping
   const shipAddressData = addressToFormData(order.ship_address);
   const billAddressData = addressToFormData(order.bill_address);
@@ -121,18 +124,18 @@ export function PaymentStep({
             setClientSecret(secret);
             setPaymentSessionId(result.session.id);
           } else {
-            setGatewayError("Failed to initialize payment. Please try again.");
+            setGatewayError(t("failedToInitPayment"));
           }
         } else if (!result.success) {
-          setGatewayError(result.error || "Failed to create payment session.");
+          setGatewayError(result.error || t("failedToCreateSession"));
         }
       } catch {
-        setGatewayError("Failed to initialize payment. Please try again.");
+        setGatewayError(t("failedToInitPayment"));
       } finally {
         setLoading(false);
       }
     },
-    [sessionPaymentMethod, order.id],
+    [sessionPaymentMethod, order.id, t],
   );
 
   // On mount: load saved cards (if authenticated), then create initial session — once.
@@ -261,7 +264,7 @@ export function PaymentStep({
       // 3. Payment succeeded — complete session and order
       await onPaymentComplete(paymentSessionId);
     } catch {
-      setGatewayError("An error occurred during payment. Please try again.");
+      setGatewayError(t("paymentError"));
       setProcessing(false);
     }
   };
@@ -286,11 +289,11 @@ export function PaymentStep({
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              Shipping Address
+              {t("shippingAddress")}
             </h2>
             {onBack && (
               <Button type="button" variant="link" size="sm" onClick={onBack}>
-                Edit
+                {tc("edit")}
               </Button>
             )}
           </div>
@@ -316,7 +319,7 @@ export function PaymentStep({
       {/* Billing Address */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Billing Address
+          {t("billingAddress")}
         </h2>
         <div className="mb-4">
           <Field orientation="horizontal">
@@ -328,7 +331,7 @@ export function PaymentStep({
               }
             />
             <FieldLabel htmlFor="use-shipping-billing">
-              Same as shipping address
+              {t("sameAsShipping")}
             </FieldLabel>
           </Field>
         </div>
@@ -348,7 +351,7 @@ export function PaymentStep({
       {/* Payment Method */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Payment Method
+          {t("paymentMethod")}
         </h2>
 
         {/* Saved Cards Selector */}
@@ -379,15 +382,16 @@ export function PaymentStep({
                 />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-medium text-gray-900">
-                    {getCardLabel(card.cc_type)} ending in {card.last_digits}
+                    {getCardLabel(card.cc_type)} {t("endingIn")}{" "}
+                    {card.last_digits}
                   </span>
                   <span className="text-sm text-gray-500 ml-2">
-                    Exp {String(card.month).padStart(2, "0")}/{card.year}
+                    {t("exp")} {String(card.month).padStart(2, "0")}/{card.year}
                   </span>
                 </div>
                 {card.default && (
                   <span className="text-xs font-medium text-primary bg-gray-100 px-2 py-0.5 rounded-lg">
-                    Default
+                    {t("default")}
                   </span>
                 )}
               </label>
@@ -410,7 +414,7 @@ export function PaymentStep({
               />
               <CreditCard className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
               <span className="text-sm font-medium text-gray-900">
-                Add new payment method
+                {t("addNewPaymentMethod")}
               </span>
             </label>
           </div>
@@ -420,7 +424,7 @@ export function PaymentStep({
           <div className="flex items-center justify-center py-8">
             <Loader2 className="animate-spin h-6 w-6 text-gray-400" />
             <span className="ml-3 text-sm text-gray-500">
-              Loading payment form...
+              {t("loadingPaymentForm")}
             </span>
           </div>
         )}
@@ -446,9 +450,7 @@ export function PaymentStep({
               className="w-12 h-12 text-gray-400 mx-auto mb-4"
               strokeWidth={1.5}
             />
-            <p className="text-gray-500">
-              No payment methods available for this order.
-            </p>
+            <p className="text-gray-500">{t("noPaymentMethods")}</p>
           </div>
         )}
       </div>
@@ -463,7 +465,7 @@ export function PaymentStep({
             onClick={onBack}
             disabled={processing}
           >
-            Back
+            {tc("back")}
           </Button>
         )}
         <Button
@@ -477,7 +479,7 @@ export function PaymentStep({
             (isAddingNew && !gatewayReady)
           }
         >
-          {processing ? "Processing..." : "Pay Now"}
+          {processing ? tc("processing") : t("payNow")}
         </Button>
       </div>
     </form>

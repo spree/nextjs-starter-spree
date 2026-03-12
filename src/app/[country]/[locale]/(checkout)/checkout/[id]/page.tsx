@@ -10,6 +10,7 @@ import type {
 import { CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressStep } from "@/components/checkout/AddressStep";
 import { CouponCode } from "@/components/checkout/CouponCode";
@@ -41,11 +42,7 @@ import {
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
-const CHECKOUT_STEPS = [
-  { id: "address", label: "Shipping" },
-  { id: "delivery", label: "Delivery" },
-  { id: "payment", label: "Payment" },
-];
+const CHECKOUT_STEP_IDS = ["address", "delivery", "payment"] as const;
 
 interface CheckoutPageProps {
   params: Promise<{
@@ -90,6 +87,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
+  const t = useTranslations("checkout");
+
+  const stepLabels: Record<string, string> = {
+    address: t("stepShipping"),
+    delivery: t("stepDelivery"),
+    payment: t("stepPayment"),
+  };
 
   const [order, setOrder] = useState<Cart | null>(null);
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -187,7 +191,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         : { data: [] as Country[] };
 
       if (!orderData) {
-        setError("Order not found or you don't have access to it.");
+        setError(t("orderNotFound"));
         setLoading(false);
         return;
       }
@@ -220,12 +224,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       return orderData;
     } catch {
-      setError("Failed to load checkout. Please try again.");
+      setError(t("failedToLoadCheckout"));
       return null;
     } finally {
       setLoading(false);
     }
-  }, [orderId, urlCountry, basePath, router]);
+  }, [orderId, urlCountry, basePath, router, t]);
 
   useEffect(() => {
     loadOrder();
@@ -479,14 +483,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Checkout Error
+          {t("checkoutError")}
         </h1>
         <p className="text-gray-600 mb-6">{error}</p>
         <Link
           href={`${basePath}/cart`}
           className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
-          Return to Cart
+          {t("returnToCart")}
         </Link>
       </div>
     );
@@ -499,22 +503,23 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Your Cart is Empty
+          {t("emptyCart")}
         </h1>
-        <p className="text-gray-600 mb-6">
-          Add some items to your cart before checking out.
-        </p>
+        <p className="text-gray-600 mb-6">{t("emptyCartDescription")}</p>
         <Link
           href={`${basePath}/products`}
           className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-700"
         >
-          Continue Shopping
+          {t("returnToCart")}
         </Link>
       </div>
     );
   }
 
-  const steps = CHECKOUT_STEPS;
+  const steps = CHECKOUT_STEP_IDS.map((id) => ({
+    id,
+    label: stepLabels[id] || id.charAt(0).toUpperCase() + id.slice(1),
+  }));
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
   const previousStepId =
     currentStepIndex > 0 ? steps[currentStepIndex - 1].id : undefined;
@@ -523,7 +528,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     <>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t("checkout")}</h1>
       </div>
 
       {/* Step indicator */}
