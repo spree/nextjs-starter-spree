@@ -13,7 +13,7 @@ import {
   quickCheckoutUpdateAddress,
   quickCheckoutUpdateFullAddress,
 } from "@/lib/data/quick-checkout";
-import { actionResult } from "./utils";
+import { actionResult } from "@/lib/data/utils";
 
 export async function expressCheckoutResolveShipping(
   orderId: string,
