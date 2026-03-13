@@ -3,6 +3,7 @@
 import { CircleAlert, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function RegisterPage() {
+  const t = useTranslations("register");
+  const ta = useTranslations("account");
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -44,12 +47,12 @@ export default function RegisterPage() {
     setError(null);
 
     if (password !== passwordConfirmation) {
-      setError("Passwords do not match");
+      setError(t("passwordsDontMatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t("passwordTooShort"));
       return;
     }
 
@@ -66,10 +69,10 @@ export default function RegisterPage() {
       if (result.success) {
         router.push(`${basePath}/account`);
       } else {
-        setError(result.error || "Registration failed. Please try again.");
+        setError(result.error || t("registrationFailed"));
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(t("unexpectedError"));
     } finally {
       setSubmitting(false);
     }
@@ -78,8 +81,10 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-        <p className="mt-2 text-gray-500">Sign up to start shopping with us.</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {t("createAccount")}
+        </h1>
+        <p className="mt-2 text-gray-500">{t("signUpDescription")}</p>
       </div>
 
       <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
@@ -93,7 +98,7 @@ export default function RegisterPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="firstName">First name</FieldLabel>
+              <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
               <Input
                 type="text"
                 id="firstName"
@@ -105,7 +110,7 @@ export default function RegisterPage() {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="lastName">Last name</FieldLabel>
+              <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
               <Input
                 type="text"
                 id="lastName"
@@ -118,7 +123,7 @@ export default function RegisterPage() {
           </div>
 
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="email">{ta("email")}</FieldLabel>
             <Input
               type="email"
               id="email"
@@ -130,7 +135,7 @@ export default function RegisterPage() {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <FieldLabel htmlFor="password">{ta("password")}</FieldLabel>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
@@ -148,7 +153,9 @@ export default function RegisterPage() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showPassword ? ta("hidePassword") : ta("showPassword")
+                  }
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -162,7 +169,7 @@ export default function RegisterPage() {
 
           <Field>
             <FieldLabel htmlFor="passwordConfirmation">
-              Confirm Password
+              {t("confirmPassword")}
             </FieldLabel>
             <div className="relative">
               <Input
@@ -184,7 +191,9 @@ export default function RegisterPage() {
                     setShowPasswordConfirmation(!showPasswordConfirmation)
                   }
                   aria-label={
-                    showPasswordConfirmation ? "Hide password" : "Show password"
+                    showPasswordConfirmation
+                      ? ta("hidePassword")
+                      : ta("showPassword")
                   }
                 >
                   {showPasswordConfirmation ? (
@@ -204,18 +213,18 @@ export default function RegisterPage() {
               size="lg"
               className="w-full"
             >
-              {submitting ? "Creating account..." : "Create Account"}
+              {submitting ? t("creatingAccount") : t("createAccount")}
             </Button>
           </div>
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-gray-500">Already have an account? </span>
+          <span className="text-gray-500">{t("alreadyHaveAccount")} </span>
           <Link
             href={`${basePath}/account`}
             className="text-primary hover:text-primary/70 font-medium"
           >
-            Sign in
+            {t("signIn")}
           </Link>
         </div>
       </div>

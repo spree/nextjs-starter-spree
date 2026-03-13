@@ -2,6 +2,7 @@
 
 import type { Cart, Order } from "@spree/sdk";
 import { CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface CouponCodeProps {
 }
 
 export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
+  const t = useTranslations("coupon");
   const [code, setCode] = useState("");
   const [applying, setApplying] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
     if (result.success) {
       setCode("");
     } else {
-      setError(result.error || "Invalid coupon code");
+      setError(result.error || t("invalidCode"));
     }
 
     setApplying(false);
@@ -49,7 +51,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
 
     const result = await onRemove(promotionId);
     if (!result.success) {
-      setError(result.error || "Failed to remove coupon code");
+      setError(result.error || t("failedToRemove"));
     }
 
     setRemoving(null);
@@ -78,10 +80,13 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
                 variant="destructive"
                 size="sm"
                 className="absolute top-2 right-2"
+                aria-label={t("removeCoupon", {
+                  code: promotion.code || promotion.name,
+                })}
                 onClick={() => handleRemove(promotion.id)}
                 disabled={removing === promotion.id}
               >
-                {removing === promotion.id ? "..." : "Remove"}
+                {removing === promotion.id ? t("removing") : t("remove")}
               </Button>
             </Alert>
           ))}
@@ -101,13 +106,13 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
                     setCode(e.target.value);
                     setError(null);
                   }}
-                  placeholder="Gift card or discount code"
-                  aria-label="Gift card or discount code"
+                  placeholder={t("placeholder")}
+                  aria-label={t("placeholder")}
                   aria-invalid={!!error}
                 />
               </div>
               <Button type="submit" disabled={applying || !code.trim()}>
-                {applying ? "..." : "Apply"}
+                {applying ? t("applying") : t("apply")}
               </Button>
             </div>
             {error && <FieldError>{error}</FieldError>}

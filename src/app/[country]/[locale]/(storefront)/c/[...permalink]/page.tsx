@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { CategoryBanner } from "@/components/navigation/CategoryBanner";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -30,6 +31,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const { country, locale, permalink } = await params;
   const fullPermalink = permalink.join("/");
   const basePath = `/${country}/${locale}`;
+  const t = await getTranslations("products");
 
   let category;
   try {
@@ -72,7 +74,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {category.children && category.children.length > 0 && (
           <div className="mb-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Subcategories
+              {t("subcategoriesHeading")}
             </h2>
             <div className="flex flex-wrap gap-2">
               {category.children.map((child) => (

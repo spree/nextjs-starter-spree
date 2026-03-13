@@ -10,6 +10,7 @@ import type {
 } from "@spree/sdk";
 import { InfoIcon } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,9 @@ export function AddressStep({
   onUpdateSavedAddress,
   processing,
 }: AddressStepProps) {
+  const t = useTranslations("checkout");
+  const tc = useTranslations("common");
+  const ta = useTranslations("address");
   const [email, setEmail] = useState(order.email || "");
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     addressToFormData(order.ship_address),
@@ -134,10 +138,10 @@ export function AddressStep({
           <Alert role="status">
             <InfoIcon />
             <AlertDescription>
-              Already have an account?
+              {t("signInPrompt")}
               <br />
-              <Link href={signInUrl}>Sign in</Link> to access your saved
-              addresses and order history.
+              <Link href={signInUrl}>{t("signIn")}</Link>{" "}
+              {t("signInDescription")}
             </AlertDescription>
           </Alert>
         )}
@@ -145,10 +149,10 @@ export function AddressStep({
         {/* Contact Information */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Contact Information
+            {t("contactInformation")}
           </h2>
           <Field>
-            <FieldLabel htmlFor="email">Email address</FieldLabel>
+            <FieldLabel htmlFor="email">{t("emailAddress")}</FieldLabel>
             <Input
               type="email"
               id="email"
@@ -156,12 +160,10 @@ export function AddressStep({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isAuthenticated}
-              placeholder="you@example.com"
+              placeholder={t("emailPlaceholder")}
             />
             {isAuthenticated && (
-              <FieldDescription>
-                Using your account email address
-              </FieldDescription>
+              <FieldDescription>{t("usingAccountEmail")}</FieldDescription>
             )}
           </Field>
         </div>
@@ -169,7 +171,7 @@ export function AddressStep({
         {/* Shipping Address */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Shipping Address
+            {t("shippingAddress")}
           </h2>
           {isAuthenticated && savedAddresses.length > 0 ? (
             <AddressSelector
@@ -202,7 +204,7 @@ export function AddressStep({
         {/* Submit */}
         <div className="flex justify-end">
           <Button type="submit" disabled={processing}>
-            {processing ? "Saving..." : "Continue to Delivery"}
+            {processing ? tc("saving") : t("continueToDelivery")}
           </Button>
         </div>
       </form>
@@ -215,7 +217,7 @@ export function AddressStep({
           fetchStates={fetchStates}
           onSave={handleSaveEditedAddress}
           onClose={() => setEditingAddress(null)}
-          title="Edit Address"
+          title={ta("editAddress")}
         />
       )}
     </>

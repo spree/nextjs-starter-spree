@@ -3,6 +3,7 @@
 import type { Product } from "@spree/sdk";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   InputGroup,
@@ -21,6 +22,7 @@ interface SearchBarProps {
 export function SearchBar({ basePath }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
+  const t = useTranslations("products");
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -157,7 +159,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
             }}
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Search..."
+            placeholder={t("search")}
             role="combobox"
             aria-expanded={showSuggestions}
             aria-controls="search-suggestions"
@@ -165,7 +167,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
               selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined
             }
             aria-autocomplete="list"
-            aria-label="Search"
+            aria-label={t("search")}
           />
           <InputGroupAddon>
             <Search />
@@ -178,7 +180,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl z-50 overflow-hidden">
           {loading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
-              Searching...
+              {t("searching")}
             </div>
           ) : suggestions.length > 0 ? (
             <ul id="search-suggestions" role="listbox">
@@ -235,14 +237,14 @@ export function SearchBar({ basePath }: SearchBarProps) {
                     }}
                     className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
                   >
-                    View all results for &ldquo;{query}&rdquo;
+                    {t("viewAllResultsFor", { query })}
                   </button>
                 </li>
               )}
             </ul>
           ) : query.length >= 2 ? (
             <div className="p-4 text-center text-gray-500 text-sm">
-              No products found
+              {t("noProductsFound")}
             </div>
           ) : null}
         </div>

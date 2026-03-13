@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useStore } from "@/contexts/StoreContext";
 
 export function Footer() {
-  const { storeName, storeDescription } = useStore();
+  const { storeName } = useStore();
+  const t = useTranslations("footer");
   return (
     <footer className="bg-primary text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -12,19 +14,21 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <span className="text-xl font-bold text-white">{storeName}</span>
-            <p className="mt-4 text-sm text-neutral-400">{storeDescription}</p>
+            <p className="mt-4 text-sm text-neutral-400">{t("description")}</p>
           </div>
 
           {/* Links */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-300">Shop</h3>
+            <h3 className="text-sm font-medium text-neutral-300">
+              {t("shop")}
+            </h3>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link
                   href="/products"
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  All Products
+                  {t("allProducts")}
                 </Link>
               </li>
               <li>
@@ -32,7 +36,7 @@ export function Footer() {
                   href="/products"
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  Categories
+                  {t("categories")}
                 </Link>
               </li>
             </ul>
@@ -40,14 +44,16 @@ export function Footer() {
 
           {/* Account */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-300">Account</h3>
+            <h3 className="text-sm font-medium text-neutral-300">
+              {t("account")}
+            </h3>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link
                   href="/account"
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  My Account
+                  {t("myAccount")}
                 </Link>
               </li>
               <li>
@@ -55,7 +61,7 @@ export function Footer() {
                   href="/account/orders"
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  Order History
+                  {t("orderHistory")}
                 </Link>
               </li>
               <li>
@@ -63,7 +69,7 @@ export function Footer() {
                   href="/cart"
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  Cart
+                  {t("cart")}
                 </Link>
               </li>
             </ul>
@@ -71,10 +77,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-neutral-800 text-xs text-neutral-500 text-center">
-          <p>
-            &copy; {new Date().getFullYear()} {storeName}. Powered by Spree
-            Commerce.
-          </p>
+          <p>{t("copyright", { year: new Date().getFullYear(), storeName })}</p>
         </div>
       </div>
     </footer>

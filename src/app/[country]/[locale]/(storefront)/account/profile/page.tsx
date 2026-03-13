@@ -1,6 +1,7 @@
 "use client";
 
 import { CircleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -23,6 +24,7 @@ function ProfileForm({
   };
   refreshUser: () => Promise<void>;
 }) {
+  const t = useTranslations("profile");
   // Initialize form data from user props - no useEffect needed
   const [formData, setFormData] = useState({
     first_name: user.first_name || "",
@@ -40,10 +42,10 @@ function ProfileForm({
     const result = await updateCustomer(formData);
 
     if (result.success) {
-      toast.success("Profile updated successfully!");
+      toast.success(t("profileUpdated"));
       await refreshUser();
     } else {
-      setError(result.error || "Failed to update profile");
+      setError(result.error || t("failedToUpdate"));
     }
 
     setSaving(false);
@@ -51,7 +53,7 @@ function ProfileForm({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("profile")}</h1>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <form onSubmit={handleSubmit}>
@@ -64,7 +66,7 @@ function ProfileForm({
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Field>
-                <FieldLabel htmlFor="first_name">First Name</FieldLabel>
+                <FieldLabel htmlFor="first_name">{t("firstName")}</FieldLabel>
                 <Input
                   type="text"
                   id="first_name"
@@ -76,7 +78,7 @@ function ProfileForm({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="last_name">Last Name</FieldLabel>
+                <FieldLabel htmlFor="last_name">{t("lastName")}</FieldLabel>
                 <Input
                   type="text"
                   id="last_name"
@@ -89,7 +91,7 @@ function ProfileForm({
             </div>
 
             <Field>
-              <FieldLabel htmlFor="email">Email Address</FieldLabel>
+              <FieldLabel htmlFor="email">{t("emailAddress")}</FieldLabel>
               <Input
                 type="email"
                 id="email"
@@ -104,7 +106,7 @@ function ProfileForm({
 
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
             <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("saving") : t("saveChanges")}
             </Button>
           </div>
         </form>
@@ -114,17 +116,21 @@ function ProfileForm({
       <div className="mt-8 bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Account Information
+            {t("accountInformation")}
           </h2>
         </div>
         <div className="p-6">
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Account ID</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t("accountId")}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900">{user.id}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Email</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t("email")}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900">{user.email}</dd>
             </div>
           </dl>
@@ -136,12 +142,13 @@ function ProfileForm({
 
 // Main page component - uses key prop to reset form when user changes
 export default function ProfilePage() {
+  const t = useTranslations("profile");
   const { user, refreshUser } = useAuth();
 
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Loading profile...</p>
+        <p className="text-gray-500">{t("loadingProfile")}</p>
       </div>
     );
   }
