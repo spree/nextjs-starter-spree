@@ -5,11 +5,12 @@ import {
   selectShippingRate as _selectShippingRate,
   applyCoupon,
   complete,
-  getCheckout,
+  getCart,
+  getOrder,
   removeCoupon,
-  updateCheckout,
+  updateCart,
 } from "@spree/next";
-import type { AddressParams } from "@spree/sdk";
+import type { AddressParams, Cart } from "@spree/sdk";
 import { cookies } from "next/headers";
 import { CART_TOKEN_KEY } from "@/lib/constants";
 import { actionResult, withFallback } from "./utils";
@@ -24,8 +25,17 @@ export async function clearCartCookie() {
   cookieStore.set(CART_TOKEN_KEY, "", { maxAge: -1, path: "/" });
 }
 
-export async function getCheckoutOrder(_orderId: string) {
-  return withFallback(() => getCheckout(), null);
+export async function getCheckoutOrder(orderId: string): Promise<Cart | null> {
+  // Try active cart first (order may still be completing)
+  const cart = await getCart();
+  if (cart) return cart;
+
+  // Cart completed — fetch as completed order (works for both guests and authenticated users).
+  // Cast to Cart since the order-placed page uses shared fields (items, totals, addresses).
+  return withFallback(
+    async () => (await getOrder(orderId)) as unknown as Cart,
+    null,
+  );
 }
 
 export async function updateOrderAddresses(
@@ -39,7 +49,7 @@ export async function updateOrderAddresses(
   },
 ) {
   return actionResult(async () => {
-    const order = await updateCheckout(addresses);
+    const order = await updateCart(addresses);
     return { order };
   }, "Failed to update addresses");
 }
@@ -49,7 +59,7 @@ export async function updateOrderMarket(
   params: { currency: string; locale: string },
 ) {
   return actionResult(async () => {
-    const order = await updateCheckout(params);
+    const order = await updateCart(params);
     return { order };
   }, "Failed to update order market");
 }

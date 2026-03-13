@@ -382,7 +382,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         // The gateway may have already pushed the order to complete during
         // the payment session completion. Try to fetch the order first —
         // if it's no longer found (completed orders aren't returned by
-        // getCheckout), skip straight to the thank-you page.
+        // getCart), skip straight to the thank-you page.
         const updatedOrder = await getCheckoutOrder(currentOrder.id);
 
         if (updatedOrder && updatedOrder.current_step !== "complete") {

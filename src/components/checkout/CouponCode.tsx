@@ -3,6 +3,7 @@
 import type { Cart, Order } from "@spree/sdk";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface CouponCodeProps {
@@ -96,13 +97,9 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
             aria-label="Discount code or gift card"
             className="flex-1"
           />
-          <button
-            type="submit"
-            disabled={applying || !code.trim()}
-            className="h-10 px-5 rounded-lg border border-input bg-muted text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <Button type="submit" disabled={applying || !code.trim()}>
             {applying ? "..." : "Apply"}
-          </button>
+          </Button>
         </form>
       )}
 

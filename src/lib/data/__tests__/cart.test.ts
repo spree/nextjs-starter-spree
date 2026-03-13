@@ -45,7 +45,7 @@ const mockCart = {
   number: "R123456",
   state: "cart",
   token: "order-token-123",
-  line_items: [],
+  items: [],
   total: "0.00",
 };
 
