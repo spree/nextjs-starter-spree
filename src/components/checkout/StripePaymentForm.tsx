@@ -17,6 +17,7 @@ const stripePromise = loadStripe(
 
 export interface StripePaymentFormHandle {
   confirmPayment: (returnUrl: string) => Promise<{ error?: string }>;
+  fetchUpdates: () => Promise<void>;
 }
 
 interface StripePaymentFormProps {
@@ -61,11 +62,16 @@ function StripePaymentFormInner({
     [stripe, elements],
   );
 
+  const fetchUpdates = useCallback(async () => {
+    if (!elements) return;
+    await elements.fetchUpdates();
+  }, [elements]);
+
   useEffect(() => {
     if (stripe) {
-      onReady({ confirmPayment });
+      onReady({ confirmPayment, fetchUpdates });
     }
-  }, [stripe, confirmPayment, onReady]);
+  }, [stripe, confirmPayment, fetchUpdates, onReady]);
 
   return (
     <div>

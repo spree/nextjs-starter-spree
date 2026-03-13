@@ -4,7 +4,6 @@ import type {
   AddressParams,
   Cart,
   Country,
-  Order,
   CreditCard as SpreeCreditCard,
   State,
 } from "@spree/sdk";
@@ -14,6 +13,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
   useTransition,
@@ -71,8 +71,14 @@ export const PaymentSection = forwardRef<
   ref,
 ) {
   // Initialize billing address from order, check if it matches shipping
-  const shipAddressData = addressToFormData(order.ship_address);
-  const billAddressData = addressToFormData(order.bill_address);
+  const shipAddressData = useMemo(
+    () => addressToFormData(order.ship_address),
+    [order.ship_address],
+  );
+  const billAddressData = useMemo(
+    () => addressToFormData(order.bill_address),
+    [order.bill_address],
+  );
   const initialUseShipping =
     !order.bill_address || addressesMatch(shipAddressData, order.bill_address);
 
@@ -94,7 +100,7 @@ export const PaymentSection = forwardRef<
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [gatewayReady, setGatewayReady] = useState(false);
+  const [_gatewayReady, setGatewayReady] = useState(false);
   const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
   const initRef = useRef(false);
 
@@ -193,14 +199,18 @@ export const PaymentSection = forwardRef<
     init();
   }, [sessionPaymentMethod, isAuthenticated, createSession, order.total]);
 
-  // Recreate payment session when order total changes (shipping rate, coupon, etc.)
+  // When order total changes (shipping rate, coupon, etc.), fetch updates from
+  // the existing PaymentIntent instead of remounting the Stripe Elements.
   useEffect(() => {
     if (!initRef.current) return;
     if (lastTotalRef.current === order.total) return;
 
     lastTotalRef.current = order.total;
-    createSession(selectedCardRef.current);
-  }, [order.total, createSession]);
+
+    if (gatewayHandleRef.current) {
+      gatewayHandleRef.current.fetchUpdates();
+    }
+  }, [order.total]);
 
   // Load states when billing country changes
   useEffect(() => {

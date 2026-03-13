@@ -107,30 +107,26 @@ export function AddressFormFields({
           placeholder="City"
         />
         {loadingStates ? (
-          <select
-            id={`${idPrefix}-state`}
-            disabled
-            className="h-10 w-full appearance-none rounded-lg border border-input bg-transparent px-2.5 text-sm text-muted-foreground outline-none"
-          >
-            <option>Loading...</option>
-          </select>
+          <NativeSelect id={`${idPrefix}-state`} className="w-full" disabled>
+            <NativeSelectOption value="">Loading...</NativeSelectOption>
+          </NativeSelect>
         ) : hasStates ? (
-          <select
+          <NativeSelect
             id={`${idPrefix}-state`}
+            className="w-full"
             value={address.state_abbr}
             onChange={(e) => onChange("state_abbr", e.target.value)}
             required
-            className="h-10 w-full appearance-none rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground outline-none transition-colors focus:border-black focus:[outline:1px_solid_black]"
           >
-            <option value="" disabled>
+            <NativeSelectOption value="" disabled>
               State
-            </option>
+            </NativeSelectOption>
             {states.map((state) => (
-              <option key={state.abbr} value={state.abbr}>
+              <NativeSelectOption key={state.abbr} value={state.abbr}>
                 {state.name}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         ) : (
           <Input
             type="text"

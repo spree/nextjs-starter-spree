@@ -21,18 +21,19 @@ interface AddressSectionProps {
   isAuthenticated: boolean;
   signInUrl: string;
   fetchStates: (countryIso: string) => Promise<State[]>;
-  onEmailBlur: (email: string) => void;
+  onEmailBlur: (email: string) => Promise<void>;
   onAutoSave: (data: {
     email: string;
     ship_address?: AddressParams;
     ship_address_id?: string;
-  }) => void;
+  }) => Promise<void>;
   onUpdateSavedAddress?: (
     id: string,
     data: AddressParams,
   ) => Promise<Address | null>;
   errors?: string[];
   saving?: boolean;
+  processing?: boolean;
 }
 
 const REQUIRED_ADDRESS_FIELDS: (keyof AddressFormData)[] = [
@@ -70,6 +71,7 @@ export function AddressSection({
   onUpdateSavedAddress,
   errors,
   saving,
+  processing,
 }: AddressSectionProps) {
   // Determine initial saved address: use the first saved address when the
   // order doesn't have a shipping address yet (authenticated users).
@@ -94,6 +96,8 @@ export function AddressSection({
 
   const lastSavedRef = useRef<string>("");
   const mountAutoSaveFiredRef = useRef(false);
+  const processingRef = useRef(processing);
+  processingRef.current = processing;
 
   // Load states when shipping country changes
   useEffect(() => {
@@ -125,6 +129,7 @@ export function AddressSection({
       savedAddrId?: string,
     ) => {
       if (!currentEmail.trim()) return;
+      if (processingRef.current) return;
 
       if (savedAddrId) {
         const hash = buildAutoSaveHash(

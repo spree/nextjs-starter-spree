@@ -19,7 +19,9 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
   const [error, setError] = useState<string | null>(null);
 
   const appliedPromotions = order.promotions || [];
-  const couponPromotions = appliedPromotions.filter((p) => p.code);
+  const couponPromotions = appliedPromotions.filter(
+    (p): p is typeof p & { code: string } => !!p.code,
+  );
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +74,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
               </div>
               <button
                 type="button"
-                onClick={() => handleRemove(promotion.code!)}
+                onClick={() => handleRemove(promotion.code)}
                 disabled={removing === promotion.code}
                 className="text-gray-400 hover:text-gray-600 p-0.5"
               >
@@ -95,6 +97,7 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
             }}
             placeholder="Discount code or gift card"
             aria-label="Discount code or gift card"
+            aria-invalid={!!error}
             className="flex-1"
           />
           <Button type="submit" disabled={applying || !code.trim()}>

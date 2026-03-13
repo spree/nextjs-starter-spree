@@ -19,7 +19,6 @@ import {
   type PaymentSectionHandle,
 } from "@/components/checkout/PaymentSection";
 import { ShippingMethodSection } from "@/components/checkout/ShippingMethodSection";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
   trackAddPaymentInfo,
@@ -577,6 +576,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           }
           errors={sectionErrors.address}
           saving={saving}
+          processing={processing}
         />
       </div>
 
