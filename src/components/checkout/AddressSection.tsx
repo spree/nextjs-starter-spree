@@ -4,18 +4,18 @@ import type { Address, AddressParams, Cart, Country, State } from "@spree/sdk";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { AddressEditModal } from "@/components/checkout/AddressEditModal";
+import { AddressFormFields } from "@/components/checkout/AddressFormFields";
+import { AddressSelector } from "@/components/checkout/AddressSelector";
 import { Input } from "@/components/ui/input";
 import {
   type AddressFormData,
   addressToFormData,
   formDataToAddress,
 } from "@/lib/utils/address";
-import { AddressEditModal } from "./AddressEditModal";
-import { AddressFormFields } from "./AddressFormFields";
-import { AddressSelector } from "./AddressSelector";
 
 interface AddressSectionProps {
-  order: Cart;
+  cart: Cart;
   countries: Country[];
   savedAddresses: Address[];
   isAuthenticated: boolean;
@@ -60,7 +60,7 @@ function buildAutoSaveHash(
 }
 
 export function AddressSection({
-  order,
+  cart,
   countries,
   savedAddresses: initialSavedAddresses,
   isAuthenticated,
@@ -74,17 +74,17 @@ export function AddressSection({
   processing,
 }: AddressSectionProps) {
   // Determine initial saved address: use the first saved address when the
-  // order doesn't have a shipping address yet (authenticated users).
+  // cart doesn't have a shipping address yet (authenticated users).
   const initialSavedAddress =
-    !order.ship_address && isAuthenticated && initialSavedAddresses.length > 0
+    !cart.ship_address && isAuthenticated && initialSavedAddresses.length > 0
       ? initialSavedAddresses[0]
       : undefined;
 
-  const [email, setEmail] = useState(order.email || "");
+  const [email, setEmail] = useState(cart.email || "");
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     initialSavedAddress
       ? addressToFormData(initialSavedAddress)
-      : addressToFormData(order.ship_address),
+      : addressToFormData(cart.ship_address),
   );
   const [shipStates, setShipStates] = useState<State[]>([]);
   const [isPendingShip, startTransitionShip] = useTransition();
@@ -123,7 +123,7 @@ export function AddressSection({
   }, [shipAddress.country_iso, fetchStates]);
 
   const tryAutoSave = useCallback(
-    (
+    async (
       currentEmail: string,
       currentAddress: AddressFormData,
       savedAddrId?: string,
@@ -138,8 +138,15 @@ export function AddressSection({
           savedAddrId,
         );
         if (hash === lastSavedRef.current) return;
-        lastSavedRef.current = hash;
-        onAutoSave({ email: currentEmail, ship_address_id: savedAddrId });
+        try {
+          await onAutoSave({
+            email: currentEmail,
+            ship_address_id: savedAddrId,
+          });
+          lastSavedRef.current = hash;
+        } catch {
+          // Allow retry on next blur
+        }
         return;
       }
 
@@ -147,11 +154,15 @@ export function AddressSection({
 
       const hash = buildAutoSaveHash(currentEmail, currentAddress);
       if (hash === lastSavedRef.current) return;
-      lastSavedRef.current = hash;
-      onAutoSave({
-        email: currentEmail,
-        ship_address: formDataToAddress(currentAddress),
-      });
+      try {
+        await onAutoSave({
+          email: currentEmail,
+          ship_address: formDataToAddress(currentAddress),
+        });
+        lastSavedRef.current = hash;
+      } catch {
+        // Allow retry on next blur
+      }
     },
     [onAutoSave],
   );
@@ -187,6 +198,13 @@ export function AddressSection({
 
   const handleFieldBlur = () => {
     tryAutoSave(email, shipAddress, selectedSavedAddressId);
+  };
+
+  // Only fire auto-save when focus leaves the entire form container,
+  // not when moving between internal fields.
+  const handleContainerBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
+    handleFieldBlur();
   };
 
   const handleEmailBlur = () => {
@@ -289,7 +307,7 @@ export function AddressSection({
             idPrefix="ship"
           />
         ) : (
-          <div onBlur={handleFieldBlur}>
+          <div onBlur={handleContainerBlur}>
             <AddressFormFields
               address={shipAddress}
               countries={countries}

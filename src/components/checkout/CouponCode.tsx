@@ -1,24 +1,24 @@
 "use client";
 
-import type { Cart, Order } from "@spree/sdk";
+import type { Cart } from "@spree/sdk";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface CouponCodeProps {
-  order: Cart | Order;
+  cart: Cart;
   onApply: (code: string) => Promise<{ success: boolean; error?: string }>;
   onRemove: (code: string) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
+export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
   const [code, setCode] = useState("");
   const [applying, setApplying] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const appliedPromotions = order.promotions || [];
+  const appliedPromotions = cart.promotions || [];
   const couponPromotions = appliedPromotions.filter(
     (p): p is typeof p & { code: string } => !!p.code,
   );
@@ -72,14 +72,16 @@ export function CouponCode({ order, onApply, onRemove }: CouponCodeProps) {
                   {promotion.display_amount}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => handleRemove(promotion.code)}
-                disabled={removing === promotion.code}
-                className="text-gray-400 hover:text-gray-600 p-0.5"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+              {promotion.code && (
+                <button
+                  onClick={() => handleRemove(promotion.code)}
+                  disabled={removing === promotion.code}
+                  aria-label={`Remove code ${promotion.code}`}
+                  className="text-gray-400 hover:text-gray-600 p-0.5"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           ))}
         </div>

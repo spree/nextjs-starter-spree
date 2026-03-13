@@ -21,7 +21,7 @@ interface OrderPlacedPageProps {
 }
 
 export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
-  const { id: orderId } = use(params);
+  const { id: cartId } = use(params);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
@@ -47,7 +47,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       try {
         // Complete the order — idempotent: returns the order whether it
         // still needs completing or was already completed by the gateway.
-        const result = await completeCheckoutOrder(orderId);
+        const result = await completeCheckoutOrder(cartId);
         if (cancelled) return;
 
         loadedRef.current = true;
@@ -78,7 +78,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [orderId]);
+  }, [cartId]);
 
   if (loading) {
     return (

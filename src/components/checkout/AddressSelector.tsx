@@ -2,9 +2,9 @@
 
 import type { Address, Country, State } from "@spree/sdk";
 import { MapPin } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { AddressFormFields } from "@/components/checkout/AddressFormFields";
 import type { AddressFormData } from "@/lib/utils/address";
-import { AddressFormFields } from "./AddressFormFields";
 
 interface AddressSelectorProps {
   savedAddresses: Address[];
@@ -73,10 +73,21 @@ export function AddressSelector({
     }
   };
 
+  // Only fire onFieldBlur when focus leaves the entire selector,
+  // not when moving between internal elements (e.g. form → saved address radio).
+  const handleContainerBlur = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      if (!onFieldBlur) return;
+      if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
+      onFieldBlur();
+    },
+    [onFieldBlur],
+  );
+
   const showForm = selectedAddressId === "new" || savedAddresses.length === 0;
 
   return (
-    <div>
+    <div onBlur={handleContainerBlur}>
       {/* Saved addresses — bordered container matching Shipping/Payment style */}
       {savedAddresses.length > 0 && (
         <div className="rounded-[5px] border border-[#d9d9d9] overflow-hidden">
@@ -152,10 +163,7 @@ export function AddressSelector({
 
       {/* Address form (shown when "new" is selected or no saved addresses) */}
       {showForm && (
-        <div
-          className={savedAddresses.length > 0 ? "mt-4" : undefined}
-          onBlur={onFieldBlur}
-        >
+        <div className={savedAddresses.length > 0 ? "mt-4" : undefined}>
           <AddressFormFields
             address={currentAddress}
             countries={countries}

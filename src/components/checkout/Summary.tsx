@@ -1,21 +1,21 @@
 "use client";
 
-import type { Cart, Order } from "@spree/sdk";
+import type { Cart } from "@spree/sdk";
 import { ProductImage } from "@/components/ui/product-image";
 
-interface OrderSummaryProps {
-  order: Cart | Order;
+interface SummaryProps {
+  cart: Cart;
 }
 
-export function OrderSummary({ order }: OrderSummaryProps) {
-  const lineItems = order.items || [];
-  const hasShipping = parseFloat(order.ship_total) > 0;
+export function Summary({ cart }: SummaryProps) {
+  const items = cart.items || [];
+  const hasShipping = (cart.shipments?.length ?? 0) > 0;
 
   return (
     <div>
       {/* Line items */}
       <div className="space-y-4 pb-6">
-        {lineItems.map((item) => (
+        {items.map((item) => (
           <div key={item.id} className="flex items-center gap-4">
             <div className="relative w-[64px] h-[64px] flex-shrink-0">
               <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
@@ -51,13 +51,13 @@ export function OrderSummary({ order }: OrderSummaryProps) {
       <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-700">Subtotal</span>
-          <span className="text-gray-900">{order.display_item_total}</span>
+          <span className="text-gray-900">{cart.display_item_total}</span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-gray-700">Shipping</span>
           {hasShipping ? (
-            <span className="text-gray-900">{order.display_ship_total}</span>
+            <span className="text-gray-900">{cart.display_ship_total}</span>
           ) : (
             <span className="text-xs text-gray-500">
               Enter shipping address
@@ -65,17 +65,17 @@ export function OrderSummary({ order }: OrderSummaryProps) {
           )}
         </div>
 
-        {parseFloat(order.promo_total) !== 0 && (
+        {parseFloat(cart.promo_total) !== 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-700">Discount</span>
-            <span className="text-green-700">{order.display_promo_total}</span>
+            <span className="text-green-700">{cart.display_promo_total}</span>
           </div>
         )}
 
-        {parseFloat(order.tax_total) > 0 && (
+        {parseFloat(cart.tax_total) > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-700">Tax</span>
-            <span className="text-gray-900">{order.display_tax_total}</span>
+            <span className="text-gray-900">{cart.display_tax_total}</span>
           </div>
         )}
 
@@ -84,10 +84,10 @@ export function OrderSummary({ order }: OrderSummaryProps) {
           <span className="text-base font-bold text-gray-900">Total</span>
           <div className="flex items-baseline gap-2">
             <span className="text-xs text-gray-500 uppercase">
-              {order.currency}
+              {cart.currency}
             </span>
             <span className="text-xl font-bold text-gray-900">
-              {order.display_total}
+              {cart.display_total}
             </span>
           </div>
         </div>

@@ -19,6 +19,12 @@ import {
   useTransition,
 } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
+import { AddressFormFields } from "@/components/checkout/AddressFormFields";
+import {
+  confirmWithSavedCard,
+  StripePaymentForm,
+  type StripePaymentFormHandle,
+} from "@/components/checkout/StripePaymentForm";
 import { getCreditCards } from "@/lib/data/credit-cards";
 import { createCheckoutPaymentSession } from "@/lib/data/payment";
 import {
@@ -28,19 +34,13 @@ import {
   formDataToAddress,
 } from "@/lib/utils/address";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
-import { AddressFormFields } from "./AddressFormFields";
-import {
-  confirmWithSavedCard,
-  StripePaymentForm,
-  type StripePaymentFormHandle,
-} from "./StripePaymentForm";
 
 export interface PaymentSectionHandle {
   submit: () => Promise<{ error?: string }>;
 }
 
 interface PaymentSectionProps {
-  order: Cart;
+  cart: Cart;
   countries: Country[];
   isAuthenticated: boolean;
   fetchStates: (countryIso: string) => Promise<State[]>;
@@ -58,7 +58,7 @@ export const PaymentSection = forwardRef<
   PaymentSectionProps
 >(function PaymentSection(
   {
-    order,
+    cart,
     countries,
     isAuthenticated,
     fetchStates,
@@ -70,17 +70,17 @@ export const PaymentSection = forwardRef<
   },
   ref,
 ) {
-  // Initialize billing address from order, check if it matches shipping
+  // Initialize billing address from cart, check if it matches shipping
   const shipAddressData = useMemo(
-    () => addressToFormData(order.ship_address),
-    [order.ship_address],
+    () => addressToFormData(cart.ship_address),
+    [cart.ship_address],
   );
   const billAddressData = useMemo(
-    () => addressToFormData(order.bill_address),
-    [order.bill_address],
+    () => addressToFormData(cart.bill_address),
+    [cart.bill_address],
   );
   const initialUseShipping =
-    !order.bill_address || addressesMatch(shipAddressData, order.bill_address);
+    !cart.bill_address || addressesMatch(shipAddressData, cart.bill_address);
 
   const [billAddress, setBillAddress] = useState<AddressFormData>(
     initialUseShipping ? shipAddressData : billAddressData,
@@ -103,6 +103,8 @@ export const PaymentSection = forwardRef<
   const [_gatewayReady, setGatewayReady] = useState(false);
   const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
   const initRef = useRef(false);
+  // Monotonic counter to discard stale createSession responses
+  const sessionRequestIdRef = useRef(0);
 
   const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
     gatewayHandleRef.current = handle;
@@ -110,7 +112,7 @@ export const PaymentSection = forwardRef<
   }, []);
 
   // Find the payment method that requires a session (e.g. Stripe, Adyen)
-  const sessionPaymentMethod = order.payment_methods?.find(
+  const sessionPaymentMethod = cart.payment_methods?.find(
     (pm) => pm.session_required,
   );
 
@@ -118,6 +120,8 @@ export const PaymentSection = forwardRef<
   const createSession = useCallback(
     async (cardId: string | null) => {
       if (!sessionPaymentMethod) return;
+
+      const requestId = ++sessionRequestIdRef.current;
 
       setLoading(true);
       setGatewayError(null);
@@ -128,10 +132,13 @@ export const PaymentSection = forwardRef<
 
       try {
         const result = await createCheckoutPaymentSession(
-          order.id,
+          cart.id,
           sessionPaymentMethod.id,
           cardId ?? undefined,
         );
+
+        // Discard if a newer request was started while this one was in flight
+        if (requestId !== sessionRequestIdRef.current) return;
 
         if (result.success && result.session) {
           const secret = result.session.external_data?.client_secret as
@@ -147,15 +154,18 @@ export const PaymentSection = forwardRef<
           setGatewayError(result.error || "Failed to create payment session.");
         }
       } catch {
+        if (requestId !== sessionRequestIdRef.current) return;
         setGatewayError("Failed to initialize payment. Please try again.");
       } finally {
-        setLoading(false);
+        if (requestId === sessionRequestIdRef.current) {
+          setLoading(false);
+        }
       }
     },
-    [sessionPaymentMethod, order.id],
+    [sessionPaymentMethod, cart.id],
   );
 
-  // Track the order total so we can recreate the session when it changes
+  // Track the cart total so we can recreate the session when it changes
   const lastTotalRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
 
@@ -190,27 +200,27 @@ export const PaymentSection = forwardRef<
       }
 
       selectedCardRef.current = initialCardId;
-      lastTotalRef.current = order.total;
+      lastTotalRef.current = cart.total;
 
       // Create the initial payment session
       await createSession(initialCardId);
     };
 
     init();
-  }, [sessionPaymentMethod, isAuthenticated, createSession, order.total]);
+  }, [sessionPaymentMethod, isAuthenticated, createSession, cart.total]);
 
-  // When order total changes (shipping rate, coupon, etc.), fetch updates from
+  // When cart total changes (shipping rate, coupon, etc.), fetch updates from
   // the existing PaymentIntent instead of remounting the Stripe Elements.
   useEffect(() => {
     if (!initRef.current) return;
-    if (lastTotalRef.current === order.total) return;
+    if (lastTotalRef.current === cart.total) return;
 
-    lastTotalRef.current = order.total;
+    lastTotalRef.current = cart.total;
 
     if (gatewayHandleRef.current) {
       gatewayHandleRef.current.fetchUpdates();
     }
-  }, [order.total]);
+  }, [cart.total]);
 
   // Load states when billing country changes
   useEffect(() => {
@@ -314,7 +324,7 @@ export const PaymentSection = forwardRef<
             return { error };
           }
 
-          // 3. Payment succeeded — complete session and order
+          // 3. Payment succeeded — complete session and cart
           await onPaymentComplete(paymentSessionId);
           return {};
         } catch {
@@ -334,7 +344,7 @@ export const PaymentSection = forwardRef<
       billAddress,
       onUpdateBillingAddress,
       onPaymentComplete,
-      order.id,
+      cart.id,
       setProcessing,
     ],
   );
@@ -480,7 +490,7 @@ export const PaymentSection = forwardRef<
                 strokeWidth={1.5}
               />
               <p className="text-sm text-gray-500">
-                No payment methods available for this order.
+                No payment methods available for this cart.
               </p>
             </div>
           )}

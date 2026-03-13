@@ -9,16 +9,16 @@ import type {
 } from "@spree/sdk";
 import { CircleAlert, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
 import { CouponCode } from "@/components/checkout/CouponCode";
-import { OrderSummary } from "@/components/checkout/OrderSummary";
 import {
   PaymentSection,
   type PaymentSectionHandle,
 } from "@/components/checkout/PaymentSection";
 import { ShippingMethodSection } from "@/components/checkout/ShippingMethodSection";
+import { Summary } from "@/components/checkout/Summary";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
   trackAddPaymentInfo,
@@ -52,11 +52,11 @@ interface CheckoutPageProps {
 
 // Sidebar summary component
 function CheckoutSidebar({
-  order,
+  cart,
   onApplyCoupon,
   onRemoveCoupon,
 }: {
-  order: Cart;
+  cart: Cart;
   onApplyCoupon: (
     code: string,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -66,10 +66,10 @@ function CheckoutSidebar({
 }) {
   return (
     <>
-      <OrderSummary order={order} />
+      <Summary cart={cart} />
       <div className="mt-6 pt-6 border-t border-gray-200">
         <CouponCode
-          order={order}
+          cart={cart}
           onApply={onApplyCoupon}
           onRemove={onRemoveCoupon}
         />
@@ -79,70 +79,74 @@ function CheckoutSidebar({
 }
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
-  const { id: orderId, country: urlCountry } = use(params);
+  const { id: cartId, country: urlCountry } = use(params);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
-  const [order, setOrder] = useState<Cart | null>(null);
+  // Pick up payment errors from the confirm-payment redirect
+  const paymentError = searchParams.get("payment_error");
+
+  const [cart, setCart] = useState<Cart | null>(null);
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(paymentError);
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sectionErrors, setSectionErrors] = useState<Record<string, string[]>>(
     {},
   );
 
-  const orderRef = useRef(order);
-  orderRef.current = order;
+  const cartRef = useRef(cart);
+  cartRef.current = cart;
   const beginCheckoutFiredRef = useRef(false);
   const paymentRef = useRef<PaymentSectionHandle>(null);
 
   // Handle coupon code application
   const handleApplyCoupon = useCallback(async (code: string) => {
-    const currentOrder = orderRef.current;
-    if (!currentOrder) return { success: false, error: "No order" };
+    const currentOrder = cartRef.current;
+    if (!currentOrder) return { success: false, error: "No cart" };
 
     const result = await applyCouponCode(currentOrder.id, code);
-    if (result.success && result.order) {
-      setOrder(result.order);
+    if (result.success && result.cart) {
+      setCart(result.cart);
     }
     return result;
   }, []);
 
   const handleRemoveCoupon = useCallback(async (couponCode: string) => {
-    const currentOrder = orderRef.current;
-    if (!currentOrder) return { success: false, error: "No order" };
+    const currentOrder = cartRef.current;
+    if (!currentOrder) return { success: false, error: "No cart" };
 
     const result = await removeCouponCode(currentOrder.id, couponCode);
-    if (result.success && result.order) {
-      setOrder(result.order);
+    if (result.success && result.cart) {
+      setCart(result.cart);
     }
     return result;
   }, []);
 
-  // Track order key for sidebar updates
-  const orderKey = order ? `${order.id}-${order.updated_at}` : null;
-  const prevOrderKeyRef = useRef(orderKey);
+  // Track cart key for sidebar updates
+  const cartKey = cart ? `${cart.id}-${cart.updated_at}` : null;
+  const prevOrderKeyRef = useRef(cartKey);
 
   useEffect(() => {
     if (
-      orderKey === prevOrderKeyRef.current &&
+      cartKey === prevOrderKeyRef.current &&
       prevOrderKeyRef.current !== null
     ) {
       return;
     }
-    prevOrderKeyRef.current = orderKey;
+    prevOrderKeyRef.current = cartKey;
 
-    if (order) {
+    if (cart) {
       setSummaryContent(
         <CheckoutSidebar
-          order={order}
+          cart={cart}
           onApplyCoupon={handleApplyCoupon}
           onRemoveCoupon={handleRemoveCoupon}
         />,
@@ -150,22 +154,16 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     } else {
       setSummaryContent(null);
     }
-  }, [
-    order,
-    orderKey,
-    setSummaryContent,
-    handleApplyCoupon,
-    handleRemoveCoupon,
-  ]);
+  }, [cart, cartKey, setSummaryContent, handleApplyCoupon, handleRemoveCoupon]);
 
-  // Load order and market-scoped countries
+  // Load cart and market-scoped countries
   const loadOrder = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [orderData, market, addressesData, authStatus] = await Promise.all([
-        getCheckoutOrder(orderId),
+      const [cartData, market, addressesData, authStatus] = await Promise.all([
+        getCheckoutOrder(cartId),
         resolveMarket(urlCountry).catch(() => null),
         getAddresses(),
         checkAuth(),
@@ -177,40 +175,40 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           }))
         : { data: [] as Country[] };
 
-      if (!orderData) {
+      if (!cartData) {
         setError("Order not found or you don't have access to it.");
         setLoading(false);
         return;
       }
 
-      if (orderData.current_step === "complete") {
-        router.push(`${basePath}/order-placed/${orderId}`);
+      if (cartData.current_step === "complete") {
+        router.push(`${basePath}/order-placed/${cartId}`);
         return;
       }
 
-      setOrder(orderData);
+      setCart(cartData);
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      setShipments(orderData.shipments || []);
+      setShipments(cartData.shipments || []);
 
       if (!beginCheckoutFiredRef.current) {
         try {
-          trackBeginCheckout(orderData);
+          trackBeginCheckout(cartData);
         } catch {
           // Analytics should never break checkout flow
         }
         beginCheckoutFiredRef.current = true;
       }
 
-      return orderData;
+      return cartData;
     } catch {
       setError("Failed to load checkout. Please try again.");
       return null;
     } finally {
       setLoading(false);
     }
-  }, [orderId, urlCountry, basePath, router]);
+  }, [cartId, urlCountry, basePath, router]);
 
   useEffect(() => {
     loadOrder();
@@ -218,7 +216,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   // Handle email blur — persist email as the first backend call
   const handleEmailBlur = useCallback(async (email: string) => {
-    const currentOrder = orderRef.current;
+    const currentOrder = cartRef.current;
     if (!currentOrder || !email.trim()) return;
 
     // Only persist email if it changed
@@ -226,8 +224,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
     try {
       const result = await updateOrderAddresses(currentOrder.id, { email });
-      if (result.success && result.order) {
-        setOrder(result.order);
+      if (result.success && result.cart) {
+        setCart(result.cart);
       }
     } catch {
       // Email save failure is not critical — will be caught on "Pay now"
@@ -241,7 +239,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       ship_address?: AddressParams;
       ship_address_id?: string;
     }) => {
-      const currentOrder = orderRef.current;
+      const currentOrder = cartRef.current;
       if (!currentOrder) return;
 
       setSaving(true);
@@ -263,10 +261,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           return;
         }
 
-        // Reload order to get updated state (auto-advanced by backend)
+        // Reload cart to get updated state (auto-advanced by backend)
         const updatedOrder = await getCheckoutOrder(currentOrder.id);
         if (updatedOrder) {
-          setOrder(updatedOrder);
+          setCart(updatedOrder);
           setShipments(updatedOrder.shipments || []);
         }
       } catch {
@@ -281,7 +279,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Handle shipping rate selection
   const handleShippingRateSelect = useCallback(
     async (shipmentId: string, rateId: string) => {
-      const currentOrder = orderRef.current;
+      const currentOrder = cartRef.current;
       if (!currentOrder) return;
 
       setProcessing(true);
@@ -298,14 +296,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         );
         if (!result.success) {
           setError(result.error || "Failed to select shipping rate");
-        } else if (result.order) {
-          setOrder(result.order);
-          setShipments(result.order.shipments || []);
+        } else if (result.cart) {
+          setCart(result.cart);
+          setShipments(result.cart.shipments || []);
 
-          const selectedRate = result.order.shipments
+          const selectedRate = result.cart.shipments
             ?.flatMap((s) => s.shipping_rates || [])
             ?.find((r) => r.id === rateId);
-          trackingOrder = result.order;
+          trackingOrder = result.cart;
           trackingRateName = selectedRate?.name;
         }
       } catch {
@@ -328,7 +326,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Handle billing address update (called by PaymentSection before gateway confirmation)
   const handleUpdateBillingAddress = useCallback(
     async (data: { bill_address: AddressParams }): Promise<boolean> => {
-      const currentOrder = orderRef.current;
+      const currentOrder = cartRef.current;
       if (!currentOrder) return false;
 
       setError(null);
@@ -355,7 +353,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Handle payment completion (called by PaymentSection after Stripe confirms)
   const handlePaymentComplete = useCallback(
     async (paymentSessionId: string) => {
-      const currentOrder = orderRef.current;
+      const currentOrder = cartRef.current;
       if (!currentOrder) return;
 
       setError(null);
@@ -379,10 +377,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         }
 
         // Complete the cart — idempotent: if the gateway already completed
-        // the order, the backend returns the completed order without error.
+        // the cart, the backend returns the completed cart without error.
         const completeResult = await completeCheckoutOrder(currentOrder.id);
         if (!completeResult.success) {
-          setError(completeResult.error || "Failed to complete order");
+          setError(completeResult.error || "Failed to complete cart");
           setProcessing(false);
           return;
         }
@@ -431,18 +429,18 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   // Validate and pay — single "Pay now" action
   const validateAndPay = async () => {
-    if (!order) return;
+    if (!cart) return;
 
     setSectionErrors({});
     setError(null);
 
-    // Refresh order to get latest requirements
-    const freshOrder = await getCheckoutOrder(order.id);
+    // Refresh cart to get latest requirements
+    const freshOrder = await getCheckoutOrder(cart.id);
     if (!freshOrder) {
-      setError("Failed to load order. Please try again.");
+      setError("Failed to load cart. Please try again.");
       return;
     }
-    setOrder(freshOrder);
+    setCart(freshOrder);
     setShipments(freshOrder.shipments || []);
 
     // Check requirements — skip "payment" since we handle that via
@@ -487,10 +485,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     }
 
     setProcessing(true);
-    const result = await paymentRef.current.submit();
-    if (result.error) {
-      // Processing is already set to false by PaymentSection on error
-    }
+    await paymentRef.current.submit();
+    // PaymentSection handles setProcessing(false) on error internally
   };
 
   // Loading state
@@ -508,8 +504,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     );
   }
 
-  // Error state (no order loaded)
-  if (error && !order) {
+  // Error state (no cart loaded)
+  if (error && !cart) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
@@ -526,10 +522,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     );
   }
 
-  if (!order) return null;
+  if (!cart) return null;
 
   // Empty cart
-  if (!order.items || order.items.length === 0) {
+  if (!cart.items || cart.items.length === 0) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
@@ -563,7 +559,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       {/* Contact + Delivery */}
       <div id="checkout-section-address">
         <AddressSection
-          order={order}
+          cart={cart}
           countries={countries}
           savedAddresses={savedAddresses}
           isAuthenticated={isAuthenticated}
@@ -594,7 +590,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       <div id="checkout-section-payment" className="mt-6">
         <PaymentSection
           ref={paymentRef}
-          order={order}
+          cart={cart}
           countries={countries}
           isAuthenticated={isAuthenticated}
           fetchStates={fetchStates}

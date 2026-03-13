@@ -33,6 +33,7 @@ export function AddressFormFields({
       <div className="relative">
         <NativeSelect
           id={`${idPrefix}-country`}
+          aria-label="Country/Region"
           className="w-full"
           value={address.country_iso}
           onChange={(e) => onChange("country_iso", e.target.value)}
@@ -54,6 +55,7 @@ export function AddressFormFields({
         <Input
           type="text"
           id={`${idPrefix}-firstname`}
+          aria-label="First name"
           value={address.firstname}
           onChange={(e) => onChange("firstname", e.target.value)}
           placeholder="First name (optional)"
@@ -61,6 +63,7 @@ export function AddressFormFields({
         <Input
           type="text"
           id={`${idPrefix}-lastname`}
+          aria-label="Last name"
           required
           value={address.lastname}
           onChange={(e) => onChange("lastname", e.target.value)}
@@ -72,6 +75,7 @@ export function AddressFormFields({
       <Input
         type="text"
         id={`${idPrefix}-company`}
+        aria-label="Company"
         value={address.company}
         onChange={(e) => onChange("company", e.target.value)}
         placeholder="Company (optional)"
@@ -81,6 +85,7 @@ export function AddressFormFields({
       <Input
         type="text"
         id={`${idPrefix}-address1`}
+        aria-label="Address"
         required
         value={address.address1}
         onChange={(e) => onChange("address1", e.target.value)}
@@ -91,6 +96,7 @@ export function AddressFormFields({
       <Input
         type="text"
         id={`${idPrefix}-address2`}
+        aria-label="Apartment, suite, etc."
         value={address.address2}
         onChange={(e) => onChange("address2", e.target.value)}
         placeholder="Apartment, suite, etc. (optional)"
@@ -101,18 +107,25 @@ export function AddressFormFields({
         <Input
           type="text"
           id={`${idPrefix}-city`}
+          aria-label="City"
           required
           value={address.city}
           onChange={(e) => onChange("city", e.target.value)}
           placeholder="City"
         />
         {loadingStates ? (
-          <NativeSelect id={`${idPrefix}-state`} className="w-full" disabled>
+          <NativeSelect
+            id={`${idPrefix}-state`}
+            aria-label="State"
+            className="w-full"
+            disabled
+          >
             <NativeSelectOption value="">Loading...</NativeSelectOption>
           </NativeSelect>
         ) : hasStates ? (
           <NativeSelect
             id={`${idPrefix}-state`}
+            aria-label="State"
             className="w-full"
             value={address.state_abbr}
             onChange={(e) => onChange("state_abbr", e.target.value)}
@@ -131,6 +144,7 @@ export function AddressFormFields({
           <Input
             type="text"
             id={`${idPrefix}-state`}
+            aria-label="State"
             value={address.state_name}
             onChange={(e) => onChange("state_name", e.target.value)}
             placeholder="State"
@@ -139,6 +153,7 @@ export function AddressFormFields({
         <Input
           type="text"
           id={`${idPrefix}-zipcode`}
+          aria-label="ZIP code"
           required
           value={address.zipcode}
           onChange={(e) => onChange("zipcode", e.target.value)}
@@ -150,6 +165,7 @@ export function AddressFormFields({
       <Input
         type="tel"
         id={`${idPrefix}-phone`}
+        aria-label="Phone"
         value={address.phone}
         onChange={(e) => onChange("phone", e.target.value)}
         placeholder="Phone (optional)"
