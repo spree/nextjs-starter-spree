@@ -96,7 +96,7 @@ describe("checkout server actions", () => {
       const result = await updateOrderAddresses("order-1", addresses);
 
       expect(mockUpdateCart).toHaveBeenCalledWith(addresses);
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
@@ -136,7 +136,7 @@ describe("checkout server actions", () => {
         currency: "EUR",
         locale: "de",
       });
-      expect(result).toEqual({ success: true, order: updatedOrder });
+      expect(result).toEqual({ success: true, cart: updatedOrder });
     });
 
     it("returns error on failure", async () => {
@@ -216,7 +216,7 @@ describe("checkout server actions", () => {
       const result = await applyCouponCode("order-1", "SAVE10");
 
       expect(mockApplyCoupon).toHaveBeenCalledWith("SAVE10");
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
@@ -249,7 +249,7 @@ describe("checkout server actions", () => {
       const result = await removeCouponCode("order-1", "promo-1");
 
       expect(mockRemoveCoupon).toHaveBeenCalledWith("promo-1");
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
@@ -271,7 +271,7 @@ describe("checkout server actions", () => {
       const result = await completeOrder("order-1");
 
       expect(mockComplete).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {

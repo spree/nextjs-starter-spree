@@ -301,7 +301,7 @@ export const PaymentSection = forwardRef<
           }
 
           // 2. Confirm payment with gateway
-          const returnUrl = `${window.location.origin}${window.location.pathname.replace(/\/checkout\/.*/, `/order-placed/${order.id}`)}`;
+          const returnUrl = `${window.location.origin}${window.location.pathname.replace(/\/checkout\/.*/, `/order-placed/${cart.id}`)}`;
 
           let error: string | undefined;
 
