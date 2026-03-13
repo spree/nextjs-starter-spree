@@ -197,7 +197,7 @@ function ShipmentBlock({
                 {t("shippingMethod")}
               </h3>
               <p className="text-sm text-gray-900">
-                {shipment.shipping_method?.name || t("canceled")}
+                {shipment.shipping_method?.name || t("shippingMethodUnavailable")}
               </p>
               {shipment.stock_location && (
                 <p className="text-xs text-gray-500 mt-1">

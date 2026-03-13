@@ -311,7 +311,8 @@
     "notAvailable": "Brak",
     "unknownShipmentStatus": "Nieznany",
     "orderTitle": "Zamówienie #{number}",
-    "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony."
+    "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony.",
+    "shippingMethodUnavailable": "Niedostępna"
   },
   "orderPlaced": {
     "thanksForOrder": "Dziękujemy za zamówienie, {name}!",

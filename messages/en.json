@@ -311,7 +311,8 @@
     "notAvailable": "N/A",
     "unknownShipmentStatus": "Unknown",
     "orderTitle": "Order #{number}",
-    "shipmentCanceledRefund": "Shipment canceled — a refund has been issued."
+    "shipmentCanceledRefund": "Shipment canceled — a refund has been issued.",
+    "shippingMethodUnavailable": "Unavailable"
   },
   "orderPlaced": {
     "thanksForOrder": "Thanks for your order, {name}!",

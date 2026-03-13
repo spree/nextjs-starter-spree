@@ -311,7 +311,8 @@
     "notAvailable": "k. A.",
     "unknownShipmentStatus": "Unbekannt",
     "orderTitle": "Bestellung #{number}",
-    "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst."
+    "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst.",
+    "shippingMethodUnavailable": "Nicht verfügbar"
   },
   "orderPlaced": {
     "thanksForOrder": "Vielen Dank für Ihre Bestellung, {name}!",
