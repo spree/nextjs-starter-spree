@@ -4,7 +4,6 @@ import type {
   AddressParams,
   Cart,
   Country,
-  Order,
   CreditCard as SpreeCreditCard,
   State,
 } from "@spree/sdk";
