@@ -56,7 +56,7 @@ export async function completeCheckoutOrder(cartId: string) {
  * 2. If payment is the only missing step, completes the payment session
  * 3. Completes the order
  */
-export async function confirmPaymentAndCompleteOrder(
+export async function confirmPaymentAndCompleteCart(
   cartId: string,
   sessionId?: string,
 ): Promise<
@@ -65,7 +65,7 @@ export async function confirmPaymentAndCompleteOrder(
   try {
     // First try to complete directly — works if webhook already arrived
     const cart = await getCart();
-    if (!cart) {
+    if (!cart || cart.id !== cartId) {
       // Cart is gone — order may already be complete, try complete with explicit ID
       const order = await complete(cartId);
       return { success: true, order };
