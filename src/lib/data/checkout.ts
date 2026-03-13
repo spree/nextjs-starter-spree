@@ -11,19 +11,7 @@ import {
   updateCart,
 } from "@spree/next";
 import type { AddressParams, Cart } from "@spree/sdk";
-import { cookies } from "next/headers";
-import { CART_TOKEN_KEY } from "@/lib/constants";
 import { actionResult, withFallback } from "./utils";
-
-/**
- * Clear the cart cookie without triggering revalidation.
- * Used on the order-placed page to prevent the storefront from showing
- * the completed order, without causing a re-render that would lose the order data.
- */
-export async function clearCartCookie() {
-  const cookieStore = await cookies();
-  cookieStore.set(CART_TOKEN_KEY, "", { maxAge: -1, path: "/" });
-}
 
 export async function getCheckoutOrder(orderId: string): Promise<Cart | null> {
   // Try active cart first (order may still be completing)

@@ -3,13 +3,12 @@
 import type { Cart } from "@spree/sdk";
 import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
-import { getCheckoutOrder } from "@/lib/data/checkout";
 import { completeCheckoutOrder } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
 
@@ -24,7 +23,6 @@ interface OrderPlacedPageProps {
 export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const { id: orderId } = use(params);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
 
@@ -47,35 +45,25 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
 
     async function loadAndComplete() {
       try {
-        // Handle Stripe redirect return (3DS, etc.)
-        const paymentIntent = searchParams.get("payment_intent");
-        if (paymentIntent) {
-          // Find the payment session and complete it
-          const orderData = await getCheckoutOrder(orderId);
-          if (orderData && orderData.current_step !== "complete") {
-            // Look for a pending payment session matching this payment intent
-            // The backend will find it via the webhook, but we also try to complete via API
-            // to ensure the user sees the confirmation immediately
-            await completeCheckoutOrder(orderId);
-          }
-        }
+        // Complete the order — idempotent: returns the order whether it
+        // still needs completing or was already completed by the gateway.
+        const result = await completeCheckoutOrder(orderId);
+        if (cancelled) return;
 
-        // Load the order
-        const orderData = await getCheckoutOrder(orderId);
-        if (!cancelled) {
-          loadedRef.current = true;
-          if (orderData) {
-            setOrder(orderData);
-            try {
-              trackPurchase(orderData);
-            } catch {
-              // Analytics failure must not break the order confirmation UX
-            }
-          } else {
-            setError("Order not found.");
+        loadedRef.current = true;
+
+        if (result.success) {
+          const orderData = result.order as unknown as Cart;
+          setOrder(orderData);
+          try {
+            trackPurchase(orderData);
+          } catch {
+            // Analytics failure must not break the order confirmation UX
           }
-          setLoading(false);
+        } else {
+          setError(result.error || "Order not found.");
         }
+        setLoading(false);
       } catch {
         if (!cancelled) {
           loadedRef.current = true;
@@ -90,7 +78,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [orderId, searchParams]);
+  }, [orderId]);
 
   if (loading) {
     return (

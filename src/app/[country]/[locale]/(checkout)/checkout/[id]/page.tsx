@@ -379,19 +379,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           // Analytics should never break checkout flow
         }
 
-        // The gateway may have already pushed the order to complete during
-        // the payment session completion. Try to fetch the order first —
-        // if it's no longer found (completed orders aren't returned by
-        // getCart), skip straight to the thank-you page.
-        const updatedOrder = await getCheckoutOrder(currentOrder.id);
-
-        if (updatedOrder && updatedOrder.current_step !== "complete") {
-          const completeResult = await completeCheckoutOrder(currentOrder.id);
-          if (!completeResult.success) {
-            setError(completeResult.error || "Failed to complete order");
-            setProcessing(false);
-            return;
-          }
+        // Complete the cart — idempotent: if the gateway already completed
+        // the order, the backend returns the completed order without error.
+        const completeResult = await completeCheckoutOrder(currentOrder.id);
+        if (!completeResult.success) {
+          setError(completeResult.error || "Failed to complete order");
+          setProcessing(false);
+          return;
         }
 
         router.push(`${basePath}/order-placed/${currentOrder.id}`);
