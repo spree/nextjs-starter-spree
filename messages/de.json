@@ -309,6 +309,7 @@
     "failed": "Fehlgeschlagen",
     "void": "Storniert",
     "notAvailable": "k. A.",
+    "unknownShipmentStatus": "Unbekannt",
     "orderTitle": "Bestellung #{number}",
     "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst."
   },

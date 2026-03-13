@@ -309,6 +309,7 @@
     "failed": "Failed",
     "void": "Void",
     "notAvailable": "N/A",
+    "unknownShipmentStatus": "Unknown",
     "orderTitle": "Order #{number}",
     "shipmentCanceledRefund": "Shipment canceled — a refund has been issued."
   },

@@ -309,6 +309,7 @@
     "failed": "Nieudane",
     "void": "Unieważnione",
     "notAvailable": "Brak",
+    "unknownShipmentStatus": "Nieznany",
     "orderTitle": "Zamówienie #{number}",
     "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony."
   },

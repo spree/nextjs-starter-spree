@@ -36,10 +36,15 @@ export default function OrdersPage() {
 
   useEffect(() => {
     async function loadOrders() {
-      const response = await getOrders({ limit: 50 });
-      // Filter to only show completed orders
-      setOrders(response.data.filter((o) => o.completed_at !== null));
-      setLoading(false);
+      try {
+        const response = await getOrders({ limit: 50 });
+        // Filter to only show completed orders
+        setOrders(response.data.filter((o) => o.completed_at !== null));
+      } catch {
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
     }
     loadOrders();
   }, []);

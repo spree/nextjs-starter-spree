@@ -207,7 +207,9 @@ function ShipmentBlock({
               <span
                 className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(shipment.state)}`}
               >
-                {t(SHIPMENT_STATE_KEY[shipment.state] || shipment.state)}
+                {t(
+                  SHIPMENT_STATE_KEY[shipment.state] || "unknownShipmentStatus",
+                )}
               </span>
             </div>
             <div className="mt-4 lg:mt-0">

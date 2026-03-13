@@ -85,7 +85,8 @@ function GiftCardItem({ card }: { card: GiftCard }) {
       ? Math.round((Number(card.amount_used) / Number(card.amount)) * 100)
       : 0;
 
-  function getStateLabel(state: string): string {
+  function getStateLabel(state: string, expired?: boolean): string {
+    if (expired) return t("expired");
     switch (state) {
       case "active":
         return t("active");
@@ -114,7 +115,7 @@ function GiftCardItem({ card }: { card: GiftCard }) {
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getStateColor(card.state, card.expired)}`}
             >
-              {getStateLabel(card.state)}
+              {getStateLabel(card.state, card.expired)}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
