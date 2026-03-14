@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  cacheComponents: true,
   images: {
     qualities: [25, 50, 75, 85, 100],
     dangerouslyAllowLocalIP: true, // Allow localhost images in development

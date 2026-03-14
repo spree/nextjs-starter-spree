@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
-import { completeCheckoutOrder } from "@/lib/data/payment";
+import { clearCart } from "@/lib/data/cart";
+import { getCompletedOrder } from "@/lib/data/checkout";
 import { extractBasePath } from "@/lib/utils/path";
 
 interface OrderPlacedPageProps {
@@ -43,17 +44,18 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     if (loadedRef.current) return;
     let cancelled = false;
 
-    async function loadAndComplete() {
+    async function loadOrder() {
       try {
-        // Complete the order — idempotent: returns the order whether it
-        // still needs completing or was already completed by the gateway.
-        const result = await completeCheckoutOrder(cartId);
+        const orderData = await getCompletedOrder(cartId);
         if (cancelled) return;
+
+        // Clear cart session after fetching order data — must happen
+        // after getCheckoutOrder since guest users need the cart token.
+        await clearCart();
 
         loadedRef.current = true;
 
-        if (result.success) {
-          const orderData = result.order as unknown as Cart;
+        if (orderData) {
           setOrder(orderData);
           try {
             trackPurchase(orderData);
@@ -61,7 +63,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
             // Analytics failure must not break the order confirmation UX
           }
         } else {
-          setError(result.error || "Order not found.");
+          setError("Order not found.");
         }
         setLoading(false);
       } catch {
@@ -73,7 +75,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       }
     }
 
-    loadAndComplete();
+    loadOrder();
 
     return () => {
       cancelled = true;

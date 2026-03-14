@@ -16,7 +16,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useTransition,
 } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
@@ -25,6 +24,7 @@ import {
   StripePaymentForm,
   type StripePaymentFormHandle,
 } from "@/components/checkout/StripePaymentForm";
+import { useCountryStates } from "@/hooks/useCountryStates";
 import { getCreditCards } from "@/lib/data/credit-cards";
 import { createCheckoutPaymentSession } from "@/lib/data/payment";
 import {
@@ -32,8 +32,10 @@ import {
   addressesMatch,
   addressToFormData,
   formDataToAddress,
+  updateAddressField,
 } from "@/lib/utils/address";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
+import { extractBasePath } from "@/lib/utils/path";
 
 export interface PaymentSectionHandle {
   submit: () => Promise<{ error?: string }>;
@@ -87,9 +89,6 @@ export const PaymentSection = forwardRef<
   );
   const [useShippingForBilling, setUseShippingForBilling] =
     useState(initialUseShipping);
-  const [billStates, setBillStates] = useState<State[]>([]);
-  const [isPendingBill, startTransitionBill] = useTransition();
-
   // Saved cards state
   const [savedCards, setSavedCards] = useState<SpreeCreditCard[]>([]);
   // null = "add new payment method", string = gateway_payment_profile_id of selected card
@@ -100,7 +99,6 @@ export const PaymentSection = forwardRef<
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [_gatewayReady, setGatewayReady] = useState(false);
   const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
   const initRef = useRef(false);
   // Monotonic counter to discard stale createSession responses
@@ -108,7 +106,6 @@ export const PaymentSection = forwardRef<
 
   const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
     gatewayHandleRef.current = handle;
-    setGatewayReady(true);
   }, []);
 
   // Find the payment method that requires a session (e.g. Stripe, Adyen)
@@ -128,7 +125,6 @@ export const PaymentSection = forwardRef<
       setClientSecret(null);
       setPaymentSessionId(null);
       gatewayHandleRef.current = null;
-      setGatewayReady(false);
 
       try {
         const result = await createCheckoutPaymentSession(
@@ -209,42 +205,21 @@ export const PaymentSection = forwardRef<
     init();
   }, [sessionPaymentMethod, isAuthenticated, createSession, cart.total]);
 
-  // When cart total changes (shipping rate, coupon, etc.), fetch updates from
-  // the existing PaymentIntent instead of remounting the Stripe Elements.
+  // When cart total changes (shipping rate, coupon, etc.), recreate the
+  // payment session so the amount matches the new order total.
   useEffect(() => {
     if (!initRef.current) return;
     if (lastTotalRef.current === cart.total) return;
 
     lastTotalRef.current = cart.total;
+    createSession(selectedCardRef.current);
+  }, [cart.total, createSession]);
 
-    if (gatewayHandleRef.current) {
-      gatewayHandleRef.current.fetchUpdates();
-    }
-  }, [cart.total]);
-
-  // Load states when billing country changes
-  useEffect(() => {
-    if (useShippingForBilling || !billAddress.country_iso) {
-      setBillStates([]);
-      return;
-    }
-
-    let cancelled = false;
-
-    startTransitionBill(() => {
-      fetchStates(billAddress.country_iso)
-        .then((states) => {
-          if (!cancelled) setBillStates(states);
-        })
-        .catch(() => {
-          if (!cancelled) setBillStates([]);
-        });
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [billAddress.country_iso, useShippingForBilling, fetchStates]);
+  const [billStates, isPendingBill] = useCountryStates(
+    billAddress.country_iso,
+    fetchStates,
+    !useShippingForBilling,
+  );
 
   const handleUseShippingChange = (checked: boolean) => {
     setUseShippingForBilling(checked);
@@ -261,14 +236,7 @@ export const PaymentSection = forwardRef<
   };
 
   const updateBillAddress = (field: keyof AddressFormData, value: string) => {
-    setBillAddress((prev) => {
-      const updated = { ...prev, [field]: value };
-      if (field === "country_iso") {
-        updated.state_abbr = "";
-        updated.state_name = "";
-      }
-      return updated;
-    });
+    setBillAddress((prev) => updateAddressField(prev, field, value));
   };
 
   // Expose submit handle to parent via ref
@@ -301,7 +269,11 @@ export const PaymentSection = forwardRef<
           }
 
           // 2. Confirm payment with gateway
-          const returnUrl = `${window.location.origin}${window.location.pathname.replace(/\/checkout\/.*/, `/order-placed/${cart.id}`)}`;
+          // Point to the confirm-payment intermediate page so that offsite
+          // gateways (3D Secure, redirect-based) can verify the payment
+          // session before completing the cart.
+          const basePath = extractBasePath(window.location.pathname);
+          const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}?session=${paymentSessionId}`;
 
           let error: string | undefined;
 

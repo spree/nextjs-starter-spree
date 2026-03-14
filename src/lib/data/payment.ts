@@ -34,27 +34,35 @@ export async function completeCheckoutPaymentSession(
   }, "Failed to complete payment session");
 }
 
+/**
+ * Completes the order. Treats 403 and 422 as success:
+ * - 403 = cart already completed (e.g. webhook handler completed it)
+ * - 422 = state_lock_version conflict (concurrent request)
+ */
 export async function completeCheckoutOrder(cartId: string) {
-  return actionResult(async () => {
-    // Pass the cart ID explicitly so the call works even when cart cookies
-    // have been cleared (e.g. page refresh on order-placed).
-    // The backend complete endpoint is idempotent — returns the order
-    // whether the cart still needs completing or was already completed.
+  try {
     const order = await complete(cartId);
-    return { order };
-  }, "Failed to complete order");
+    return { success: true as const, order };
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "status" in error) {
+      const status = (error as { status: number }).status;
+      if (status === 403 || status === 422) {
+        return { success: true as const, order: null };
+      }
+    }
+    return {
+      success: false as const,
+      error:
+        error instanceof Error ? error.message : "Failed to complete order",
+    };
+  }
 }
 
 /**
  * Confirms payment and completes the order after returning from an offsite
- * payment gateway.
+ * payment gateway (e.g. CashApp, 3D Secure).
  *
- * When a customer is redirected back from a gateway (e.g. after 3D Secure),
- * the webhook may not have arrived yet, so the payment session might not be
- * marked as paid. This function:
- * 1. Checks the cart's requirements
- * 2. If payment is the only missing step, completes the payment session
- * 3. Completes the order
+ * Flow: getCart(cartId) → completePaymentSession → completeCheckoutOrder
  */
 export async function confirmPaymentAndCompleteCart(
   cartId: string,
@@ -63,24 +71,17 @@ export async function confirmPaymentAndCompleteCart(
   { success: true; order: unknown } | { success: false; error: string }
 > {
   try {
-    // First try to complete directly — works if webhook already arrived
-    const cart = await getCart();
-    if (!cart || cart.id !== cartId) {
-      // Cart is gone — order may already be complete, try complete with explicit ID
-      const order = await complete(cartId);
-      return { success: true, order };
+    // Use explicit cartId — cookies may have been cleared during offsite redirect
+    const cart = await getCart(cartId);
+    if (!cart) {
+      return { success: true, order: null };
     }
 
     if (cart.current_step === "complete") {
       return { success: true, order: cart };
     }
 
-    const paymentRequired = cart.requirements?.some(
-      (req) => req.step === "payment",
-    );
-
-    // If payment is required and we have a session ID, try to complete it
-    if (paymentRequired && sessionId) {
+    if (sessionId) {
       const sessionResult = await completePaymentSession(sessionId);
       if (sessionResult.status === "failed") {
         return {
@@ -90,9 +91,13 @@ export async function confirmPaymentAndCompleteCart(
       }
     }
 
-    // Now try to complete the order
-    const order = await complete(cartId);
-    return { success: true, order };
+    // Complete the order — if the backend already completed it during
+    // session completion, completeCheckoutOrder handles 403/422 gracefully.
+    const result = await completeCheckoutOrder(cartId);
+    if (result.success) {
+      return { success: true, order: result.order };
+    }
+    return { success: false, error: result.error };
   } catch (error) {
     return {
       success: false,

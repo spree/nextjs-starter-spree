@@ -42,6 +42,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
       try {
         const response = await getProducts({
           multi_search: searchQuery,
+          fields: ["name", "slug", "price", "thumbnail_url"],
           limit: 6,
         });
         setSuggestions(response.data);

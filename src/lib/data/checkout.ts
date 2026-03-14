@@ -4,7 +4,6 @@ import {
   getShipments as _getShipments,
   selectShippingRate as _selectShippingRate,
   applyCoupon,
-  complete,
   getCart,
   getOrder,
   removeCoupon,
@@ -14,12 +13,22 @@ import type { AddressParams, Cart } from "@spree/sdk";
 import { actionResult, withFallback } from "./utils";
 
 export async function getCheckoutOrder(cartId: string): Promise<Cart | null> {
-  // Try active cart first (order may still be completing)
+  // Try active cart first (order may still be in checkout)
   const cart = await getCart();
   if (cart && cart.id === cartId) return cart;
 
-  // Cart completed — fetch as completed order (works for both guests and authenticated users).
-  // Cast to Cart since the order-placed page uses shared fields (items, totals, addresses).
+  // Cart completed — fetch as completed order.
+  return withFallback(
+    async () => (await getOrder(cartId)) as unknown as Cart,
+    null,
+  );
+}
+
+export async function getCompletedOrder(cartId: string): Promise<Cart | null> {
+  // Fetch order directly — used by the order-placed page.
+  // Does not call getCart() first because getCart() auto-clears
+  // the cart token cookie on failure, which breaks getOrder()
+  // for guest users.
   return withFallback(
     async () => (await getOrder(cartId)) as unknown as Cart,
     null,
@@ -82,11 +91,4 @@ export async function removeCouponCode(cartId: string, couponCode: string) {
     const cart = await removeCoupon(couponCode);
     return { cart };
   }, "Failed to remove coupon code");
-}
-
-export async function completeOrder(cartId: string) {
-  return actionResult(async () => {
-    const cart = await complete(cartId);
-    return { cart };
-  }, "Failed to complete order");
 }

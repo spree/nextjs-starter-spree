@@ -1,12 +1,6 @@
 "use client";
 
-import type {
-  Address,
-  AddressParams,
-  Cart,
-  Country,
-  Shipment,
-} from "@spree/sdk";
+import type { Address, AddressParams, Cart, Country } from "@spree/sdk";
 import { CircleAlert, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -90,7 +84,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const paymentError = searchParams.get("payment_error");
 
   const [cart, setCart] = useState<Cart | null>(null);
-  const [shipments, setShipments] = useState<Shipment[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -101,6 +94,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [sectionErrors, setSectionErrors] = useState<Record<string, string[]>>(
     {},
   );
+
+  const shipments = cart?.shipments ?? [];
 
   const cartRef = useRef(cart);
   cartRef.current = cart;
@@ -190,7 +185,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      setShipments(cartData.shipments || []);
 
       if (!beginCheckoutFiredRef.current) {
         try {
@@ -261,11 +255,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           return;
         }
 
-        // Reload cart to get updated state (auto-advanced by backend)
-        const updatedOrder = await getCheckoutOrder(currentOrder.id);
-        if (updatedOrder) {
-          setCart(updatedOrder);
-          setShipments(updatedOrder.shipments || []);
+        if (updateResult.cart) {
+          setCart(updateResult.cart);
         }
       } catch {
         setError("An error occurred. Please try again.");
@@ -298,7 +289,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           setError(result.error || "Failed to select shipping rate");
         } else if (result.cart) {
           setCart(result.cart);
-          setShipments(result.cart.shipments || []);
 
           const selectedRate = result.cart.shipments
             ?.flatMap((s) => s.shipping_rates || [])
@@ -376,11 +366,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           // Analytics should never break checkout flow
         }
 
-        // Complete the cart — idempotent: if the gateway already completed
-        // the cart, the backend returns the completed cart without error.
+        // Complete the order — if the backend already completed it during
+        // session completion, completeCheckoutOrder handles 403/422 gracefully.
         const completeResult = await completeCheckoutOrder(currentOrder.id);
         if (!completeResult.success) {
-          setError(completeResult.error || "Failed to complete cart");
+          setError(completeResult.error || "Failed to complete order");
           setProcessing(false);
           return;
         }
@@ -417,12 +407,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         throw new Error("Update succeeded but address payload is missing");
       }
 
-      const updatedAddress = result.address;
-      setSavedAddresses((prev) =>
-        prev.map((addr) => (addr.id === id ? updatedAddress : addr)),
-      );
-
-      return updatedAddress;
+      return result.address;
     },
     [],
   );
@@ -441,7 +426,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       return;
     }
     setCart(freshOrder);
-    setShipments(freshOrder.shipments || []);
 
     // Check requirements — skip "payment" since we handle that via
     // the PaymentSection imperative submit (payment is created at confirmation time)

@@ -3,15 +3,17 @@
 import type { Address, AddressParams, Cart, Country, State } from "@spree/sdk";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
 import { AddressSelector } from "@/components/checkout/AddressSelector";
 import { Input } from "@/components/ui/input";
+import { useCountryStates } from "@/hooks/useCountryStates";
 import {
   type AddressFormData,
   addressToFormData,
   formDataToAddress,
+  updateAddressField,
 } from "@/lib/utils/address";
 
 interface AddressSectionProps {
@@ -86,41 +88,21 @@ export function AddressSection({
       ? addressToFormData(initialSavedAddress)
       : addressToFormData(cart.ship_address),
   );
-  const [shipStates, setShipStates] = useState<State[]>([]);
-  const [isPendingShip, startTransitionShip] = useTransition();
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
     string | undefined
   >(initialSavedAddress?.id);
 
+  const [shipStates, isPendingShip] = useCountryStates(
+    shipAddress.country_iso,
+    fetchStates,
+  );
+
   const lastSavedRef = useRef<string>("");
   const mountAutoSaveFiredRef = useRef(false);
   const processingRef = useRef(processing);
   processingRef.current = processing;
-
-  // Load states when shipping country changes
-  useEffect(() => {
-    if (!shipAddress.country_iso) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShipStates([]);
-      return;
-    }
-
-    let cancelled = false;
-
-    startTransitionShip(() => {
-      fetchStates(shipAddress.country_iso).then((states) => {
-        if (!cancelled) {
-          setShipStates(states);
-        }
-      });
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [shipAddress.country_iso, fetchStates]);
 
   const tryAutoSave = useCallback(
     async (
@@ -181,16 +163,7 @@ export function AddressSection({
   }, [initialSavedAddress, email, tryAutoSave]);
 
   const updateShipAddress = (field: keyof AddressFormData, value: string) => {
-    setShipAddress((prev) => {
-      const updated = { ...prev, [field]: value };
-      // Clear state when country changes
-      if (field === "country_iso") {
-        updated.state_abbr = "";
-        updated.state_name = "";
-      }
-      return updated;
-    });
-    // When selecting a new address manually, clear the saved address selection
+    setShipAddress((prev) => updateAddressField(prev, field, value));
     if (selectedSavedAddressId) {
       setSelectedSavedAddressId(undefined);
     }
@@ -208,8 +181,13 @@ export function AddressSection({
   };
 
   const handleEmailBlur = () => {
-    onEmailBlur(email);
-    tryAutoSave(email, shipAddress, selectedSavedAddressId);
+    // If address is complete, tryAutoSave sends email + address in one call.
+    // Only call onEmailBlur (email-only save) when address is incomplete.
+    if (isAddressComplete(shipAddress) || selectedSavedAddressId) {
+      tryAutoSave(email, shipAddress, selectedSavedAddressId);
+    } else {
+      onEmailBlur(email);
+    }
   };
 
   const handleSelectSavedAddress = (address: Address) => {

@@ -2,15 +2,17 @@
 
 import type { Country, State } from "@spree/sdk";
 import { CircleAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useCountryStates } from "@/hooks/useCountryStates";
 import {
   type AddressFormData,
   addressToFormData,
   emptyAddress,
   formDataToAddress,
+  updateAddressField,
 } from "@/lib/utils/address";
 import { AddressFormFields } from "./AddressFormFields";
 
@@ -50,46 +52,15 @@ export function AddressEditModal({
   const [formData, setFormData] = useState<AddressFormData>(
     address ? addressToFormData(address) : { ...emptyAddress },
   );
-  const [states, setStates] = useState<State[]>([]);
-  const [loadingStates, setLoadingStates] = useState(false);
+  const [states, loadingStates] = useCountryStates(
+    formData.country_iso,
+    fetchStates,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load states when country changes
-  useEffect(() => {
-    if (!formData.country_iso) {
-      setStates([]);
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingStates(true);
-
-    fetchStates(formData.country_iso)
-      .then((result) => {
-        if (!cancelled) setStates(result);
-      })
-      .catch(() => {
-        if (!cancelled) setStates([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingStates(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [formData.country_iso, fetchStates]);
-
   const handleChange = (field: keyof AddressFormData, value: string) => {
-    setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
-      if (field === "country_iso") {
-        updated.state_abbr = "";
-        updated.state_name = "";
-      }
-      return updated;
-    });
+    setFormData((prev) => updateAddressField(prev, field, value));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

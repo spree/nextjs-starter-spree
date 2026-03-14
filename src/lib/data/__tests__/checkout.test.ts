@@ -8,12 +8,10 @@ vi.mock("@spree/next", () => ({
   selectShippingRate: vi.fn(),
   applyCoupon: vi.fn(),
   removeCoupon: vi.fn(),
-  complete: vi.fn(),
 }));
 
 import {
   applyCoupon,
-  complete,
   getCart,
   getOrder,
   getShipments as getShipmentsSdk,
@@ -24,7 +22,6 @@ import {
 
 import {
   applyCouponCode,
-  completeOrder,
   getCheckoutOrder,
   getShipments,
   removeCouponCode,
@@ -41,7 +38,6 @@ const mockGetShipments = getShipmentsSdk as any;
 const mockSelectShippingRate = selectShippingRateSdk as any;
 const mockApplyCoupon = applyCoupon as any;
 const mockRemoveCoupon = removeCoupon as any;
-const mockComplete = complete as any;
 
 const mockOrder = {
   id: "order-1",
@@ -260,39 +256,6 @@ describe("checkout server actions", () => {
       expect(result).toEqual({
         success: false,
         error: "Promotion not found",
-      });
-    });
-  });
-
-  describe("completeOrder", () => {
-    it("returns success with order", async () => {
-      mockComplete.mockResolvedValue(mockOrder);
-
-      const result = await completeOrder("order-1");
-
-      expect(mockComplete).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, cart: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockComplete.mockRejectedValue(new Error("Payment required"));
-
-      const result = await completeOrder("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Payment required",
-      });
-    });
-
-    it("returns fallback message for non-Error throws", async () => {
-      mockComplete.mockRejectedValue("unexpected");
-
-      const result = await completeOrder("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Failed to complete order",
       });
     });
   });

@@ -15,10 +15,6 @@ export function ShippingMethodSection({
   processing,
   errors,
 }: ShippingMethodSectionProps) {
-  const handleRateChange = async (shipmentId: string, rateId: string) => {
-    await onShippingRateSelect(shipmentId, rateId);
-  };
-
   return (
     <div>
       <h2 className="text-[1.15rem] font-bold text-gray-900 mb-3">
@@ -69,7 +65,9 @@ export function ShippingMethodSection({
                         type="radio"
                         name={`shipping-rate-${shipment.id}`}
                         checked={rate.selected}
-                        onChange={() => handleRateChange(shipment.id, rate.id)}
+                        onChange={() =>
+                          onShippingRateSelect(shipment.id, rate.id)
+                        }
                         disabled={processing}
                         className="h-[18px] w-[18px] accent-black"
                       />
