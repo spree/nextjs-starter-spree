@@ -46,6 +46,14 @@ export default function ConfirmPaymentPage({
       );
 
       if (result.success) {
+        // Cache the completed order for the thank-you page
+        if (result.order) {
+          const { cacheCompletedOrder } = await import(
+            "@/lib/utils/completed-order-cache"
+          );
+          cacheCompletedOrder(cartId, result.order);
+        }
+
         router.replace(`${basePath}/order-placed/${cartId}`);
       } else {
         const errorMessage = encodeURIComponent(

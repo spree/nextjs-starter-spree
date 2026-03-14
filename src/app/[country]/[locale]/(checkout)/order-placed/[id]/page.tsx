@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
-import { clearCart } from "@/lib/data/cart";
 import { getCompletedOrder } from "@/lib/data/checkout";
+import { getCachedCompletedOrder } from "@/lib/utils/completed-order-cache";
 import { extractBasePath } from "@/lib/utils/path";
 
 interface OrderPlacedPageProps {
@@ -46,12 +46,11 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
 
     async function loadOrder() {
       try {
-        const orderData = await getCompletedOrder(cartId);
+        // Try cached order first (from the completion response),
+        // fall back to API for page refreshes.
+        const cached = getCachedCompletedOrder(cartId) as Cart | null;
+        const orderData = cached ?? (await getCompletedOrder(cartId));
         if (cancelled) return;
-
-        // Clear cart session after fetching order data — must happen
-        // after getCheckoutOrder since guest users need the cart token.
-        await clearCart();
 
         loadedRef.current = true;
 

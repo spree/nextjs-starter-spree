@@ -375,6 +375,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           return;
         }
 
+        // Cache the completed order for the thank-you page
+        if (completeResult.order) {
+          const { cacheCompletedOrder } = await import(
+            "@/lib/utils/completed-order-cache"
+          );
+          cacheCompletedOrder(currentOrder.id, completeResult.order);
+        }
+
         router.push(`${basePath}/order-placed/${currentOrder.id}`);
       } catch {
         setError("An error occurred. Please try again.");
