@@ -154,7 +154,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   // Load cart and market-scoped countries
   const loadOrder = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    if (!paymentError) setError(null);
 
     try {
       const [cartData, market, addressesData, authStatus] = await Promise.all([
@@ -202,7 +202,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [cartId, urlCountry, basePath, router]);
+  }, [cartId, urlCountry, basePath, router, paymentError]);
 
   useEffect(() => {
     loadOrder();
