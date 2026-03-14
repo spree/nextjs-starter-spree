@@ -4,6 +4,7 @@ import type { Address, Country, State } from "@spree/sdk";
 import { MapPin } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { AddressFormData } from "@/lib/utils/address";
 
 interface AddressSelectorProps {
@@ -90,7 +91,11 @@ export function AddressSelector({
     <div onBlur={handleContainerBlur}>
       {/* Saved addresses — bordered container matching Shipping/Payment style */}
       {savedAddresses.length > 0 && (
-        <div className="rounded-[5px] border border-[#d9d9d9] overflow-hidden">
+        <RadioGroup
+          value={selectedAddressId}
+          onValueChange={handleSelectAddress}
+          className="rounded-[5px] border border-[#d9d9d9] overflow-hidden gap-0"
+        >
           {savedAddresses.map((address, index) => (
             <label
               key={address.id}
@@ -100,14 +105,7 @@ export function AddressSelector({
                   : "bg-white hover:bg-gray-50"
               } ${index > 0 ? "border-t border-[#d9d9d9]" : ""}`}
             >
-              <input
-                type="radio"
-                name={`${idPrefix}-address-selection`}
-                value={address.id}
-                checked={selectedAddressId === address.id}
-                onChange={() => handleSelectAddress(address.id)}
-                className="mt-0.5 h-[18px] w-[18px] accent-black flex-shrink-0"
-              />
+              <RadioGroupItem value={address.id} className="mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <span className="text-sm text-gray-900">
                   {address.full_name}
@@ -145,20 +143,13 @@ export function AddressSelector({
                 : "bg-white hover:bg-gray-50"
             }`}
           >
-            <input
-              type="radio"
-              name={`${idPrefix}-address-selection`}
-              value="new"
-              checked={selectedAddressId === "new"}
-              onChange={() => handleSelectAddress("new")}
-              className="h-[18px] w-[18px] accent-black"
-            />
+            <RadioGroupItem value="new" />
             <MapPin className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
             <span className="text-sm text-gray-900">
               Use a different address
             </span>
           </label>
-        </div>
+        </RadioGroup>
       )}
 
       {/* Address form (shown when "new" is selected or no saved addresses) */}

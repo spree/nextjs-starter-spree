@@ -24,6 +24,8 @@ import {
   StripePaymentForm,
   type StripePaymentFormHandle,
 } from "@/components/checkout/StripePaymentForm";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCountryStates } from "@/hooks/useCountryStates";
 import { getCreditCards } from "@/lib/data/credit-cards";
 import { createCheckoutPaymentSession } from "@/lib/data/payment";
@@ -343,7 +345,13 @@ export const PaymentSection = forwardRef<
       )}
 
       {/* Payment method bordered container — Shopify style */}
-      <div className="rounded-[5px] border border-[#d9d9d9] overflow-hidden">
+      <RadioGroup
+        value={selectedCardId ?? "__new__"}
+        onValueChange={(val) =>
+          handleCardSelect(val === "__new__" ? null : val)
+        }
+        className="rounded-[5px] border border-[#d9d9d9] overflow-hidden gap-0"
+      >
         {/* Saved Cards */}
         {savedCards.length > 0 && (
           <>
@@ -356,14 +364,8 @@ export const PaymentSection = forwardRef<
                     : "bg-white hover:bg-gray-50"
                 } ${index > 0 ? "border-t border-[#d9d9d9]" : ""}`}
               >
-                <input
-                  type="radio"
-                  name="payment_source"
-                  checked={selectedCardId === card.gateway_payment_profile_id}
-                  onChange={() =>
-                    handleCardSelect(card.gateway_payment_profile_id)
-                  }
-                  className="h-[18px] w-[18px] accent-black"
+                <RadioGroupItem
+                  value={card.gateway_payment_profile_id ?? card.id}
                 />
                 <PaymentIcon
                   type={getCardIconType(card.cc_type)}
@@ -390,13 +392,7 @@ export const PaymentSection = forwardRef<
                 isAddingNew ? "bg-[#f0f5ff]" : "bg-white hover:bg-gray-50"
               }`}
             >
-              <input
-                type="radio"
-                name="payment_source"
-                checked={isAddingNew}
-                onChange={() => handleCardSelect(null)}
-                className="h-[18px] w-[18px] accent-black"
-              />
+              <RadioGroupItem value="__new__" />
               <CreditCard className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
               <span className="text-sm text-gray-900">
                 Add new payment method
@@ -409,13 +405,7 @@ export const PaymentSection = forwardRef<
         {savedCards.length === 0 && (
           <div className="flex items-center justify-between px-4 py-3.5 bg-[#f0f5ff]">
             <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                name="payment_source"
-                checked
-                readOnly
-                className="h-[18px] w-[18px] accent-black"
-              />
+              <RadioGroupItem value="__new__" />
               <span className="text-sm font-medium text-gray-900">
                 Credit card
               </span>
@@ -467,16 +457,16 @@ export const PaymentSection = forwardRef<
             </div>
           )}
         </div>
-      </div>
+      </RadioGroup>
 
       {/* Billing address — Shopify checkbox below payment box */}
       <div className="mt-4">
         <label className="flex items-center gap-2.5 cursor-pointer">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={useShippingForBilling}
-            onChange={(e) => handleUseShippingChange(e.target.checked)}
-            className="h-[18px] w-[18px] rounded-[3px] accent-black"
+            onCheckedChange={(checked) =>
+              handleUseShippingChange(checked === true)
+            }
           />
           <span className="text-sm text-gray-900">
             Use shipping address as billing address
