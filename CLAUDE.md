@@ -334,8 +334,6 @@ export async function generateStaticParams() {
 
 // For dynamic rendering when needed
 export const dynamic = "force-dynamic";
-// or
-export const revalidate = 60;
 ```
 
 ### Metadata API

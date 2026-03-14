@@ -9,8 +9,6 @@ import { generateCategoryMetadata } from "@/lib/metadata/category";
 import { buildBreadcrumbJsonLd, getStoreUrl } from "@/lib/seo";
 import { CategoryProductsContent } from "./CategoryProductsContent";
 
-export const revalidate = 60;
-
 interface CategoryPageProps {
   params: Promise<{
     country: string;
