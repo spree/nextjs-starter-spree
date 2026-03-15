@@ -94,16 +94,16 @@ export function AddressSelector({
         <RadioGroup
           value={selectedAddressId}
           onValueChange={handleSelectAddress}
-          className="rounded-[5px] border border-[#d9d9d9] overflow-hidden gap-0"
+          className="rounded-sm border overflow-hidden gap-0"
         >
           {savedAddresses.map((address, index) => (
             <label
               key={address.id}
               className={`flex items-start gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
                 selectedAddressId === address.id
-                  ? "bg-[#f0f5ff]"
+                  ? "bg-blue-50"
                   : "bg-white hover:bg-gray-50"
-              } ${index > 0 ? "border-t border-[#d9d9d9]" : ""}`}
+              } ${index > 0 ? "border-t" : ""}`}
             >
               <RadioGroupItem value={address.id} className="mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -137,9 +137,9 @@ export function AddressSelector({
 
           {/* Use a different address option */}
           <label
-            className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t border-[#d9d9d9] transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t transition-colors ${
               selectedAddressId === "new"
-                ? "bg-[#f0f5ff]"
+                ? "bg-blue-50"
                 : "bg-white hover:bg-gray-50"
             }`}
           >

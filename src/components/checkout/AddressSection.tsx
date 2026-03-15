@@ -217,7 +217,7 @@ export function AddressSection({
     <>
       {/* Errors */}
       {errors && errors.length > 0 && (
-        <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3 mb-4">
+        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-4">
           {errors.map((err, i) => (
             <p key={i} className="text-sm text-red-700">
               {err}
@@ -229,7 +229,7 @@ export function AddressSection({
       {/* Contact section */}
       <div className="mb-6">
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[1.15rem] font-bold text-gray-900">Contact</h2>
+          <h2 className="text-lg font-bold text-gray-900">Contact</h2>
           {!isAuthenticated && (
             <Link
               href={signInUrl}
@@ -259,7 +259,7 @@ export function AddressSection({
       {/* Delivery section */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[1.15rem] font-bold text-gray-900">Delivery</h2>
+          <h2 className="text-lg font-bold text-gray-900">Delivery</h2>
           {saving && (
             <span className="flex items-center gap-1.5 text-xs text-gray-400">
               <Loader2 className="h-3 w-3 animate-spin" />

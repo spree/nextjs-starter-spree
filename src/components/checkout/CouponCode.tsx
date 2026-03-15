@@ -62,7 +62,7 @@ export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
           {couponPromotions.map((promotion) => (
             <div
               key={promotion.id}
-              className="flex items-center justify-between rounded-[5px] border border-gray-200 bg-gray-50 px-3 py-2"
+              className="flex items-center justify-between rounded-sm border border-gray-200 bg-gray-50 px-3 py-2"
             >
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-gray-900">

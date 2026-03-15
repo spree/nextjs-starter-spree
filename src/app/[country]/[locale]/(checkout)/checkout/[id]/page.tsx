@@ -540,7 +540,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     <div>
       {/* Error banner */}
       {error && (
-        <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3 mb-6">
+        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-6">
           <p className="text-sm text-red-700 flex items-center gap-2">
             <CircleAlert className="h-4 w-4 flex-shrink-0" />
             {error}
@@ -599,7 +599,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         type="button"
         onClick={validateAndPay}
         disabled={processing}
-        className="w-full mt-8 h-[54px] bg-black text-white text-sm font-bold rounded-[5px] hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        className="w-full mt-8 h-[54px] bg-black text-white text-sm font-bold rounded-sm hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
       >
         {processing ? (
           <>

@@ -18,12 +18,10 @@ export function ShippingMethodSection({
 }: ShippingMethodSectionProps) {
   return (
     <div>
-      <h2 className="text-[1.15rem] font-bold text-gray-900 mb-3">
-        Shipping method
-      </h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping method</h2>
 
       {errors && errors.length > 0 && (
-        <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3 mb-3">
+        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-3">
           {errors.map((error, index) => (
             <p key={index} className="text-sm text-red-700">
               {error}
@@ -33,7 +31,7 @@ export function ShippingMethodSection({
       )}
 
       {shipments.length === 0 ? (
-        <div className="rounded-[5px] bg-[#f0f0f0] px-4 py-3.5 text-sm text-gray-500">
+        <div className="rounded-sm bg-gray-100 px-4 py-3.5 text-sm text-gray-500">
           Enter your shipping address to view available shipping methods.
         </div>
       ) : (
@@ -61,16 +59,16 @@ export function ShippingMethodSection({
                     onShippingRateSelect(shipment.id, rateId)
                   }
                   disabled={processing}
-                  className="rounded-[5px] border border-[#d9d9d9] overflow-hidden gap-0"
+                  className="rounded-sm border overflow-hidden gap-0"
                 >
                   {shipment.shipping_rates.map((rate, rateIndex) => (
                     <label
                       key={rate.id}
                       className={`flex items-center justify-between px-4 py-3.5 cursor-pointer transition-colors ${
                         rate.selected
-                          ? "bg-[#f0f5ff]"
+                          ? "bg-blue-50"
                           : "bg-white hover:bg-gray-50"
-                      } ${rateIndex > 0 ? "border-t border-[#d9d9d9]" : ""}`}
+                      } ${rateIndex > 0 ? "border-t" : ""}`}
                     >
                       <div className="flex items-center gap-3">
                         <RadioGroupItem value={rate.id} />

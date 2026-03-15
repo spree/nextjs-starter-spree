@@ -53,7 +53,7 @@ function MobileSummaryToggle() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="lg:hidden border-b border-gray-200 bg-[#fafafa]">
+    <div className="lg:hidden border-b border-gray-200 bg-gray-50">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -110,7 +110,7 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
         </div>
 
         {/* Desktop summary sidebar — Shopify: light gray bg with left border */}
-        <div className="hidden lg:block lg:col-start-3 border-l border-gray-200 bg-[#fafafa]">
+        <div className="hidden lg:block lg:col-start-3 border-l border-gray-200 bg-gray-50">
           <div className="sticky top-0 px-10 py-10">
             <CheckoutSummary />
           </div>

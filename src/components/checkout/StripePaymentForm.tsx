@@ -102,8 +102,18 @@ export function StripePaymentForm({
         appearance: {
           theme: "stripe",
           variables: {
-            colorPrimary: "#0077ff",
-            borderRadius: "8px",
+            fontFamily: 'Geist, "Geist Fallback", system-ui, sans-serif',
+            fontSizeBase: "14px",
+            colorPrimary: "#171717",
+            borderRadius: "6px",
+            focusBoxShadow: "0 0 0 1px #171717",
+          },
+          rules: {
+            ".Input": {
+              paddingTop: "13px",
+              paddingBottom: "13px",
+              boxShadow: "",
+            },
           },
         },
       }}

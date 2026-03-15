@@ -328,14 +328,14 @@ export const PaymentSection = forwardRef<
   return (
     <div>
       {/* Section Header */}
-      <h2 className="text-[1.15rem] font-bold text-gray-900">Payment</h2>
+      <h2 className="text-lg font-bold text-gray-900">Payment</h2>
       <p className="text-sm text-gray-500 mt-0.5 mb-3">
         All transactions are secure and encrypted.
       </p>
 
       {/* Inline requirement errors from parent */}
       {errors && errors.length > 0 && (
-        <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3 mb-3">
+        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-3">
           {errors.map((err, i) => (
             <p key={i} className="text-sm text-red-700">
               {err}
@@ -350,7 +350,7 @@ export const PaymentSection = forwardRef<
         onValueChange={(val) =>
           handleCardSelect(val === "__new__" ? null : val)
         }
-        className="rounded-[5px] border border-[#d9d9d9] overflow-hidden gap-0"
+        className="rounded-sm border overflow-hidden gap-0"
       >
         {/* Saved Cards */}
         {savedCards.length > 0 && (
@@ -360,9 +360,9 @@ export const PaymentSection = forwardRef<
                 key={card.id}
                 className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
                   selectedCardId === card.gateway_payment_profile_id
-                    ? "bg-[#f0f5ff]"
+                    ? "bg-blue-50"
                     : "bg-white hover:bg-gray-50"
-                } ${index > 0 ? "border-t border-[#d9d9d9]" : ""}`}
+                } ${index > 0 ? "border-t" : ""}`}
               >
                 <RadioGroupItem
                   value={card.gateway_payment_profile_id ?? card.id}
@@ -388,8 +388,8 @@ export const PaymentSection = forwardRef<
 
             {/* Add new card option */}
             <label
-              className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t border-[#d9d9d9] transition-colors ${
-                isAddingNew ? "bg-[#f0f5ff]" : "bg-white hover:bg-gray-50"
+              className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t transition-colors ${
+                isAddingNew ? "bg-blue-50" : "bg-white hover:bg-gray-50"
               }`}
             >
               <RadioGroupItem value="__new__" />
@@ -403,7 +403,7 @@ export const PaymentSection = forwardRef<
 
         {/* Credit card header when no saved cards */}
         {savedCards.length === 0 && (
-          <div className="flex items-center justify-between px-4 py-3.5 bg-[#f0f5ff]">
+          <div className="flex items-center justify-between px-4 py-3.5 bg-blue-50">
             <div className="flex items-center gap-3">
               <RadioGroupItem value="__new__" />
               <span className="text-sm font-medium text-gray-900">
@@ -414,7 +414,7 @@ export const PaymentSection = forwardRef<
         )}
 
         {/* Card form area — inside the bordered container */}
-        <div className="border-t border-[#d9d9d9] bg-[#fafafa]">
+        <div className="border-t bg-gray-50">
           {loading && (
             <div className="flex items-center justify-center py-10">
               <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
@@ -426,7 +426,7 @@ export const PaymentSection = forwardRef<
 
           {gatewayError && !loading && (
             <div className="px-4 py-3">
-              <div className="rounded-[5px] border border-red-300 bg-red-50 px-4 py-3">
+              <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3">
                 <p className="text-sm text-red-700 flex items-center gap-2">
                   <CircleAlert className="h-4 w-4 flex-shrink-0" />
                   {gatewayError}
