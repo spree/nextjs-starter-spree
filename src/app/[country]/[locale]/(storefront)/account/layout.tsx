@@ -149,7 +149,10 @@ export default function AccountLayout({
   const { user, logout, isAuthenticated, loading } = useAuth();
 
   // Pages that don't require authentication
-  const isAuthPage = pathname.includes("/register");
+  const isAuthPage =
+    pathname.includes("/register") ||
+    pathname.includes("/forgot-password") ||
+    pathname.includes("/reset-password");
   const isMainAccountPage = pathname === `${basePath}/account`;
 
   // Redirect to login if not authenticated and trying to access protected sub-pages
