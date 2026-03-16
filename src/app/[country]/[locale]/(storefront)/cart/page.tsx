@@ -2,6 +2,7 @@
 
 import type { LineItem } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -13,8 +14,16 @@ import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then((m) => ({
+      default: m.ExpressCheckoutButton,
+    })),
+  { ssr: false },
+);
+
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem } = useCart();
+  const { cart, loading, updateItem, removeItem, refreshCart } = useCart();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -210,6 +219,13 @@ export default function CartPage() {
             </dl>
 
             <div className="mt-6 space-y-3">
+              {parseFloat(cart.total) > 0 && (
+                <ExpressCheckoutButton
+                  cart={cart}
+                  basePath={basePath}
+                  onComplete={() => refreshCart()}
+                />
+              )}
               <Button size="lg" asChild className="w-full">
                 <Link href={`${basePath}/checkout/${cart.id}`}>
                   {t("proceedToCheckout")}
