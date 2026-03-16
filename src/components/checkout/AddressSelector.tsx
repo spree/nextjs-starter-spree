@@ -1,11 +1,12 @@
 "use client";
 
 import type { Address, Country, State } from "@spree/sdk";
+import { MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useMemo } from "react";
+import { AddressFormFields } from "@/components/checkout/AddressFormFields";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { AddressFormData } from "@/lib/utils/address";
-import { AddressFormFields } from "./AddressFormFields";
 
 interface AddressSelectorProps {
   savedAddresses: Address[];
@@ -16,6 +17,7 @@ interface AddressSelectorProps {
   onChange: (field: keyof AddressFormData, value: string) => void;
   onSelectSavedAddress: (address: Address) => void;
   onEditAddress?: (address: Address) => void;
+  onFieldBlur?: () => void;
   idPrefix: string;
 }
 
@@ -28,6 +30,7 @@ export function AddressSelector({
   onChange,
   onSelectSavedAddress,
   onEditAddress,
+  onFieldBlur,
   idPrefix,
 }: AddressSelectorProps) {
   const t = useTranslations("address");
@@ -74,103 +77,87 @@ export function AddressSelector({
     }
   };
 
+  // Only fire onFieldBlur when focus leaves the entire selector,
+  // not when moving between internal elements (e.g. form → saved address radio).
+  const handleContainerBlur = useCallback(
+    (e: React.FocusEvent<HTMLDivElement>) => {
+      if (!onFieldBlur) return;
+      if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
+      onFieldBlur();
+    },
+    [onFieldBlur],
+  );
+
   const showForm = selectedAddressId === "new" || savedAddresses.length === 0;
 
   return (
-    <div className="space-y-4">
-      {/* Saved addresses selection */}
+    <div onBlur={handleContainerBlur}>
+      {/* Saved addresses — bordered container matching Shipping/Payment style */}
       {savedAddresses.length > 0 && (
-        <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-gray-700">
-            {t("selectAnAddress")}
-          </legend>
-          <div className="grid gap-3">
-            {savedAddresses.map((address) => (
-              <div
-                key={address.id}
-                className={`flex items-start p-4 border rounded-xl transition-colors ${
-                  selectedAddressId === address.id
-                    ? "border-gray-300 bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <label className="flex items-start flex-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name={`${idPrefix}-address-selection`}
-                    value={address.id}
-                    checked={selectedAddressId === address.id}
-                    onChange={() => handleSelectAddress(address.id)}
-                    className="mt-1 h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
-                  />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">
-                      {address.full_name}
-                    </p>
-                    {address.company && (
-                      <p className="text-sm text-gray-500">{address.company}</p>
-                    )}
-                    <p className="text-sm text-gray-500">{address.address1}</p>
-                    {address.address2 && (
-                      <p className="text-sm text-gray-500">
-                        {address.address2}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-500">
-                      {address.city}, {address.state_text || address.state_name}{" "}
-                      {address.zipcode}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {address.country_name}
-                    </p>
-                  </div>
-                </label>
-                {onEditAddress && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onEditAddress(address);
-                    }}
-                  >
-                    {tc("edit")}
-                  </Button>
-                )}
-              </div>
-            ))}
+        <RadioGroup
+          value={selectedAddressId}
+          onValueChange={handleSelectAddress}
+          className="rounded-sm border overflow-hidden gap-0"
+        >
+          {savedAddresses.map((address, index) => (
             <label
-              className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${
-                selectedAddressId === "new"
-                  ? "border-gray-300 bg-gray-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
+              key={address.id}
+              className={`flex items-start gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
+                selectedAddressId === address.id
+                  ? "bg-blue-50"
+                  : "bg-white hover:bg-gray-50"
+              } ${index > 0 ? "border-t" : ""}`}
             >
-              <input
-                type="radio"
-                name={`${idPrefix}-address-selection`}
-                value="new"
-                checked={selectedAddressId === "new"}
-                onChange={() => handleSelectAddress("new")}
-                className="h-4 w-4 text-primary border-gray-300 focus:[outline:1px_solid_black]"
-              />
-              <span className="ml-3 text-sm font-medium text-gray-900">
-                {t("useDifferentAddress")}
-              </span>
+              <RadioGroupItem value={address.id} className="mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm text-gray-900">
+                  {address.full_name}
+                  {address.company && (
+                    <span className="text-gray-500">, {address.company}</span>
+                  )}
+                </span>
+                <p className="text-sm text-gray-500">
+                  {address.address1}
+                  {address.address2 && `, ${address.address2}`}, {address.city},{" "}
+                  {address.state_text || address.state_name} {address.zipcode},{" "}
+                  {address.country_name}
+                </p>
+              </div>
+              {onEditAddress && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onEditAddress(address);
+                  }}
+                  className="text-xs text-gray-500 underline underline-offset-2 hover:text-gray-900 flex-shrink-0"
+                >
+                  {tc("edit")}
+                </button>
+              )}
             </label>
-          </div>
-        </fieldset>
+          ))}
+
+          {/* Use a different address option */}
+          <label
+            className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t transition-colors ${
+              selectedAddressId === "new"
+                ? "bg-blue-50"
+                : "bg-white hover:bg-gray-50"
+            }`}
+          >
+            <RadioGroupItem value="new" />
+            <MapPin className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+            <span className="text-sm text-gray-900">
+              {t("useDifferentAddress")}
+            </span>
+          </label>
+        </RadioGroup>
       )}
 
       {/* Address form (shown when "new" is selected or no saved addresses) */}
       {showForm && (
-        <div
-          className={
-            savedAddresses.length > 0
-              ? "pt-4 border-t border-gray-200"
-              : undefined
-          }
-        >
+        <div className={savedAddresses.length > 0 ? "mt-4" : undefined}>
           <AddressFormFields
             address={currentAddress}
             countries={countries}

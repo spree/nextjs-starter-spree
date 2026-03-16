@@ -48,22 +48,16 @@ function AddressCard({
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex justify-between items-start">
-        <div>
-          <p className="font-medium text-gray-900">{address.full_name}</p>
-          {address.company && (
-            <p className="text-sm text-gray-500">{address.company}</p>
-          )}
-          <p className="text-sm text-gray-500 mt-1">{address.address1}</p>
-          {address.address2 && (
-            <p className="text-sm text-gray-500">{address.address2}</p>
-          )}
-          <p className="text-sm text-gray-500">
+        <div className="text-sm text-gray-600 space-y-0.5">
+          <p className="font-medium text-gray-800">{address.full_name}</p>
+          {address.company && <p>{address.company}</p>}
+          <p>{address.address1}</p>
+          {address.address2 && <p>{address.address2}</p>}
+          <p>
             {address.city}, {address.state_text} {address.zipcode}
           </p>
-          <p className="text-sm text-gray-500">{address.country_name}</p>
-          {address.phone && (
-            <p className="text-sm text-gray-500 mt-2">{address.phone}</p>
-          )}
+          <p>{address.country_name}</p>
+          {address.phone && <p className="mt-1">{address.phone}</p>}
         </div>
         <div className="flex gap-2">
           <Button variant="link" size="sm" onClick={onEdit}>

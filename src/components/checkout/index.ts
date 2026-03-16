@@ -1,7 +1,8 @@
+export { AddressSection } from "./AddressSection";
 export { AddressSelector } from "./AddressSelector";
-export { AddressStep } from "./AddressStep";
 export { CouponCode } from "./CouponCode";
-export { DeliveryStep } from "./DeliveryStep";
-export { OrderSummary } from "./OrderSummary";
-export { PaymentStep } from "./PaymentStep";
+export type { PaymentSectionHandle } from "./PaymentSection";
+export { PaymentSection } from "./PaymentSection";
+export { ShippingMethodSection } from "./ShippingMethodSection";
 export { StripePaymentForm } from "./StripePaymentForm";
+export { Summary } from "./Summary";

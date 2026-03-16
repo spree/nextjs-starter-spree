@@ -17,6 +17,7 @@ const stripePromise = loadStripe(
 
 export interface StripePaymentFormHandle {
   confirmPayment: (returnUrl: string) => Promise<{ error?: string }>;
+  fetchUpdates: () => Promise<void>;
 }
 
 interface StripePaymentFormProps {
@@ -61,11 +62,16 @@ function StripePaymentFormInner({
     [stripe, elements],
   );
 
+  const fetchUpdates = useCallback(async () => {
+    if (!elements) return;
+    await elements.fetchUpdates();
+  }, [elements]);
+
   useEffect(() => {
     if (stripe) {
-      onReady({ confirmPayment });
+      onReady({ confirmPayment, fetchUpdates });
     }
-  }, [stripe, confirmPayment, onReady]);
+  }, [stripe, confirmPayment, fetchUpdates, onReady]);
 
   return (
     <div>
@@ -96,8 +102,18 @@ export function StripePaymentForm({
         appearance: {
           theme: "stripe",
           variables: {
-            colorPrimary: "#0077ff",
-            borderRadius: "8px",
+            fontFamily: 'Geist, "Geist Fallback", system-ui, sans-serif',
+            fontSizeBase: "14px",
+            colorPrimary: "#171717",
+            borderRadius: "6px",
+            focusBoxShadow: "0 0 0 1px #171717",
+          },
+          rules: {
+            ".Input": {
+              paddingTop: "13px",
+              paddingBottom: "13px",
+              boxShadow: "",
+            },
           },
         },
       }}

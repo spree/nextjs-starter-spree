@@ -3,15 +3,15 @@
 import type { Cart } from "@spree/sdk";
 import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { use, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
-import { getCheckoutOrder } from "@/lib/data/checkout";
-import { completeCheckoutOrder } from "@/lib/data/payment";
+import { getCompletedOrder } from "@/lib/data/checkout";
+import { getCachedCompletedOrder } from "@/lib/utils/completed-order-cache";
 import { extractBasePath } from "@/lib/utils/path";
 
 interface OrderPlacedPageProps {
@@ -23,9 +23,8 @@ interface OrderPlacedPageProps {
 }
 
 export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
-  const { id: orderId } = use(params);
+  const { id: cartId } = use(params);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
   const t = useTranslations("orderPlaced");
@@ -48,37 +47,27 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     if (loadedRef.current) return;
     let cancelled = false;
 
-    async function loadAndComplete() {
+    async function loadOrder() {
       try {
-        // Handle Stripe redirect return (3DS, etc.)
-        const paymentIntent = searchParams.get("payment_intent");
-        if (paymentIntent) {
-          // Find the payment session and complete it
-          const orderData = await getCheckoutOrder(orderId);
-          if (orderData && orderData.current_step !== "complete") {
-            // Look for a pending payment session matching this payment intent
-            // The backend will find it via the webhook, but we also try to complete via API
-            // to ensure the user sees the confirmation immediately
-            await completeCheckoutOrder(orderId);
-          }
-        }
+        // Try cached order first (from the completion response),
+        // fall back to API for page refreshes.
+        const cached = getCachedCompletedOrder(cartId) as Cart | null;
+        const orderData = cached ?? (await getCompletedOrder(cartId));
+        if (cancelled) return;
 
-        // Load the order
-        const orderData = await getCheckoutOrder(orderId);
-        if (!cancelled) {
-          loadedRef.current = true;
-          if (orderData) {
-            setOrder(orderData);
-            try {
-              trackPurchase(orderData);
-            } catch {
-              // Analytics failure must not break the order confirmation UX
-            }
-          } else {
-            setError(t("orderNotFound"));
+        loadedRef.current = true;
+
+        if (orderData) {
+          setOrder(orderData);
+          try {
+            trackPurchase(orderData);
+          } catch {
+            // Analytics failure must not break the order confirmation UX
           }
-          setLoading(false);
+        } else {
+          setError(t("orderNotFound"));
         }
+        setLoading(false);
       } catch {
         if (!cancelled) {
           loadedRef.current = true;
@@ -88,12 +77,12 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       }
     }
 
-    loadAndComplete();
+    loadOrder();
 
     return () => {
       cancelled = true;
     };
-  }, [orderId, searchParams, t]);
+  }, [cartId, t]);
 
   if (loading) {
     return (
@@ -129,7 +118,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         <CircleCheckBig className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           {customerName
-            ? t("thanksForOrder", { name: customerName })
+            ? t("thanksForOrder", { name: customerName.split(" ")[0] })
             : t("thanksForOrderAnonymous")}
         </h1>
         <p className="text-gray-500">

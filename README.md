@@ -19,7 +19,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 - **Product Catalog** - Browse, search, filter products by categories and with faceted navigation
 - **Product Details** - View product information with variant selection and images
 - **Shopping Cart** - Add, update, and remove items with server-side state
-- **Multi-Step Checkout** - Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
+- **One-page Checkout** - Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
 - **Stripe payments** - native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe)
 - **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
 - **Customer Account** - Full account management:

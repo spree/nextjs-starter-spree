@@ -1,0 +1,159 @@
+"use client";
+
+import { CircleAlert, CircleCheck, Mail } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { requestPasswordReset } from "@/lib/data/customer";
+import { extractBasePath } from "@/lib/utils/path";
+
+export default function ForgotPasswordPage() {
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
+
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const origin = window.location.origin;
+      const redirectUrl = `${origin}${basePath}/account/reset-password`;
+      const result = await requestPasswordReset(email, redirectUrl);
+      if (result?.message) {
+        setSubmitted(true);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+              <CircleCheck className="w-6 h-6 text-green-600" />
+            </div>
+            <CardTitle>Check your email</CardTitle>
+            <CardDescription>
+              If an account exists for <strong>{email}</strong>, we&apos;ve sent
+              password reset instructions.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3 text-sm text-gray-600">
+              <Mail className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-400" />
+              <p>
+                The link in the email will expire in 15 minutes. Check your spam
+                folder if you don&apos;t see it.
+              </p>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setSubmitted(false);
+                setEmail("");
+              }}
+            >
+              Try a different email
+            </Button>
+          </CardContent>
+
+          <CardFooter className="justify-center">
+            <Link
+              href={`${basePath}/account`}
+              className="text-sm text-primary hover:text-primary/70 font-medium"
+            >
+              Back to sign in
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle>Reset your password</CardTitle>
+          <CardDescription>
+            Enter your email and we&apos;ll send you a link to reset your
+            password.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                type="email"
+                id="email"
+                name="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+              />
+            </Field>
+
+            <div className="w-full">
+              <Button
+                type="submit"
+                disabled={submitting}
+                size="lg"
+                className="w-full"
+              >
+                {submitting ? "Sending..." : "Send reset link"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+
+        <CardFooter className="justify-center">
+          <Link
+            href={`${basePath}/account`}
+            className="text-sm text-primary hover:text-primary/70 font-medium"
+          >
+            Back to sign in
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}

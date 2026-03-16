@@ -19,10 +19,6 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { getOrder } from "@/lib/data/orders";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
-import {
-  getShipmentStatusColor,
-  SHIPMENT_STATE_KEY,
-} from "@/lib/utils/order-status";
 import { extractBasePath } from "@/lib/utils/path";
 
 function formatDate(dateString: string | null, locale: string): string {
@@ -34,6 +30,21 @@ function formatDate(dateString: string | null, locale: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function getShipmentStatusColor(state: string): string {
+  switch (state) {
+    case "shipped":
+    case "delivered":
+      return "bg-green-100 text-green-800";
+    case "ready":
+    case "pending":
+      return "bg-yellow-100 text-yellow-800";
+    case "canceled":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
 }
 
 function PaymentSourceInfo({ payment }: { payment: Payment }) {
@@ -91,22 +102,16 @@ function PaymentSourceInfo({ payment }: { payment: Payment }) {
 
 function AddressBlock({ address }: { address: Address }) {
   return (
-    <div>
-      <p className="font-medium text-gray-900">{address.full_name}</p>
-      {address.company && (
-        <p className="text-sm text-gray-500">{address.company}</p>
-      )}
-      <p className="text-sm text-gray-500 mt-1">{address.address1}</p>
-      {address.address2 && (
-        <p className="text-sm text-gray-500">{address.address2}</p>
-      )}
-      <p className="text-sm text-gray-500">
+    <div className="text-sm text-gray-600 space-y-0.5">
+      <p className="font-medium text-gray-800">{address.full_name}</p>
+      {address.company && <p>{address.company}</p>}
+      <p>{address.address1}</p>
+      {address.address2 && <p>{address.address2}</p>}
+      <p>
         {address.city}, {address.state_text} {address.zipcode}
       </p>
-      <p className="text-sm text-gray-500">{address.country_name}</p>
-      {address.phone && (
-        <p className="text-sm text-gray-500 mt-2">{address.phone}</p>
-      )}
+      <p>{address.country_name}</p>
+      {address.phone && <p className="mt-1">{address.phone}</p>}
     </div>
   );
 }
@@ -185,7 +190,7 @@ function ShipmentBlock({
         <div className="flex flex-col lg:flex-row lg:gap-6 gap-4">
           {shipAddress && (
             <div className="lg:w-1/2">
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
                 {t("deliveryAddress")}
               </h3>
               <AddressBlock address={shipAddress} />
@@ -193,7 +198,7 @@ function ShipmentBlock({
           )}
           <div className="lg:w-1/2 lg:flex justify-between">
             <div>
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
                 {t("shippingMethod")}
               </h3>
               <p className="text-sm text-gray-900">
@@ -207,9 +212,7 @@ function ShipmentBlock({
               <span
                 className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(shipment.state)}`}
               >
-                {t(
-                  SHIPMENT_STATE_KEY[shipment.state] || "unknownShipmentStatus",
-                )}
+                {shipment.state}
               </span>
             </div>
             <div className="mt-4 lg:mt-0">
@@ -225,7 +228,7 @@ function ShipmentBlock({
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" disabled>
-                  {t("trackItems")}
+                  Track Items
                 </Button>
               )}
             </div>
@@ -235,14 +238,16 @@ function ShipmentBlock({
         {shipment.state === "canceled" && !shipment.shipped_at && (
           <Alert variant="destructive" className="mt-3">
             <CircleAlert />
-            <AlertDescription>{t("shipmentCanceledRefund")}</AlertDescription>
+            <AlertDescription>
+              <strong>{t("shipmentCanceled")}</strong> — {t("refundIssued")}
+            </AlertDescription>
           </Alert>
         )}
         {shipment.state !== "canceled" &&
           shipment.state !== "shipped" &&
           !shipment.tracking && (
             <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
-              {t("noTrackingInfo")}
+              {t("noTracking")}
             </div>
           )}
       </div>
@@ -268,10 +273,10 @@ interface OrderDetailPageProps {
 }
 
 export default function OrderDetailPage({ params }: OrderDetailPageProps) {
+  const { id } = use(params);
   const t = useTranslations("orders");
   const tc = useTranslations("common");
   const locale = useLocale();
-  const { id } = use(params);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const [order, setOrder] = useState<Order | null>(null);
@@ -331,7 +336,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
       {/* Title */}
       <h1 className="text-2xl font-bold text-gray-900">
-        {t("orderTitle", { number: order.number })}
+        {t("orderNumber", { number: order.number })}
       </h1>
       <p className="text-sm text-gray-500 mt-1 mb-6">
         {t("placedOn", { date: formatDate(order.completed_at, locale) })}
@@ -363,7 +368,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       {/* Special instructions */}
       {order.special_instructions && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
-          <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">
             {t("specialInstructions")}
           </h3>
           <p className="text-sm text-gray-900">{order.special_instructions}</p>
@@ -375,7 +380,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
           {order.bill_address && (
             <div className="px-6 py-4">
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
                 {t("billingAddress")}
               </h3>
               <AddressBlock address={order.bill_address} />
@@ -383,7 +388,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           )}
           {order.payments && order.payments.length > 0 && (
             <div className="px-6 py-4">
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
                 {t("paymentInformation")}
               </h3>
               {order.payments
@@ -405,16 +410,16 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">{tc("subtotal")}</span>
+            <span className="text-gray-500">{tc("subtotal")}</span>
             <span className="text-gray-900">{order.display_item_total}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">{tc("shipping")}</span>
+            <span className="text-gray-500">{tc("shipping")}</span>
             <span className="text-gray-900">{order.display_ship_total}</span>
           </div>
           {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">{tc("discount")}</span>
+              <span className="text-gray-500">{tc("discount")}</span>
               <span className="text-green-600">
                 {order.display_promo_total}
               </span>
@@ -422,13 +427,15 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           )}
           {Number.parseFloat(order.tax_total) > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">{tc("tax")}</span>
+              <span className="text-gray-500">{tc("tax")}</span>
               <span className="text-gray-900">{order.display_tax_total}</span>
             </div>
           )}
-          <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
-            <span className="text-gray-900">{tc("total")}</span>
-            <span className="text-gray-900">{order.display_total}</span>
+          <div className="flex justify-between pt-2 border-t border-gray-200">
+            <span className="font-semibold text-gray-900">{tc("total")}</span>
+            <span className="font-semibold text-gray-900">
+              {order.display_total}
+            </span>
           </div>
         </div>
       </div>

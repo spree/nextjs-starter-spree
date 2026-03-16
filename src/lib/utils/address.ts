@@ -75,6 +75,23 @@ export function formDataToAddress(data: AddressFormData): AddressParams {
   };
 }
 
+/**
+ * Returns an updated address with the given field changed.
+ * Clears state fields when country changes.
+ */
+export function updateAddressField(
+  address: AddressFormData,
+  field: keyof AddressFormData,
+  value: string,
+): AddressFormData {
+  const updated = { ...address, [field]: value };
+  if (field === "country_iso") {
+    updated.state_abbr = "";
+    updated.state_name = "";
+  }
+  return updated;
+}
+
 export function addressesMatch(
   a: AddressFormData | undefined | null,
   b:

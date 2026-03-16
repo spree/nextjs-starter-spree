@@ -1,10 +1,9 @@
 "use client";
 
-import { CircleAlert, Eye, EyeOff } from "lucide-react";
+import { CircleAlert, CircleCheck, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,20 +16,16 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
+import { resetPassword } from "@/lib/data/customer";
 import { extractBasePath } from "@/lib/utils/path";
 
-export default function RegisterPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
-  const t = useTranslations("register");
-  const ta = useTranslations("account");
-  const { register, isAuthenticated, loading: authLoading } = useAuth();
+  const token = searchParams.get("token");
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -38,16 +33,31 @@ export default function RegisterPage() {
     useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  // Redirect if already authenticated
-  // useEffect is needed here to prevent rendering issues.
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      router.push(`${basePath}/account`);
-    }
-  }, [authLoading, isAuthenticated, router, basePath]);
-  if (authLoading || isAuthenticated) {
-    return null;
+  // No token = invalid link
+  if (!token) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle>Invalid link</CardTitle>
+            <CardDescription>
+              This password reset link is invalid or has expired.
+            </CardDescription>
+          </CardHeader>
+
+          <CardFooter className="justify-center">
+            <Link
+              href={`${basePath}/account/forgot-password`}
+              className="text-sm text-primary hover:text-primary/70 font-medium"
+            >
+              Request a new reset link
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,31 +77,57 @@ export default function RegisterPage() {
     setSubmitting(true);
 
     try {
-      const result = await register({
-        email,
-        password,
-        password_confirmation: passwordConfirmation,
-        ...(firstName && { first_name: firstName }),
-        ...(lastName && { last_name: lastName }),
-      });
+      const result = await resetPassword(token, password, passwordConfirmation);
       if (result.success) {
-        router.push(`${basePath}/account`);
+        setSuccess(true);
       } else {
-        setError(result.error || "Registration failed. Please try again.");
+        setError(
+          result.error ||
+            "This reset link has expired. Please request a new one.",
+        );
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (success) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+              <CircleCheck className="w-6 h-6 text-green-600" />
+            </div>
+            <CardTitle>Password reset successful</CardTitle>
+            <CardDescription>
+              Your password has been updated. You can now sign in with your new
+              password.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => router.push(`${basePath}/account`)}
+            >
+              Sign in
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>{t("createAccount")}</CardTitle>
-          <CardDescription>{t("signUpDescription")}</CardDescription>
+          <CardTitle>Set a new password</CardTitle>
+          <CardDescription>Enter your new password below.</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -103,50 +139,13 @@ export default function RegisterPage() {
               </Alert>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
-                <Input
-                  type="text"
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  placeholder="John"
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
-                <Input
-                  type="text"
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  placeholder="Doe"
-                />
-              </Field>
-            </div>
-
             <Field>
-              <FieldLabel htmlFor="email">{ta("email")}</FieldLabel>
-              <Input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="password">{ta("password")}</FieldLabel>
+              <FieldLabel htmlFor="password">New password</FieldLabel>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   id="password"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -161,7 +160,7 @@ export default function RegisterPage() {
                     size="icon-sm"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
-                      showPassword ? ta("hidePassword") : ta("showPassword")
+                      showPassword ? "Hide password" : "Show password"
                     }
                   >
                     {showPassword ? (
@@ -176,12 +175,13 @@ export default function RegisterPage() {
 
             <Field>
               <FieldLabel htmlFor="passwordConfirmation">
-                {t("confirmPassword")}
+                Confirm new password
               </FieldLabel>
               <div className="relative">
                 <Input
                   type={showPasswordConfirmation ? "text" : "password"}
                   id="passwordConfirmation"
+                  autoComplete="new-password"
                   value={passwordConfirmation}
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                   required
@@ -199,8 +199,8 @@ export default function RegisterPage() {
                     }
                     aria-label={
                       showPasswordConfirmation
-                        ? ta("hidePassword")
-                        : ta("showPassword")
+                        ? "Hide password"
+                        : "Show password"
                     }
                   >
                     {showPasswordConfirmation ? (
@@ -220,22 +220,19 @@ export default function RegisterPage() {
                 size="lg"
                 className="w-full"
               >
-                {submitting ? t("creatingAccount") : t("createAccount")}
+                {submitting ? "Resetting..." : "Reset password"}
               </Button>
             </div>
           </form>
         </CardContent>
 
         <CardFooter className="justify-center">
-          <p className="text-sm text-muted-foreground">
-            {t("alreadyHaveAccount")}{" "}
-            <Link
-              href={`${basePath}/account`}
-              className="text-primary hover:text-primary/70 font-medium"
-            >
-              {t("signIn")}
-            </Link>
-          </p>
+          <Link
+            href={`${basePath}/account`}
+            className="text-sm text-primary hover:text-primary/70 font-medium"
+          >
+            Back to sign in
+          </Link>
         </CardFooter>
       </Card>
     </div>

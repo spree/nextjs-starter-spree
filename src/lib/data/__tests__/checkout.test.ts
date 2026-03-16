@@ -1,32 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@spree/next", () => ({
-  getCheckout: vi.fn(),
-  updateCheckout: vi.fn(),
+  getCart: vi.fn(),
+  getOrder: vi.fn(),
+  updateCart: vi.fn(),
   getShipments: vi.fn(),
   selectShippingRate: vi.fn(),
   applyCoupon: vi.fn(),
   removeCoupon: vi.fn(),
-  complete: vi.fn(),
 }));
 
 import {
   applyCoupon,
-  complete,
-  getCheckout,
+  getCart,
+  getOrder,
   getShipments as getShipmentsSdk,
   removeCoupon,
   selectShippingRate as selectShippingRateSdk,
-  updateCheckout,
+  updateCart,
 } from "@spree/next";
 
 import {
-  advanceCheckout,
   applyCouponCode,
-  completeOrder,
   getCheckoutOrder,
   getShipments,
-  nextCheckoutStep,
   removeCouponCode,
   selectShippingRate,
   updateOrderAddresses,
@@ -34,13 +31,13 @@ import {
 } from "@/lib/data/checkout";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fixtures are intentionally partial
-const mockGetCheckout = getCheckout as any;
-const mockUpdateCheckout = updateCheckout as any;
+const mockGetCart = getCart as any;
+const mockGetOrder = getOrder as any;
+const mockUpdateCart = updateCart as any;
 const mockGetShipments = getShipmentsSdk as any;
 const mockSelectShippingRate = selectShippingRateSdk as any;
 const mockApplyCoupon = applyCoupon as any;
 const mockRemoveCoupon = removeCoupon as any;
-const mockComplete = complete as any;
 
 const mockOrder = {
   id: "order-1",
@@ -55,17 +52,31 @@ describe("checkout server actions", () => {
   });
 
   describe("getCheckoutOrder", () => {
-    it("returns order on success", async () => {
-      mockGetCheckout.mockResolvedValue(mockOrder);
+    it("returns cart when still in checkout", async () => {
+      mockGetCart.mockResolvedValue(mockOrder);
 
       const result = await getCheckoutOrder("order-1");
 
-      expect(mockGetCheckout).toHaveBeenCalled();
+      expect(mockGetCart).toHaveBeenCalled();
+      expect(mockGetOrder).not.toHaveBeenCalled();
       expect(result).toBe(mockOrder);
     });
 
-    it("returns null on failure", async () => {
-      mockGetCheckout.mockRejectedValue(new Error("Not found"));
+    it("falls back to getOrder when cart is null (completed)", async () => {
+      const completedOrder = { ...mockOrder, current_step: "complete" };
+      mockGetCart.mockResolvedValue(null);
+      mockGetOrder.mockResolvedValue(completedOrder);
+
+      const result = await getCheckoutOrder("order-1");
+
+      expect(mockGetCart).toHaveBeenCalled();
+      expect(mockGetOrder).toHaveBeenCalledWith("order-1");
+      expect(result).toBe(completedOrder);
+    });
+
+    it("returns null when both cart and order fail", async () => {
+      mockGetCart.mockResolvedValue(null);
+      mockGetOrder.mockRejectedValue(new Error("Not found"));
 
       const result = await getCheckoutOrder("bad-id");
 
@@ -75,17 +86,17 @@ describe("checkout server actions", () => {
 
   describe("updateOrderAddresses", () => {
     it("returns success with order", async () => {
-      mockUpdateCheckout.mockResolvedValue(mockOrder);
+      mockUpdateCart.mockResolvedValue(mockOrder);
       const addresses = { email: "test@example.com" };
 
       const result = await updateOrderAddresses("order-1", addresses);
 
-      expect(mockUpdateCheckout).toHaveBeenCalledWith(addresses);
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(mockUpdateCart).toHaveBeenCalledWith(addresses);
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
-      mockUpdateCheckout.mockRejectedValue(new Error("Invalid address"));
+      mockUpdateCart.mockRejectedValue(new Error("Invalid address"));
 
       const result = await updateOrderAddresses("order-1", {});
 
@@ -96,7 +107,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns fallback message for non-Error throws", async () => {
-      mockUpdateCheckout.mockRejectedValue("unexpected");
+      mockUpdateCart.mockRejectedValue("unexpected");
 
       const result = await updateOrderAddresses("order-1", {});
 
@@ -110,22 +121,22 @@ describe("checkout server actions", () => {
   describe("updateOrderMarket", () => {
     it("returns success with updated order", async () => {
       const updatedOrder = { ...mockOrder, currency: "EUR", locale: "de" };
-      mockUpdateCheckout.mockResolvedValue(updatedOrder);
+      mockUpdateCart.mockResolvedValue(updatedOrder);
 
       const result = await updateOrderMarket("order-1", {
         currency: "EUR",
         locale: "de",
       });
 
-      expect(mockUpdateCheckout).toHaveBeenCalledWith({
+      expect(mockUpdateCart).toHaveBeenCalledWith({
         currency: "EUR",
         locale: "de",
       });
-      expect(result).toEqual({ success: true, order: updatedOrder });
+      expect(result).toEqual({ success: true, cart: updatedOrder });
     });
 
     it("returns error on failure", async () => {
-      mockUpdateCheckout.mockRejectedValue(new Error("Currency not supported"));
+      mockUpdateCart.mockRejectedValue(new Error("Currency not supported"));
 
       const result = await updateOrderMarket("order-1", {
         currency: "XYZ",
@@ -139,7 +150,7 @@ describe("checkout server actions", () => {
     });
 
     it("returns fallback message for non-Error throws", async () => {
-      mockUpdateCheckout.mockRejectedValue("unexpected");
+      mockUpdateCart.mockRejectedValue("unexpected");
 
       const result = await updateOrderMarket("order-1", {
         currency: "EUR",
@@ -149,61 +160,6 @@ describe("checkout server actions", () => {
       expect(result).toEqual({
         success: false,
         error: "Failed to update order market",
-      });
-    });
-  });
-
-  describe("nextCheckoutStep", () => {
-    it("returns success with order", async () => {
-      mockGetCheckout.mockResolvedValue(mockOrder);
-
-      const result = await nextCheckoutStep("order-1");
-
-      expect(mockGetCheckout).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, order: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockGetCheckout.mockRejectedValue(new Error("Cannot advance"));
-
-      const result = await nextCheckoutStep("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Cannot advance",
-      });
-    });
-
-    it("returns fallback message for non-Error throws", async () => {
-      mockGetCheckout.mockRejectedValue("unexpected");
-
-      const result = await nextCheckoutStep("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Failed to advance checkout",
-      });
-    });
-  });
-
-  describe("advanceCheckout", () => {
-    it("returns success with order", async () => {
-      mockGetCheckout.mockResolvedValue(mockOrder);
-
-      const result = await advanceCheckout("order-1");
-
-      expect(mockGetCheckout).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, order: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockGetCheckout.mockRejectedValue(new Error("Cannot advance"));
-
-      const result = await advanceCheckout("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Cannot advance",
       });
     });
   });
@@ -256,7 +212,7 @@ describe("checkout server actions", () => {
       const result = await applyCouponCode("order-1", "SAVE10");
 
       expect(mockApplyCoupon).toHaveBeenCalledWith("SAVE10");
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
@@ -289,7 +245,7 @@ describe("checkout server actions", () => {
       const result = await removeCouponCode("order-1", "promo-1");
 
       expect(mockRemoveCoupon).toHaveBeenCalledWith("promo-1");
-      expect(result).toEqual({ success: true, order: mockOrder });
+      expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
@@ -300,39 +256,6 @@ describe("checkout server actions", () => {
       expect(result).toEqual({
         success: false,
         error: "Promotion not found",
-      });
-    });
-  });
-
-  describe("completeOrder", () => {
-    it("returns success with order", async () => {
-      mockComplete.mockResolvedValue(mockOrder);
-
-      const result = await completeOrder("order-1");
-
-      expect(mockComplete).toHaveBeenCalled();
-      expect(result).toEqual({ success: true, order: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockComplete.mockRejectedValue(new Error("Payment required"));
-
-      const result = await completeOrder("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Payment required",
-      });
-    });
-
-    it("returns fallback message for non-Error throws", async () => {
-      mockComplete.mockRejectedValue("unexpected");
-
-      const result = await completeOrder("order-1");
-
-      expect(result).toEqual({
-        success: false,
-        error: "Failed to complete order",
       });
     });
   });

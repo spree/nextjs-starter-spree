@@ -2,7 +2,6 @@
 
 import type { Country, State } from "@spree/sdk";
 import { useTranslations } from "next-intl";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   NativeSelect,
@@ -32,84 +31,12 @@ export function AddressFormFields({
   const hasStates = states.length > 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-firstname`}>
-          {t("firstName")}
-        </FieldLabel>
-        <Input
-          type="text"
-          id={`${idPrefix}-firstname`}
-          required
-          value={address.firstname}
-          onChange={(e) => onChange("firstname", e.target.value)}
-        />
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-lastname`}>
-          {t("lastName")}
-        </FieldLabel>
-        <Input
-          type="text"
-          id={`${idPrefix}-lastname`}
-          required
-          value={address.lastname}
-          onChange={(e) => onChange("lastname", e.target.value)}
-        />
-      </Field>
-
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-company`}>{t("company")}</FieldLabel>
-        <Input
-          type="text"
-          id={`${idPrefix}-company`}
-          value={address.company}
-          onChange={(e) => onChange("company", e.target.value)}
-        />
-      </Field>
-
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-address1`}>
-          {t("streetAddress")}
-        </FieldLabel>
-        <Input
-          type="text"
-          id={`${idPrefix}-address1`}
-          required
-          value={address.address1}
-          onChange={(e) => onChange("address1", e.target.value)}
-          placeholder={t("streetAddress")}
-        />
-      </Field>
-
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-address2`}>
-          {t("apartment")}
-        </FieldLabel>
-        <Input
-          type="text"
-          id={`${idPrefix}-address2`}
-          value={address.address2}
-          onChange={(e) => onChange("address2", e.target.value)}
-        />
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-city`}>{t("city")}</FieldLabel>
-        <Input
-          type="text"
-          id={`${idPrefix}-city`}
-          required
-          value={address.city}
-          onChange={(e) => onChange("city", e.target.value)}
-        />
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-country`}>{t("country")}</FieldLabel>
+    <div className="flex flex-col gap-3">
+      {/* Country — full width, floating label style */}
+      <div className="relative">
         <NativeSelect
           id={`${idPrefix}-country`}
+          aria-label={t("country")}
           className="w-full"
           value={address.country_iso}
           onChange={(e) => onChange("country_iso", e.target.value)}
@@ -124,26 +51,91 @@ export function AddressFormFields({
             </NativeSelectOption>
           ))}
         </NativeSelect>
-      </Field>
+      </div>
 
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-state`}>
-          {t("stateProvince")}
-        </FieldLabel>
+      {/* First name / Last name */}
+      <div className="grid grid-cols-2 gap-3">
+        <Input
+          type="text"
+          id={`${idPrefix}-firstname`}
+          aria-label={t("firstName")}
+          value={address.firstname}
+          onChange={(e) => onChange("firstname", e.target.value)}
+          placeholder={t("firstName")}
+        />
+        <Input
+          type="text"
+          id={`${idPrefix}-lastname`}
+          aria-label={t("lastName")}
+          required
+          value={address.lastname}
+          onChange={(e) => onChange("lastname", e.target.value)}
+          placeholder={t("lastName")}
+        />
+      </div>
+
+      {/* Company */}
+      <Input
+        type="text"
+        id={`${idPrefix}-company`}
+        aria-label={t("company")}
+        value={address.company}
+        onChange={(e) => onChange("company", e.target.value)}
+        placeholder={t("company")}
+      />
+
+      {/* Address */}
+      <Input
+        type="text"
+        id={`${idPrefix}-address1`}
+        aria-label={t("address")}
+        required
+        value={address.address1}
+        onChange={(e) => onChange("address1", e.target.value)}
+        placeholder={t("address")}
+      />
+
+      {/* Apartment */}
+      <Input
+        type="text"
+        id={`${idPrefix}-address2`}
+        aria-label={t("apartment")}
+        value={address.address2}
+        onChange={(e) => onChange("address2", e.target.value)}
+        placeholder={t("apartment")}
+      />
+
+      {/* City / State / ZIP — 3 columns */}
+      <div className="grid grid-cols-3 gap-3">
+        <Input
+          type="text"
+          id={`${idPrefix}-city`}
+          aria-label={t("city")}
+          required
+          value={address.city}
+          onChange={(e) => onChange("city", e.target.value)}
+          placeholder={t("city")}
+        />
         {loadingStates ? (
-          <NativeSelect id={`${idPrefix}-state`} className="w-full" disabled>
+          <NativeSelect
+            id={`${idPrefix}-state`}
+            aria-label={t("stateProvince")}
+            className="w-full"
+            disabled
+          >
             <NativeSelectOption value="">{tc("loading")}</NativeSelectOption>
           </NativeSelect>
         ) : hasStates ? (
           <NativeSelect
             id={`${idPrefix}-state`}
+            aria-label={t("stateProvince")}
             className="w-full"
             value={address.state_abbr}
             onChange={(e) => onChange("state_abbr", e.target.value)}
             required
           >
             <NativeSelectOption value="" disabled>
-              {t("selectState")}
+              {t("stateProvince")}
             </NativeSelectOption>
             {states.map((state) => (
               <NativeSelectOption key={state.abbr} value={state.abbr}>
@@ -155,33 +147,32 @@ export function AddressFormFields({
           <Input
             type="text"
             id={`${idPrefix}-state`}
+            aria-label={t("stateProvince")}
             value={address.state_name}
             onChange={(e) => onChange("state_name", e.target.value)}
-            placeholder={t("stateOrProvince")}
+            placeholder={t("stateProvince")}
           />
         )}
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-zipcode`}>{t("zipCode")}</FieldLabel>
         <Input
           type="text"
           id={`${idPrefix}-zipcode`}
+          aria-label={t("zipCode")}
           required
           value={address.zipcode}
           onChange={(e) => onChange("zipcode", e.target.value)}
+          placeholder={t("zipCode")}
         />
-      </Field>
+      </div>
 
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor={`${idPrefix}-phone`}>{t("phone")}</FieldLabel>
-        <Input
-          type="tel"
-          id={`${idPrefix}-phone`}
-          value={address.phone}
-          onChange={(e) => onChange("phone", e.target.value)}
-        />
-      </Field>
+      {/* Phone */}
+      <Input
+        type="tel"
+        id={`${idPrefix}-phone`}
+        aria-label={t("phone")}
+        value={address.phone}
+        onChange={(e) => onChange("phone", e.target.value)}
+        placeholder={t("phone")}
+      />
     </div>
   );
 }
