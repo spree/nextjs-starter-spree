@@ -1,9 +1,10 @@
 "use client";
 
 import { ShoppingBag, Trash, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -18,6 +19,14 @@ import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then((m) => ({
+      default: m.ExpressCheckoutButton,
+    })),
+  { ssr: false },
+);
+
 export function CartDrawer() {
   const {
     cart,
@@ -28,7 +37,9 @@ export function CartDrawer() {
     updateItem,
     removeItem,
     itemCount,
+    refreshCart,
   } = useCart();
+  const [expressProcessing, setExpressProcessing] = useState(false);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -215,40 +226,59 @@ export function CartDrawer() {
         {/* Footer */}
         {!isEmpty && !loading && (
           <SheetFooter className="border-t border-gray-200 p-4 space-y-4">
-            {/* Summary */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span>Subtotal</span>
-                <span>{cart?.display_item_total}</span>
-              </div>
-              {cart?.discount_total && parseFloat(cart.discount_total) < 0 && (
-                <div className="flex justify-between items-center text-sm text-green-600">
-                  <span>Discount</span>
-                  <span>{cart.display_discount_total}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center">
-                <span>Shipping</span>
-                <span className="text-gray-500">Calculated on checkout</span>
-              </div>
-            </div>
+            {/* Express Checkout */}
+            {cart && parseFloat(cart.total) > 0 && (
+              <ExpressCheckoutButton
+                cart={cart}
+                basePath={basePath}
+                onComplete={async () => {
+                  await refreshCart();
+                  closeCart();
+                }}
+                onProcessingChange={setExpressProcessing}
+              />
+            )}
 
-            {/* Actions */}
-            <div className="space-y-2">
-              <Button size="lg" className="w-full" asChild>
-                <Link
-                  href={`${basePath}/checkout/${cart?.id}`}
-                  onClick={closeCart}
-                >
-                  Checkout
-                </Link>
-              </Button>
-              <Button size="lg" className="w-full" variant="link" asChild>
-                <Link href={`${basePath}/cart`} onClick={closeCart}>
-                  View Cart
-                </Link>
-              </Button>
-            </div>
+            {!expressProcessing && (
+              <>
+                {/* Summary */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>Subtotal</span>
+                    <span>{cart?.display_item_total}</span>
+                  </div>
+                  {cart?.discount_total && parseFloat(cart.discount_total) < 0 && (
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>Discount</span>
+                      <span>{cart.display_discount_total}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span>Shipping</span>
+                    <span className="text-gray-500">
+                      Calculated on checkout
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2">
+                  <Button size="lg" className="w-full" asChild>
+                    <Link
+                      href={`${basePath}/checkout/${cart?.id}`}
+                      onClick={closeCart}
+                    >
+                      Checkout
+                    </Link>
+                  </Button>
+                  <Button size="lg" className="w-full" variant="link" asChild>
+                    <Link href={`${basePath}/cart`} onClick={closeCart}>
+                      View Cart
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            )}
           </SheetFooter>
         )}
 
