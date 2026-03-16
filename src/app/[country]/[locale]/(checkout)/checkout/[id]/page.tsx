@@ -102,37 +102,37 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   const cartRef = useRef(cart);
   cartRef.current = cart;
+  const routerRef = useRef(router);
+  routerRef.current = router;
+  const tRef = useRef(t);
+  tRef.current = t;
   const beginCheckoutFiredRef = useRef(false);
   const paymentRef = useRef<PaymentSectionHandle>(null);
 
   // Handle coupon code application
-  const handleApplyCoupon = useCallback(
-    async (code: string) => {
-      const currentOrder = cartRef.current;
-      if (!currentOrder) return { success: false, error: t("noOrder") };
+  const handleApplyCoupon = useCallback(async (code: string) => {
+    const currentOrder = cartRef.current;
+    if (!currentOrder)
+      return { success: false, error: tRef.current("noOrder") };
 
-      const result = await applyCouponCode(currentOrder.id, code);
-      if (result.success && result.cart) {
-        setCart(result.cart);
-      }
-      return result;
-    },
-    [t],
-  );
+    const result = await applyCouponCode(currentOrder.id, code);
+    if (result.success && result.cart) {
+      setCart(result.cart);
+    }
+    return result;
+  }, []);
 
-  const handleRemoveCoupon = useCallback(
-    async (couponCode: string) => {
-      const currentOrder = cartRef.current;
-      if (!currentOrder) return { success: false, error: t("noOrder") };
+  const handleRemoveCoupon = useCallback(async (couponCode: string) => {
+    const currentOrder = cartRef.current;
+    if (!currentOrder)
+      return { success: false, error: tRef.current("noOrder") };
 
-      const result = await removeCouponCode(currentOrder.id, couponCode);
-      if (result.success && result.cart) {
-        setCart(result.cart);
-      }
-      return result;
-    },
-    [t],
-  );
+    const result = await removeCouponCode(currentOrder.id, couponCode);
+    if (result.success && result.cart) {
+      setCart(result.cart);
+    }
+    return result;
+  }, []);
 
   // Track cart key for sidebar updates
   const cartKey = cart ? `${cart.id}-${cart.updated_at}` : null;
@@ -180,13 +180,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         : { data: [] as Country[] };
 
       if (!cartData) {
-        setError(t("orderNotFound"));
+        setError(tRef.current("orderNotFound"));
         setLoading(false);
         return;
       }
 
       if (cartData.current_step === "complete") {
-        router.push(`${basePath}/order-placed/${cartId}`);
+        routerRef.current.push(`${basePath}/order-placed/${cartId}`);
         return;
       }
 
@@ -206,12 +206,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       return cartData;
     } catch {
-      setError(t("failedToLoadCheckout"));
+      setError(tRef.current("failedToLoadCheckout"));
       return null;
     } finally {
       setLoading(false);
     }
-  }, [cartId, urlCountry, basePath, router, paymentError, t]);
+  }, [cartId, urlCountry, basePath, paymentError]);
 
   useEffect(() => {
     loadOrder();
@@ -260,7 +260,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         });
 
         if (!updateResult.success) {
-          setError(updateResult.error || t("failedToSaveAddress"));
+          setError(updateResult.error || tRef.current("failedToSaveAddress"));
           return;
         }
 
@@ -268,12 +268,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           setCart(updateResult.cart);
         }
       } catch {
-        setError(t("generalError"));
+        setError(tRef.current("generalError"));
       } finally {
         setSaving(false);
       }
     },
-    [t],
+    [],
   );
 
   // Handle shipping rate selection
@@ -295,7 +295,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           rateId,
         );
         if (!result.success) {
-          setError(result.error || t("failedToSelectRate"));
+          setError(result.error || tRef.current("failedToSelectRate"));
         } else if (result.cart) {
           setCart(result.cart);
 
@@ -306,7 +306,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           trackingRateName = selectedRate?.name;
         }
       } catch {
-        setError(t("generalError"));
+        setError(tRef.current("generalError"));
       } finally {
         setProcessing(false);
       }
@@ -319,7 +319,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         }
       }
     },
-    [t],
+    [],
   );
 
   // Handle billing address update (called by PaymentSection before gateway confirmation)
@@ -336,17 +336,17 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         });
 
         if (!updateResult.success) {
-          setError(updateResult.error || t("failedToSaveBilling"));
+          setError(updateResult.error || tRef.current("failedToSaveBilling"));
           return false;
         }
 
         return true;
       } catch {
-        setError(t("failedToSaveBillingRetry"));
+        setError(tRef.current("failedToSaveBillingRetry"));
         return false;
       }
     },
-    [t],
+    [],
   );
 
   // Handle payment completion (called by PaymentSection after Stripe confirms)
@@ -364,7 +364,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         );
 
         if (!sessionResult.success) {
-          setError(sessionResult.error || t("failedToCompletePaymentSession"));
+          setError(
+            sessionResult.error ||
+              tRef.current("failedToCompletePaymentSession"),
+          );
           setProcessing(false);
           return;
         }
@@ -379,7 +382,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         // session completion, completeCheckoutOrder handles 403/422 gracefully.
         const completeResult = await completeCheckoutOrder(currentOrder.id);
         if (!completeResult.success) {
-          setError(completeResult.error || t("failedToCompleteOrder"));
+          setError(
+            completeResult.error || tRef.current("failedToCompleteOrder"),
+          );
           setProcessing(false);
           return;
         }
@@ -392,13 +397,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           cacheCompletedOrder(currentOrder.id, completeResult.order);
         }
 
-        router.push(`${basePath}/order-placed/${currentOrder.id}`);
+        routerRef.current.push(`${basePath}/order-placed/${currentOrder.id}`);
       } catch {
-        setError(t("generalError"));
+        setError(tRef.current("generalError"));
         setProcessing(false);
       }
     },
-    [basePath, router, t],
+    [basePath],
   );
 
   // Fetch states for a country
@@ -417,16 +422,16 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       const result = await updateAddress(id, data);
 
       if (!result.success) {
-        throw new Error(result.error || t("failedToSaveAddress"));
+        throw new Error(result.error || tRef.current("failedToSaveAddress"));
       }
 
       if (!result.address) {
-        throw new Error(t("generalError"));
+        throw new Error(tRef.current("generalError"));
       }
 
       return result.address;
     },
-    [t],
+    [],
   );
 
   // Validate and pay — single "Pay now" action
