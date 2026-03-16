@@ -203,7 +203,8 @@ function ShipmentBlock({
                 className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium ${getShipmentStatusColor(shipment.state)}`}
               >
                 {t(
-                  SHIPMENT_STATE_KEY[shipment.state] || "unknownShipmentStatus",
+                  (SHIPMENT_STATE_KEY[shipment.state] ||
+                    "unknownShipmentStatus") as keyof IntlMessages["orders"],
                 )}
               </span>
             </div>
@@ -326,7 +327,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
       {/* Title */}
       <h1 className="text-2xl font-bold text-gray-900">
-        {t("orderNumber", { number: order.number })}
+        {t("orderTitle", { number: order.number })}
       </h1>
       <p className="text-sm text-gray-500 mt-1 mb-6">
         {t("placedOn", { date: formatDate(order.completed_at, locale) })}

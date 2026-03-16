@@ -30,7 +30,7 @@ function formatCurrency(
  * to get labels like "Poniżej $50" instead of "Under $50".
  */
 interface BucketLabelOptions {
-  t?: (key: string, values?: Record<string, string>) => string;
+  t?: (key: any, values?: Record<string, string>) => string;
   locale?: string;
 }
 

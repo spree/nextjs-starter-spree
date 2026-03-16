@@ -32,7 +32,9 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
 
   const [order, setOrder] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"orderNotFound" | "failedToLoad" | null>(
+    null,
+  );
 
   // Clear sidebar summary
   useEffect(() => {

@@ -60,7 +60,7 @@ const SORT_FALLBACK: Record<string, string> = {
   "-name": "Name (Z-A)",
 };
 
-export function getSortLabel(key: string, t?: (key: string) => string): string {
+export function getSortLabel(key: string, t?: (key: any) => string): string {
   const normalized = normalizeSortKey(key);
   const messageKey = SORT_KEY_TO_MESSAGE[normalized];
   if (messageKey && t) return t(messageKey);
@@ -84,7 +84,7 @@ const AVAILABILITY_FALLBACK: Record<string, string> = {
 
 export function getAvailabilityLabel(
   id: string,
-  t?: (key: string) => string,
+  t?: (key: any) => string,
 ): string {
   const messageKey = AVAILABILITY_KEY_TO_MESSAGE[id];
   if (messageKey && t) return t(messageKey);

@@ -132,7 +132,11 @@ export default function OrdersPage() {
                       >
                         {order.payment_state
                           ? PAYMENT_STATE_KEY[order.payment_state]
-                            ? t(PAYMENT_STATE_KEY[order.payment_state])
+                            ? t(
+                                PAYMENT_STATE_KEY[
+                                  order.payment_state
+                                ] as keyof IntlMessages["orders"],
+                              )
                             : order.payment_state
                           : t("notAvailable")}
                       </span>
@@ -143,7 +147,11 @@ export default function OrdersPage() {
                       >
                         {order.shipment_state
                           ? SHIPMENT_STATE_KEY[order.shipment_state]
-                            ? t(SHIPMENT_STATE_KEY[order.shipment_state])
+                            ? t(
+                                SHIPMENT_STATE_KEY[
+                                  order.shipment_state
+                                ] as keyof IntlMessages["orders"],
+                              )
                             : order.shipment_state
                           : t("notAvailable")}
                       </span>
