@@ -66,7 +66,7 @@ export function ProductListingLayout({
             {t("noProductsFound")}
           </h3>
           <p className="mt-2 text-gray-500">
-            {emptyMessage || t("tryAdjustingFilters")}
+            {emptyMessage ?? t("tryAdjustingFilters")}
           </p>
         </div>
       ) : (

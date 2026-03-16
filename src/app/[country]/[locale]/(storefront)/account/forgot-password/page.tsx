@@ -148,7 +148,7 @@ export default function ForgotPasswordPage() {
             href={`${basePath}/account`}
             className="text-sm text-primary hover:text-primary/70 font-medium"
           >
-            Back to sign in
+            {t("backToSignIn")}
           </Link>
         </CardFooter>
       </Card>

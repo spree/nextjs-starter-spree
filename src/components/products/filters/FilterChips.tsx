@@ -65,7 +65,9 @@ export function FilterChips({
     );
     chips.push({
       key: "price",
-      label: `${t("price")}: ${matchingBucket?.label || t("customPrice")}`,
+      label: t("priceLabel", {
+        value: matchingBucket?.label || t("customPrice"),
+      }),
       onRemove: onRemovePrice,
     });
   }
@@ -91,7 +93,7 @@ export function FilterChips({
           <button
             onClick={chip.onRemove}
             className="p-0.5 text-primary hover:text-primary transition-colors"
-            aria-label={`${t("clear")} ${chip.label}`}
+            aria-label={t("clearFilter", { label: chip.label })}
           >
             <X className="w-3.5 h-3.5" />
           </button>

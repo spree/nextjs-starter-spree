@@ -238,7 +238,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
                     }}
                     className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
                   >
-                    {t("viewAllResultsFor", { query })}
+                    {t("viewAllResultsFor", { query: query.trim() })}
                   </button>
                 </li>
               )}

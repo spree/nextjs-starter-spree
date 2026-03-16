@@ -128,25 +128,23 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getPaymentStatusColor(order.payment_state)}`}
                       >
                         {order.payment_state
-                          ? t(
-                              PAYMENT_STATE_KEY[order.payment_state] ||
-                                order.payment_state,
-                            )
+                          ? PAYMENT_STATE_KEY[order.payment_state]
+                            ? t(PAYMENT_STATE_KEY[order.payment_state])
+                            : order.payment_state
                           : t("notAvailable")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(order.shipment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getShipmentStatusColor(order.shipment_state)}`}
                       >
                         {order.shipment_state
-                          ? t(
-                              SHIPMENT_STATE_KEY[order.shipment_state] ||
-                                order.shipment_state,
-                            )
+                          ? SHIPMENT_STATE_KEY[order.shipment_state]
+                            ? t(SHIPMENT_STATE_KEY[order.shipment_state])
+                            : order.shipment_state
                           : t("notAvailable")}
                       </span>
                     </td>

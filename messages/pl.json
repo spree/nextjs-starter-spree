@@ -63,7 +63,7 @@
     "viewCart": "Zobacz koszyk",
     "shoppingCart": "Koszyk zakupowy",
     "proceedToCheckout": "Przejdź do kasy",
-    "itemCount": "{count, plural, one {# produkt} few {# produkty} many {# produktów} other {# produktów}}",
+    "itemCount": "({count, plural, one {# produkt} few {# produkty} many {# produktów} other {# produktów}})",
     "shippingCalculatedAtCheckout": "Obliczona przy kasie",
     "removeItemLabel": "Usuń {name}"
   },
@@ -132,6 +132,9 @@
     "closeFilters": "Zamknij filtry",
     "anyAvailability": "Dowolna dostępność",
     "customPrice": "Niestandardowa",
+    "priceLabel": "Cena: {value}",
+    "clearFilter": "Wyczyść {label}",
+    "openImageZoom": "Otwórz powiększenie zdjęcia",
     "priceUnder": "Poniżej {price}",
     "priceAbove": "{price}+",
     "priceRangeBucket": "{min} – {max}"
@@ -173,6 +176,8 @@
     "addNewPaymentMethod": "Dodaj nową metodę płatności",
     "endingIn": "kończąca się na",
     "exp": "Ważna do",
+    "savedCardLabel": "{brand} kończąca się na {digits}",
+    "cardExpiry": "Ważna do {month}/{year}",
     "default": "Domyślna",
     "noPaymentMethods": "Brak dostępnych metod płatności dla tego zamówienia.",
     "secureTransactions": "Wszystkie transakcje są bezpieczne i szyfrowane.",

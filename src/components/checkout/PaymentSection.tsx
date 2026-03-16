@@ -377,11 +377,16 @@ export const PaymentSection = forwardRef<
                   width={34}
                 />
                 <span className="text-sm text-gray-900 flex-1">
-                  {getCardLabel(card.cc_type)} {t("endingIn")}{" "}
-                  {card.last_digits}
+                  {t("savedCardLabel", {
+                    brand: getCardLabel(card.cc_type),
+                    digits: card.last_digits,
+                  })}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {t("exp")} {String(card.month).padStart(2, "0")}/{card.year}
+                  {t("cardExpiry", {
+                    month: String(card.month).padStart(2, "0"),
+                    year: String(card.year),
+                  })}
                 </span>
                 {card.default && (
                   <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">

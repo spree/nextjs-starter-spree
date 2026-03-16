@@ -54,7 +54,7 @@ export function MediaGallery({ images, productName }: MediaGalleryProps) {
         type="button"
         className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-zoom-in w-full"
         onClick={() => showMainImage && setIsZoomed(true)}
-        aria-label="Open image zoom"
+        aria-label={t("openImageZoom")}
         disabled={!showMainImage}
       >
         <ProductImage

@@ -135,7 +135,7 @@ export function AddressFormFields({
             required
           >
             <NativeSelectOption value="" disabled>
-              {t("stateProvince")}
+              {t("selectState")}
             </NativeSelectOption>
             {states.map((state) => (
               <NativeSelectOption key={state.abbr} value={state.abbr}>

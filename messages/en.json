@@ -63,7 +63,7 @@
     "viewCart": "View Cart",
     "shoppingCart": "Shopping Cart",
     "proceedToCheckout": "Proceed to Checkout",
-    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "itemCount": "({count, plural, one {# item} other {# items}})",
     "shippingCalculatedAtCheckout": "Calculated at checkout",
     "removeItemLabel": "Remove {name}"
   },
@@ -132,6 +132,9 @@
     "closeFilters": "Close filters",
     "anyAvailability": "Any availability",
     "customPrice": "Custom",
+    "priceLabel": "Price: {value}",
+    "clearFilter": "Clear {label}",
+    "openImageZoom": "Open image zoom",
     "priceUnder": "Under {price}",
     "priceAbove": "{price}+",
     "priceRangeBucket": "{min} – {max}"
@@ -173,6 +176,8 @@
     "addNewPaymentMethod": "Add new payment method",
     "endingIn": "ending in",
     "exp": "Exp",
+    "savedCardLabel": "{brand} ending in {digits}",
+    "cardExpiry": "Exp {month}/{year}",
     "default": "Default",
     "noPaymentMethods": "No payment methods available for this order.",
     "secureTransactions": "All transactions are secure and encrypted.",

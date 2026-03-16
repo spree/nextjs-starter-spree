@@ -65,13 +65,13 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
             // Analytics failure must not break the order confirmation UX
           }
         } else {
-          setError(t("orderNotFound"));
+          setError("orderNotFound");
         }
         setLoading(false);
       } catch {
         if (!cancelled) {
           loadedRef.current = true;
-          setError(t("failedToLoad"));
+          setError("failedToLoad");
           setLoading(false);
         }
       }
@@ -82,7 +82,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [cartId, t]);
+  }, [cartId]);
 
   if (loading) {
     return (
@@ -99,7 +99,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          {error || t("orderNotFound")}
+          {t(error || "orderNotFound")}
         </h1>
         <Button asChild>
           <Link href={`${basePath}/`}>{tc("continueShopping")}</Link>

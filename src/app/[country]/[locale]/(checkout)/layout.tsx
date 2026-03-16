@@ -63,7 +63,7 @@ function MobileSummaryToggle() {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center justify-between text-left"
         aria-expanded={isOpen}
-        {...(isOpen && { "aria-controls": "checkout-summary-panel" })}
+        aria-controls="checkout-summary-panel"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
           <ShoppingBag className="w-5 h-5 text-gray-600" />

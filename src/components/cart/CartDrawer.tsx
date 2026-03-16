@@ -78,7 +78,7 @@ export function CartDrawer() {
             <span>{t("cart")}</span>
             {itemCount > 0 && (
               <span className="text-gray-600">
-                ({t("itemCount", { count: itemCount })})
+                {t("itemCount", { count: itemCount })}
               </span>
             )}
           </SheetTitle>
@@ -160,7 +160,7 @@ export function CartDrawer() {
                             }
                           }}
                           disabled={updating}
-                          aria-label={t("removeItem")}
+                          aria-label={t("removeItemLabel", { name: item.name })}
                         >
                           <Trash className="w-4 h-4" />
                         </Button>

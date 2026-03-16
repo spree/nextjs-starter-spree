@@ -49,11 +49,22 @@ export function normalizeSortKey(key: string): string {
  * Pass a `t` function from `useTranslations("products")`.
  * Falls back to the raw key if no translator is provided.
  */
+const SORT_FALLBACK: Record<string, string> = {
+  manual: "Manual",
+  best_selling: "Best Selling",
+  price: "Price (low-high)",
+  "-price": "Price (high-low)",
+  "-available_on": "Newest",
+  available_on: "Oldest",
+  name: "Name (A-Z)",
+  "-name": "Name (Z-A)",
+};
+
 export function getSortLabel(key: string, t?: (key: string) => string): string {
   const normalized = normalizeSortKey(key);
   const messageKey = SORT_KEY_TO_MESSAGE[normalized];
   if (messageKey && t) return t(messageKey);
-  return key;
+  return SORT_FALLBACK[normalized] || key;
 }
 
 /** Maps availability API values to translation message keys in the "products" namespace. */
@@ -66,11 +77,16 @@ const AVAILABILITY_KEY_TO_MESSAGE: Record<string, string> = {
  * Get a translated availability label.
  * Pass a `t` function from `useTranslations("products")`.
  */
+const AVAILABILITY_FALLBACK: Record<string, string> = {
+  in_stock: "In Stock",
+  out_of_stock: "Out of Stock",
+};
+
 export function getAvailabilityLabel(
   id: string,
   t?: (key: string) => string,
 ): string {
   const messageKey = AVAILABILITY_KEY_TO_MESSAGE[id];
   if (messageKey && t) return t(messageKey);
-  return id;
+  return AVAILABILITY_FALLBACK[id] || id;
 }

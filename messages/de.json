@@ -26,7 +26,7 @@
     "account": "Konto"
   },
   "footer": {
-    "description": "Ein moderner E-Commerce-Shop powered by Spree Commerce und Next.js.",
+    "description": "Ein moderner E-Commerce-Shop, betrieben von Spree Commerce und Next.js.",
     "shop": "Shop",
     "allProducts": "Alle Produkte",
     "categories": "Kategorien",
@@ -38,7 +38,7 @@
   },
   "home": {
     "welcome": "Willkommen bei {storeName}",
-    "heroDescription": "Entdecken Sie großartige Produkte mit unserem modernen E-Commerce-Erlebnis powered by Spree Commerce.",
+    "heroDescription": "Entdecken Sie großartige Produkte mit unserem modernen E-Commerce-Erlebnis, betrieben von Spree Commerce.",
     "shopNow": "Jetzt einkaufen",
     "browseCategories": "Kategorien durchsuchen",
     "featuredProducts": "Ausgewählte Produkte",
@@ -63,7 +63,7 @@
     "viewCart": "Warenkorb anzeigen",
     "shoppingCart": "Warenkorb",
     "proceedToCheckout": "Zur Kasse gehen",
-    "itemCount": "{count, plural, one {# Artikel} other {# Artikel}}",
+    "itemCount": "({count, plural, one {# Artikel} other {# Artikel}})",
     "shippingCalculatedAtCheckout": "Wird an der Kasse berechnet",
     "removeItemLabel": "{name} entfernen"
   },
@@ -132,6 +132,9 @@
     "closeFilters": "Filter schließen",
     "anyAvailability": "Beliebige Verfügbarkeit",
     "customPrice": "Benutzerdefiniert",
+    "priceLabel": "Preis: {value}",
+    "clearFilter": "{label} löschen",
+    "openImageZoom": "Bildzoom öffnen",
     "priceUnder": "Unter {price}",
     "priceAbove": "{price}+",
     "priceRangeBucket": "{min} – {max}"
@@ -173,6 +176,8 @@
     "addNewPaymentMethod": "Neue Zahlungsmethode hinzufügen",
     "endingIn": "endet auf",
     "exp": "Gültig bis",
+    "savedCardLabel": "{brand} endet auf {digits}",
+    "cardExpiry": "Gültig bis {month}/{year}",
     "default": "Standard",
     "noPaymentMethods": "Für diese Bestellung sind keine Zahlungsmethoden verfügbar.",
     "secureTransactions": "Alle Transaktionen sind sicher und verschlüsselt.",

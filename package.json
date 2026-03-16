@@ -11,7 +11,7 @@
     "check": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check:locales": "npx tsx scripts/check-locale-parity.ts"
+    "check:locales": "tsx scripts/check-locale-parity.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.1.6",
@@ -54,6 +54,7 @@
     "lefthook": "^2.1.2",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "tsx": "^4.19.0",
     "vitest": "^4.0.18"
   }
 }

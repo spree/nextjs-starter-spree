@@ -1,12 +1,17 @@
 /**
  * Checks that all locale JSON files have the same set of keys as en.json.
- * Run: npx tsx scripts/check-locale-parity.ts
+ * Run: tsx scripts/check-locale-parity.ts
  */
 import fs from "node:fs";
 import path from "node:path";
 
 const MESSAGES_DIR = path.resolve(__dirname, "../messages");
 const BASE_LOCALE = "en";
+
+if (!fs.existsSync(MESSAGES_DIR) || !fs.statSync(MESSAGES_DIR).isDirectory()) {
+  console.error(`Messages directory not found: ${MESSAGES_DIR}`);
+  process.exit(1);
+}
 
 function getNestedKeys(obj: Record<string, unknown>, prefix = ""): string[] {
   const keys: string[] = [];
