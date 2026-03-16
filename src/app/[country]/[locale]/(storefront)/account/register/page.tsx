@@ -55,12 +55,12 @@ export default function RegisterPage() {
     setError(null);
 
     if (password !== passwordConfirmation) {
-      setError("Passwords do not match");
+      setError(t("passwordsDontMatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t("passwordTooShort"));
       return;
     }
 
@@ -77,10 +77,10 @@ export default function RegisterPage() {
       if (result.success) {
         router.push(`${basePath}/account`);
       } else {
-        setError(result.error || "Registration failed. Please try again.");
+        setError(result.error || t("registrationFailed"));
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(t("unexpectedError"));
     } finally {
       setSubmitting(false);
     }

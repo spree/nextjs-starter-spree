@@ -57,7 +57,7 @@ export default function AccountPage() {
         router.push(redirectUrl);
       }
     } else {
-      setError(result.error || "Invalid email or password");
+      setError(result.error || t("invalidCredentials"));
     }
     setLoading(false);
   };
@@ -147,7 +147,7 @@ export default function AccountPage() {
                   href={`${basePath}/account/forgot-password`}
                   className="text-sm text-primary hover:text-primary/70 font-medium"
                 >
-                  Forgot password?
+                  {t("forgotPassword")}
                 </Link>
               </div>
 

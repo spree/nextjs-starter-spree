@@ -1,6 +1,7 @@
 "use client";
 
 import type { Cart } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { ProductImage } from "@/components/ui/product-image";
 
 interface SummaryProps {
@@ -8,6 +9,8 @@ interface SummaryProps {
 }
 
 export function Summary({ cart }: SummaryProps) {
+  const tc = useTranslations("common");
+  const t = useTranslations("checkout");
   const items = cart.items || [];
   const hasShipping = (cart.shipments?.length ?? 0) > 0;
 
@@ -50,38 +53,40 @@ export function Summary({ cart }: SummaryProps) {
       {/* Totals — Shopify style */}
       <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-700">Subtotal</span>
+          <span className="text-gray-700">{tc("subtotal")}</span>
           <span className="text-gray-900">{cart.display_item_total}</span>
         </div>
 
         <div className="flex justify-between text-sm">
-          <span className="text-gray-700">Shipping</span>
+          <span className="text-gray-700">{tc("shipping")}</span>
           {hasShipping ? (
             <span className="text-gray-900">{cart.display_ship_total}</span>
           ) : (
             <span className="text-xs text-gray-500">
-              Enter shipping address
+              {t("enterShippingAddress")}
             </span>
           )}
         </div>
 
         {parseFloat(cart.promo_total) !== 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-700">Discount</span>
+            <span className="text-gray-700">{tc("discount")}</span>
             <span className="text-green-700">{cart.display_promo_total}</span>
           </div>
         )}
 
         {parseFloat(cart.tax_total) > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-700">Tax</span>
+            <span className="text-gray-700">{tc("tax")}</span>
             <span className="text-gray-900">{cart.display_tax_total}</span>
           </div>
         )}
 
         {/* Total row — Shopify: bold, larger, with currency code */}
         <div className="flex justify-between items-baseline pt-3 border-t border-gray-200">
-          <span className="text-base font-bold text-gray-900">Total</span>
+          <span className="text-base font-bold text-gray-900">
+            {tc("total")}
+          </span>
           <div className="flex items-baseline gap-2">
             <span className="text-xs text-gray-500 uppercase">
               {cart.currency}

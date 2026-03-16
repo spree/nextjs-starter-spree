@@ -162,6 +162,7 @@
     "continueToDelivery": "Continue to Delivery",
     "shippingMethod": "Shipping Method",
     "loadingShippingOptions": "Loading shipping options...",
+    "enterShippingAddressForMethods": "Enter your shipping address to view available shipping methods.",
     "shipmentOf": "Shipment {current} of {total}",
     "shipsFrom": "Ships from {location}",
     "phone": "Phone: {phone}",
@@ -174,6 +175,9 @@
     "exp": "Exp",
     "default": "Default",
     "noPaymentMethods": "No payment methods available for this order.",
+    "secureTransactions": "All transactions are secure and encrypted.",
+    "creditCard": "Credit card",
+    "enterShippingAddress": "Enter shipping address",
     "payNow": "Pay Now",
     "failedToInitPayment": "Failed to initialize payment. Please try again.",
     "failedToCreateSession": "Failed to create payment session.",
@@ -191,7 +195,8 @@
     "stripeNotLoaded": "Stripe has not loaded yet",
     "paymentProcessingError": "An error occurred during payment.",
     "failedToCompletePaymentSession": "Failed to complete payment session",
-    "noOrder": "No order"
+    "noOrder": "No order",
+    "confirmingPayment": "Confirming your payment..."
   },
   "address": {
     "firstName": "First name",
@@ -248,7 +253,8 @@
     "deleteConfirm": "Are you sure you want to delete this address?",
     "setAsDefault": "Set as default",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?"
   },
   "register": {
     "createAccount": "Create Account",
@@ -311,7 +317,8 @@
     "notAvailable": "N/A",
     "unknownShipmentStatus": "Unknown",
     "orderTitle": "Order #{number}",
-    "shipmentCanceledRefund": "Shipment canceled — a refund has been issued."
+    "shipmentCanceledRefund": "Shipment canceled — a refund has been issued.",
+    "shippingMethodUnavailable": "Unavailable"
   },
   "orderPlaced": {
     "thanksForOrder": "Thanks for your order, {name}!",
@@ -395,5 +402,37 @@
     "expiresOn": "Expires {date}",
     "percentUsed": "{percent}% used",
     "giftCardsHelpText": "Gift cards can be used during checkout to pay for your orders. The remaining balance will be saved for future purchases."
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "description": "Enter your email and we'll send you a link to reset your password.",
+    "email": "Email",
+    "sending": "Sending...",
+    "sendResetLink": "Send reset link",
+    "backToSignIn": "Back to sign in",
+    "checkYourEmail": "Check your email",
+    "resetEmailSent": "If an account exists for <strong>{email}</strong>, we've sent password reset instructions.",
+    "linkExpiry": "The link in the email will expire in 15 minutes. Check your spam folder if you don't see it.",
+    "tryDifferentEmail": "Try a different email",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "resetPassword": {
+    "title": "Set a new password",
+    "description": "Enter your new password below.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "resetting": "Resetting...",
+    "resetPassword": "Reset password",
+    "backToSignIn": "Back to sign in",
+    "invalidLink": "Invalid link",
+    "invalidLinkDescription": "This password reset link is invalid or has expired.",
+    "requestNewLink": "Request a new reset link",
+    "passwordsDontMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "linkExpired": "This reset link has expired. Please request a new one.",
+    "genericError": "Something went wrong. Please try again.",
+    "success": "Password reset successful",
+    "successDescription": "Your password has been updated. You can now sign in with your new password.",
+    "signIn": "Sign in"
   }
 }

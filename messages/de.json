@@ -162,6 +162,7 @@
     "continueToDelivery": "Weiter zur Lieferung",
     "shippingMethod": "Versandmethode",
     "loadingShippingOptions": "Versandoptionen werden geladen...",
+    "enterShippingAddressForMethods": "Geben Sie Ihre Lieferadresse ein, um verfügbare Versandmethoden anzuzeigen.",
     "shipmentOf": "Sendung {current} von {total}",
     "shipsFrom": "Versand von {location}",
     "phone": "Telefon: {phone}",
@@ -174,6 +175,9 @@
     "exp": "Gültig bis",
     "default": "Standard",
     "noPaymentMethods": "Für diese Bestellung sind keine Zahlungsmethoden verfügbar.",
+    "secureTransactions": "Alle Transaktionen sind sicher und verschlüsselt.",
+    "creditCard": "Kreditkarte",
+    "enterShippingAddress": "Lieferadresse eingeben",
     "payNow": "Jetzt bezahlen",
     "failedToInitPayment": "Zahlung konnte nicht initialisiert werden. Bitte versuchen Sie es erneut.",
     "failedToCreateSession": "Zahlungssitzung konnte nicht erstellt werden.",
@@ -191,7 +195,8 @@
     "stripeNotLoaded": "Stripe wurde noch nicht geladen",
     "paymentProcessingError": "Bei der Zahlung ist ein Fehler aufgetreten.",
     "failedToCompletePaymentSession": "Zahlungssitzung konnte nicht abgeschlossen werden",
-    "noOrder": "Keine Bestellung"
+    "noOrder": "Keine Bestellung",
+    "confirmingPayment": "Ihre Zahlung wird bestätigt..."
   },
   "address": {
     "firstName": "Vorname",
@@ -248,7 +253,8 @@
     "deleteConfirm": "Sind Sie sicher, dass Sie diese Adresse löschen möchten?",
     "setAsDefault": "Als Standard festlegen",
     "showPassword": "Passwort anzeigen",
-    "hidePassword": "Passwort verbergen"
+    "hidePassword": "Passwort verbergen",
+    "forgotPassword": "Passwort vergessen?"
   },
   "register": {
     "createAccount": "Konto erstellen",
@@ -311,7 +317,8 @@
     "notAvailable": "k. A.",
     "unknownShipmentStatus": "Unbekannt",
     "orderTitle": "Bestellung #{number}",
-    "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst."
+    "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst.",
+    "shippingMethodUnavailable": "Nicht verfügbar"
   },
   "orderPlaced": {
     "thanksForOrder": "Vielen Dank für Ihre Bestellung, {name}!",
@@ -395,5 +402,37 @@
     "expiresOn": "Läuft ab am {date}",
     "percentUsed": "{percent}% verwendet",
     "giftCardsHelpText": "Geschenkkarten können beim Checkout zum Bezahlen Ihrer Bestellungen verwendet werden. Das verbleibende Guthaben wird für zukünftige Einkäufe gespeichert."
+  },
+  "forgotPassword": {
+    "title": "Passwort zurücksetzen",
+    "description": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts.",
+    "email": "E-Mail",
+    "sending": "Wird gesendet...",
+    "sendResetLink": "Link zum Zurücksetzen senden",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "checkYourEmail": "Überprüfen Sie Ihre E-Mail",
+    "resetEmailSent": "Wenn ein Konto für <strong>{email}</strong> existiert, haben wir Anweisungen zum Zurücksetzen des Passworts gesendet.",
+    "linkExpiry": "Der Link in der E-Mail läuft in 15 Minuten ab. Überprüfen Sie Ihren Spam-Ordner, wenn Sie ihn nicht sehen.",
+    "tryDifferentEmail": "Andere E-Mail-Adresse versuchen",
+    "genericError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "resetPassword": {
+    "title": "Neues Passwort festlegen",
+    "description": "Geben Sie unten Ihr neues Passwort ein.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Neues Passwort bestätigen",
+    "resetting": "Wird zurückgesetzt...",
+    "resetPassword": "Passwort zurücksetzen",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "invalidLink": "Ungültiger Link",
+    "invalidLinkDescription": "Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.",
+    "requestNewLink": "Neuen Link anfordern",
+    "passwordsDontMatch": "Passwörter stimmen nicht überein",
+    "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "linkExpired": "Dieser Link ist abgelaufen. Bitte fordern Sie einen neuen an.",
+    "genericError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+    "success": "Passwort erfolgreich zurückgesetzt",
+    "successDescription": "Ihr Passwort wurde aktualisiert. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
+    "signIn": "Anmelden"
   }
 }

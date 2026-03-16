@@ -162,6 +162,7 @@
     "continueToDelivery": "Przejdź do dostawy",
     "shippingMethod": "Metoda wysyłki",
     "loadingShippingOptions": "Ładowanie opcji wysyłki...",
+    "enterShippingAddressForMethods": "Podaj adres wysyłki, aby zobaczyć dostępne metody dostawy.",
     "shipmentOf": "Przesyłka {current} z {total}",
     "shipsFrom": "Wysyłka z {location}",
     "phone": "Telefon: {phone}",
@@ -174,6 +175,9 @@
     "exp": "Ważna do",
     "default": "Domyślna",
     "noPaymentMethods": "Brak dostępnych metod płatności dla tego zamówienia.",
+    "secureTransactions": "Wszystkie transakcje są bezpieczne i szyfrowane.",
+    "creditCard": "Karta kredytowa",
+    "enterShippingAddress": "Podaj adres wysyłki",
     "payNow": "Zapłać teraz",
     "failedToInitPayment": "Nie udało się zainicjować płatności. Spróbuj ponownie.",
     "failedToCreateSession": "Nie udało się utworzyć sesji płatności.",
@@ -191,7 +195,8 @@
     "stripeNotLoaded": "Stripe nie został jeszcze załadowany",
     "paymentProcessingError": "Wystąpił błąd podczas przetwarzania płatności.",
     "failedToCompletePaymentSession": "Nie udało się zakończyć sesji płatności",
-    "noOrder": "Brak zamówienia"
+    "noOrder": "Brak zamówienia",
+    "confirmingPayment": "Potwierdzanie płatności..."
   },
   "address": {
     "firstName": "Imię",
@@ -248,7 +253,8 @@
     "deleteConfirm": "Czy na pewno chcesz usunąć ten adres?",
     "setAsDefault": "Ustaw jako domyślny",
     "showPassword": "Pokaż hasło",
-    "hidePassword": "Ukryj hasło"
+    "hidePassword": "Ukryj hasło",
+    "forgotPassword": "Zapomniałeś hasła?"
   },
   "register": {
     "createAccount": "Utwórz konto",
@@ -311,7 +317,8 @@
     "notAvailable": "Brak",
     "unknownShipmentStatus": "Nieznany",
     "orderTitle": "Zamówienie #{number}",
-    "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony."
+    "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony.",
+    "shippingMethodUnavailable": "Niedostępna"
   },
   "orderPlaced": {
     "thanksForOrder": "Dziękujemy za zamówienie, {name}!",
@@ -395,5 +402,37 @@
     "expiresOn": "Wygasa {date}",
     "percentUsed": "{percent}% wykorzystano",
     "giftCardsHelpText": "Karty podarunkowe mogą być używane podczas składania zamówienia do opłacenia zakupów. Pozostałe saldo zostanie zapisane na przyszłe zakupy."
+  },
+  "forgotPassword": {
+    "title": "Zresetuj hasło",
+    "description": "Podaj swój adres e-mail, a wyślemy Ci link do zresetowania hasła.",
+    "email": "E-mail",
+    "sending": "Wysyłanie...",
+    "sendResetLink": "Wyślij link resetujący",
+    "backToSignIn": "Wróć do logowania",
+    "checkYourEmail": "Sprawdź swoją skrzynkę",
+    "resetEmailSent": "Jeśli konto istnieje dla <strong>{email}</strong>, wysłaliśmy instrukcje resetowania hasła.",
+    "linkExpiry": "Link w wiadomości wygaśnie za 15 minut. Sprawdź folder spam, jeśli go nie widzisz.",
+    "tryDifferentEmail": "Spróbuj inny adres e-mail",
+    "genericError": "Coś poszło nie tak. Spróbuj ponownie."
+  },
+  "resetPassword": {
+    "title": "Ustaw nowe hasło",
+    "description": "Wpisz poniżej nowe hasło.",
+    "newPassword": "Nowe hasło",
+    "confirmPassword": "Potwierdź nowe hasło",
+    "resetting": "Resetowanie...",
+    "resetPassword": "Zresetuj hasło",
+    "backToSignIn": "Wróć do logowania",
+    "invalidLink": "Nieprawidłowy link",
+    "invalidLinkDescription": "Ten link do resetowania hasła jest nieprawidłowy lub wygasł.",
+    "requestNewLink": "Poproś o nowy link resetujący",
+    "passwordsDontMatch": "Hasła nie są takie same",
+    "passwordTooShort": "Hasło musi mieć co najmniej 6 znaków",
+    "linkExpired": "Ten link resetujący wygasł. Poproś o nowy.",
+    "genericError": "Coś poszło nie tak. Spróbuj ponownie.",
+    "success": "Hasło zostało zresetowane",
+    "successDescription": "Twoje hasło zostało zaktualizowane. Możesz się teraz zalogować nowym hasłem.",
+    "signIn": "Zaloguj się"
   }
 }

@@ -19,6 +19,10 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { getOrder } from "@/lib/data/orders";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
+import {
+  getShipmentStatusColor,
+  SHIPMENT_STATE_KEY,
+} from "@/lib/utils/order-status";
 import { extractBasePath } from "@/lib/utils/path";
 
 function formatDate(dateString: string | null, locale: string): string {
@@ -30,21 +34,6 @@ function formatDate(dateString: string | null, locale: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function getShipmentStatusColor(state: string): string {
-  switch (state) {
-    case "shipped":
-    case "delivered":
-      return "bg-green-100 text-green-800";
-    case "ready":
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "canceled":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
 }
 
 function PaymentSourceInfo({ payment }: { payment: Payment }) {
@@ -202,7 +191,8 @@ function ShipmentBlock({
                 {t("shippingMethod")}
               </h3>
               <p className="text-sm text-gray-900">
-                {shipment.shipping_method?.name || t("canceled")}
+                {shipment.shipping_method?.name ||
+                  t("shippingMethodUnavailable")}
               </p>
               {shipment.stock_location && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -212,7 +202,9 @@ function ShipmentBlock({
               <span
                 className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(shipment.state)}`}
               >
-                {shipment.state}
+                {t(
+                  SHIPMENT_STATE_KEY[shipment.state] || "unknownShipmentStatus",
+                )}
               </span>
             </div>
             <div className="mt-4 lg:mt-0">
@@ -228,7 +220,7 @@ function ShipmentBlock({
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" disabled>
-                  Track Items
+                  {t("trackItems")}
                 </Button>
               )}
             </div>
@@ -238,16 +230,14 @@ function ShipmentBlock({
         {shipment.state === "canceled" && !shipment.shipped_at && (
           <Alert variant="destructive" className="mt-3">
             <CircleAlert />
-            <AlertDescription>
-              <strong>{t("shipmentCanceled")}</strong> — {t("refundIssued")}
-            </AlertDescription>
+            <AlertDescription>{t("shipmentCanceledRefund")}</AlertDescription>
           </Alert>
         )}
         {shipment.state !== "canceled" &&
           shipment.state !== "shipped" &&
           !shipment.tracking && (
             <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
-              {t("noTracking")}
+              {t("noTrackingInfo")}
             </div>
           )}
       </div>
