@@ -91,6 +91,7 @@ export function FilterChips({
         >
           <span>{chip.label}</span>
           <button
+            type="button"
             onClick={chip.onRemove}
             className="p-0.5 text-primary hover:text-primary transition-colors"
             aria-label={t("clearFilter", { label: chip.label })}

@@ -275,9 +275,14 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
   useEffect(() => {
     async function loadOrder() {
-      const orderData = await getOrder(id);
-      setOrder(orderData);
-      setLoading(false);
+      try {
+        const orderData = await getOrder(id);
+        setOrder(orderData);
+      } catch {
+        setOrder(null);
+      } finally {
+        setLoading(false);
+      }
     }
     loadOrder();
   }, [id]);

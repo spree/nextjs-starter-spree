@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const MESSAGES_DIR = path.resolve(__dirname, "../messages");
+const MESSAGES_DIR = path.resolve(process.cwd(), "messages");
 const BASE_LOCALE = "en";
 
 if (!fs.existsSync(MESSAGES_DIR) || !fs.statSync(MESSAGES_DIR).isDirectory()) {
