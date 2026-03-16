@@ -5,6 +5,8 @@ import {
   login as _login,
   logout as _logout,
   register as _register,
+  requestPasswordReset as _requestPasswordReset,
+  resetPassword as _resetPassword,
   updateCustomer as _updateCustomer,
 } from "@spree/next";
 import { actionResult } from "./utils";
@@ -29,6 +31,21 @@ export async function register(params: {
 
 export async function logout() {
   return _logout();
+}
+
+export async function requestPasswordReset(
+  email: string,
+  redirectUrl?: string,
+) {
+  return _requestPasswordReset(email, redirectUrl);
+}
+
+export async function resetPassword(
+  token: string,
+  password: string,
+  passwordConfirmation: string,
+) {
+  return _resetPassword(token, password, passwordConfirmation);
 }
 
 export async function updateCustomer(data: {

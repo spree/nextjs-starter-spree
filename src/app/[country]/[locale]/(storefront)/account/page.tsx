@@ -14,6 +14,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,92 +77,105 @@ export default function AccountPage() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
-          <p className="mt-2 text-gray-500">
-            Sign in to access your account and order history.
-          </p>
-        </div>
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle>My Account</CardTitle>
+            <CardDescription>
+              Sign in to access your account and order history.
+            </CardDescription>
+          </CardHeader>
 
-        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <CircleAlert />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <CircleAlert />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-            <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                type="email"
-                id="email"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <div className="relative">
+              <Field>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="current-password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  type="email"
+                  id="email"
+                  name="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="••••••••"
-                  className="pr-10"
+                  placeholder="you@example.com"
                 />
-                <div className="absolute right-1 top-1/2 -translate-y-1/2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </Button>
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="current-password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    className="pr-10"
+                  />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
+              </Field>
+
+              <div className="flex justify-end">
+                <Link
+                  href={`${basePath}/account/forgot-password`}
+                  className="text-sm text-primary hover:text-primary/70 font-medium"
+                >
+                  Forgot password?
+                </Link>
               </div>
-            </Field>
 
-            <div className="w-full">
-              <Button
-                type="submit"
-                disabled={loading}
-                size="lg"
-                className="w-full"
+              <div className="w-full">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  size="lg"
+                  className="w-full"
+                >
+                  {loading ? "Signing in..." : "Sign In"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+
+          <CardFooter className="justify-center">
+            <p className="text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link
+                href={`${basePath}/account/register`}
+                className="text-primary hover:text-primary/70 font-medium"
               >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
-            </div>
-          </form>
-
-          <div className="mt-6 text-center text-sm">
-            <span className="text-gray-500">Don&apos;t have an account? </span>
-            <Link
-              href={`${basePath}/account/register`}
-              className="text-primary hover:text-primary font-medium"
-            >
-              Sign up
-            </Link>
-          </div>
-        </div>
+                Sign up
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -167,76 +188,72 @@ export default function AccountPage() {
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Link
-          href={`${basePath}/account/orders`}
-          className="bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gray-100 rounded-xl">
-              <ShoppingBag className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">
-                Order History
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                View your past orders and track shipments
-              </p>
-            </div>
-          </div>
+        <Link href={`${basePath}/account/orders`}>
+          <Card className="hover:border-gray-300 transition-colors h-full">
+            <CardContent className="flex items-center gap-4 py-0">
+              <div className="p-3 bg-gray-100 rounded-xl">
+                <ShoppingBag className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Order History
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  View your past orders and track shipments
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
 
-        <Link
-          href={`${basePath}/account/addresses`}
-          className="bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gray-100 rounded-xl">
-              <MapPin className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Manage your shipping and billing addresses
-              </p>
-            </div>
-          </div>
+        <Link href={`${basePath}/account/addresses`}>
+          <Card className="hover:border-gray-300 transition-colors h-full">
+            <CardContent className="flex items-center gap-4 py-0">
+              <div className="p-3 bg-gray-100 rounded-xl">
+                <MapPin className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Manage your shipping and billing addresses
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
 
-        <Link
-          href={`${basePath}/account/credit-cards`}
-          className="bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gray-100 rounded-xl">
-              <CreditCard className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">
-                Payment Methods
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Manage your saved credit cards
-              </p>
-            </div>
-          </div>
+        <Link href={`${basePath}/account/credit-cards`}>
+          <Card className="hover:border-gray-300 transition-colors h-full">
+            <CardContent className="flex items-center gap-4 py-0">
+              <div className="p-3 bg-gray-100 rounded-xl">
+                <CreditCard className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">
+                  Payment Methods
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Manage your saved credit cards
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
 
-        <Link
-          href={`${basePath}/account/profile`}
-          className="bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gray-100 rounded-xl">
-              <User className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-medium text-gray-900">Profile</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Update your personal information
-              </p>
-            </div>
-          </div>
+        <Link href={`${basePath}/account/profile`}>
+          <Card className="hover:border-gray-300 transition-colors h-full">
+            <CardContent className="flex items-center gap-4 py-0">
+              <div className="p-3 bg-gray-100 rounded-xl">
+                <User className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-medium text-gray-900">Profile</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Update your personal information
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </Link>
       </div>
     </div>
