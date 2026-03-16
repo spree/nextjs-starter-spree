@@ -5,6 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockReplace = vi.fn();
 let mockSearchParams = new URLSearchParams();
 
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -56,7 +60,7 @@ describe("ConfirmPaymentPage", () => {
       renderPage();
     });
 
-    expect(screen.getByText("Confirming your payment...")).toBeInTheDocument();
+    expect(screen.getByText("confirmingPayment")).toBeInTheDocument();
   });
 
   it("redirects to order-placed on success", async () => {
@@ -123,9 +127,7 @@ describe("ConfirmPaymentPage", () => {
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "payment_error=Payment%20could%20not%20be%20confirmed",
-        ),
+        expect.stringContaining("payment_error=paymentError"),
       );
     });
   });
