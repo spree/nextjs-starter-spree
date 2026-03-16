@@ -29,7 +29,7 @@ export function ProductDetailsWrapper({
       setLoading(true);
       try {
         const data = await getProduct(slug, {
-          expand: ["variants", "images", "option_types"],
+          expand: ["variants", "media", "option_types"],
         });
         if (!cancelled) {
           setProduct(data);

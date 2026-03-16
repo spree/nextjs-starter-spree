@@ -15,7 +15,7 @@ export async function generateProductMetadata({
 }: ProductMetadataParams): Promise<Metadata> {
   let product;
   try {
-    product = await getCachedProduct(slug, ["images"], locale);
+    product = await getCachedProduct(slug, ["media"], locale);
   } catch {
     return { title: "Product Not Found" };
   }
@@ -35,14 +35,14 @@ export async function generateProductMetadata({
       )
     : undefined;
 
-  const ogImages = (product.images || [])
+  const ogImages = (product.media || [])
     .filter((img) => img.og_image_url || img.original_url)
     .map((img) => ({
       url: (img.og_image_url || img.original_url)!,
       alt: img.alt || product.name,
     }));
 
-  // Fall back to thumbnail_url if no images from includes
+  // Fall back to thumbnail_url if no media from expand
   if (ogImages.length === 0 && product.thumbnail_url) {
     ogImages.push({ url: product.thumbnail_url, alt: product.name });
   }

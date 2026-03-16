@@ -82,10 +82,10 @@ export function buildProductJsonLd(
     schema.sku = product.default_variant.sku;
   }
 
-  const imageUrls = (product.images || [])
+  const imageUrls = (product.media || [])
     .map((img) => img.original_url || img.large_url)
     .filter(Boolean);
-  // Fall back to thumbnail_url if no images from includes
+  // Fall back to thumbnail_url if no media from expand
   if (imageUrls.length === 0 && product.thumbnail_url) {
     imageUrls.push(product.thumbnail_url);
   }

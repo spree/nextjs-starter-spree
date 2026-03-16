@@ -1,6 +1,6 @@
 "use client";
 
-import type { Image as SpreeImage } from "@spree/sdk";
+import type { Media } from "@spree/sdk";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -12,7 +12,7 @@ const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIElEQVQYV2P4////MwwMDAxMDAwMDGQJMJCvkGwNZCsEAGebBwVss9lRAAAAAElFTkSuQmCC";
 
 interface MediaGalleryProps {
-  images: SpreeImage[];
+  images: Media[];
   productName: string;
 }
 

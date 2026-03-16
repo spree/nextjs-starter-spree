@@ -16,8 +16,8 @@
   "dependencies": {
     "@next/third-parties": "^16.1.6",
     "@sentry/nextjs": "^10.38.0",
-    "@spree/next": "^0.10.5",
-    "@spree/sdk": "^0.10.1",
+    "@spree/next": "^0.11.0",
+    "@spree/sdk": "^0.11.0",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
     "@swc/helpers": "^0.5.19",

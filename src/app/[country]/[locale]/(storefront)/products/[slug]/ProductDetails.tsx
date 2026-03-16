@@ -1,6 +1,6 @@
 "use client";
 
-import type { Product, Image as SpreeImage, Variant } from "@spree/sdk";
+import type { Media, Product, Variant } from "@spree/sdk";
 import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
@@ -45,15 +45,15 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Get images for the gallery - variant images take priority
-  const galleryImages = useMemo((): SpreeImage[] => {
-    // If selected variant has images, show those
-    if (selectedVariant?.images && selectedVariant.images.length > 0) {
-      return selectedVariant.images;
+  // Get media for the gallery - variant media takes priority
+  const galleryImages = useMemo((): Media[] => {
+    // If selected variant has media, show those
+    if (selectedVariant?.media && selectedVariant.media.length > 0) {
+      return selectedVariant.media;
     }
-    // Otherwise show product images
-    return product.images || [];
-  }, [selectedVariant, product.images]);
+    // Otherwise show product media
+    return product.media || [];
+  }, [selectedVariant, product.media]);
 
   // Get pricing info from selected variant or product (using nested price objects)
   const price = selectedVariant?.price ?? product.price;
