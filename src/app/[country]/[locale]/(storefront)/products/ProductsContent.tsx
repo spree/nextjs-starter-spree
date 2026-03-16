@@ -2,6 +2,7 @@
 
 import type { ProductListParams } from "@spree/sdk";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ProductListingLayout } from "@/components/products/ProductListingLayout";
 import { useStore } from "@/contexts/StoreContext";
@@ -16,6 +17,7 @@ interface ProductsContentProps {
 export function ProductsContent({ basePath }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const { currency } = useStore();
+  const t = useTranslations("products");
   const query = searchParams.get("q") || "";
 
   const fetchFn = useCallback(
@@ -68,17 +70,18 @@ export function ProductsContent({ basePath }: ProductsContentProps) {
         {query ? (
           <>
             <h1 className="text-3xl font-bold text-gray-900">
-              Search results for &ldquo;{query}&rdquo;
+              {t("searchResultsFor", { query })}
             </h1>
             <p className="mt-2 text-gray-500">
-              {listing.totalCount}{" "}
-              {listing.totalCount === 1 ? "product" : "products"} found
+              {t("productsFound", { count: listing.totalCount })}
             </p>
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-gray-900">All Products</h1>
-            <p className="mt-2 text-gray-500">Browse our complete collection</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {t("allProducts")}
+            </h1>
+            <p className="mt-2 text-gray-500">{t("browseCollection")}</p>
           </>
         )}
       </div>
@@ -90,9 +93,7 @@ export function ProductsContent({ basePath }: ProductsContentProps) {
         listId={listId}
         listName={listName}
         emptyMessage={
-          query
-            ? `We couldn't find any products matching "${query}"`
-            : "Try adjusting your filters"
+          query ? t("noMatchingProducts", { query }) : t("tryAdjustingFilters")
         }
       />
     </div>

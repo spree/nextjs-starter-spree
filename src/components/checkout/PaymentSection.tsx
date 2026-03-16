@@ -8,6 +8,7 @@ import type {
   State,
 } from "@spree/sdk";
 import { CircleAlert, CreditCard, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   forwardRef,
   useCallback,
@@ -74,6 +75,8 @@ export const PaymentSection = forwardRef<
   },
   ref,
 ) {
+  const t = useTranslations("checkout");
+
   // Initialize billing address from cart, check if it matches shipping
   const shipAddressData = useMemo(
     () => addressToFormData(cart.ship_address),
@@ -146,21 +149,21 @@ export const PaymentSection = forwardRef<
             setClientSecret(secret);
             setPaymentSessionId(result.session.id);
           } else {
-            setGatewayError("Failed to initialize payment. Please try again.");
+            setGatewayError(t("failedToInitPayment"));
           }
         } else if (!result.success) {
-          setGatewayError(result.error || "Failed to create payment session.");
+          setGatewayError(result.error || t("failedToCreateSession"));
         }
       } catch {
         if (requestId !== sessionRequestIdRef.current) return;
-        setGatewayError("Failed to initialize payment. Please try again.");
+        setGatewayError(t("failedToInitPayment"));
       } finally {
         if (requestId === sessionRequestIdRef.current) {
           setLoading(false);
         }
       }
     },
-    [sessionPaymentMethod, cart.id],
+    [sessionPaymentMethod, cart.id, t],
   );
 
   // Track the cart total so we can recreate the session when it changes
@@ -247,10 +250,10 @@ export const PaymentSection = forwardRef<
     () => ({
       submit: async () => {
         if (!paymentSessionId || !clientSecret) {
-          return { error: "Payment not ready" };
+          return { error: t("failedToInitPayment") };
         }
         if (!selectedCardId && !gatewayHandleRef.current) {
-          return { error: "Payment not ready" };
+          return { error: t("failedToInitPayment") };
         }
 
         setProcessing(true);
@@ -267,7 +270,7 @@ export const PaymentSection = forwardRef<
 
           if (!addressSuccess) {
             setProcessing(false);
-            return { error: "Failed to save billing address" };
+            return { error: t("failedToSaveBilling") };
           }
 
           // 2. Confirm payment with gateway
@@ -302,7 +305,7 @@ export const PaymentSection = forwardRef<
           await onPaymentComplete(paymentSessionId);
           return {};
         } catch {
-          const msg = "An error occurred during payment. Please try again.";
+          const msg = t("paymentError");
           setGatewayError(msg);
           setProcessing(false);
           return { error: msg };
@@ -320,6 +323,7 @@ export const PaymentSection = forwardRef<
       onPaymentComplete,
       cart.id,
       setProcessing,
+      t,
     ],
   );
 
@@ -328,9 +332,9 @@ export const PaymentSection = forwardRef<
   return (
     <div>
       {/* Section Header */}
-      <h2 className="text-lg font-bold text-gray-900">Payment</h2>
+      <h2 className="text-lg font-bold text-gray-900">{t("paymentMethod")}</h2>
       <p className="text-sm text-gray-500 mt-0.5 mb-3">
-        All transactions are secure and encrypted.
+        {t("secureTransactions")}
       </p>
 
       {/* Inline requirement errors from parent */}
@@ -373,14 +377,20 @@ export const PaymentSection = forwardRef<
                   width={34}
                 />
                 <span className="text-sm text-gray-900 flex-1">
-                  {getCardLabel(card.cc_type)} ending in {card.last_digits}
+                  {t("savedCardLabel", {
+                    brand: getCardLabel(card.cc_type),
+                    digits: card.last_digits,
+                  })}
                 </span>
                 <span className="text-xs text-gray-500">
-                  Exp {String(card.month).padStart(2, "0")}/{card.year}
+                  {t("cardExpiry", {
+                    month: String(card.month).padStart(2, "0"),
+                    year: String(card.year),
+                  })}
                 </span>
                 {card.default && (
                   <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                    Default
+                    {t("default")}
                   </span>
                 )}
               </label>
@@ -395,7 +405,7 @@ export const PaymentSection = forwardRef<
               <RadioGroupItem value="__new__" />
               <CreditCard className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
               <span className="text-sm text-gray-900">
-                Add new payment method
+                {t("addNewPaymentMethod")}
               </span>
             </label>
           </>
@@ -407,7 +417,7 @@ export const PaymentSection = forwardRef<
             <div className="flex items-center gap-3">
               <RadioGroupItem value="__new__" />
               <span className="text-sm font-medium text-gray-900">
-                Credit card
+                {t("creditCard")}
               </span>
             </div>
           </div>
@@ -419,7 +429,7 @@ export const PaymentSection = forwardRef<
             <div className="flex items-center justify-center py-10">
               <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
               <span className="ml-2 text-sm text-gray-500">
-                Loading payment form...
+                {t("loadingPaymentForm")}
               </span>
             </div>
           )}
@@ -451,9 +461,7 @@ export const PaymentSection = forwardRef<
                 className="w-10 h-10 text-gray-300 mx-auto mb-3"
                 strokeWidth={1.5}
               />
-              <p className="text-sm text-gray-500">
-                No payment methods available for this cart.
-              </p>
+              <p className="text-sm text-gray-500">{t("noPaymentMethods")}</p>
             </div>
           )}
         </div>
@@ -468,9 +476,7 @@ export const PaymentSection = forwardRef<
               handleUseShippingChange(checked === true)
             }
           />
-          <span className="text-sm text-gray-900">
-            Use shipping address as billing address
-          </span>
+          <span className="text-sm text-gray-900">{t("sameAsShipping")}</span>
         </label>
 
         {!useShippingForBilling && (

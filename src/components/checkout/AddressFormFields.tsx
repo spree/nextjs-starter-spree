@@ -1,6 +1,7 @@
 "use client";
 
 import type { Country, State } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import {
   NativeSelect,
@@ -25,6 +26,8 @@ export function AddressFormFields({
   onChange,
   idPrefix,
 }: AddressFormFieldsProps) {
+  const t = useTranslations("address");
+  const tc = useTranslations("common");
   const hasStates = states.length > 0;
 
   return (
@@ -33,14 +36,14 @@ export function AddressFormFields({
       <div className="relative">
         <NativeSelect
           id={`${idPrefix}-country`}
-          aria-label="Country/Region"
+          aria-label={t("country")}
           className="w-full"
           value={address.country_iso}
           onChange={(e) => onChange("country_iso", e.target.value)}
           required
         >
           <NativeSelectOption value="" disabled>
-            Country/Region
+            {t("selectCountry")}
           </NativeSelectOption>
           {countries.map((country) => (
             <NativeSelectOption key={country.iso} value={country.iso}>
@@ -55,19 +58,19 @@ export function AddressFormFields({
         <Input
           type="text"
           id={`${idPrefix}-firstname`}
-          aria-label="First name"
+          aria-label={t("firstName")}
           value={address.firstname}
           onChange={(e) => onChange("firstname", e.target.value)}
-          placeholder="First name (optional)"
+          placeholder={t("firstName")}
         />
         <Input
           type="text"
           id={`${idPrefix}-lastname`}
-          aria-label="Last name"
+          aria-label={t("lastName")}
           required
           value={address.lastname}
           onChange={(e) => onChange("lastname", e.target.value)}
-          placeholder="Last name"
+          placeholder={t("lastName")}
         />
       </div>
 
@@ -75,31 +78,31 @@ export function AddressFormFields({
       <Input
         type="text"
         id={`${idPrefix}-company`}
-        aria-label="Company"
+        aria-label={t("company")}
         value={address.company}
         onChange={(e) => onChange("company", e.target.value)}
-        placeholder="Company (optional)"
+        placeholder={t("company")}
       />
 
       {/* Address */}
       <Input
         type="text"
         id={`${idPrefix}-address1`}
-        aria-label="Address"
+        aria-label={t("address")}
         required
         value={address.address1}
         onChange={(e) => onChange("address1", e.target.value)}
-        placeholder="Address"
+        placeholder={t("address")}
       />
 
       {/* Apartment */}
       <Input
         type="text"
         id={`${idPrefix}-address2`}
-        aria-label="Apartment, suite, etc."
+        aria-label={t("apartment")}
         value={address.address2}
         onChange={(e) => onChange("address2", e.target.value)}
-        placeholder="Apartment, suite, etc. (optional)"
+        placeholder={t("apartment")}
       />
 
       {/* City / State / ZIP — 3 columns */}
@@ -107,32 +110,32 @@ export function AddressFormFields({
         <Input
           type="text"
           id={`${idPrefix}-city`}
-          aria-label="City"
+          aria-label={t("city")}
           required
           value={address.city}
           onChange={(e) => onChange("city", e.target.value)}
-          placeholder="City"
+          placeholder={t("city")}
         />
         {loadingStates ? (
           <NativeSelect
             id={`${idPrefix}-state`}
-            aria-label="State"
+            aria-label={t("stateProvince")}
             className="w-full"
             disabled
           >
-            <NativeSelectOption value="">Loading...</NativeSelectOption>
+            <NativeSelectOption value="">{tc("loading")}</NativeSelectOption>
           </NativeSelect>
         ) : hasStates ? (
           <NativeSelect
             id={`${idPrefix}-state`}
-            aria-label="State"
+            aria-label={t("stateProvince")}
             className="w-full"
             value={address.state_abbr}
             onChange={(e) => onChange("state_abbr", e.target.value)}
             required
           >
             <NativeSelectOption value="" disabled>
-              State
+              {t("selectState")}
             </NativeSelectOption>
             {states.map((state) => (
               <NativeSelectOption key={state.abbr} value={state.abbr}>
@@ -144,20 +147,20 @@ export function AddressFormFields({
           <Input
             type="text"
             id={`${idPrefix}-state`}
-            aria-label="State"
+            aria-label={t("stateProvince")}
             value={address.state_name}
             onChange={(e) => onChange("state_name", e.target.value)}
-            placeholder="State"
+            placeholder={t("stateProvince")}
           />
         )}
         <Input
           type="text"
           id={`${idPrefix}-zipcode`}
-          aria-label="ZIP code"
+          aria-label={t("zipCode")}
           required
           value={address.zipcode}
           onChange={(e) => onChange("zipcode", e.target.value)}
-          placeholder="ZIP code"
+          placeholder={t("zipCode")}
         />
       </div>
 
@@ -165,10 +168,10 @@ export function AddressFormFields({
       <Input
         type="tel"
         id={`${idPrefix}-phone`}
-        aria-label="Phone"
+        aria-label={t("phone")}
         value={address.phone}
         onChange={(e) => onChange("phone", e.target.value)}
-        placeholder="Phone (optional)"
+        placeholder={t("phone")}
       />
     </div>
   );

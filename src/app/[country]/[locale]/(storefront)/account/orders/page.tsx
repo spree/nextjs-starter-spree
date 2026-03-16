@@ -4,51 +4,31 @@ import type { Order } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getOrders } from "@/lib/data/orders";
+import {
+  getPaymentStatusColor,
+  getShipmentStatusColor,
+  PAYMENT_STATE_KEY,
+  SHIPMENT_STATE_KEY,
+} from "@/lib/utils/order-status";
 import { extractBasePath } from "@/lib/utils/path";
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null, locale: string): string {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 }
 
-function getPaymentStatusColor(state: string | null): string {
-  switch (state) {
-    case "paid":
-      return "bg-green-100 text-green-800";
-    case "balance_due":
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "failed":
-    case "void":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-}
-
-function getShipmentStatusColor(state: string | null): string {
-  switch (state) {
-    case "shipped":
-    case "delivered":
-      return "bg-green-100 text-green-800";
-    case "ready":
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "canceled":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-}
-
 export default function OrdersPage() {
+  const t = useTranslations("orders");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -56,10 +36,15 @@ export default function OrdersPage() {
 
   useEffect(() => {
     async function loadOrders() {
-      const response = await getOrders({ limit: 50 });
-      // Filter to only show completed orders
-      setOrders(response.data.filter((o) => o.completed_at !== null));
-      setLoading(false);
+      try {
+        const response = await getOrders({ limit: 50 });
+        // Filter to only show completed orders
+        setOrders(response.data.filter((o) => o.completed_at !== null));
+      } catch {
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
     }
     loadOrders();
   }, []);
@@ -67,7 +52,9 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          {t("orderHistory")}
+        </h1>
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((i) => (
             <div
@@ -85,19 +72,19 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        {t("orderHistory")}
+      </h1>
 
       {orders.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No orders yet
+            {t("noOrders")}
           </h3>
-          <p className="text-gray-500 mb-6">
-            When you place orders, they will appear here.
-          </p>
+          <p className="text-gray-500 mb-6">{t("noOrdersDescription")}</p>
           <Button asChild>
-            <Link href={`${basePath}/products`}>Start Shopping</Link>
+            <Link href={`${basePath}/products`}>{t("startShopping")}</Link>
           </Button>
         </div>
       ) : (
@@ -107,22 +94,22 @@ export default function OrdersPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order
+                    {t("order")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    {t("date")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment
+                    {t("payment")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Shipment
+                    {t("shipment")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
+                    {tc("total")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t("actions")}
                   </th>
                 </tr>
               </thead>
@@ -136,21 +123,37 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-500">
-                        {formatDate(order.completed_at)}
+                        {formatDate(order.completed_at, locale)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getPaymentStatusColor(order.payment_state)}`}
                       >
-                        {order.payment_state?.replace("_", " ") || "N/A"}
+                        {order.payment_state
+                          ? PAYMENT_STATE_KEY[order.payment_state]
+                            ? t(
+                                PAYMENT_STATE_KEY[
+                                  order.payment_state
+                                ] as keyof IntlMessages["orders"],
+                              )
+                            : order.payment_state
+                          : t("notAvailable")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(order.shipment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getShipmentStatusColor(order.shipment_state)}`}
                       >
-                        {order.shipment_state || "N/A"}
+                        {order.shipment_state
+                          ? SHIPMENT_STATE_KEY[order.shipment_state]
+                            ? t(
+                                SHIPMENT_STATE_KEY[
+                                  order.shipment_state
+                                ] as keyof IntlMessages["orders"],
+                              )
+                            : order.shipment_state
+                          : t("notAvailable")}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -161,7 +164,7 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <Button variant="link" size="sm" asChild>
                         <Link href={`${basePath}/account/orders/${order.id}`}>
-                          View
+                          {t("view")}
                         </Link>
                       </Button>
                     </td>

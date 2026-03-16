@@ -3,6 +3,7 @@
 import { ShoppingBag, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
@@ -29,6 +30,8 @@ export function CartDrawer() {
     removeItem,
     itemCount,
   } = useCart();
+  const t = useTranslations("cart");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -72,16 +75,18 @@ export function CartDrawer() {
         <SheetHeader className="flex flex-row gap-2 items-center justify-between border-b">
           <SheetTitle className="flex flex-row gap-2 items-center">
             <ShoppingBag className="w-6 h-6 text-gray-600" />
-            <span>Cart</span>
+            <span>{t("cart")}</span>
             {itemCount > 0 && (
-              <span className="text-gray-600">({itemCount} items)</span>
+              <span className="text-gray-600">
+                {t("itemCount", { count: itemCount })}
+              </span>
             )}
           </SheetTitle>
           <Button
             variant="ghost"
             size="icon"
             onClick={closeCart}
-            aria-label="Close cart"
+            aria-label={t("closeCart")}
           >
             <X className="w-6 h-6" />
           </Button>
@@ -105,13 +110,14 @@ export function CartDrawer() {
                 className="w-16 h-16 text-gray-300 mb-4"
                 strokeWidth={1}
               />
-              <p className="text-gray-500 mb-4">Your cart is empty</p>
+              <p className="text-gray-500 mb-4">{t("emptyCart")}</p>
+              <p className="text-gray-400 mb-4">{t("emptyCartDescription")}</p>
               <Link
                 href={`${basePath}/products`}
                 className="text-primary hover:text-primary font-medium"
                 onClick={closeCart}
               >
-                Continue Shopping
+                {tc("continueShopping")}
               </Link>
             </div>
           ) : (
@@ -154,7 +160,7 @@ export function CartDrawer() {
                             }
                           }}
                           disabled={updating}
-                          aria-label="Remove item"
+                          aria-label={t("removeItemLabel", { name: item.name })}
                         >
                           <Trash className="w-4 h-4" />
                         </Button>
@@ -213,18 +219,20 @@ export function CartDrawer() {
             {/* Summary */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span>Subtotal</span>
+                <span>{tc("subtotal")}</span>
                 <span>{cart?.display_item_total}</span>
               </div>
               {cart?.promo_total && parseFloat(cart.promo_total) < 0 && (
                 <div className="flex justify-between items-center text-sm text-green-600">
-                  <span>Discount</span>
+                  <span>{tc("discount")}</span>
                   <span>{cart.display_promo_total}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span>Shipping</span>
-                <span className="text-gray-500">Calculated on checkout</span>
+                <span>{tc("shipping")}</span>
+                <span className="text-gray-500">
+                  {t("shippingCalculatedAtCheckout")}
+                </span>
               </div>
             </div>
 
@@ -235,12 +243,12 @@ export function CartDrawer() {
                   href={`${basePath}/checkout/${cart?.id}`}
                   onClick={closeCart}
                 >
-                  Checkout
+                  {t("checkout")}
                 </Link>
               </Button>
               <Button size="lg" className="w-full" variant="link" asChild>
                 <Link href={`${basePath}/cart`} onClick={closeCart}>
-                  View Cart
+                  {t("viewCart")}
                 </Link>
               </Button>
             </div>
