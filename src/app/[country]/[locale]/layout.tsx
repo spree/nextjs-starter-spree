@@ -27,7 +27,7 @@ export default async function CountryLocaleLayout({
 }: CountryLocaleLayoutProps) {
   const { country, locale } = await params;
 
-  const markets = await getMarkets()
+  const markets = await getMarkets({ country, locale })
     .then((res) => res.data)
     .catch(() => []);
 

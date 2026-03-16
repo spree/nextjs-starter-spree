@@ -44,9 +44,9 @@ async function cachedListMarketCountries(
   return _listMarketCountries(marketId, options);
 }
 
-export async function getMarkets() {
-  const options = await getLocaleOptions();
-  return cachedListMarkets(options);
+export async function getMarkets(options?: SpreeNextOptions) {
+  const resolvedOptions = options ?? (await getLocaleOptions());
+  return cachedListMarkets(resolvedOptions);
 }
 
 export async function resolveMarket(country: string) {
