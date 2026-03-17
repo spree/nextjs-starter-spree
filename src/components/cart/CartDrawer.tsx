@@ -226,19 +226,6 @@ export function CartDrawer() {
         {/* Footer */}
         {!isEmpty && !loading && (
           <SheetFooter className="border-t border-gray-200 p-4 space-y-4">
-            {/* Express Checkout */}
-            {cart && parseFloat(cart.total) > 0 && (
-              <ExpressCheckoutButton
-                cart={cart}
-                basePath={basePath}
-                onComplete={async () => {
-                  await refreshCart();
-                  closeCart();
-                }}
-                onProcessingChange={setExpressProcessing}
-              />
-            )}
-
             {!expressProcessing && (
               <>
                 {/* Summary */}
@@ -260,24 +247,38 @@ export function CartDrawer() {
                     </span>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="space-y-2">
-                  <Button size="lg" className="w-full" asChild>
-                    <Link
-                      href={`${basePath}/checkout/${cart?.id}`}
-                      onClick={closeCart}
-                    >
-                      Checkout
-                    </Link>
-                  </Button>
-                  <Button size="lg" className="w-full" variant="link" asChild>
-                    <Link href={`${basePath}/cart`} onClick={closeCart}>
-                      View Cart
-                    </Link>
-                  </Button>
-                </div>
               </>
+            )}
+
+            {/* Express Checkout — must stay mounted during processing */}
+            {cart && parseFloat(cart.total) > 0 && (
+              <ExpressCheckoutButton
+                cart={cart}
+                basePath={basePath}
+                onComplete={async () => {
+                  await refreshCart();
+                  closeCart();
+                }}
+                onProcessingChange={setExpressProcessing}
+              />
+            )}
+
+            {!expressProcessing && (
+              <div className="space-y-2">
+                <Button size="lg" className="w-full" asChild>
+                  <Link
+                    href={`${basePath}/checkout/${cart?.id}`}
+                    onClick={closeCart}
+                  >
+                    Checkout
+                  </Link>
+                </Button>
+                <Button size="lg" className="w-full" variant="link" asChild>
+                  <Link href={`${basePath}/cart`} onClick={closeCart}>
+                    View Cart
+                  </Link>
+                </Button>
+              </div>
             )}
           </SheetFooter>
         )}

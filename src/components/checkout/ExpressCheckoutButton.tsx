@@ -123,18 +123,20 @@ function ExpressCheckoutInner({
         }
 
         const lineItems = buildLineItems(order);
-        event.resolve({ shippingRates, lineItems });
+        const defaultShippingAmount = shippingRates[0]?.amount ?? 0;
+        lineItems.push({ name: "Shipping", amount: defaultShippingAmount });
 
+        const lineItemsSum = lineItems.reduce(
+          (sum, item) => sum + item.amount,
+          0,
+        );
         try {
-          const lineItemsSum = lineItems.reduce(
-            (sum, item) => sum + item.amount,
-            0,
-          );
-          const defaultShippingAmount = shippingRates[0]?.amount ?? 0;
-          elements?.update({ amount: lineItemsSum + defaultShippingAmount });
+          elements?.update({ amount: lineItemsSum });
         } catch (_) {
           /* elements.update failed — non-fatal */
         }
+
+        event.resolve({ shippingRates, lineItems });
       } catch (_err) {
         try {
           event.reject();
@@ -164,8 +166,8 @@ function ExpressCheckoutInner({
         }
 
         const lineItems = buildLineItems(result.cart);
-        const lineItemsSum = lineItems.reduce((s, i) => s + i.amount, 0);
-        const newAmount = lineItemsSum + shippingRate.amount;
+        lineItems.push({ name: "Shipping", amount: shippingRate.amount });
+        const newAmount = lineItems.reduce((s, i) => s + i.amount, 0);
 
         try {
           elements?.update({ amount: newAmount });
@@ -414,9 +416,6 @@ function ExpressCheckoutInner({
   );
 }
 
-/** Shipping cost buffer in major currency units for Apple Pay pre-authorization. */
-const SHIPPING_BUFFER_AMOUNT = 200;
-
 export function ExpressCheckoutButton({
   cart,
   basePath,
@@ -426,9 +425,8 @@ export function ExpressCheckoutButton({
   const currency = cart.currency.toLowerCase();
 
   const amount = useMemo(() => {
-    const subtotal = toCents(cart.total, currency);
-    return subtotal + toCents(SHIPPING_BUFFER_AMOUNT, currency);
-  }, [cart.total, currency]);
+    return toCents(cart.item_total, currency);
+  }, [cart.item_total, currency]);
 
   const options = useMemo(
     () => ({
