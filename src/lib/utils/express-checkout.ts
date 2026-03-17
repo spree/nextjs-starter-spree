@@ -1,4 +1,4 @@
-import type { Cart, Shipment } from "@spree/sdk";
+import type { Cart, Fulfillment } from "@spree/sdk";
 
 /**
  * Stripe zero-decimal currencies where the amount is already in the smallest unit.
@@ -116,17 +116,17 @@ export function buildSpreeAddress(
 interface ShippingRateMapping {
   /** Stripe-formatted rates for the payment sheet */
   shippingRates: Array<{ id: string; displayName: string; amount: number }>;
-  /** Maps Stripe rate ID → [ { shipmentId, rateId } ] for selectShippingRate */
-  selectionMap: Map<string, Array<{ shipmentId: string; rateId: string }>>;
+  /** Maps Stripe rate ID → [ { fulfillmentId, rateId } ] for selectDeliveryRate */
+  selectionMap: Map<string, Array<{ fulfillmentId: string; rateId: string }>>;
 }
 
 /**
- * Build Stripe shipping rates and a selection map from Spree shipments.
- * Deduplicates by shipping_method_id. For Google Pay, appends a random suffix
+ * Build Stripe shipping rates and a selection map from Spree fulfillments.
+ * Deduplicates by delivery_method_id. For Google Pay, appends a random suffix
  * to each rate ID to work around its duplicate-ID rejection.
  */
 export function buildShippingRateMap(
-  shipments: Shipment[],
+  shipments: Fulfillment[],
   isGooglePay: boolean,
   currency: string,
 ): ShippingRateMapping {
@@ -136,29 +136,29 @@ export function buildShippingRateMap(
   >();
   const selectionMap = new Map<
     string,
-    Array<{ shipmentId: string; rateId: string }>
+    Array<{ fulfillmentId: string; rateId: string }>
   >();
 
   for (const shipment of shipments) {
-    for (const rate of shipment.shipping_rates) {
-      if (!rateMap.has(rate.shipping_method_id)) {
+    for (const rate of shipment.delivery_rates) {
+      if (!rateMap.has(rate.delivery_method_id)) {
         const id = isGooglePay
-          ? `${rate.shipping_method_id}-${randomSuffix()}`
-          : String(rate.shipping_method_id);
-        rateMap.set(rate.shipping_method_id, {
+          ? `${rate.delivery_method_id}-${randomSuffix()}`
+          : String(rate.delivery_method_id);
+        rateMap.set(rate.delivery_method_id, {
           id,
           displayName: rate.name,
           amount: toCents(rate.cost, currency),
         });
         selectionMap.set(id, []);
       } else {
-        // Accumulate shipping cost from additional shipments
-        const existing = rateMap.get(rate.shipping_method_id)!;
+        // Accumulate shipping cost from additional fulfillments
+        const existing = rateMap.get(rate.delivery_method_id)!;
         existing.amount += toCents(rate.cost, currency);
       }
-      const stripeId = rateMap.get(rate.shipping_method_id)!.id;
+      const stripeId = rateMap.get(rate.delivery_method_id)!.id;
       selectionMap.get(stripeId)!.push({
-        shipmentId: shipment.id,
+        fulfillmentId: shipment.id,
         rateId: rate.id,
       });
     }
