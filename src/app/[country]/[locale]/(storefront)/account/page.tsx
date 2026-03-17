@@ -199,7 +199,7 @@ export default function AccountPage() {
                   Order History
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  View your past orders and track shipments
+                  View your past orders and track deliveries
                 </p>
               </div>
             </CardContent>

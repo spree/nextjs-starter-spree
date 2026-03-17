@@ -108,9 +108,9 @@ function GiftCardItem({ card }: { card: GiftCard }) {
             </span>
             <CopyButton code={card.code} />
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getStateColor(card.state, card.expired)}`}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getStateColor(card.status, card.expired)}`}
             >
-              {getStateLabel(card.state)}
+              {getStateLabel(card.status)}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">

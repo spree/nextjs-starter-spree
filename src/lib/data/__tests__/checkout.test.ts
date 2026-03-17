@@ -4,8 +4,8 @@ vi.mock("@spree/next", () => ({
   getCart: vi.fn(),
   getOrder: vi.fn(),
   updateCart: vi.fn(),
-  getShipments: vi.fn(),
-  selectShippingRate: vi.fn(),
+  getFulfillments: vi.fn(),
+  selectDeliveryRate: vi.fn(),
   applyCoupon: vi.fn(),
   removeCoupon: vi.fn(),
 }));
@@ -13,19 +13,19 @@ vi.mock("@spree/next", () => ({
 import {
   applyCoupon,
   getCart,
+  getFulfillments as getFulfillmentsSdk,
   getOrder,
-  getShipments as getShipmentsSdk,
   removeCoupon,
-  selectShippingRate as selectShippingRateSdk,
+  selectDeliveryRate as selectDeliveryRateSdk,
   updateCart,
 } from "@spree/next";
 
 import {
   applyCouponCode,
   getCheckoutOrder,
-  getShipments,
+  getFulfillments,
   removeCouponCode,
-  selectShippingRate,
+  selectDeliveryRate,
   updateOrderAddresses,
   updateOrderMarket,
 } from "@/lib/data/checkout";
@@ -34,8 +34,8 @@ import {
 const mockGetCart = getCart as any;
 const mockGetOrder = getOrder as any;
 const mockUpdateCart = updateCart as any;
-const mockGetShipments = getShipmentsSdk as any;
-const mockSelectShippingRate = selectShippingRateSdk as any;
+const mockGetFulfillments = getFulfillmentsSdk as any;
+const mockSelectDeliveryRate = selectDeliveryRateSdk as any;
 const mockApplyCoupon = applyCoupon as any;
 const mockRemoveCoupon = removeCoupon as any;
 
@@ -44,7 +44,7 @@ const mockOrder = {
   number: "R100",
   current_step: "address",
 };
-const mockShipments = [{ id: "ship-1", shipping_rates: [] }];
+const mockFulfillments = [{ id: "ship-1", delivery_rates: [] }];
 
 describe("checkout server actions", () => {
   beforeEach(() => {
@@ -164,39 +164,39 @@ describe("checkout server actions", () => {
     });
   });
 
-  describe("getShipments", () => {
-    it("returns shipment data on success", async () => {
-      mockGetShipments.mockResolvedValue({ data: mockShipments });
+  describe("getFulfillments", () => {
+    it("returns fulfillment data on success", async () => {
+      mockGetFulfillments.mockResolvedValue({ data: mockFulfillments });
 
-      const result = await getShipments("order-1");
+      const result = await getFulfillments("order-1");
 
-      expect(mockGetShipments).toHaveBeenCalled();
-      expect(result).toBe(mockShipments);
+      expect(mockGetFulfillments).toHaveBeenCalled();
+      expect(result).toBe(mockFulfillments);
     });
 
     it("returns empty array on failure", async () => {
-      mockGetShipments.mockRejectedValue(new Error("Not found"));
+      mockGetFulfillments.mockRejectedValue(new Error("Not found"));
 
-      const result = await getShipments("order-1");
+      const result = await getFulfillments("order-1");
 
       expect(result).toEqual([]);
     });
   });
 
-  describe("selectShippingRate", () => {
+  describe("selectDeliveryRate", () => {
     it("returns success", async () => {
-      mockSelectShippingRate.mockResolvedValue(undefined);
+      mockSelectDeliveryRate.mockResolvedValue(undefined);
 
-      const result = await selectShippingRate("order-1", "ship-1", "rate-1");
+      const result = await selectDeliveryRate("order-1", "ship-1", "rate-1");
 
-      expect(mockSelectShippingRate).toHaveBeenCalledWith("ship-1", "rate-1");
+      expect(mockSelectDeliveryRate).toHaveBeenCalledWith("ship-1", "rate-1");
       expect(result).toEqual({ success: true });
     });
 
     it("returns error on failure", async () => {
-      mockSelectShippingRate.mockRejectedValue(new Error("Rate not available"));
+      mockSelectDeliveryRate.mockRejectedValue(new Error("Rate not available"));
 
-      const result = await selectShippingRate("order-1", "ship-1", "rate-1");
+      const result = await selectDeliveryRate("order-1", "ship-1", "rate-1");
 
       expect(result).toEqual({
         success: false,

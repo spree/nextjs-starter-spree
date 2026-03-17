@@ -1,8 +1,8 @@
 "use server";
 
 import {
-  getShipments as _getShipments,
-  selectShippingRate as _selectShippingRate,
+  getFulfillments as _getFulfillments,
+  selectDeliveryRate as _selectDeliveryRate,
   applyCoupon,
   getCart,
   getOrder,
@@ -61,22 +61,22 @@ export async function updateOrderMarket(
   }, "Failed to update order market");
 }
 
-export async function getShipments(cartId: string) {
+export async function getFulfillments(cartId: string) {
   return withFallback(async () => {
-    const response = await _getShipments();
+    const response = await _getFulfillments();
     return response.data;
   }, []);
 }
 
-export async function selectShippingRate(
+export async function selectDeliveryRate(
   cartId: string,
-  shipmentId: string,
-  shippingRateId: string,
+  fulfillmentId: string,
+  deliveryRateId: string,
 ) {
   return actionResult(async () => {
-    const cart = await _selectShippingRate(shipmentId, shippingRateId);
+    const cart = await _selectDeliveryRate(fulfillmentId, deliveryRateId);
     return { cart };
-  }, "Failed to select shipping rate");
+  }, "Failed to select delivery rate");
 }
 
 export async function applyCouponCode(cartId: string, couponCode: string) {

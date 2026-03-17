@@ -33,7 +33,7 @@ function getPaymentStatusColor(state: string | null): string {
   }
 }
 
-function getShipmentStatusColor(state: string | null): string {
+function getFulfillmentStatusColor(state: string | null): string {
   switch (state) {
     case "shipped":
     case "delivered":
@@ -116,7 +116,7 @@ export default function OrdersPage() {
                     Payment
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Shipment
+                    Delivery
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total
@@ -141,16 +141,16 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_status)}`}
                       >
-                        {order.payment_state?.replace("_", " ") || "N/A"}
+                        {order.payment_status?.replace("_", " ") || "N/A"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(order.shipment_state)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getFulfillmentStatusColor(order.fulfillment_status)}`}
                       >
-                        {order.shipment_state || "N/A"}
+                        {order.fulfillment_status || "N/A"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">

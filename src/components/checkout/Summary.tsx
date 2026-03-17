@@ -9,7 +9,7 @@ interface SummaryProps {
 
 export function Summary({ cart }: SummaryProps) {
   const items = cart.items || [];
-  const hasShipping = (cart.shipments?.length ?? 0) > 0;
+  const hasShipping = (cart.fulfillments?.length ?? 0) > 0;
 
   return (
     <div>
@@ -57,7 +57,7 @@ export function Summary({ cart }: SummaryProps) {
         <div className="flex justify-between text-sm">
           <span className="text-gray-700">Shipping</span>
           {hasShipping ? (
-            <span className="text-gray-900">{cart.display_ship_total}</span>
+            <span className="text-gray-900">{cart.display_delivery_total}</span>
           ) : (
             <span className="text-xs text-gray-500">
               Enter shipping address

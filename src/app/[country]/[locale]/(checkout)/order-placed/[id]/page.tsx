@@ -164,7 +164,9 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Shipping</span>
-            <span className="text-gray-900">{order.display_ship_total}</span>
+            <span className="text-gray-900">
+              {order.display_delivery_total}
+            </span>
           </div>
           {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
             <div className="flex justify-between text-sm">

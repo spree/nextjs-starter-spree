@@ -3,9 +3,9 @@
 import type {
   Address,
   CreditCard,
+  Fulfillment,
   Order,
   Payment,
-  Shipment,
   StoreCredit,
 } from "@spree/sdk";
 import { ChevronLeft, CircleAlert } from "lucide-react";
@@ -31,8 +31,8 @@ function formatDate(dateString: string | null): string {
   });
 }
 
-function getShipmentStatusColor(state: string): string {
-  switch (state) {
+function getFulfillmentStatusColor(status: string): string {
+  switch (status) {
     case "shipped":
     case "delivered":
       return "bg-green-100 text-green-800";
@@ -158,20 +158,20 @@ function LineItemCard({
   );
 }
 
-function ShipmentBlock({
-  shipment,
+function FulfillmentBlock({
+  fulfillment,
   shipAddress,
   basePath,
   lineItems,
 }: {
-  shipment: Shipment;
+  fulfillment: Fulfillment;
   shipAddress: Address | null;
   basePath: string;
   lineItems: Order["items"];
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
-      {/* Shipment header */}
+      {/* Fulfillment header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex flex-col lg:flex-row lg:gap-6 gap-4">
           {shipAddress && (
@@ -188,24 +188,24 @@ function ShipmentBlock({
                 Shipping Method
               </h3>
               <p className="text-sm text-gray-900">
-                {shipment.shipping_method?.name || "Canceled"}
+                {fulfillment.delivery_method?.name || "Canceled"}
               </p>
-              {shipment.stock_location && (
+              {fulfillment.stock_location && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Shipped from {shipment.stock_location.name}
+                  Shipped from {fulfillment.stock_location.name}
                 </p>
               )}
               <span
-                className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getShipmentStatusColor(shipment.state)}`}
+                className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getFulfillmentStatusColor(fulfillment.status)}`}
               >
-                {shipment.state}
+                {fulfillment.status}
               </span>
             </div>
             <div className="mt-4 lg:mt-0">
-              {shipment.state === "shipped" && shipment.tracking_url ? (
+              {fulfillment.status === "shipped" && fulfillment.tracking_url ? (
                 <Button size="sm" asChild>
                   <a
-                    href={shipment.tracking_url}
+                    href={fulfillment.tracking_url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -221,17 +221,17 @@ function ShipmentBlock({
           </div>
         </div>
 
-        {shipment.state === "canceled" && !shipment.shipped_at && (
+        {fulfillment.status === "canceled" && !fulfillment.fulfilled_at && (
           <Alert variant="destructive" className="mt-3">
             <CircleAlert />
             <AlertDescription>
-              <strong>Shipment canceled</strong> — a refund has been issued.
+              <strong>Fulfillment canceled</strong> — a refund has been issued.
             </AlertDescription>
           </Alert>
         )}
-        {shipment.state !== "canceled" &&
-          shipment.state !== "shipped" &&
-          !shipment.tracking && (
+        {fulfillment.status !== "canceled" &&
+          fulfillment.status !== "shipped" &&
+          !fulfillment.tracking && (
             <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
               No tracking information present
             </div>
@@ -306,7 +306,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
     );
   }
 
-  const hasShipments = order.shipments && order.shipments.length > 0;
+  const hasFulfillments = order.fulfillments && order.fulfillments.length > 0;
 
   return (
     <div>
@@ -327,12 +327,12 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         Placed on {formatDate(order.completed_at)}
       </p>
 
-      {/* Shipments with line items */}
-      {hasShipments ? (
-        order.shipments.map((shipment) => (
-          <ShipmentBlock
-            key={shipment.id}
-            shipment={shipment}
+      {/* Fulfillments with line items */}
+      {hasFulfillments ? (
+        order.fulfillments.map((fulfillment) => (
+          <FulfillmentBlock
+            key={fulfillment.id}
+            fulfillment={fulfillment}
             shipAddress={order.ship_address}
             basePath={basePath}
             lineItems={order.items || []}
@@ -377,7 +377,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
                 Payment Information
               </h3>
               {order.payments
-                .filter((p) => p.state !== "void" && p.state !== "invalid")
+                .filter((p) => p.status !== "void" && p.status !== "invalid")
                 .map((payment) => (
                   <div key={payment.id} className="mb-3 last:mb-0">
                     <PaymentSourceInfo payment={payment} />
@@ -400,7 +400,9 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Shipping</span>
-            <span className="text-gray-900">{order.display_ship_total}</span>
+            <span className="text-gray-900">
+              {order.display_delivery_total}
+            </span>
           </div>
           {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
             <div className="flex justify-between text-sm">

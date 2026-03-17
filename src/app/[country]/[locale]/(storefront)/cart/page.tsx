@@ -147,10 +147,12 @@ export default function CartPage() {
                   <dd>{cart.display_promo_total}</dd>
                 </div>
               )}
-              {cart.ship_total && parseFloat(cart.ship_total) > 0 && (
+              {cart.delivery_total && parseFloat(cart.delivery_total) > 0 && (
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Shipping</dt>
-                  <dd className="text-gray-900">{cart.display_ship_total}</dd>
+                  <dd className="text-gray-900">
+                    {cart.display_delivery_total}
+                  </dd>
                 </div>
               )}
               {cart.tax_total && parseFloat(cart.tax_total) > 0 && (

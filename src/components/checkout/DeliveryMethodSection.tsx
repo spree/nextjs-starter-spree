@@ -1,21 +1,24 @@
 "use client";
 
-import type { Shipment } from "@spree/sdk";
+import type { Fulfillment } from "@spree/sdk";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-interface ShippingMethodSectionProps {
-  shipments: Shipment[];
-  onShippingRateSelect: (shipmentId: string, rateId: string) => Promise<void>;
+interface DeliveryMethodSectionProps {
+  fulfillments: Fulfillment[];
+  onDeliveryRateSelect: (
+    fulfillmentId: string,
+    rateId: string,
+  ) => Promise<void>;
   processing: boolean;
   errors?: string[];
 }
 
-export function ShippingMethodSection({
-  shipments,
-  onShippingRateSelect,
+export function DeliveryMethodSection({
+  fulfillments,
+  onDeliveryRateSelect,
   processing,
   errors,
-}: ShippingMethodSectionProps) {
+}: DeliveryMethodSectionProps) {
   return (
     <div>
       <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping method</h2>
@@ -30,25 +33,25 @@ export function ShippingMethodSection({
         </div>
       )}
 
-      {shipments.length === 0 ? (
+      {fulfillments.length === 0 ? (
         <div className="rounded-sm bg-gray-100 px-4 py-3.5 text-sm text-gray-500">
           Enter your shipping address to view available shipping methods.
         </div>
       ) : (
         <div className="space-y-2">
-          {shipments.map((shipment, index) => {
-            const selectedRate = shipment.shipping_rates.find(
+          {fulfillments.map((fulfillment, index) => {
+            const selectedRate = fulfillment.delivery_rates.find(
               (r) => r.selected,
             );
             return (
-              <div key={shipment.id}>
-                {shipments.length > 1 && (
+              <div key={fulfillment.id}>
+                {fulfillments.length > 1 && (
                   <p className="text-xs font-medium text-gray-500 mb-2">
-                    Shipment {index + 1} of {shipments.length}
-                    {shipment.stock_location?.name && (
+                    Package {index + 1} of {fulfillments.length}
+                    {fulfillment.stock_location?.name && (
                       <span className="font-normal">
                         {" "}
-                        &mdash; Ships from {shipment.stock_location.name}
+                        &mdash; Fulfilled from {fulfillment.stock_location.name}
                       </span>
                     )}
                   </p>
@@ -56,12 +59,12 @@ export function ShippingMethodSection({
                 <RadioGroup
                   value={selectedRate?.id ?? ""}
                   onValueChange={(rateId) =>
-                    onShippingRateSelect(shipment.id, rateId)
+                    onDeliveryRateSelect(fulfillment.id, rateId)
                   }
                   disabled={processing}
                   className="rounded-sm border overflow-hidden gap-0"
                 >
-                  {shipment.shipping_rates.map((rate, rateIndex) => (
+                  {fulfillment.delivery_rates.map((rate, rateIndex) => (
                     <label
                       key={rate.id}
                       className={`flex items-center justify-between px-4 py-3.5 cursor-pointer transition-colors ${

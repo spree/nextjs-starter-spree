@@ -274,7 +274,7 @@ export function trackPurchase(order: Cart | Order): void {
     buildOrderEcommercePayload(order, {
       transaction_id: order.number,
       tax: safeParseFloat(order.tax_total),
-      shipping: safeParseFloat(order.ship_total),
+      shipping: safeParseFloat(order.delivery_total),
     }),
   );
 

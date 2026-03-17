@@ -20,9 +20,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const { addItem } = useCart();
   const { currency } = useStore();
 
-  // Filter out master variant from variants list
+  // Filter variants list
   const variants = useMemo(() => {
-    return (product.variants || []).filter((v) => !v.is_master);
+    return (product.variants || []).filter(Boolean);
   }, [product.variants]);
 
   const hasVariants = variants.length > 0;
@@ -30,14 +30,14 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   // Initialize with default variant or first available variant
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(() => {
-    if (product.default_variant && !product.default_variant.is_master) {
+    if (product.default_variant) {
       return product.default_variant;
     }
     if (hasVariants) {
       return variants.find((v) => v.purchasable) || variants[0];
     }
-    // For products without variants, use master variant
-    return product.master_variant || product.default_variant || null;
+    // For products without variants, use default variant
+    return product.default_variant || null;
   });
 
   const [quantity, setQuantity] = useState(1);

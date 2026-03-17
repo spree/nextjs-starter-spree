@@ -7,11 +7,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
 import { CouponCode } from "@/components/checkout/CouponCode";
+import { DeliveryMethodSection } from "@/components/checkout/DeliveryMethodSection";
 import {
   PaymentSection,
   type PaymentSectionHandle,
 } from "@/components/checkout/PaymentSection";
-import { ShippingMethodSection } from "@/components/checkout/ShippingMethodSection";
 import { Summary } from "@/components/checkout/Summary";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
@@ -24,7 +24,7 @@ import {
   applyCouponCode,
   getCheckoutOrder,
   removeCouponCode,
-  selectShippingRate,
+  selectDeliveryRate,
   updateOrderAddresses,
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
@@ -95,7 +95,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     {},
   );
 
-  const shipments = cart?.shipments ?? [];
+  const fulfillments = cart?.fulfillments ?? [];
 
   const cartRef = useRef(cart);
   cartRef.current = cart;
@@ -267,9 +267,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     [],
   );
 
-  // Handle shipping rate selection
-  const handleShippingRateSelect = useCallback(
-    async (shipmentId: string, rateId: string) => {
+  // Handle delivery rate selection
+  const handleDeliveryRateSelect = useCallback(
+    async (fulfillmentId: string, rateId: string) => {
       const currentOrder = cartRef.current;
       if (!currentOrder) return;
 
@@ -280,18 +280,18 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       let trackingRateName: string | undefined;
 
       try {
-        const result = await selectShippingRate(
+        const result = await selectDeliveryRate(
           currentOrder.id,
-          shipmentId,
+          fulfillmentId,
           rateId,
         );
         if (!result.success) {
-          setError(result.error || "Failed to select shipping rate");
+          setError(result.error || "Failed to select delivery rate");
         } else if (result.cart) {
           setCart(result.cart);
 
-          const selectedRate = result.cart.shipments
-            ?.flatMap((s) => s.shipping_rates || [])
+          const selectedRate = result.cart.fulfillments
+            ?.flatMap((s) => s.delivery_rates || [])
             ?.find((r) => r.id === rateId);
           trackingOrder = result.cart;
           trackingRateName = selectedRate?.name;
@@ -570,9 +570,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       {/* Shipping method */}
       <div id="checkout-section-shipping" className="mt-6">
-        <ShippingMethodSection
-          shipments={shipments}
-          onShippingRateSelect={handleShippingRateSelect}
+        <DeliveryMethodSection
+          fulfillments={fulfillments}
+          onDeliveryRateSelect={handleDeliveryRateSelect}
           processing={processing}
           errors={sectionErrors.shipping}
         />
