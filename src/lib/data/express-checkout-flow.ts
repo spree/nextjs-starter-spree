@@ -1,7 +1,7 @@
 "use server";
 
 import type { AddressParams, Cart } from "@spree/sdk";
-import { selectShippingRate, updateOrderAddresses } from "@/lib/data/checkout";
+import { selectDeliveryRate, updateOrderAddresses } from "@/lib/data/checkout";
 import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
@@ -41,13 +41,13 @@ export async function expressCheckoutResolveShipping(
 
 export async function expressCheckoutSelectRates(
   cartId: string,
-  selections: Array<{ shipmentId: string; rateId: string }>,
+  selections: Array<{ fulfillmentId: string; rateId: string }>,
 ) {
   return actionResult(async () => {
     let cart: Cart | null = null;
 
-    for (const { shipmentId, rateId } of selections) {
-      const result = await selectShippingRate(cartId, shipmentId, rateId);
+    for (const { fulfillmentId, rateId } of selections) {
+      const result = await selectDeliveryRate(cartId, fulfillmentId, rateId);
       if (!result.success) {
         throw new Error(result.error);
       }
@@ -55,7 +55,7 @@ export async function expressCheckoutSelectRates(
     }
 
     if (!cart) {
-      throw new Error("No shipment selections provided");
+      throw new Error("No fulfillment selections provided");
     }
 
     return { cart };

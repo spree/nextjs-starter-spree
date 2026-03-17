@@ -55,7 +55,7 @@ function ExpressCheckoutInner({
   const isConfirmingRef = useRef(false);
   const isGooglePayRef = useRef(false);
   const shippingRateMapRef = useRef(
-    new Map<string, Array<{ shipmentId: string; rateId: string }>>(),
+    new Map<string, Array<{ fulfillmentId: string; rateId: string }>>(),
   );
 
   useEffect(() => {
@@ -111,7 +111,7 @@ function ExpressCheckoutInner({
         const order = result.cart;
 
         const { shippingRates, selectionMap } = buildShippingRateMap(
-          order.shipments,
+          order.fulfillments,
           isGooglePayRef.current,
           order.currency,
         );
