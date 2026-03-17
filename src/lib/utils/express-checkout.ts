@@ -140,12 +140,31 @@ export function buildShippingRateMap(
   >();
 
   for (const shipment of shipments) {
-    for (const rate of shipment.delivery_rates) {
-      if (!rateMap.has(rate.delivery_method_id)) {
+    // Backend may return "shipping_rates" (old) or "delivery_rates" (new SDK)
+    const rawShipment = shipment as Fulfillment & {
+      shipping_rates?: Array<{
+        id: string;
+        shipping_method_id: string;
+        name: string;
+        selected: boolean;
+        cost: string;
+        display_cost: string;
+      }>;
+    };
+    const rates = shipment.delivery_rates ?? rawShipment.shipping_rates ?? [];
+
+    for (const rate of rates) {
+      // Normalize: old API uses shipping_method_id, new uses delivery_method_id
+      const methodId =
+        (rate as { delivery_method_id?: string }).delivery_method_id ??
+        (rate as { shipping_method_id?: string }).shipping_method_id ??
+        rate.id;
+
+      if (!rateMap.has(methodId)) {
         const id = isGooglePay
-          ? `${rate.delivery_method_id}-${randomSuffix()}`
-          : String(rate.delivery_method_id);
-        rateMap.set(rate.delivery_method_id, {
+          ? `${methodId}-${randomSuffix()}`
+          : String(methodId);
+        rateMap.set(methodId, {
           id,
           displayName: rate.name,
           amount: toCents(rate.cost, currency),
@@ -153,10 +172,10 @@ export function buildShippingRateMap(
         selectionMap.set(id, []);
       } else {
         // Accumulate shipping cost from additional fulfillments
-        const existing = rateMap.get(rate.delivery_method_id)!;
+        const existing = rateMap.get(methodId)!;
         existing.amount += toCents(rate.cost, currency);
       }
-      const stripeId = rateMap.get(rate.delivery_method_id)!.id;
+      const stripeId = rateMap.get(methodId)!.id;
       selectionMap.get(stripeId)!.push({
         fulfillmentId: shipment.id,
         rateId: rate.id,

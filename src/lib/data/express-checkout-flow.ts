@@ -1,7 +1,12 @@
 "use server";
 
 import type { AddressParams, Cart } from "@spree/sdk";
-import { selectDeliveryRate, updateOrderAddresses } from "@/lib/data/checkout";
+import {
+  getCheckoutOrder,
+  getFulfillments,
+  selectDeliveryRate,
+  updateOrderAddresses,
+} from "@/lib/data/checkout";
 import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
@@ -35,7 +40,20 @@ export async function expressCheckoutResolveShipping(
       throw new Error(result.error);
     }
 
-    return { cart: result.cart };
+    // getCart() doesn't include fulfillments — fetch them separately
+    const [cart, fulfillments] = await Promise.all([
+      getCheckoutOrder(cartId),
+      getFulfillments(cartId),
+    ]);
+
+    if (!cart) {
+      throw new Error("Failed to fetch cart after address update");
+    }
+
+    // Attach fulfillments to cart for the client
+    cart.fulfillments = fulfillments;
+
+    return { cart };
   }, "Failed to resolve shipping");
 }
 
@@ -57,6 +75,10 @@ export async function expressCheckoutSelectRates(
     if (!cart) {
       throw new Error("No fulfillment selections provided");
     }
+
+    // selectDeliveryRate may not include fulfillments — fetch separately
+    const fulfillments = await getFulfillments(cartId);
+    cart.fulfillments = fulfillments;
 
     return { cart };
   }, "Failed to select shipping rates");

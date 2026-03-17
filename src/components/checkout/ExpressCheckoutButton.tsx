@@ -38,6 +38,8 @@ export interface ExpressCheckoutButtonProps {
   basePath: string;
   onComplete: () => void | Promise<void>;
   onProcessingChange?: (processing: boolean) => void;
+  maxColumns?: number;
+  showDivider?: boolean;
 }
 
 function ExpressCheckoutInner({
@@ -45,6 +47,8 @@ function ExpressCheckoutInner({
   basePath,
   onComplete,
   onProcessingChange,
+  maxColumns = 1,
+  showDivider = true,
 }: ExpressCheckoutButtonProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -57,6 +61,17 @@ function ExpressCheckoutInner({
   const shippingRateMapRef = useRef(
     new Map<string, Array<{ fulfillmentId: string; rateId: string }>>(),
   );
+
+  // Sync amount with Elements when cart changes (without remounting)
+  const currency = cart.currency.toLowerCase();
+  useEffect(() => {
+    if (!elements) return;
+    try {
+      elements.update({ amount: toCents(cart.item_total, currency) });
+    } catch (_) {
+      /* non-fatal */
+    }
+  }, [elements, cart.item_total, currency]);
 
   useEffect(() => {
     onProcessingChange?.(processing);
@@ -95,7 +110,6 @@ function ExpressCheckoutInner({
     async (event: StripeExpressCheckoutElementShippingAddressChangeEvent) => {
       try {
         const { address } = event;
-
         const result = await expressCheckoutResolveShipping(cart.id, {
           city: address.city,
           zipcode: address.postal_code,
@@ -111,7 +125,7 @@ function ExpressCheckoutInner({
         const order = result.cart;
 
         const { shippingRates, selectionMap } = buildShippingRateMap(
-          order.fulfillments,
+          order.fulfillments || [],
           isGooglePayRef.current,
           order.currency,
         );
@@ -137,7 +151,8 @@ function ExpressCheckoutInner({
         }
 
         event.resolve({ shippingRates, lineItems });
-      } catch (_err) {
+      } catch (err) {
+        console.error("[ExpressCheckout] shipping address error:", err);
         try {
           event.reject();
         } catch (_) {
@@ -386,7 +401,7 @@ function ExpressCheckoutInner({
               googlePay: "black",
             },
             layout: {
-              maxColumns: 1,
+              maxColumns,
               maxRows: 2,
             },
             emailRequired: true,
@@ -401,7 +416,7 @@ function ExpressCheckoutInner({
           onShippingRateChange={handleShippingRateChange}
         />
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-        {available && (
+        {available && showDivider && (
           <div className="relative mt-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
@@ -421,21 +436,25 @@ export function ExpressCheckoutButton({
   basePath,
   onComplete,
   onProcessingChange,
+  maxColumns,
+  showDivider,
 }: ExpressCheckoutButtonProps) {
   const currency = cart.currency.toLowerCase();
 
-  const amount = useMemo(() => {
-    return toCents(cart.item_total, currency);
-  }, [cart.item_total, currency]);
+  // Use refs for amount/currency so Elements options stays stable
+  // and doesn't cause remount (which destroys the ExpressCheckoutElement).
+  // Amount updates are handled via elements.update() inside the inner component.
+  const initialAmountRef = useRef(() => toCents(cart.item_total, currency));
+  const initialCurrencyRef = useRef(currency);
 
   const options = useMemo(
     () => ({
       mode: "payment" as const,
-      amount,
-      currency,
+      amount: initialAmountRef.current(),
+      currency: initialCurrencyRef.current,
       paymentMethodCreation: "manual" as const,
     }),
-    [amount, currency],
+    [],
   );
 
   return (
@@ -445,6 +464,8 @@ export function ExpressCheckoutButton({
         basePath={basePath}
         onComplete={onComplete}
         onProcessingChange={onProcessingChange}
+        maxColumns={maxColumns}
+        showDivider={showDivider}
       />
     </Elements>
   );
