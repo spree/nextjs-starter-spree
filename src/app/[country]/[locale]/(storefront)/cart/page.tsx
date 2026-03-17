@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -24,6 +24,7 @@ const ExpressCheckoutButton = dynamic(
 
 export default function CartPage() {
   const { cart, loading, updateItem, removeItem, refreshCart } = useCart();
+  const [expressProcessing, setExpressProcessing] = useState(false);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -224,18 +225,23 @@ export default function CartPage() {
                   cart={cart}
                   basePath={basePath}
                   onComplete={() => refreshCart()}
+                  onProcessingChange={setExpressProcessing}
                 />
               )}
-              <Button size="lg" asChild className="w-full">
-                <Link href={`${basePath}/checkout/${cart.id}`}>
-                  {t("proceedToCheckout")}
-                </Link>
-              </Button>
-              <Button variant="link" asChild className="w-full">
-                <Link href={`${basePath}/products`}>
-                  {tc("continueShopping")}
-                </Link>
-              </Button>
+              {!expressProcessing && (
+                <>
+                  <Button size="lg" asChild className="w-full">
+                    <Link href={`${basePath}/checkout/${cart.id}`}>
+                      {t("proceedToCheckout")}
+                    </Link>
+                  </Button>
+                  <Button variant="link" asChild className="w-full">
+                    <Link href={`${basePath}/products`}>
+                      {tc("continueShopping")}
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

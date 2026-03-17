@@ -624,7 +624,9 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
           <ExpressCheckoutButton
             cart={cart}
             basePath={basePath}
-            onComplete={() => loadOrder()}
+            onComplete={async () => {
+              await loadOrder();
+            }}
             onProcessingChange={setProcessing}
             maxColumns={2}
             showDivider
@@ -632,83 +634,92 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
         </div>
       )}
 
-      {/* Contact + Delivery */}
-      <div id="checkout-section-address">
-        <AddressSection
-          cart={cart}
-          countries={countries}
-          savedAddresses={savedAddresses}
-          isAuthenticated={isAuthenticated}
-          signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
-          fetchStates={fetchStates}
-          onEmailBlur={handleEmailBlur}
-          onAutoSave={handleAutoSave}
-          onUpdateSavedAddress={
-            isAuthenticated ? handleUpdateSavedAddress : undefined
-          }
-          errors={sectionErrors.address}
-          saving={saving}
-          processing={processing}
-          user={user}
-        />
-      </div>
-
-      {/* Shipping method */}
-      <div id="checkout-section-shipping" className="mt-6">
-        <DeliveryMethodSection
-          fulfillments={fulfillments}
-          onDeliveryRateSelect={handleDeliveryRateSelect}
-          processing={processing}
-          errors={sectionErrors.shipping}
-        />
-      </div>
-
-      {/* Payment */}
-      <div id="checkout-section-payment" className="mt-6">
-        <PaymentSection
-          ref={paymentRef}
-          cart={cart}
-          countries={countries}
-          isAuthenticated={isAuthenticated}
-          fetchStates={fetchStates}
-          onUpdateBillingAddress={handleUpdateBillingAddress}
-          onPaymentComplete={handlePaymentComplete}
-          processing={processing}
-          setProcessing={setProcessing}
-          errors={sectionErrors.payment}
-        />
-      </div>
-
-      {/* Policy consent — guests only, authenticated users accepted at registration */}
-      {!isAuthenticated && (
-        <div className="mt-6">
-          <PolicyConsent
-            checked={policyConsent}
-            onCheckedChange={(checked) => {
-              setPolicyConsent(checked);
-              if (checked) setPolicyError(false);
-            }}
-            error={policyError}
+      {/* Checkout form sections — dimmed & disabled during express checkout */}
+      <div
+        className={
+          processing
+            ? "relative opacity-50 pointer-events-none select-none"
+            : "relative"
+        }
+      >
+        {/* Contact + Delivery */}
+        <div id="checkout-section-address">
+          <AddressSection
+            cart={cart}
+            countries={countries}
+            savedAddresses={savedAddresses}
+            isAuthenticated={isAuthenticated}
+            signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
+            fetchStates={fetchStates}
+            onEmailBlur={handleEmailBlur}
+            onAutoSave={handleAutoSave}
+            onUpdateSavedAddress={
+              isAuthenticated ? handleUpdateSavedAddress : undefined
+            }
+            errors={sectionErrors.address}
+            saving={saving}
+            processing={processing}
+            user={user}
           />
         </div>
-      )}
 
-      {/* Pay now button — Shopify: black, tall, minimal radius, bold */}
-      <button
-        type="button"
-        onClick={validateAndPay}
-        disabled={processing}
-        className="w-full mt-8 h-[54px] bg-black text-white text-sm font-bold rounded-sm hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-      >
-        {processing ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {tc("processing")}
-          </>
-        ) : (
-          t("payNow")
+        {/* Shipping method */}
+        <div id="checkout-section-shipping" className="mt-6">
+          <DeliveryMethodSection
+            fulfillments={fulfillments}
+            onDeliveryRateSelect={handleDeliveryRateSelect}
+            processing={processing}
+            errors={sectionErrors.shipping}
+          />
+        </div>
+
+        {/* Payment */}
+        <div id="checkout-section-payment" className="mt-6">
+          <PaymentSection
+            ref={paymentRef}
+            cart={cart}
+            countries={countries}
+            isAuthenticated={isAuthenticated}
+            fetchStates={fetchStates}
+            onUpdateBillingAddress={handleUpdateBillingAddress}
+            onPaymentComplete={handlePaymentComplete}
+            processing={processing}
+            setProcessing={setProcessing}
+            errors={sectionErrors.payment}
+          />
+        </div>
+
+        {/* Policy consent — guests only, authenticated users accepted at registration */}
+        {!isAuthenticated && (
+          <div className="mt-6">
+            <PolicyConsent
+              checked={policyConsent}
+              onCheckedChange={(checked) => {
+                setPolicyConsent(checked);
+                if (checked) setPolicyError(false);
+              }}
+              error={policyError}
+            />
+          </div>
         )}
-      </button>
+
+        {/* Pay now button */}
+        <button
+          type="button"
+          onClick={validateAndPay}
+          disabled={processing}
+          className="w-full mt-8 h-[54px] bg-black text-white text-sm font-bold rounded-sm hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        >
+          {processing ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {tc("processing")}
+            </>
+          ) : (
+            t("payNow")
+          )}
+        </button>
+      </div>
     </div>
   );
 }
