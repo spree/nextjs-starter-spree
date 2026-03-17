@@ -329,15 +329,28 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
       {/* Fulfillments with line items */}
       {hasFulfillments ? (
-        order.fulfillments.map((fulfillment) => (
-          <FulfillmentBlock
-            key={fulfillment.id}
-            fulfillment={fulfillment}
-            shipAddress={order.ship_address}
-            basePath={basePath}
-            lineItems={order.items || []}
-          />
-        ))
+        order.fulfillments.map((fulfillment) => {
+          // Filter order items to only those in this fulfillment
+          const manifestItemIds = new Set(
+            fulfillment.items?.map((i) => i.item_id) ?? [],
+          );
+          const fulfillmentLineItems =
+            manifestItemIds.size > 0
+              ? (order.items || []).filter((item) =>
+                  manifestItemIds.has(item.id),
+                )
+              : order.items || []; // fallback: show all if no manifest
+
+          return (
+            <FulfillmentBlock
+              key={fulfillment.id}
+              fulfillment={fulfillment}
+              shipAddress={order.ship_address}
+              basePath={basePath}
+              lineItems={fulfillmentLineItems}
+            />
+          );
+        })
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
           <div className="divide-y divide-gray-200">
