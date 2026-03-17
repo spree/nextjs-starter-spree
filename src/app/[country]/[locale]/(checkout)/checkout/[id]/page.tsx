@@ -2,6 +2,7 @@
 
 import type { Address, AddressParams, Cart, Country } from "@spree/sdk";
 import { CircleAlert, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
@@ -35,6 +36,14 @@ import {
   completeCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
+
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then((m) => ({
+      default: m.ExpressCheckoutButton,
+    })),
+  { ssr: false },
+);
 
 interface CheckoutPageProps {
   params: Promise<{
@@ -551,6 +560,23 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             <CircleAlert className="h-4 w-4 flex-shrink-0" />
             {error}
           </p>
+        </div>
+      )}
+
+      {/* Express checkout for guests */}
+      {!isAuthenticated && parseFloat(cart.total) > 0 && (
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">
+            Express checkout
+          </h2>
+          <ExpressCheckoutButton
+            cart={cart}
+            basePath={basePath}
+            onComplete={() => loadOrder()}
+            onProcessingChange={setProcessing}
+            maxColumns={2}
+            showDivider
+          />
         </div>
       )}
 
