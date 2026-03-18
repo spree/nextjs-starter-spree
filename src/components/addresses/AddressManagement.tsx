@@ -147,8 +147,9 @@ export function AddressManagement({
   const handleDelete = async (id: string) => {
     const result = await deleteAddress(id);
     if (result.success) {
-      // Remove the address from state
       setAddresses((prev) => prev.filter((addr) => addr.id !== id));
+    } else {
+      alert(`Failed to delete address: ${result.error}`);
     }
   };
 
