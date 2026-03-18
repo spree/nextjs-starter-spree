@@ -24,7 +24,7 @@ export interface ExpressCheckoutPartialAddress {
 export async function expressCheckoutResolveShipping(
   cartId: string,
   address: ExpressCheckoutPartialAddress,
-) {
+): Promise<{ success: true; cart: Cart } | { success: false; error: string }> {
   return actionResult(async () => {
     const result = await updateOrderAddresses(cartId, {
       ship_address: {
@@ -60,7 +60,7 @@ export async function expressCheckoutResolveShipping(
 export async function expressCheckoutSelectRates(
   cartId: string,
   selections: Array<{ fulfillmentId: string; rateId: string }>,
-) {
+): Promise<{ success: true; cart: Cart } | { success: false; error: string }> {
   return actionResult(async () => {
     let cart: Cart | null = null;
 
@@ -91,7 +91,7 @@ export async function expressCheckoutPreparePayment(
     shipAddress: AddressParams;
     billAddress: AddressParams;
   },
-) {
+): Promise<{ success: true; cart: Cart } | { success: false; error: string }> {
   return actionResult(async () => {
     const result = await updateOrderAddresses(cartId, {
       email: params.email,
@@ -117,7 +117,7 @@ export async function expressCheckoutCreateSession(
   cartId: string,
   paymentMethodId: string,
   stripePaymentMethodId: string,
-) {
+): ReturnType<typeof createCheckoutPaymentSession> {
   return createCheckoutPaymentSession(
     cartId,
     paymentMethodId,
@@ -128,7 +128,7 @@ export async function expressCheckoutCreateSession(
 export async function expressCheckoutFinalize(
   cartId: string,
   sessionId: string,
-) {
+): Promise<{ success: true } | { success: false; error: string }> {
   return actionResult(async () => {
     const sessionResult = await completeCheckoutPaymentSession(
       cartId,

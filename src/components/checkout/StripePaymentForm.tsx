@@ -64,10 +64,10 @@ function StripePaymentFormInner({
   }, [elements]);
 
   useEffect(() => {
-    if (stripe) {
+    if (stripe && elements) {
       onReady({ confirmPayment, fetchUpdates });
     }
-  }, [stripe, confirmPayment, fetchUpdates, onReady]);
+  }, [stripe, elements, confirmPayment, fetchUpdates, onReady]);
 
   return (
     <div>
