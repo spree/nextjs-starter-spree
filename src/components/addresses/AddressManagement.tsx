@@ -34,8 +34,11 @@ function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await onDelete();
-    setDeleting(false);
+    try {
+      await onDelete();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (

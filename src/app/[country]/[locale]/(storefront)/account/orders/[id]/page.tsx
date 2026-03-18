@@ -17,7 +17,7 @@ export default async function OrderDetailPage({
   const basePath = `/${country}/${locale}`;
   const order = await getOrder(id);
 
-  if (!order) {
+  if (!order || order.completed_at === null) {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-medium text-gray-900 mb-2">
