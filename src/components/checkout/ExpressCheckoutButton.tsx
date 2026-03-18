@@ -60,6 +60,13 @@ function ExpressCheckoutInner({
   const shippingRateMapRef = useRef(
     new Map<string, Array<{ fulfillmentId: string; rateId: string }>>(),
   );
+  const onProcessingChangeRef = useRef(onProcessingChange);
+  onProcessingChangeRef.current = onProcessingChange;
+
+  const updateProcessing = useCallback((value: boolean) => {
+    setProcessing(value);
+    onProcessingChangeRef.current?.(value);
+  }, []);
 
   // Sync amount with Elements when cart changes (without remounting)
   const currency = cart.currency.toLowerCase();
@@ -71,10 +78,6 @@ function ExpressCheckoutInner({
       /* non-fatal */
     }
   }, [elements, cart.item_total, currency]);
-
-  useEffect(() => {
-    onProcessingChange?.(processing);
-  }, [processing, onProcessingChange]);
 
   const handleReady = useCallback(
     (event: StripeExpressCheckoutElementReadyEvent) => {
@@ -205,7 +208,7 @@ function ExpressCheckoutInner({
       isConfirmingRef.current = true;
       const orderId = cart.id;
       setError(null);
-      setProcessing(true);
+      updateProcessing(true);
 
       let stripePaymentConfirmed = false;
 
@@ -222,7 +225,7 @@ function ExpressCheckoutInner({
           event.paymentFailed({ reason });
         }
         setError(msg);
-        setProcessing(false);
+        updateProcessing(false);
         isConfirmingRef.current = false;
       };
 
@@ -362,6 +365,7 @@ function ExpressCheckoutInner({
       basePath,
       onComplete,
       router,
+      updateProcessing,
     ],
   );
 
