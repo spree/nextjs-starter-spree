@@ -30,7 +30,6 @@ import {
   parseName,
   toCents,
 } from "@/lib/utils/express-checkout";
-import { extractBasePath } from "@/lib/utils/path";
 import { stripePromise } from "@/lib/utils/stripe";
 
 export interface ExpressCheckoutButtonProps {
@@ -76,14 +75,6 @@ function ExpressCheckoutInner({
   useEffect(() => {
     onProcessingChange?.(processing);
   }, [processing, onProcessingChange]);
-
-  useEffect(() => {
-    if (available !== null) return;
-    const timeout = setTimeout(() => {
-      setAvailable((prev) => (prev === null ? false : prev));
-    }, 8000);
-    return () => clearTimeout(timeout);
-  }, [available]);
 
   const handleReady = useCallback(
     (event: StripeExpressCheckoutElementReadyEvent) => {
@@ -318,8 +309,7 @@ function ExpressCheckoutInner({
           return;
         }
 
-        const currentBasePath = extractBasePath(window.location.pathname);
-        const returnUrl = `${window.location.origin}${currentBasePath}/confirm-payment/${orderId}?session=${sessionId}`;
+        const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${orderId}?session=${sessionId}`;
         const { error: confirmError } = await stripe.confirmPayment({
           clientSecret,
           confirmParams: {
@@ -350,7 +340,7 @@ function ExpressCheckoutInner({
           /* non-blocking — backend will reconcile */
         }
 
-        router.push(`${currentBasePath}/order-placed/${orderId}`);
+        router.push(`${basePath}/order-placed/${orderId}`);
         try {
           await onComplete();
         } catch (_onCompleteErr) {
@@ -364,7 +354,15 @@ function ExpressCheckoutInner({
         fail("fail", msg);
       }
     },
-    [stripe, elements, cart.id, cart.payment_methods, onComplete, router],
+    [
+      stripe,
+      elements,
+      cart.id,
+      cart.payment_methods,
+      basePath,
+      onComplete,
+      router,
+    ],
   );
 
   const handleCancel = useCallback(() => {
@@ -384,48 +382,68 @@ function ExpressCheckoutInner({
           </p>
         </div>
       )}
-      <div className={processing ? "h-0 overflow-hidden" : ""}>
-        <ExpressCheckoutElement
-          options={{
-            paymentMethods: {
-              applePay: "auto",
-              googlePay: "auto",
-              link: "auto",
-            },
-            buttonType: {
-              applePay: "check-out",
-              googlePay: "checkout",
-            },
-            buttonTheme: {
-              applePay: "black",
-              googlePay: "black",
-            },
-            layout: {
-              maxColumns,
-              maxRows: 2,
-            },
-            emailRequired: true,
-            phoneNumberRequired: true,
-            shippingAddressRequired: true,
-          }}
-          onReady={handleReady}
-          onClick={handleClick}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-          onShippingAddressChange={handleShippingAddressChange}
-          onShippingRateChange={handleShippingRateChange}
-        />
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-        {available && showDivider && (
-          <div className="relative mt-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+
+      {/* Buttons + spinner share the same space to avoid layout shift */}
+      <div className="relative min-h-12">
+        {/* Spinner — overlays the button area, fades out when ready */}
+        <div
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+            available === null && !processing
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        </div>
+
+        {/* Buttons — always mounted so Stripe can init, fade in when ready */}
+        <div
+          className={`transition-opacity duration-300 ease-out ${
+            available === true && !processing ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <ExpressCheckoutElement
+            options={{
+              paymentMethods: {
+                applePay: "auto",
+                googlePay: "auto",
+                link: "auto",
+              },
+              buttonType: {
+                applePay: "check-out",
+                googlePay: "checkout",
+              },
+              buttonTheme: {
+                applePay: "black",
+                googlePay: "black",
+              },
+              layout: {
+                maxColumns,
+                maxRows: 2,
+              },
+              emailRequired: true,
+              phoneNumberRequired: true,
+              shippingAddressRequired: true,
+            }}
+            onReady={handleReady}
+            onClick={handleClick}
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+            onShippingAddressChange={handleShippingAddressChange}
+            onShippingRateChange={handleShippingRateChange}
+          />
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          {available && showDivider && (
+            <div className="relative mt-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">or</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

@@ -42,7 +42,14 @@ const ExpressCheckoutButton = dynamic(
     import("@/components/checkout/ExpressCheckoutButton").then((m) => ({
       default: m.ExpressCheckoutButton,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-12 flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+      </div>
+    ),
+  },
 );
 
 interface CheckoutPageProps {
@@ -565,7 +572,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       {/* Express checkout for guests */}
       {!isAuthenticated && parseFloat(cart.total) > 0 && (
-        <div className="mb-6">
+        <div className="mb-4">
           <h2 className="text-lg font-bold text-gray-900 mb-3">
             Express checkout
           </h2>

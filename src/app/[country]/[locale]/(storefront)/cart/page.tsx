@@ -18,11 +18,18 @@ const ExpressCheckoutButton = dynamic(
     import("@/components/checkout/ExpressCheckoutButton").then((m) => ({
       default: m.ExpressCheckoutButton,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-12 flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+      </div>
+    ),
+  },
 );
 
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem, refreshCart } = useCart();
+  const { cart, loading, updateItem, removeItem } = useCart();
   const [expressProcessing, setExpressProcessing] = useState(false);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -189,7 +196,7 @@ export default function CartPage() {
                 <ExpressCheckoutButton
                   cart={cart}
                   basePath={basePath}
-                  onComplete={() => refreshCart()}
+                  onComplete={() => {}}
                   onProcessingChange={setExpressProcessing}
                 />
               )}
