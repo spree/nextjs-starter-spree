@@ -109,7 +109,8 @@ export function mapLineItemToGA4Item(
 
   const discountTotal = safeParseFloat(lineItem.discount_total);
   if (discountTotal < 0) {
-    item.discount = Math.abs(discountTotal);
+    const quantity = Math.max(lineItem.quantity ?? 1, 1);
+    item.discount = Math.abs(discountTotal) / quantity;
   }
 
   return item;
@@ -218,7 +219,7 @@ function buildOrderEcommercePayload(
   order: Cart | Order,
   extras?: Record<string, unknown>,
 ): Record<string, unknown> {
-  const coupon = order.discounts?.[0]?.code;
+  const coupon = order.discounts?.find((d) => d.code)?.code;
   return {
     currency: order.currency,
     value: safeParseFloat(order.total),

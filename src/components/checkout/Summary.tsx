@@ -65,7 +65,7 @@ export function Summary({ cart }: SummaryProps) {
           )}
         </div>
 
-        {parseFloat(cart.discount_total) !== 0 && (
+        {cart.discount_total && parseFloat(cart.discount_total) !== 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-700">Discount</span>
             <span className="text-green-700">
