@@ -156,7 +156,7 @@ export function AddressManagement({
     }
   };
 
-  if (emptyState) {
+  if (emptyState && addresses.length === 0) {
     return (
       <>
         <Button onClick={handleAdd}>Add Your First Address</Button>

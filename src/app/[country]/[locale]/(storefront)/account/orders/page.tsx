@@ -13,7 +13,7 @@ export default async function OrdersPage({ params }: OrdersPageProps) {
   const basePath = `/${country}/${locale}`;
 
   const response = await getOrders({ limit: 50 });
-  const orders = response.data;
+  const orders = response.data.filter((order) => order.completed_at !== null);
 
   return (
     <div>
