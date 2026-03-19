@@ -26,8 +26,8 @@ interface AddressSectionProps {
   onEmailBlur: (email: string) => Promise<void>;
   onAutoSave: (data: {
     email: string;
-    ship_address?: AddressParams;
-    ship_address_id?: string;
+    shipping_address?: AddressParams;
+    shipping_address_id?: string;
   }) => Promise<void>;
   onUpdateSavedAddress?: (
     id: string,
@@ -39,10 +39,10 @@ interface AddressSectionProps {
 }
 
 const REQUIRED_ADDRESS_FIELDS: (keyof AddressFormData)[] = [
-  "lastname",
+  "last_name",
   "address1",
   "city",
-  "zipcode",
+  "postal_code",
   "country_iso",
 ];
 
@@ -56,9 +56,12 @@ function buildAutoSaveHash(
   savedAddressId?: string,
 ): string {
   if (savedAddressId) {
-    return JSON.stringify({ email, ship_address_id: savedAddressId });
+    return JSON.stringify({ email, shipping_address_id: savedAddressId });
   }
-  return JSON.stringify({ email, ship_address: formDataToAddress(address) });
+  return JSON.stringify({
+    email,
+    shipping_address: formDataToAddress(address),
+  });
 }
 
 export function AddressSection({
@@ -78,7 +81,9 @@ export function AddressSection({
   // Determine initial saved address: use the first saved address when the
   // cart doesn't have a shipping address yet (authenticated users).
   const initialSavedAddress =
-    !cart.ship_address && isAuthenticated && initialSavedAddresses.length > 0
+    !cart.shipping_address &&
+    isAuthenticated &&
+    initialSavedAddresses.length > 0
       ? initialSavedAddresses[0]
       : undefined;
 
@@ -86,7 +91,7 @@ export function AddressSection({
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
     initialSavedAddress
       ? addressToFormData(initialSavedAddress)
-      : addressToFormData(cart.ship_address),
+      : addressToFormData(cart.shipping_address),
   );
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
@@ -123,7 +128,7 @@ export function AddressSection({
         try {
           await onAutoSave({
             email: currentEmail,
-            ship_address_id: savedAddrId,
+            shipping_address_id: savedAddrId,
           });
           lastSavedRef.current = hash;
         } catch {
@@ -139,7 +144,7 @@ export function AddressSection({
       try {
         await onAutoSave({
           email: currentEmail,
-          ship_address: formDataToAddress(currentAddress),
+          shipping_address: formDataToAddress(currentAddress),
         });
         lastSavedRef.current = hash;
       } catch {

@@ -230,8 +230,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const handleAutoSave = useCallback(
     async (addressData: {
       email: string;
-      ship_address?: AddressParams;
-      ship_address_id?: string;
+      shipping_address?: AddressParams;
+      shipping_address_id?: string;
     }) => {
       const currentOrder = cartRef.current;
       if (!currentOrder) return;
@@ -242,11 +242,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       try {
         const updateResult = await updateOrderAddresses(currentOrder.id, {
           email: addressData.email,
-          ...(addressData.ship_address && {
-            ship_address: addressData.ship_address,
+          ...(addressData.shipping_address && {
+            shipping_address: addressData.shipping_address,
           }),
-          ...(addressData.ship_address_id && {
-            ship_address_id: addressData.ship_address_id,
+          ...(addressData.shipping_address_id && {
+            shipping_address_id: addressData.shipping_address_id,
           }),
         });
 
@@ -315,7 +315,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   // Handle billing address update (called by PaymentSection before gateway confirmation)
   const handleUpdateBillingAddress = useCallback(
-    async (data: { bill_address: AddressParams }): Promise<boolean> => {
+    async (data: {
+      billing_address?: AddressParams;
+      use_shipping?: boolean;
+    }): Promise<boolean> => {
       const currentOrder = cartRef.current;
       if (!currentOrder) return false;
 
@@ -323,7 +326,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       try {
         const updateResult = await updateOrderAddresses(currentOrder.id, {
-          bill_address: data.bill_address,
+          ...(data.billing_address && {
+            billing_address: data.billing_address,
+          }),
+          ...(data.use_shipping && { use_shipping: data.use_shipping }),
         });
 
         if (!updateResult.success) {

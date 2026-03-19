@@ -20,7 +20,12 @@ export default function CartPage() {
 
   // Track view_cart when cart loads with items
   useEffect(() => {
-    if (!loading && cart && cart.item_count > 0 && !viewCartFiredRef.current) {
+    if (
+      !loading &&
+      cart &&
+      cart.total_quantity > 0 &&
+      !viewCartFiredRef.current
+    ) {
       trackViewCart(cart);
       viewCartFiredRef.current = true;
     }
@@ -141,10 +146,10 @@ export default function CartPage() {
                 <dt className="text-gray-500">Subtotal</dt>
                 <dd className="text-gray-900">{cart.display_item_total}</dd>
               </div>
-              {cart.promo_total && parseFloat(cart.promo_total) < 0 && (
+              {cart.discount_total && parseFloat(cart.discount_total) < 0 && (
                 <div className="flex justify-between text-green-600">
                   <dt>Discount</dt>
-                  <dd>{cart.display_promo_total}</dd>
+                  <dd>{cart.display_discount_total}</dd>
                 </div>
               )}
               {cart.delivery_total && parseFloat(cart.delivery_total) > 0 && (

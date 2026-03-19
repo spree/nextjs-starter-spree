@@ -19,12 +19,12 @@ import { AddressFormFields } from "./AddressFormFields";
 interface AddressEditModalProps {
   address: {
     id?: string;
-    firstname: string | null;
-    lastname: string | null;
+    first_name: string | null;
+    last_name: string | null;
     address1: string | null;
     address2: string | null;
     city: string | null;
-    zipcode: string | null;
+    postal_code: string | null;
     phone: string | null;
     company: string | null;
     country_iso: string;

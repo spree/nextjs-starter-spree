@@ -38,10 +38,11 @@ export async function getCompletedOrder(cartId: string): Promise<Cart | null> {
 export async function updateOrderAddresses(
   cartId: string,
   addresses: {
-    ship_address?: AddressParams;
-    bill_address?: AddressParams;
-    ship_address_id?: string;
-    bill_address_id?: string;
+    shipping_address?: AddressParams;
+    billing_address?: AddressParams;
+    shipping_address_id?: string;
+    billing_address_id?: string;
+    use_shipping?: boolean;
     email?: string;
   },
 ) {

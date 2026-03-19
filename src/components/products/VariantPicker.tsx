@@ -136,12 +136,12 @@ export function VariantPicker({
           <div key={optionType.id}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-900">
-                {optionType.presentation}
+                {optionType.label}
               </span>
               {selectedValue && (
                 <span className="text-sm text-gray-500">
-                  {getOptionValueDetails(optionType.id, selectedValue)
-                    ?.presentation || selectedValue}
+                  {getOptionValueDetails(optionType.id, selectedValue)?.label ||
+                    selectedValue}
                 </span>
               )}
             </div>
@@ -166,7 +166,7 @@ export function VariantPicker({
                       key={value}
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
-                      title={optionValue?.presentation || value}
+                      title={optionValue?.label || value}
                       className={`
                         w-10 h-10 rounded-lg border-1 transition-all relative
                         ${isSelected ? "border-gray-900 ring-2 ring-primary ring-offset-2" : "border-gray-200"}
@@ -213,7 +213,7 @@ export function VariantPicker({
                           : ""
                       }
                     >
-                      {optionValue?.presentation || value}
+                      {optionValue?.label || value}
                       {!isPurchasable && isAvailable && (
                         <span className="ml-1 text-xs text-gray-400">
                           (Out of stock)

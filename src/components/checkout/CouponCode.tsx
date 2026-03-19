@@ -18,8 +18,8 @@ export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
   const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const appliedPromotions = cart.promotions || [];
-  const couponPromotions = appliedPromotions.filter(
+  const appliedDiscounts = cart.discounts || [];
+  const couponPromotions = appliedDiscounts.filter(
     (p): p is typeof p & { code: string } => !!p.code,
   );
 

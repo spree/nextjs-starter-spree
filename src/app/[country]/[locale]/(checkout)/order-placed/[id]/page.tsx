@@ -106,7 +106,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   }
 
   const customerName =
-    order.bill_address?.full_name || order.ship_address?.full_name || "";
+    order.billing_address?.full_name || order.shipping_address?.full_name || "";
 
   return (
     <div className="py-8 max-w-2xl mx-auto">
@@ -168,14 +168,15 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
               {order.display_delivery_total}
             </span>
           </div>
-          {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Discount</span>
-              <span className="text-green-600">
-                {order.display_promo_total}
-              </span>
-            </div>
-          )}
+          {order.discount_total &&
+            Number.parseFloat(order.discount_total) !== 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Discount</span>
+                <span className="text-green-600">
+                  {order.display_discount_total}
+                </span>
+              </div>
+            )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Tax</span>
             <span className="text-gray-900">{order.display_tax_total}</span>
@@ -202,55 +203,57 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {order.ship_address && (
+            {order.shipping_address && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">
                   Shipping Address
                 </h3>
                 <div className="text-sm text-gray-600 space-y-0.5">
                   <p className="font-medium text-gray-800">
-                    {order.ship_address.full_name}
+                    {order.shipping_address.full_name}
                   </p>
-                  {order.ship_address.company && (
-                    <p>{order.ship_address.company}</p>
+                  {order.shipping_address.company && (
+                    <p>{order.shipping_address.company}</p>
                   )}
-                  <p>{order.ship_address.address1}</p>
-                  {order.ship_address.address2 && (
-                    <p>{order.ship_address.address2}</p>
+                  <p>{order.shipping_address.address1}</p>
+                  {order.shipping_address.address2 && (
+                    <p>{order.shipping_address.address2}</p>
                   )}
                   <p>
-                    {order.ship_address.city}, {order.ship_address.state_text}{" "}
-                    {order.ship_address.zipcode}
+                    {order.shipping_address.city},{" "}
+                    {order.shipping_address.state_text}{" "}
+                    {order.shipping_address.postal_code}
                   </p>
-                  <p>{order.ship_address.country_name}</p>
-                  {order.ship_address.phone && (
-                    <p className="mt-1">{order.ship_address.phone}</p>
+                  <p>{order.shipping_address.country_name}</p>
+                  {order.shipping_address.phone && (
+                    <p className="mt-1">{order.shipping_address.phone}</p>
                   )}
                 </div>
               </div>
             )}
 
-            {order.bill_address && (
+            {order.billing_address && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">
                   Billing Address
                 </h3>
                 <div className="text-sm text-gray-600 space-y-0.5">
                   <p className="font-medium text-gray-800">
-                    {order.bill_address.full_name}
+                    {order.billing_address.full_name}
                   </p>
-                  {order.bill_address.company && (
-                    <p>{order.bill_address.company}</p>
+                  {order.billing_address.company && (
+                    <p>{order.billing_address.company}</p>
                   )}
-                  <p>{order.bill_address.address1}</p>
-                  {order.bill_address.address2 && (
-                    <p>{order.bill_address.address2}</p>
+                  <p>{order.billing_address.address1}</p>
+                  {order.billing_address.address2 && (
+                    <p>{order.billing_address.address2}</p>
                   )}
                   <p>
-                    {order.bill_address.city}, {order.bill_address.state_text}{" "}
-                    {order.bill_address.zipcode}
+                    {order.billing_address.city},{" "}
+                    {order.billing_address.state_text}{" "}
+                    {order.billing_address.postal_code}
                   </p>
-                  <p>{order.bill_address.country_name}</p>
+                  <p>{order.billing_address.country_name}</p>
                 </div>
               </div>
             )}

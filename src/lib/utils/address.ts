@@ -1,12 +1,12 @@
 import type { AddressParams } from "@spree/sdk";
 
 export interface AddressFormData {
-  firstname: string;
-  lastname: string;
+  first_name: string;
+  last_name: string;
   address1: string;
   address2: string;
   city: string;
-  zipcode: string;
+  postal_code: string;
   phone: string;
   company: string;
   country_iso: string;
@@ -15,12 +15,12 @@ export interface AddressFormData {
 }
 
 export const emptyAddress: AddressFormData = {
-  firstname: "",
-  lastname: "",
+  first_name: "",
+  last_name: "",
   address1: "",
   address2: "",
   city: "",
-  zipcode: "",
+  postal_code: "",
   phone: "",
   company: "",
   country_iso: "",
@@ -30,12 +30,12 @@ export const emptyAddress: AddressFormData = {
 
 export function addressToFormData(
   address?: {
-    firstname: string | null;
-    lastname: string | null;
+    first_name: string | null;
+    last_name: string | null;
     address1: string | null;
     address2: string | null;
     city: string | null;
-    zipcode: string | null;
+    postal_code: string | null;
     phone: string | null;
     company: string | null;
     country_iso: string;
@@ -45,12 +45,12 @@ export function addressToFormData(
 ): AddressFormData {
   if (!address) return { ...emptyAddress };
   return {
-    firstname: address.firstname || "",
-    lastname: address.lastname || "",
+    first_name: address.first_name || "",
+    last_name: address.last_name || "",
     address1: address.address1 || "",
     address2: address.address2 || "",
     city: address.city || "",
-    zipcode: address.zipcode || "",
+    postal_code: address.postal_code || "",
     phone: address.phone || "",
     company: address.company || "",
     country_iso: address.country_iso || "",
@@ -61,12 +61,12 @@ export function addressToFormData(
 
 export function formDataToAddress(data: AddressFormData): AddressParams {
   return {
-    firstname: data.firstname,
-    lastname: data.lastname,
+    first_name: data.first_name,
+    last_name: data.last_name,
     address1: data.address1,
     address2: data.address2 || undefined,
     city: data.city,
-    zipcode: data.zipcode,
+    postal_code: data.postal_code,
     phone: data.phone || undefined,
     company: data.company || undefined,
     country_iso: data.country_iso,
@@ -90,29 +90,4 @@ export function updateAddressField(
     updated.state_name = "";
   }
   return updated;
-}
-
-export function addressesMatch(
-  a: AddressFormData | undefined | null,
-  b:
-    | {
-        firstname: string | null;
-        lastname: string | null;
-        address1: string | null;
-        city: string | null;
-        zipcode: string | null;
-        country_iso: string;
-      }
-    | undefined
-    | null,
-): boolean {
-  if (!a || !b) return false;
-  return (
-    a.firstname === (b.firstname || "") &&
-    a.lastname === (b.lastname || "") &&
-    a.address1 === (b.address1 || "") &&
-    a.city === (b.city || "") &&
-    a.zipcode === (b.zipcode || "") &&
-    a.country_iso === b.country_iso
-  );
 }

@@ -168,12 +168,12 @@ function MobileOptionSection({
   selectedValues: string[];
   onToggle: (id: string) => void;
 }) {
-  const isColorFilter = isColorOption(filter.presentation);
+  const isColorFilter = isColorOption(filter.label);
 
   return (
     <div>
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-        {filter.presentation}
+        {filter.label}
       </h3>
       {isColorFilter ? (
         <div className="space-y-1">
@@ -196,13 +196,13 @@ function MobileOptionSection({
                       : "border-gray-200"
                   }`}
                   style={{
-                    backgroundColor: resolveColor(option.presentation),
+                    backgroundColor: resolveColor(option.label),
                   }}
                 />
                 <span
                   className={`text-sm flex-1 text-left ${isSelected ? "font-medium text-gray-900" : "text-gray-700"}`}
                 >
-                  {option.presentation}
+                  {option.label}
                 </span>
                 <span className="text-xs text-gray-400">({option.count})</span>
                 {isSelected && (
@@ -228,7 +228,7 @@ function MobileOptionSection({
                     : "border-gray-300 text-gray-700 hover:border-gray-400"
                 }`}
               >
-                {option.presentation}
+                {option.label}
               </button>
             );
           })}

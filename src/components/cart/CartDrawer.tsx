@@ -44,7 +44,12 @@ export function CartDrawer() {
 
   // Track view_cart when drawer opens with items (fire once per open)
   useEffect(() => {
-    if (isOpen && cart && cart.item_count > 0 && !viewCartFiredRef.current) {
+    if (
+      isOpen &&
+      cart &&
+      cart.total_quantity > 0 &&
+      !viewCartFiredRef.current
+    ) {
       trackViewCart(cart);
       viewCartFiredRef.current = true;
     }
@@ -216,10 +221,10 @@ export function CartDrawer() {
                 <span>Subtotal</span>
                 <span>{cart?.display_item_total}</span>
               </div>
-              {cart?.promo_total && parseFloat(cart.promo_total) < 0 && (
+              {cart?.discount_total && parseFloat(cart.discount_total) < 0 && (
                 <div className="flex justify-between items-center text-sm text-green-600">
                   <span>Discount</span>
-                  <span>{cart.display_promo_total}</span>
+                  <span>{cart.display_discount_total}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">

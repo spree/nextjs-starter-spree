@@ -160,7 +160,7 @@ export const FilterBar = memo(function FilterBar({
           {optionFilters.map((filter) => (
             <FilterDropdown
               key={filter.id}
-              label={filter.presentation}
+              label={filter.label}
               badgeCount={badgeCounts[filter.id]}
               isOpen={openDropdownId === filter.id}
               onToggle={() => toggleDropdown(filter.id)}

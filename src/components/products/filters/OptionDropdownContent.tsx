@@ -13,7 +13,7 @@ export function OptionDropdownContent({
   selectedValues,
   onToggle,
 }: OptionDropdownContentProps) {
-  const isColorFilter = isColorOption(filter.presentation);
+  const isColorFilter = isColorOption(filter.label);
 
   return (
     <>
@@ -30,11 +30,11 @@ export function OptionDropdownContent({
               <span
                 className="w-4 h-4 rounded-sm border border-gray-200 shrink-0"
                 style={{
-                  backgroundColor: resolveColor(option.presentation),
+                  backgroundColor: resolveColor(option.label),
                 }}
               />
             )}
-            <span className="flex-1">{option.presentation}</span>
+            <span className="flex-1">{option.label}</span>
             <span className="text-xs text-muted-foreground">
               ({option.count})
             </span>

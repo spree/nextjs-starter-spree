@@ -44,7 +44,7 @@ export function FilterChips({
         if (option) {
           chips.push({
             key: `option-${optionValueId}`,
-            label: `${optionFilter.presentation}: ${option.presentation}`,
+            label: `${optionFilter.label}: ${option.label}`,
             onRemove: () => onRemoveOptionValue(optionValueId),
           });
         }

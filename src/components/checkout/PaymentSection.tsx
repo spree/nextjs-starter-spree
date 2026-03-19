@@ -31,7 +31,6 @@ import { getCreditCards } from "@/lib/data/credit-cards";
 import { createCheckoutPaymentSession } from "@/lib/data/payment";
 import {
   type AddressFormData,
-  addressesMatch,
   addressToFormData,
   formDataToAddress,
   updateAddressField,
@@ -49,7 +48,8 @@ interface PaymentSectionProps {
   isAuthenticated: boolean;
   fetchStates: (countryIso: string) => Promise<State[]>;
   onUpdateBillingAddress: (data: {
-    bill_address: AddressParams;
+    billing_address?: AddressParams;
+    use_shipping?: boolean;
   }) => Promise<boolean>;
   onPaymentComplete: (paymentSessionId: string) => Promise<void>;
   processing: boolean;
@@ -76,15 +76,15 @@ export const PaymentSection = forwardRef<
 ) {
   // Initialize billing address from cart, check if it matches shipping
   const shipAddressData = useMemo(
-    () => addressToFormData(cart.ship_address),
-    [cart.ship_address],
+    () => addressToFormData(cart.shipping_address),
+    [cart.shipping_address],
   );
   const billAddressData = useMemo(
-    () => addressToFormData(cart.bill_address),
-    [cart.bill_address],
+    () => addressToFormData(cart.billing_address),
+    [cart.billing_address],
   );
   const initialUseShipping =
-    !cart.bill_address || addressesMatch(shipAddressData, cart.bill_address);
+    !cart.billing_address || cart.shipping_eq_billing_address;
 
   const [billAddress, setBillAddress] = useState<AddressFormData>(
     initialUseShipping ? shipAddressData : billAddressData,
@@ -258,12 +258,17 @@ export const PaymentSection = forwardRef<
 
         try {
           // 1. Update billing address
-          const billingData = formDataToAddress(
-            useShippingForBilling ? shipAddressData : billAddress,
-          );
-          const addressSuccess = await onUpdateBillingAddress({
-            bill_address: billingData,
-          });
+          let addressSuccess: boolean;
+          if (useShippingForBilling) {
+            addressSuccess = await onUpdateBillingAddress({
+              use_shipping: true,
+            });
+          } else {
+            const billingData = formDataToAddress(billAddress);
+            addressSuccess = await onUpdateBillingAddress({
+              billing_address: billingData,
+            });
+          }
 
           if (!addressSuccess) {
             setProcessing(false);
@@ -368,12 +373,12 @@ export const PaymentSection = forwardRef<
                   value={card.gateway_payment_profile_id ?? card.id}
                 />
                 <PaymentIcon
-                  type={getCardIconType(card.cc_type)}
+                  type={getCardIconType(card.brand)}
                   format="flatRounded"
                   width={34}
                 />
                 <span className="text-sm text-gray-900 flex-1">
-                  {getCardLabel(card.cc_type)} ending in {card.last_digits}
+                  {getCardLabel(card.brand)} ending in {card.last4}
                 </span>
                 <span className="text-xs text-gray-500">
                   Exp {String(card.month).padStart(2, "0")}/{card.year}

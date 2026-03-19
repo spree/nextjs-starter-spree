@@ -39,7 +39,7 @@ export function AddressSelector({
       (addr) =>
         addr.address1 === currentAddress.address1 &&
         addr.city === currentAddress.city &&
-        addr.zipcode === currentAddress.zipcode &&
+        addr.postal_code === currentAddress.postal_code &&
         addr.country_iso === currentAddress.country_iso,
     );
     if (match) return match.id;
@@ -48,19 +48,19 @@ export function AddressSelector({
     savedAddresses,
     currentAddress.address1,
     currentAddress.city,
-    currentAddress.zipcode,
+    currentAddress.postal_code,
     currentAddress.country_iso,
   ]);
 
   const handleSelectAddress = (addressId: string) => {
     if (addressId === "new") {
       // Clear form for new address
-      onChange("firstname", "");
-      onChange("lastname", "");
+      onChange("first_name", "");
+      onChange("last_name", "");
       onChange("address1", "");
       onChange("address2", "");
       onChange("city", "");
-      onChange("zipcode", "");
+      onChange("postal_code", "");
       onChange("phone", "");
       onChange("company", "");
       onChange("country_iso", "");
@@ -116,8 +116,8 @@ export function AddressSelector({
                 <p className="text-sm text-gray-500">
                   {address.address1}
                   {address.address2 && `, ${address.address2}`}, {address.city},{" "}
-                  {address.state_text || address.state_name} {address.zipcode},{" "}
-                  {address.country_name}
+                  {address.state_text || address.state_name}{" "}
+                  {address.postal_code}, {address.country_name}
                 </p>
               </div>
               {onEditAddress && (

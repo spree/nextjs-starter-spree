@@ -41,13 +41,13 @@ function CreditCardItem({
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
           <PaymentIcon
-            type={getCardIconType(card.cc_type)}
+            type={getCardIconType(card.brand)}
             format="flatRounded"
             width={48}
           />
           <div>
             <p className="text-sm font-medium text-gray-900">
-              {getCardLabel(card.cc_type)} ending in {card.last_digits}
+              {getCardLabel(card.brand)} ending in {card.last4}
             </p>
             <p className="text-xs text-gray-500">
               Exp {String(card.month).padStart(2, "0")}/{card.year}
@@ -73,9 +73,8 @@ function CreditCardItem({
               <AlertDialogHeader>
                 <AlertDialogTitle>Remove payment method?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will remove the {getCardLabel(card.cc_type)} ending in{" "}
-                  {card.last_digits} from your account. This action cannot be
-                  undone.
+                  This will remove the {getCardLabel(card.brand)} ending in{" "}
+                  {card.last4} from your account. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

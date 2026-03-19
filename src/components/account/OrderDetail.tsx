@@ -23,13 +23,13 @@ function PaymentSourceInfo({ payment }: { payment: Payment }) {
     return (
       <div className="flex items-center gap-3">
         <PaymentIcon
-          type={getCardIconType(card.cc_type)}
+          type={getCardIconType(card.brand)}
           format="flatRounded"
           width={40}
         />
         <div>
           <p className="text-sm font-medium text-gray-900">
-            {getCardLabel(card.cc_type)} ending in {card.last_digits}
+            {getCardLabel(card.brand)} ending in {card.last4}
           </p>
           <p className="text-xs text-gray-500">
             Expires {String(card.month).padStart(2, "0")}/{card.year}
@@ -67,7 +67,7 @@ function AddressBlock({ address }: { address: Address }) {
       <p>{address.address1}</p>
       {address.address2 && <p>{address.address2}</p>}
       <p>
-        {address.city}, {address.state_text} {address.zipcode}
+        {address.city}, {address.state_text} {address.postal_code}
       </p>
       <p>{address.country_name}</p>
       {address.phone && <p className="mt-1">{address.phone}</p>}
@@ -255,7 +255,7 @@ export function OrderDetail({ order, basePath }: OrderDetailProps) {
             <FulfillmentBlock
               key={fulfillment.id}
               fulfillment={fulfillment}
-              shipAddress={order.ship_address}
+              shipAddress={order.shipping_address}
               basePath={basePath}
               lineItems={fulfillmentLineItems}
             />
@@ -273,23 +273,23 @@ export function OrderDetail({ order, basePath }: OrderDetailProps) {
         </div>
       )}
 
-      {order.special_instructions && (
+      {order.customer_note && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">
-            Special Instructions
+            Customer Note
           </h3>
-          <p className="text-sm text-gray-900">{order.special_instructions}</p>
+          <p className="text-sm text-gray-900">{order.customer_note}</p>
         </div>
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
-          {order.bill_address && (
+          {order.billing_address && (
             <div className="px-6 py-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-2">
                 Billing Address
               </h3>
-              <AddressBlock address={order.bill_address} />
+              <AddressBlock address={order.billing_address} />
             </div>
           )}
           {order.payments && order.payments.length > 0 && (
@@ -324,14 +324,15 @@ export function OrderDetail({ order, basePath }: OrderDetailProps) {
               {order.display_delivery_total}
             </span>
           </div>
-          {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Discount</span>
-              <span className="text-green-600">
-                {order.display_promo_total}
-              </span>
-            </div>
-          )}
+          {order.discount_total &&
+            Number.parseFloat(order.discount_total) !== 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Discount</span>
+                <span className="text-green-600">
+                  {order.display_discount_total}
+                </span>
+              </div>
+            )}
           {Number.parseFloat(order.tax_total) > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Tax</span>

@@ -107,9 +107,9 @@ export function mapLineItemToGA4Item(
     item.item_list_name = options.listName;
   }
 
-  const promoTotal = safeParseFloat(lineItem.promo_total);
-  if (promoTotal < 0) {
-    item.discount = Math.abs(promoTotal);
+  const discountTotal = safeParseFloat(lineItem.discount_total);
+  if (discountTotal < 0) {
+    item.discount = Math.abs(discountTotal);
   }
 
   return item;
@@ -218,7 +218,7 @@ function buildOrderEcommercePayload(
   order: Cart | Order,
   extras?: Record<string, unknown>,
 ): Record<string, unknown> {
-  const coupon = order.promotions?.[0]?.code;
+  const coupon = order.discounts?.[0]?.code;
   return {
     currency: order.currency,
     value: safeParseFloat(order.total),
