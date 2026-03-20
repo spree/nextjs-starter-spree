@@ -4,6 +4,7 @@ import type { Media, Product, Variant } from "@spree/sdk";
 import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { MediaGallery } from "@/components/products/MediaGallery";
+import { ProductMetafields } from "@/components/products/ProductMetafields";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -213,6 +214,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               />
             </div>
           )}
+
+          {/* Metafields */}
+          <ProductMetafields metafields={product.metafields} />
 
           {/* Product Details */}
           <div className="mt-8 border-t pt-8">
