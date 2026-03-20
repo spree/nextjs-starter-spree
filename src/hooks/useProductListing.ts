@@ -95,7 +95,7 @@ export function useProductListing({
       try {
         const params = { ...filterParamsRef.current };
         if (searchQuery) {
-          params.multi_search = searchQuery;
+          params.search = searchQuery;
         }
         const response = await getProductFilters(params);
         if (!cancelled) {

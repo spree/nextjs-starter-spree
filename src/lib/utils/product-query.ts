@@ -13,7 +13,7 @@ export function buildProductQueryParams(
   const params: ProductListParams = {};
 
   if (searchQuery) {
-    params.multi_search = searchQuery;
+    params.search = searchQuery;
   }
 
   if (filters.priceMin !== undefined) {
