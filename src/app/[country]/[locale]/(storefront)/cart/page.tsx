@@ -2,9 +2,10 @@
 
 import type { LineItem } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -12,8 +13,24 @@ import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
 
+const ExpressCheckoutButton = dynamic(
+  () =>
+    import("@/components/checkout/ExpressCheckoutButton").then((m) => ({
+      default: m.ExpressCheckoutButton,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-12 flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
+
 export default function CartPage() {
   const { cart, loading, updateItem, removeItem } = useCart();
+  const [expressProcessing, setExpressProcessing] = useState(false);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
@@ -175,14 +192,26 @@ export default function CartPage() {
             </dl>
 
             <div className="mt-6 space-y-3">
-              <Button size="lg" asChild className="w-full">
-                <Link href={`${basePath}/checkout/${cart.id}`}>
-                  Proceed to Checkout
-                </Link>
-              </Button>
-              <Button variant="link" asChild className="w-full">
-                <Link href={`${basePath}/products`}>Continue Shopping</Link>
-              </Button>
+              {parseFloat(cart.total) > 0 && (
+                <ExpressCheckoutButton
+                  cart={cart}
+                  basePath={basePath}
+                  onComplete={() => {}}
+                  onProcessingChange={setExpressProcessing}
+                />
+              )}
+              {!expressProcessing && (
+                <>
+                  <Button size="lg" asChild className="w-full">
+                    <Link href={`${basePath}/checkout/${cart.id}`}>
+                      Proceed to Checkout
+                    </Link>
+                  </Button>
+                  <Button variant="link" asChild className="w-full">
+                    <Link href={`${basePath}/products`}>Continue Shopping</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
