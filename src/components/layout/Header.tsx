@@ -97,6 +97,8 @@ export function Header({ rootCategories }: HeaderProps) {
                 size="icon-lg"
                 onClick={() => setSearchOpen(true)}
                 aria-label="Open search"
+                aria-expanded={searchOpen}
+                aria-controls="search-overlay"
               >
                 <Search className="size-5" />
               </Button>
@@ -116,6 +118,7 @@ export function Header({ rootCategories }: HeaderProps) {
 
       {/* Search bar - replaces header content */}
       <div
+        id="search-overlay"
         onKeyDown={(e) => {
           if (e.key === "Escape") setSearchOpen(false);
         }}
