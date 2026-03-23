@@ -4,7 +4,6 @@ vi.mock("@spree/next", () => ({
   getCart: vi.fn(),
   getOrder: vi.fn(),
   updateCart: vi.fn(),
-  getFulfillments: vi.fn(),
   selectDeliveryRate: vi.fn(),
   applyCoupon: vi.fn(),
   removeCoupon: vi.fn(),
@@ -13,7 +12,6 @@ vi.mock("@spree/next", () => ({
 import {
   applyCoupon,
   getCart,
-  getFulfillments as getFulfillmentsSdk,
   getOrder,
   removeCoupon,
   selectDeliveryRate as selectDeliveryRateSdk,
@@ -23,7 +21,6 @@ import {
 import {
   applyCouponCode,
   getCheckoutOrder,
-  getFulfillments,
   removeCouponCode,
   selectDeliveryRate,
   updateOrderAddresses,
@@ -34,7 +31,6 @@ import {
 const mockGetCart = getCart as any;
 const mockGetOrder = getOrder as any;
 const mockUpdateCart = updateCart as any;
-const mockGetFulfillments = getFulfillmentsSdk as any;
 const mockSelectDeliveryRate = selectDeliveryRateSdk as any;
 const mockApplyCoupon = applyCoupon as any;
 const mockRemoveCoupon = removeCoupon as any;
@@ -44,8 +40,6 @@ const mockOrder = {
   number: "R100",
   current_step: "address",
 };
-const mockFulfillments = [{ id: "ship-1", delivery_rates: [] }];
-
 describe("checkout server actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -161,25 +155,6 @@ describe("checkout server actions", () => {
         success: false,
         error: "Failed to update order market",
       });
-    });
-  });
-
-  describe("getFulfillments", () => {
-    it("returns fulfillment data on success", async () => {
-      mockGetFulfillments.mockResolvedValue({ data: mockFulfillments });
-
-      const result = await getFulfillments("order-1");
-
-      expect(mockGetFulfillments).toHaveBeenCalled();
-      expect(result).toBe(mockFulfillments);
-    });
-
-    it("returns empty array on failure", async () => {
-      mockGetFulfillments.mockRejectedValue(new Error("Not found"));
-
-      const result = await getFulfillments("order-1");
-
-      expect(result).toEqual([]);
     });
   });
 

@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  getFulfillments as _getFulfillments,
   selectDeliveryRate as _selectDeliveryRate,
   applyCoupon,
   getCart,
@@ -60,13 +59,6 @@ export async function updateOrderMarket(
     const cart = await updateCart(params);
     return { cart };
   }, "Failed to update order market");
-}
-
-export async function getFulfillments(cartId: string) {
-  return withFallback(async () => {
-    const response = await _getFulfillments();
-    return response.data;
-  }, []);
 }
 
 export async function selectDeliveryRate(
