@@ -208,6 +208,7 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 Description
               </h2>
+              {/* Description is admin-authored HTML from the Spree CMS backend (trusted source) */}
               <div
                 className="text-gray-600 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: product.description }}

@@ -8,7 +8,10 @@ function normalizeType(type: string): string {
   return type.split("::").pop() || type;
 }
 
-function renderValue(metafield: Metafield, normalizedType: string) {
+function renderValue(
+  metafield: Metafield,
+  normalizedType: string,
+): React.ReactNode {
   switch (normalizedType) {
     case "Boolean":
       return metafield.value ? "Yes" : "No";
@@ -17,13 +20,16 @@ function renderValue(metafield: Metafield, normalizedType: string) {
         ? metafield.value
         : JSON.stringify(metafield.value);
     case "RichText":
+      // Value is admin-authored HTML from the Spree CMS backend (trusted source)
       return <span dangerouslySetInnerHTML={{ __html: metafield.value }} />;
     default:
       return String(metafield.value);
   }
 }
 
-export function ProductMetafields({ metafields }: ProductMetafieldsProps) {
+export function ProductMetafields({
+  metafields,
+}: ProductMetafieldsProps): React.JSX.Element | null {
   if (!metafields || metafields.length === 0) {
     return null;
   }
