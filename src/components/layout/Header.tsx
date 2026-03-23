@@ -1,16 +1,18 @@
 "use client";
 
 import type { Category } from "@spree/sdk";
-import { ShoppingBag, User } from "lucide-react";
+import { Search, ShoppingBag, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { SearchBar } from "@/components/search/SearchBar";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";
 import { CountrySwitcher } from "./CountrySwitcher";
+import { MobileMenu } from "./MobileMenu";
 
 interface HeaderProps {
   rootCategories: Category[];
@@ -21,51 +23,48 @@ export function Header({ rootCategories }: HeaderProps) {
   const { storeName } = useStore();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 w-full">
-          <div className="flex items-center w-full max-w-lg">
-            {/* Logo */}
-            <Link
-              href={basePath || "/"}
-              className="flex items-center space-x-2"
-            >
-              <Image
-                src="/spree.png"
-                alt={storeName}
-                width={90}
-                height={32}
-                className="h-8 w-auto"
-                priority
-              />
-            </Link>
-
-            {/* Search */}
-            <div className="hidden md:block flex-1 max-w-md mx-8">
-              <SearchBar basePath={basePath} />
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 h-16 relative">
+      {/* Normal header content */}
+      <div
+        className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+          searchOpen
+            ? "translate-y-4 opacity-0 pointer-events-none"
+            : "translate-y-0 opacity-100"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex items-center h-full w-full">
+            {/* Left section: hamburger */}
+            <div className="flex items-center flex-1 md:flex-none">
+              <MobileMenu rootCategories={rootCategories} basePath={basePath} />
             </div>
-          </div>
 
-          <div className="flex items-center">
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-6 mr-6">
-              {rootCategories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`${basePath}/c/${category.permalink}`}
-                  className="text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </nav>
+            {/* Center section: logo */}
+            <div className="flex justify-center min-w-0 md:flex-1 md:justify-start md:ml-2">
+              <Link
+                href={basePath || "/"}
+                className="flex items-center min-w-0"
+              >
+                <Image
+                  src="/spree.png"
+                  alt={storeName}
+                  width={90}
+                  height={32}
+                  className="h-8 w-auto max-w-full object-contain"
+                  priority
+                />
+              </Link>
+            </div>
 
-            {/* Actions */}
-            <div className="flex items-center space-x-2">
-              {/* Country/Currency Switcher */}
-              <CountrySwitcher />
+            {/* Right section: actions */}
+            <div className="flex items-center flex-1 md:flex-none justify-end space-x-2">
+              {/* Country/Currency Switcher - desktop only (hidden on mobile+tablet) */}
+              <div className="hidden lg:block">
+                <CountrySwitcher />
+              </div>
 
               {/* Cart */}
               <Button
@@ -83,14 +82,59 @@ export function Header({ rootCategories }: HeaderProps) {
                 )}
               </Button>
 
-              {/* Account */}
-              <Button variant="ghost" size="icon-lg" asChild>
-                <Link href={`${basePath}/account`} aria-label="Account">
-                  <User className="size-5" />
-                </Link>
+              {/* Account - desktop only */}
+              <div className="hidden md:block">
+                <Button variant="ghost" size="icon-lg" asChild>
+                  <Link href={`${basePath}/account`} aria-label="Account">
+                    <User className="size-5" />
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Search toggle */}
+              <Button
+                variant="ghost"
+                size="icon-lg"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Open search"
+              >
+                <Search className="size-5" />
               </Button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Click-outside overlay — closes search when clicking anywhere outside */}
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setSearchOpen(false)}
+          onKeyDown={() => {}}
+          role="presentation"
+        />
+      )}
+
+      {/* Search bar - replaces header content */}
+      <div
+        className={`absolute inset-0 z-50 transition-all duration-300 ease-in-out ${
+          searchOpen
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-4 opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-3">
+          <div className="flex-1">
+            <SearchBar key={String(searchOpen)} basePath={basePath} autoFocus />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            onClick={() => setSearchOpen(false)}
+            aria-label="Close search"
+          >
+            <X className="size-5" />
+          </Button>
         </div>
       </div>
     </header>
