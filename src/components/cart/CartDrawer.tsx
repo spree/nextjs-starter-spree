@@ -239,12 +239,13 @@ export function CartDrawer() {
                     <span>{tc("subtotal")}</span>
                     <span>{cart?.display_item_total}</span>
                   </div>
-                  {cart?.discount_total && parseFloat(cart.discount_total) < 0 && (
-                    <div className="flex justify-between items-center text-sm text-green-600">
-                      <span>{tc("discount")}</span>
-                      <span>{cart.display_discount_total}</span>
-                    </div>
-                  )}
+                  {cart?.discount_total &&
+                    parseFloat(cart.discount_total) < 0 && (
+                      <div className="flex justify-between items-center text-sm text-green-600">
+                        <span>{tc("discount")}</span>
+                        <span>{cart.display_discount_total}</span>
+                      </div>
+                    )}
                   <div className="flex justify-between items-center">
                     <span>{tc("shipping")}</span>
                     <span className="text-gray-500">
