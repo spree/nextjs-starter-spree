@@ -319,7 +319,6 @@ export const PaymentSection = forwardRef<
       clientSecret,
       selectedCardId,
       useShippingForBilling,
-      shipAddressData,
       billAddress,
       onUpdateBillingAddress,
       onPaymentComplete,

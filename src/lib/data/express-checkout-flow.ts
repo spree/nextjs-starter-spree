@@ -16,7 +16,7 @@ import { actionResult } from "@/lib/data/utils";
 
 export interface ExpressCheckoutPartialAddress {
   city: string;
-  zipcode: string;
+  postal_code: string;
   country_iso: string;
   state_name?: string;
 }
@@ -27,10 +27,10 @@ export async function expressCheckoutResolveShipping(
 ): Promise<{ success: true; cart: Cart } | { success: false; error: string }> {
   return actionResult(async () => {
     const result = await updateOrderAddresses(cartId, {
-      ship_address: {
+      shipping_address: {
         ...address,
-        firstname: "Express",
-        lastname: "Checkout",
+        first_name: "Express",
+        last_name: "Checkout",
         address1: "TBD",
         quick_checkout: true,
       },
@@ -95,11 +95,11 @@ export async function expressCheckoutPreparePayment(
   return actionResult(async () => {
     const result = await updateOrderAddresses(cartId, {
       email: params.email,
-      ship_address: {
+      shipping_address: {
         ...params.shipAddress,
         quick_checkout: true,
       },
-      bill_address: {
+      billing_address: {
         ...params.billAddress,
         quick_checkout: true,
       },

@@ -59,7 +59,7 @@ export function buildLineItems(order: Cart) {
   const itemTotal = toCents(order.item_total, currency);
   items.push({ name: "Subtotal", amount: itemTotal });
 
-  const promoTotal = toCents(order.promo_total, currency);
+  const promoTotal = toCents(order.discount_total, currency);
   if (promoTotal < 0) {
     items.push({ name: "Discount", amount: promoTotal });
   }
@@ -101,12 +101,12 @@ export function buildSpreeAddress(
   phone?: string,
 ) {
   return {
-    firstname: name.firstname,
-    lastname: name.lastname,
+    first_name: name.firstname,
+    last_name: name.lastname,
     address1: address.line1,
     address2: address.line2 || undefined,
     city: address.city,
-    zipcode: address.postal_code,
+    postal_code: address.postal_code,
     country_iso: address.country,
     state_name: address.state || undefined,
     phone: phone || undefined,
