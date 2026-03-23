@@ -9,7 +9,10 @@ interface StorefrontLayoutProps {
 export default async function StorefrontLayout({
   children,
 }: StorefrontLayoutProps) {
-  const rootCategories = await getCategories({ depth_eq: 0 })
+  const rootCategories = await getCategories({
+    depth_eq: 0,
+    expand: ["children.children"],
+  })
     .then((res) => res.data)
     .catch(() => []);
 

@@ -10,6 +10,12 @@
   --font-sans: var(--font-geist);
   --animate-slide-in-right: slide-in-right 0.3s ease-out;
   --animate-slide-in-left: slide-in-left 0.3s ease-out;
+  --animate-hamburger-top-open: hamburger-top-open 0.35s ease-in-out forwards;
+  --animate-hamburger-top-close: hamburger-top-close 0.35s ease-in-out forwards;
+  --animate-hamburger-mid-open: hamburger-mid-open 0.15s ease-in-out forwards;
+  --animate-hamburger-mid-close: hamburger-mid-close 0.15s ease-in-out forwards;
+  --animate-hamburger-bottom-open: hamburger-bottom-open 0.35s ease-in-out forwards;
+  --animate-hamburger-bottom-close: hamburger-bottom-close 0.35s ease-in-out forwards;
 
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -78,9 +84,51 @@
   }
 }
 
+/* Hamburger ↔ X animations */
+@keyframes hamburger-top-open {
+  0% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(7px) rotate(0); }
+  100% { transform: translateY(7px) rotate(45deg); }
+}
+@keyframes hamburger-top-close {
+  0% { transform: translateY(7px) rotate(45deg); }
+  50% { transform: translateY(7px) rotate(0); }
+  100% { transform: translateY(0) rotate(0); }
+}
+@keyframes hamburger-mid-open {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes hamburger-mid-close {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes hamburger-bottom-open {
+  0% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-7px) rotate(0); }
+  100% { transform: translateY(-7px) rotate(-45deg); }
+}
+@keyframes hamburger-bottom-close {
+  0% { transform: translateY(-7px) rotate(-45deg); }
+  50% { transform: translateY(-7px) rotate(0); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
 body {
   font-family: var(--font-geist), system-ui, sans-serif;
   font-weight: 400;
+}
+
+/* Style native search clear button */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  padding: 8px;
+  box-sizing: content-box;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E") center/14px 14px no-repeat;
+  cursor: pointer;
 }
 
 .product-carousel .swiper-button-next,
