@@ -17,9 +17,10 @@ import { getProducts } from "@/lib/data/products";
 interface SearchBarProps {
   basePath: string;
   autoFocus?: boolean;
+  onNavigate?: () => void;
 }
 
-export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
+export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
   const [query, setQuery] = useState("");
@@ -95,6 +96,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
       router.push(`${basePath}/products?q=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       inputRef.current?.blur();
+      onNavigate?.();
     }
   };
 
@@ -104,6 +106,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
     router.push(`${basePath}/products/${product.slug}`);
     setIsOpen(false);
     setQuery("");
+    onNavigate?.();
   };
 
   // Close suggestions on blur — delayed to allow click on suggestions
@@ -242,6 +245,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
                           `${basePath}/products?q=${encodeURIComponent(query.trim())}`,
                         );
                         setIsOpen(false);
+                        onNavigate?.();
                       }}
                       className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
                     >
