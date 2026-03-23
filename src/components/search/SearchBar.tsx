@@ -30,6 +30,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const requestIdRef = useRef(0);
 
   // Fetch suggestions
   const fetchSuggestions = useCallback(
@@ -39,6 +40,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
         return;
       }
 
+      const currentRequestId = requestIdRef.current;
       setLoading(true);
       try {
         const response = await getProducts({
@@ -46,15 +48,20 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
           fields: ["name", "slug", "price", "thumbnail_url"],
           limit: 6,
         });
+        // Discard stale responses if a newer query has been issued
+        if (requestIdRef.current !== currentRequestId) return;
         setSuggestions(response.data);
         if (response.data.length > 0) {
           trackQuickSearch(response.data, searchQuery, currency);
         }
       } catch (error) {
+        if (requestIdRef.current !== currentRequestId) return;
         console.error("Search failed:", error);
         setSuggestions([]);
       } finally {
-        setLoading(false);
+        if (requestIdRef.current === currentRequestId) {
+          setLoading(false);
+        }
       }
     },
     [currency],
@@ -65,6 +72,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
     setQuery(value);
     setIsOpen(true);
     setSelectedIndex(-1);
+    requestIdRef.current += 1;
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -76,6 +84,7 @@ export function SearchBar({ basePath, autoFocus }: SearchBarProps) {
       }, 300);
     } else {
       setSuggestions([]);
+      setLoading(false);
     }
   };
 

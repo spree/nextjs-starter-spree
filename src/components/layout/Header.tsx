@@ -6,13 +6,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
+import { MobileMenu } from "@/components/layout/MobileMenu";
 import { SearchBar } from "@/components/search/SearchBar";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
 import { extractBasePath } from "@/lib/utils/path";
-import { CountrySwitcher } from "./CountrySwitcher";
-import { MobileMenu } from "./MobileMenu";
 
 interface HeaderProps {
   rootCategories: Category[];
@@ -125,7 +125,11 @@ export function Header({ rootCategories }: HeaderProps) {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-3">
           <div className="flex-1">
-            <SearchBar key={String(searchOpen)} basePath={basePath} autoFocus />
+            <SearchBar
+              key={String(searchOpen)}
+              basePath={basePath}
+              autoFocus={searchOpen}
+            />
           </div>
           <Button
             variant="ghost"

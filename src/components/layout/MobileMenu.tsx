@@ -4,7 +4,7 @@ import type { Category } from "@spree/sdk";
 import { ArrowLeft, Check, ChevronRight, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
   SheetClose,
   SheetContent,
   SheetFooter,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { type CountryWithMarket, useStore } from "@/contexts/StoreContext";
@@ -44,6 +45,8 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
   const [panelStack, setPanelStack] = useState<PanelType[]>([{ kind: "main" }]);
   // animatedIndex trails panelStack — new panels mount off-screen, then animate in
   const [animatedIndex, setAnimatedIndex] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { country, currency, countries, setCountry } = useStore();
   const { cart, refreshCart } = useCart();
@@ -52,22 +55,37 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
 
   const currentPanel = panelStack[panelStack.length - 1];
 
+  const cancelPendingCallbacks = () => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
   const pushPanel = (panel: PanelType) => {
+    cancelPendingCallbacks();
     // Step 1: mount the new panel off-screen (translate-x-full) via flushSync
     flushSync(() => {
       setPanelStack((prev) => [...prev, panel]);
     });
     // Step 2: on next frame, update animatedIndex to trigger slide-in
-    requestAnimationFrame(() => {
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
       setAnimatedIndex((prev) => prev + 1);
     });
   };
 
   const popPanel = () => {
+    cancelPendingCallbacks();
     // Step 1: animate out by decrementing animatedIndex
     setAnimatedIndex((prev) => Math.max(0, prev - 1));
     // Step 2: after transition, remove the panel from the stack
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
+      timeoutRef.current = null;
       setPanelStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
     }, 300);
   };
@@ -95,6 +113,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
     if (!value) {
+      cancelPendingCallbacks();
       setPanelStack([{ kind: "main" }]);
       setAnimatedIndex(0);
     }
@@ -174,6 +193,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
         showCloseButton={false}
         overlayClassName="max-md:!top-16 max-md:!bg-transparent"
       >
+        <SheetTitle className="sr-only">Menu</SheetTitle>
         {/* Menu header — changes based on active panel */}
         <div className="hidden md:flex items-center justify-between px-4 h-16 border-b border-gray-200 relative overflow-hidden">
           {/* "Menu" title — visible when on main panel */}
@@ -266,7 +286,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
               )}
               <button
                 type="button"
-                onClick={() => handleNavigate(`${basePath}/#`)}
+                onClick={() => handleNavigate(`${basePath}/#contact`)}
                 className={linkClass}
               >
                 Contact

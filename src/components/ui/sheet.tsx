@@ -1,7 +1,7 @@
 "use client";
 
 import { XIcon } from "lucide-react";
-import { Dialog as SheetPrimitive, VisuallyHidden } from "radix-ui";
+import { Dialog as SheetPrimitive } from "radix-ui";
 import type * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -69,9 +69,6 @@ function SheetContent({
         )}
         {...props}
       >
-        <VisuallyHidden.Root>
-          <SheetPrimitive.Title>Menu</SheetPrimitive.Title>
-        </VisuallyHidden.Root>
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
