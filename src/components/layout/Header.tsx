@@ -5,7 +5,7 @@ import { Search, ShoppingBag, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { SearchBar } from "@/components/search/SearchBar";
@@ -24,6 +24,12 @@ export function Header({ rootCategories }: HeaderProps) {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    searchTriggerRef.current?.focus();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 h-16 relative">
@@ -38,12 +44,12 @@ export function Header({ rootCategories }: HeaderProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex items-center h-full w-full">
             {/* Left section: hamburger */}
-            <div className="flex items-center flex-1 md:flex-none">
+            <div className="flex items-center flex-1">
               <MobileMenu rootCategories={rootCategories} basePath={basePath} />
             </div>
 
-            {/* Center section: logo */}
-            <div className="flex justify-center min-w-0 md:flex-1 md:justify-start md:ml-2">
+            {/* Center section: logo (always centered via equal flex-1 siblings) */}
+            <div className="flex justify-center min-w-0">
               <Link
                 href={basePath || "/"}
                 className="flex items-center min-w-0"
@@ -60,7 +66,7 @@ export function Header({ rootCategories }: HeaderProps) {
             </div>
 
             {/* Right section: actions */}
-            <div className="flex items-center flex-1 md:flex-none justify-end space-x-2">
+            <div className="flex items-center flex-1 justify-end space-x-2">
               {/* Country/Currency Switcher - desktop only (hidden on mobile+tablet) */}
               <div className="hidden lg:block">
                 <CountrySwitcher />
@@ -93,6 +99,7 @@ export function Header({ rootCategories }: HeaderProps) {
 
               {/* Search toggle */}
               <Button
+                ref={searchTriggerRef}
                 variant="ghost"
                 size="icon-lg"
                 onClick={() => setSearchOpen(true)}
@@ -111,7 +118,7 @@ export function Header({ rootCategories }: HeaderProps) {
       {searchOpen && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setSearchOpen(false)}
+          onClick={closeSearch}
           role="presentation"
         />
       )}
@@ -119,8 +126,9 @@ export function Header({ rootCategories }: HeaderProps) {
       {/* Search bar - replaces header content */}
       <div
         id="search-overlay"
+        inert={!searchOpen}
         onKeyDown={(e) => {
-          if (e.key === "Escape") setSearchOpen(false);
+          if (e.key === "Escape") closeSearch();
         }}
         className={`absolute inset-0 z-50 transition-all duration-300 ease-in-out ${
           searchOpen
@@ -134,12 +142,13 @@ export function Header({ rootCategories }: HeaderProps) {
               key={String(searchOpen)}
               basePath={basePath}
               autoFocus={searchOpen}
+              onNavigate={closeSearch}
             />
           </div>
           <Button
             variant="ghost"
             size="icon-lg"
-            onClick={() => setSearchOpen(false)}
+            onClick={closeSearch}
             aria-label="Close search"
           >
             <X className="size-5" />
