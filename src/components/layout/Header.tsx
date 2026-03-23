@@ -72,6 +72,28 @@ export function Header({ rootCategories }: HeaderProps) {
                 <CountrySwitcher />
               </div>
 
+              {/* Search toggle */}
+              <Button
+                ref={searchTriggerRef}
+                variant="ghost"
+                size="icon-lg"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Open search"
+                aria-expanded={searchOpen}
+                aria-controls="search-overlay"
+              >
+                <Search className="size-5" />
+              </Button>
+
+              {/* Account - desktop only */}
+              <div className="hidden md:block">
+                <Button variant="ghost" size="icon-lg" asChild>
+                  <Link href={`${basePath}/account`} aria-label="Account">
+                    <User className="size-5" />
+                  </Link>
+                </Button>
+              </div>
+
               {/* Cart */}
               <Button
                 variant="ghost"
@@ -86,28 +108,6 @@ export function Header({ rootCategories }: HeaderProps) {
                     {itemCount}
                   </span>
                 )}
-              </Button>
-
-              {/* Account - desktop only */}
-              <div className="hidden md:block">
-                <Button variant="ghost" size="icon-lg" asChild>
-                  <Link href={`${basePath}/account`} aria-label="Account">
-                    <User className="size-5" />
-                  </Link>
-                </Button>
-              </div>
-
-              {/* Search toggle */}
-              <Button
-                ref={searchTriggerRef}
-                variant="ghost"
-                size="icon-lg"
-                onClick={() => setSearchOpen(true)}
-                aria-label="Open search"
-                aria-expanded={searchOpen}
-                aria-controls="search-overlay"
-              >
-                <Search className="size-5" />
               </Button>
             </div>
           </div>
