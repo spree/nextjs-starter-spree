@@ -110,13 +110,15 @@ export function Header({ rootCategories }: HeaderProps) {
         <div
           className="fixed inset-0 z-40"
           onClick={() => setSearchOpen(false)}
-          onKeyDown={() => {}}
           role="presentation"
         />
       )}
 
       {/* Search bar - replaces header content */}
       <div
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setSearchOpen(false);
+        }}
         className={`absolute inset-0 z-50 transition-all duration-300 ease-in-out ${
           searchOpen
             ? "translate-y-0 opacity-100"
