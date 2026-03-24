@@ -1,5 +1,6 @@
 import { MapPin } from "lucide-react";
 import { AddressManagement } from "@/components/addresses/AddressManagement";
+import type { User } from "@/contexts/AuthContext";
 import { getAddresses } from "@/lib/data/addresses";
 import { getCountries } from "@/lib/data/countries";
 import { getCustomer } from "@/lib/data/customer";
@@ -14,7 +15,7 @@ export default async function AddressesPage() {
 
   const addresses = addressResponse.data;
   const countries = countriesResponse.data;
-  const user = customer
+  const user: User | undefined = customer
     ? {
         id: customer.id,
         email: customer.email,
