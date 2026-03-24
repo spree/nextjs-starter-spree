@@ -9,7 +9,10 @@ import type {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getProductFilters } from "@/lib/data/products";
 import { filtersEqual } from "@/lib/utils/filters";
-import { buildProductQueryParams } from "@/lib/utils/product-query";
+import {
+  buildProductQueryParams,
+  wrapInRansackParams,
+} from "@/lib/utils/product-query";
 import type { ActiveFilters } from "@/types/filters";
 
 interface UseProductListingOptions {
@@ -86,51 +89,48 @@ export function useProductListing({
     [fetchProducts],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: filterParamsKey triggers re-fetch on soft-nav
-  useEffect(() => {
-    let cancelled = false;
+  const filtersLoadIdRef = useRef(0);
 
-    const fetchFilters = async () => {
+  const fetchFilters = useCallback(
+    async (filters: ActiveFilters, query: string) => {
       setFiltersLoading(true);
+      const currentLoadId = ++filtersLoadIdRef.current;
       try {
-        const params = { ...filterParamsRef.current };
-        if (searchQuery) {
-          params.search = searchQuery;
-        }
+        const activeParams = buildProductQueryParams(filters, query);
+        const merged = { ...filterParamsRef.current, ...activeParams };
+        const params = wrapInRansackParams(merged);
         const response = await getProductFilters(params);
-        if (!cancelled) {
+        if (filtersLoadIdRef.current === currentLoadId) {
           setFiltersData(response);
         }
       } catch (error) {
         console.error("Failed to fetch filters:", error);
       } finally {
-        if (!cancelled) {
+        if (filtersLoadIdRef.current === currentLoadId) {
           setFiltersLoading(false);
         }
       }
-    };
-
-    fetchFilters();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [searchQuery, filterParamsKey]);
+    },
+    [],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: filterParamsKey triggers re-fetch on soft-nav
   useEffect(() => {
     loadProducts(filtersRef.current, searchQuery);
-  }, [searchQuery, loadProducts, filterParamsKey]);
+    fetchFilters(filtersRef.current, searchQuery);
+  }, [searchQuery, loadProducts, fetchFilters, filterParamsKey]);
 
   const handleFilterChange = useCallback(
     (newFilters: ActiveFilters) => {
       if (!filtersEqual(filtersRef.current, newFilters)) {
         filtersRef.current = newFilters;
         setActiveFilters(newFilters);
-        loadProducts(newFilters, searchQueryRef.current);
+        const query = searchQueryRef.current;
+        loadProducts(newFilters, query);
+        fetchFilters(newFilters, query);
       }
     },
-    [loadProducts],
+    [loadProducts, fetchFilters],
   );
 
   const loadMore = useCallback(async () => {
