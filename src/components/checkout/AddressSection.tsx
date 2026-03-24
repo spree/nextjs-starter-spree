@@ -8,6 +8,7 @@ import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
 import { AddressSelector } from "@/components/checkout/AddressSelector";
 import { Input } from "@/components/ui/input";
+import type { User } from "@/contexts/AuthContext";
 import { useCountryStates } from "@/hooks/useCountryStates";
 import {
   type AddressFormData,
@@ -36,6 +37,7 @@ interface AddressSectionProps {
   errors?: string[];
   saving?: boolean;
   processing?: boolean;
+  user?: User | null;
 }
 
 const REQUIRED_ADDRESS_FIELDS: (keyof AddressFormData)[] = [
@@ -77,6 +79,7 @@ export function AddressSection({
   errors,
   saving,
   processing,
+  user,
 }: AddressSectionProps) {
   // Determine initial saved address: use the first saved address when the
   // cart doesn't have a shipping address yet (authenticated users).
@@ -88,11 +91,18 @@ export function AddressSection({
       : undefined;
 
   const [email, setEmail] = useState(cart.email || "");
-  const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
-    initialSavedAddress
-      ? addressToFormData(initialSavedAddress)
-      : addressToFormData(cart.shipping_address),
-  );
+  const [shipAddress, setShipAddress] = useState<AddressFormData>(() => {
+    if (initialSavedAddress) return addressToFormData(initialSavedAddress);
+    const formData = addressToFormData(cart.shipping_address);
+    // Pre-fill name from user profile when address has no name yet
+    if (!formData.first_name && user?.first_name) {
+      formData.first_name = user.first_name;
+    }
+    if (!formData.last_name && user?.last_name) {
+      formData.last_name = user.last_name;
+    }
+    return formData;
+  });
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
@@ -288,6 +298,7 @@ export function AddressSection({
             }
             onFieldBlur={handleFieldBlur}
             idPrefix="ship"
+            user={user}
           />
         ) : (
           <div onBlur={handleContainerBlur}>

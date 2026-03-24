@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import type { User } from "@/contexts/AuthContext";
 import {
   createAddress,
   deleteAddress,
@@ -92,6 +93,7 @@ interface AddressManagementProps {
   countries: Country[];
   showAddButton: boolean;
   emptyState: boolean;
+  user?: User | null;
 }
 
 export function AddressManagement({
@@ -99,6 +101,7 @@ export function AddressManagement({
   countries,
   showAddButton,
   emptyState,
+  user,
 }: AddressManagementProps) {
   const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
   const [modalOpen, setModalOpen] = useState(false);
@@ -167,6 +170,7 @@ export function AddressManagement({
             fetchStates={fetchStates}
             onSave={handleSave}
             onClose={() => setModalOpen(false)}
+            user={!editingAddress ? user : undefined}
           />
         )}
       </>
@@ -202,6 +206,7 @@ export function AddressManagement({
           fetchStates={fetchStates}
           onSave={handleSave}
           onClose={() => setModalOpen(false)}
+          user={!editingAddress ? user : undefined}
         />
       )}
     </>

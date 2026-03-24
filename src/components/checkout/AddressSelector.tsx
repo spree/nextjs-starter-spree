@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { User } from "@/contexts/AuthContext";
 import type { AddressFormData } from "@/lib/utils/address";
 
 interface AddressSelectorProps {
@@ -18,6 +19,7 @@ interface AddressSelectorProps {
   onEditAddress?: (address: Address) => void;
   onFieldBlur?: () => void;
   idPrefix: string;
+  user?: User | null;
 }
 
 export function AddressSelector({
@@ -31,6 +33,7 @@ export function AddressSelector({
   onEditAddress,
   onFieldBlur,
   idPrefix,
+  user,
 }: AddressSelectorProps) {
   // Derive selected address from current form data — no useEffect needed
   const selectedAddressId = useMemo((): string => {
@@ -54,9 +57,9 @@ export function AddressSelector({
 
   const handleSelectAddress = (addressId: string) => {
     if (addressId === "new") {
-      // Clear form for new address
-      onChange("first_name", "");
-      onChange("last_name", "");
+      // Clear form for new address, pre-fill name from user profile
+      onChange("first_name", user?.first_name || "");
+      onChange("last_name", user?.last_name || "");
       onChange("address1", "");
       onChange("address2", "");
       onChange("city", "");
