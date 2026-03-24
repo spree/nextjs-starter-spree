@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getCachedProduct } from "@/lib/data/cached";
+import { getCachedProduct, PRODUCT_PAGE_EXPAND } from "@/lib/data/cached";
 import { generateProductMetadata } from "@/lib/metadata/product";
 import { buildCanonicalUrl, buildProductJsonLd, getStoreUrl } from "@/lib/seo";
-import { ProductDetailsWrapper } from "./ProductDetailsWrapper";
+import { ProductDetails } from "./ProductDetails";
 
 interface ProductPageProps {
   params: Promise<{
@@ -26,26 +27,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   let product;
   try {
-    product = await getCachedProduct(slug, ["media"], locale);
+    product = await getCachedProduct(slug, PRODUCT_PAGE_EXPAND, locale);
   } catch {
-    product = null;
+    notFound();
   }
 
   const storeUrl = getStoreUrl();
-  const canonicalUrl =
-    product && storeUrl
-      ? buildCanonicalUrl(
-          storeUrl,
-          `/${country}/${locale}/products/${product.slug}`,
-        )
-      : undefined;
+  const canonicalUrl = storeUrl
+    ? buildCanonicalUrl(
+        storeUrl,
+        `/${country}/${locale}/products/${product.slug}`,
+      )
+    : undefined;
 
   return (
     <>
-      {product && canonicalUrl && (
+      {canonicalUrl && (
         <JsonLd data={buildProductJsonLd(product, canonicalUrl)} />
       )}
-      <ProductDetailsWrapper slug={slug} basePath={basePath} />
+      <ProductDetails product={product} basePath={basePath} />
     </>
   );
 }

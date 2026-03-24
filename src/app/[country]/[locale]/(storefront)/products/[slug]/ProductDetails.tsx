@@ -2,7 +2,7 @@
 
 import type { Media, Product, Variant } from "@spree/sdk";
 import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductMetafields } from "@/components/products/ProductMetafields";
 import { VariantPicker } from "@/components/products/VariantPicker";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
-import { trackAddToCart } from "@/lib/analytics/gtm";
+import { trackAddToCart, trackViewItem } from "@/lib/analytics/gtm";
 
 interface ProductDetailsProps {
   product: Product;
@@ -43,6 +43,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // Track product view (analytics - client-only side effect)
+  useEffect(() => {
+    trackViewItem(product, currency);
+  }, [product, currency]);
 
   // Get media for the gallery - variant media takes priority
   const galleryImages = useMemo((): Media[] => {
