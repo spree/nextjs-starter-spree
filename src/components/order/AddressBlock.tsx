@@ -12,7 +12,12 @@ export function AddressBlock({ address }: AddressBlockProps) {
       <p>{address.address1}</p>
       {address.address2 && <p>{address.address2}</p>}
       <p>
-        {address.city}, {address.state_text} {address.postal_code}
+        {[
+          address.city,
+          [address.state_text, address.postal_code].filter(Boolean).join(" "),
+        ]
+          .filter(Boolean)
+          .join(", ")}
       </p>
       <p>{address.country_name}</p>
       {address.phone && <p className="mt-1">{address.phone}</p>}
