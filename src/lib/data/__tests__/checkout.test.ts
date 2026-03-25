@@ -15,9 +15,12 @@ vi.mock("@spree/sdk", () => ({
   SpreeError: class SpreeError extends Error {
     code: string;
     status: number;
-    constructor(message: string, code: string, status = 422) {
-      super(message);
-      this.code = code;
+    constructor(
+      response: { error: { code: string; message: string } },
+      status: number,
+    ) {
+      super(response.error.message);
+      this.code = response.error.code;
       this.status = status;
     }
   },
@@ -217,7 +220,10 @@ describe("checkout server actions", () => {
     it("falls back to gift card when discount code returns 422", async () => {
       const { SpreeError } = await import("@spree/sdk");
       mockApplyDiscountCode.mockRejectedValue(
-        new SpreeError("Coupon not found", "processing_error", 422),
+        new SpreeError(
+          { error: { code: "processing_error", message: "Coupon not found" } },
+          422,
+        ),
       );
       mockApplyGiftCard.mockResolvedValue(mockOrder);
 
@@ -235,10 +241,21 @@ describe("checkout server actions", () => {
     it("returns error when both discount and gift card fail", async () => {
       const { SpreeError } = await import("@spree/sdk");
       mockApplyDiscountCode.mockRejectedValue(
-        new SpreeError("Coupon not found", "processing_error", 422),
+        new SpreeError(
+          { error: { code: "processing_error", message: "Coupon not found" } },
+          422,
+        ),
       );
       mockApplyGiftCard.mockRejectedValue(
-        new SpreeError("Gift card not found", "gift_card_not_found", 404),
+        new SpreeError(
+          {
+            error: {
+              code: "gift_card_not_found",
+              message: "Gift card not found",
+            },
+          },
+          404,
+        ),
       );
 
       const result = await applyCode("order-1", "INVALID");
@@ -258,7 +275,12 @@ describe("checkout server actions", () => {
     it("does not fall back to gift card on 500 errors", async () => {
       const { SpreeError } = await import("@spree/sdk");
       mockApplyDiscountCode.mockRejectedValue(
-        new SpreeError("Internal server error", "internal_error", 500),
+        new SpreeError(
+          {
+            error: { code: "internal_error", message: "Internal server error" },
+          },
+          500,
+        ),
       );
 
       const result = await applyCode("order-1", "SAVE10");
