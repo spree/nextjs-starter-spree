@@ -81,7 +81,7 @@ export function Summary({ cart }: SummaryProps) {
           </div>
         )}
 
-        {/* Total row — Shopify: bold, larger, with currency code */}
+        {/* Total row */}
         <div className="flex justify-between items-baseline pt-3 border-t border-gray-200">
           <span className="text-base font-bold text-gray-900">Total</span>
           <div className="flex items-baseline gap-2">
@@ -93,6 +93,44 @@ export function Summary({ cart }: SummaryProps) {
             </span>
           </div>
         </div>
+
+        {/* Gift card or store credit — shown below total, reduces amount due.
+            Gift cards use store credits under the hood, so only show one. */}
+        {cart.gift_card && parseFloat(cart.gift_card_total) > 0 ? (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-700">Gift card</span>
+            <span className="text-green-700">
+              -{cart.display_gift_card_total}
+            </span>
+          </div>
+        ) : cart.store_credit_total &&
+          parseFloat(cart.store_credit_total) > 0 ? (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-700">Store credit</span>
+            <span className="text-green-700">
+              -{cart.display_store_credit_total}
+            </span>
+          </div>
+        ) : null}
+
+        {/* Amount due — only shown when gift card or store credit is applied */}
+        {cart.amount_due &&
+          cart.amount_due !== cart.total &&
+          parseFloat(cart.amount_due) > 0 && (
+            <div className="flex justify-between items-baseline pt-2 border-t border-gray-200">
+              <span className="text-base font-bold text-gray-900">
+                Amount due
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs text-gray-500 uppercase">
+                  {cart.currency}
+                </span>
+                <span className="text-xl font-bold text-gray-900">
+                  {cart.display_amount_due}
+                </span>
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );

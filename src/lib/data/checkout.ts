@@ -1,14 +1,17 @@
 "use server";
 
 import {
+  applyDiscountCode as _applyDiscountCode,
+  applyGiftCard as _applyGiftCard,
+  removeDiscountCode as _removeDiscountCode,
+  removeGiftCard as _removeGiftCard,
   selectDeliveryRate as _selectDeliveryRate,
-  applyCoupon,
   getCart,
   getOrder,
-  removeCoupon,
   updateCart,
 } from "@spree/next";
 import type { AddressParams, Cart } from "@spree/sdk";
+import { SpreeError } from "@spree/sdk";
 import { actionResult, withFallback } from "./utils";
 
 export async function getCheckoutOrder(cartId: string): Promise<Cart | null> {
@@ -72,16 +75,46 @@ export async function selectDeliveryRate(
   }, "Failed to select delivery rate");
 }
 
-export async function applyCouponCode(cartId: string, couponCode: string) {
-  return actionResult(async () => {
-    const cart = await applyCoupon(couponCode);
-    return { cart };
-  }, "Failed to apply coupon code");
+/**
+ * Apply a code to the cart — tries discount code first, then gift card.
+ * Single input field on checkout, backend determines the type.
+ */
+export async function applyCode(cartId: string, code: string) {
+  // Try discount code first (more common)
+  try {
+    const cart = await _applyDiscountCode(code);
+    return { success: true, cart, type: "discount" as const };
+  } catch (discountError) {
+    // If not a valid discount code, try gift card
+    try {
+      const cart = await _applyGiftCard(code);
+      return { success: true, cart, type: "gift_card" as const };
+    } catch (giftCardError) {
+      // Both failed — return the most useful error
+      const error =
+        giftCardError instanceof SpreeError &&
+        giftCardError.code === "gift_card_not_found"
+          ? discountError instanceof Error
+            ? discountError.message
+            : "Invalid code"
+          : giftCardError instanceof Error
+            ? giftCardError.message
+            : "Invalid code";
+      return { success: false, error } as const;
+    }
+  }
 }
 
-export async function removeCouponCode(cartId: string, couponCode: string) {
+export async function removeDiscountCode(cartId: string, code: string) {
   return actionResult(async () => {
-    const cart = await removeCoupon(couponCode);
+    const cart = await _removeDiscountCode(code);
     return { cart };
-  }, "Failed to remove coupon code");
+  }, "Failed to remove discount code");
+}
+
+export async function removeGiftCard(cartId: string, giftCardId: string) {
+  return actionResult(async () => {
+    const cart = await _removeGiftCard(giftCardId);
+    return { cart };
+  }, "Failed to remove gift card");
 }

@@ -172,6 +172,32 @@ export default function CartPage() {
                   {cart.display_total}
                 </dd>
               </div>
+
+              {cart.gift_card && parseFloat(cart.gift_card_total) > 0 ? (
+                <div className="flex justify-between text-green-600">
+                  <dt>Gift card</dt>
+                  <dd>-{cart.display_gift_card_total}</dd>
+                </div>
+              ) : cart.store_credit_total &&
+                parseFloat(cart.store_credit_total) > 0 ? (
+                <div className="flex justify-between text-green-600">
+                  <dt>Store credit</dt>
+                  <dd>-{cart.display_store_credit_total}</dd>
+                </div>
+              ) : null}
+
+              {cart.amount_due &&
+                cart.amount_due !== cart.total &&
+                parseFloat(cart.amount_due) > 0 && (
+                  <div className="border-t pt-4 flex justify-between">
+                    <dt className="text-lg font-medium text-gray-900">
+                      Amount due
+                    </dt>
+                    <dd className="text-lg font-bold text-gray-900">
+                      {cart.display_amount_due}
+                    </dd>
+                  </div>
+                )}
             </dl>
 
             <div className="mt-6 space-y-3">

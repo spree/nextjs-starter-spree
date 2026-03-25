@@ -5,23 +5,38 @@ vi.mock("@spree/next", () => ({
   getOrder: vi.fn(),
   updateCart: vi.fn(),
   selectDeliveryRate: vi.fn(),
-  applyCoupon: vi.fn(),
-  removeCoupon: vi.fn(),
+  applyDiscountCode: vi.fn(),
+  applyGiftCard: vi.fn(),
+  removeDiscountCode: vi.fn(),
+  removeGiftCard: vi.fn(),
+}));
+
+vi.mock("@spree/sdk", () => ({
+  SpreeError: class SpreeError extends Error {
+    code: string;
+    constructor(message: string, code: string) {
+      super(message);
+      this.code = code;
+    }
+  },
 }));
 
 import {
-  applyCoupon,
+  applyDiscountCode as applyDiscountCodeSdk,
+  applyGiftCard as applyGiftCardSdk,
   getCart,
   getOrder,
-  removeCoupon,
+  removeDiscountCode as removeDiscountCodeSdk,
+  removeGiftCard as removeGiftCardSdk,
   selectDeliveryRate as selectDeliveryRateSdk,
   updateCart,
 } from "@spree/next";
 
 import {
-  applyCouponCode,
+  applyCode,
   getCheckoutOrder,
-  removeCouponCode,
+  removeDiscountCode,
+  removeGiftCard,
   selectDeliveryRate,
   updateOrderAddresses,
   updateOrderMarket,
@@ -32,8 +47,10 @@ const mockGetCart = getCart as any;
 const mockGetOrder = getOrder as any;
 const mockUpdateCart = updateCart as any;
 const mockSelectDeliveryRate = selectDeliveryRateSdk as any;
-const mockApplyCoupon = applyCoupon as any;
-const mockRemoveCoupon = removeCoupon as any;
+const mockApplyDiscountCode = applyDiscountCodeSdk as any;
+const mockApplyGiftCard = applyGiftCardSdk as any;
+const mockRemoveDiscountCode = removeDiscountCodeSdk as any;
+const mockRemoveGiftCard = removeGiftCardSdk as any;
 
 const mockOrder = {
   id: "order-1",
@@ -180,57 +197,88 @@ describe("checkout server actions", () => {
     });
   });
 
-  describe("applyCouponCode", () => {
-    it("returns success with order", async () => {
-      mockApplyCoupon.mockResolvedValue(mockOrder);
+  describe("applyCode", () => {
+    it("applies discount code when valid", async () => {
+      mockApplyDiscountCode.mockResolvedValue(mockOrder);
 
-      const result = await applyCouponCode("order-1", "SAVE10");
-
-      expect(mockApplyCoupon).toHaveBeenCalledWith("SAVE10");
-      expect(result).toEqual({ success: true, cart: mockOrder });
-    });
-
-    it("returns error on failure", async () => {
-      mockApplyCoupon.mockRejectedValue(new Error("Coupon expired"));
-
-      const result = await applyCouponCode("order-1", "EXPIRED");
+      const result = await applyCode("order-1", "SAVE10");
 
       expect(result).toEqual({
-        success: false,
-        error: "Coupon expired",
+        success: true,
+        cart: mockOrder,
+        type: "discount",
       });
+      expect(mockApplyDiscountCode).toHaveBeenCalledWith("SAVE10");
+      expect(mockApplyGiftCard).not.toHaveBeenCalled();
     });
 
-    it("returns fallback message for non-Error throws", async () => {
-      mockApplyCoupon.mockRejectedValue("unexpected");
+    it("falls back to gift card when discount code fails", async () => {
+      mockApplyDiscountCode.mockRejectedValue(new Error("Coupon not found"));
+      mockApplyGiftCard.mockResolvedValue(mockOrder);
 
-      const result = await applyCouponCode("order-1", "BAD");
+      const result = await applyCode("order-1", "GC-ABCD-1234");
 
       expect(result).toEqual({
-        success: false,
-        error: "Failed to apply coupon code",
+        success: true,
+        cart: mockOrder,
+        type: "gift_card",
       });
+      expect(mockApplyDiscountCode).toHaveBeenCalledWith("GC-ABCD-1234");
+      expect(mockApplyGiftCard).toHaveBeenCalledWith("GC-ABCD-1234");
+    });
+
+    it("returns error when both discount and gift card fail", async () => {
+      mockApplyDiscountCode.mockRejectedValue(new Error("Coupon not found"));
+      mockApplyGiftCard.mockRejectedValue(new Error("Gift card not found"));
+
+      const result = await applyCode("order-1", "INVALID");
+
+      expect(result).toEqual({ success: false, error: "Gift card not found" });
     });
   });
 
-  describe("removeCouponCode", () => {
+  describe("removeDiscountCode", () => {
     it("returns success with order", async () => {
-      mockRemoveCoupon.mockResolvedValue(mockOrder);
+      mockRemoveDiscountCode.mockResolvedValue(mockOrder);
 
-      const result = await removeCouponCode("order-1", "promo-1");
+      const result = await removeDiscountCode("order-1", "SAVE10");
 
-      expect(mockRemoveCoupon).toHaveBeenCalledWith("promo-1");
+      expect(mockRemoveDiscountCode).toHaveBeenCalledWith("SAVE10");
       expect(result).toEqual({ success: true, cart: mockOrder });
     });
 
     it("returns error on failure", async () => {
-      mockRemoveCoupon.mockRejectedValue(new Error("Promotion not found"));
+      mockRemoveDiscountCode.mockRejectedValue(
+        new Error("Promotion not found"),
+      );
 
-      const result = await removeCouponCode("order-1", "promo-1");
+      const result = await removeDiscountCode("order-1", "SAVE10");
 
       expect(result).toEqual({
         success: false,
         error: "Promotion not found",
+      });
+    });
+  });
+
+  describe("removeGiftCard", () => {
+    it("returns success with order", async () => {
+      mockRemoveGiftCard.mockResolvedValue(mockOrder);
+
+      const result = await removeGiftCard("order-1", "gc_abc123");
+
+      expect(mockRemoveGiftCard).toHaveBeenCalledWith("gc_abc123");
+      expect(result).toEqual({ success: true, cart: mockOrder });
+    });
+
+    it("returns error on failure", async () => {
+      mockRemoveGiftCard.mockRejectedValue(new Error("Gift card not found"));
+
+      const result = await removeGiftCard("order-1", "gc_abc123");
+
+      expect(result).toEqual({
+        success: false,
+        error: "Gift card not found",
       });
     });
   });
