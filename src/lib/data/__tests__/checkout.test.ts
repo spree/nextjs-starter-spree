@@ -260,7 +260,7 @@ describe("checkout server actions", () => {
 
       const result = await applyCode("order-1", "INVALID");
 
-      expect(result).toEqual({ success: false, error: "Coupon not found" });
+      expect(result).toEqual({ success: false, error: "Gift card not found" });
     });
 
     it("does not fall back to gift card on network errors", async () => {

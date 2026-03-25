@@ -102,9 +102,9 @@ export async function applyCode(cartId: string, code: string) {
       const cart = await _applyGiftCard(code);
       return { success: true, cart, type: "gift_card" as const };
     } catch (giftCardError) {
-      // Both failed — show the discount error (more common scenario)
+      // Both failed — show the gift card error (last attempt, may have specific reason)
       const error =
-        discountError instanceof Error ? discountError.message : "Invalid code";
+        giftCardError instanceof Error ? giftCardError.message : "Invalid code";
       return { success: false, error } as const;
     }
   }
