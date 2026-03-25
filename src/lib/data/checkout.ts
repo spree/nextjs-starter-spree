@@ -85,16 +85,14 @@ export async function applyCode(cartId: string, code: string) {
     const cart = await _applyDiscountCode(code);
     return { success: true, cart, type: "discount" as const };
   } catch (discountError) {
-    // Only fall back to gift card if the discount code was not found.
-    // Network errors, 500s, etc. should not trigger a gift card retry.
+    // Only fall back to gift card if the discount code was not found (422/404).
+    // Network errors, 500s, etc. should surface the backend message directly.
     const isNotFound =
       discountError instanceof SpreeError &&
       (discountError.status === 422 || discountError.status === 404);
 
     if (!isNotFound) {
-      const error =
-        discountError instanceof Error ? discountError.message : "Invalid code";
-      return { success: false, error } as const;
+      return { success: false, error: errorMessage(discountError) } as const;
     }
 
     // Discount code not found — try gift card
@@ -102,12 +100,26 @@ export async function applyCode(cartId: string, code: string) {
       const cart = await _applyGiftCard(code);
       return { success: true, cart, type: "gift_card" as const };
     } catch (giftCardError) {
-      // Both failed — show the gift card error (last attempt, may have specific reason)
-      const error =
-        giftCardError instanceof Error ? giftCardError.message : "Invalid code";
-      return { success: false, error } as const;
+      // Gift card also failed. If it's a specific error (expired, redeemed, etc.)
+      // show the backend message. If both are just "not found", show the
+      // discount error (the more common scenario).
+      const isGiftCardNotFound =
+        giftCardError instanceof SpreeError &&
+        (giftCardError.code === "gift_card_not_found" ||
+          giftCardError.code === "record_not_found");
+
+      return {
+        success: false,
+        error: isGiftCardNotFound
+          ? errorMessage(discountError)
+          : errorMessage(giftCardError),
+      } as const;
     }
   }
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : "The entered code is not valid";
 }
 
 export async function removeDiscountCode(cartId: string, code: string) {

@@ -260,7 +260,38 @@ describe("checkout server actions", () => {
 
       const result = await applyCode("order-1", "INVALID");
 
-      expect(result).toEqual({ success: false, error: "Gift card not found" });
+      expect(result).toEqual({
+        success: false,
+        error: "Coupon not found",
+      });
+    });
+
+    it("shows backend gift card error when gift card is expired", async () => {
+      const { SpreeError } = await import("@spree/sdk");
+      mockApplyDiscountCode.mockRejectedValue(
+        new SpreeError(
+          { error: { code: "processing_error", message: "Coupon not found" } },
+          422,
+        ),
+      );
+      mockApplyGiftCard.mockRejectedValue(
+        new SpreeError(
+          {
+            error: {
+              code: "gift_card_expired",
+              message: "The Gift Card has expired.",
+            },
+          },
+          422,
+        ),
+      );
+
+      const result = await applyCode("order-1", "EXPIRED-GC");
+
+      expect(result).toEqual({
+        success: false,
+        error: "The Gift Card has expired.",
+      });
     });
 
     it("does not fall back to gift card on network errors", async () => {
