@@ -44,7 +44,11 @@ export function OrderList({ orders, basePath }: OrderListProps) {
               <tr key={order.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm font-medium text-gray-900">
-                    #{order.number}
+                    <Button variant="link" size="sm" asChild className="p-0">
+                      <Link href={`${basePath}/account/orders/${order.id}`}>
+                        #{order.number}
+                      </Link>
+                    </Button>
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
