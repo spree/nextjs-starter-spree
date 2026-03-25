@@ -14,9 +14,11 @@ vi.mock("@spree/next", () => ({
 vi.mock("@spree/sdk", () => ({
   SpreeError: class SpreeError extends Error {
     code: string;
-    constructor(message: string, code: string) {
+    status: number;
+    constructor(message: string, code: string, status = 422) {
       super(message);
       this.code = code;
+      this.status = status;
     }
   },
 }));
@@ -212,8 +214,11 @@ describe("checkout server actions", () => {
       expect(mockApplyGiftCard).not.toHaveBeenCalled();
     });
 
-    it("falls back to gift card when discount code fails", async () => {
-      mockApplyDiscountCode.mockRejectedValue(new Error("Coupon not found"));
+    it("falls back to gift card when discount code returns 422", async () => {
+      const { SpreeError } = await import("@spree/sdk");
+      mockApplyDiscountCode.mockRejectedValue(
+        new SpreeError("Coupon not found", "processing_error", 422),
+      );
       mockApplyGiftCard.mockResolvedValue(mockOrder);
 
       const result = await applyCode("order-1", "GC-ABCD-1234");
@@ -228,12 +233,41 @@ describe("checkout server actions", () => {
     });
 
     it("returns error when both discount and gift card fail", async () => {
-      mockApplyDiscountCode.mockRejectedValue(new Error("Coupon not found"));
-      mockApplyGiftCard.mockRejectedValue(new Error("Gift card not found"));
+      const { SpreeError } = await import("@spree/sdk");
+      mockApplyDiscountCode.mockRejectedValue(
+        new SpreeError("Coupon not found", "processing_error", 422),
+      );
+      mockApplyGiftCard.mockRejectedValue(
+        new SpreeError("Gift card not found", "gift_card_not_found", 404),
+      );
 
       const result = await applyCode("order-1", "INVALID");
 
-      expect(result).toEqual({ success: false, error: "Gift card not found" });
+      expect(result).toEqual({ success: false, error: "Coupon not found" });
+    });
+
+    it("does not fall back to gift card on network errors", async () => {
+      mockApplyDiscountCode.mockRejectedValue(new Error("Network error"));
+
+      const result = await applyCode("order-1", "SAVE10");
+
+      expect(result).toEqual({ success: false, error: "Network error" });
+      expect(mockApplyGiftCard).not.toHaveBeenCalled();
+    });
+
+    it("does not fall back to gift card on 500 errors", async () => {
+      const { SpreeError } = await import("@spree/sdk");
+      mockApplyDiscountCode.mockRejectedValue(
+        new SpreeError("Internal server error", "internal_error", 500),
+      );
+
+      const result = await applyCode("order-1", "SAVE10");
+
+      expect(result).toEqual({
+        success: false,
+        error: "Internal server error",
+      });
+      expect(mockApplyGiftCard).not.toHaveBeenCalled();
     });
   });
 

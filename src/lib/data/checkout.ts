@@ -85,21 +85,26 @@ export async function applyCode(cartId: string, code: string) {
     const cart = await _applyDiscountCode(code);
     return { success: true, cart, type: "discount" as const };
   } catch (discountError) {
-    // If not a valid discount code, try gift card
+    // Only fall back to gift card if the discount code was not found.
+    // Network errors, 500s, etc. should not trigger a gift card retry.
+    const isNotFound =
+      discountError instanceof SpreeError &&
+      (discountError.status === 422 || discountError.status === 404);
+
+    if (!isNotFound) {
+      const error =
+        discountError instanceof Error ? discountError.message : "Invalid code";
+      return { success: false, error } as const;
+    }
+
+    // Discount code not found — try gift card
     try {
       const cart = await _applyGiftCard(code);
       return { success: true, cart, type: "gift_card" as const };
     } catch (giftCardError) {
-      // Both failed — return the most useful error
+      // Both failed — show the discount error (more common scenario)
       const error =
-        giftCardError instanceof SpreeError &&
-        giftCardError.code === "gift_card_not_found"
-          ? discountError instanceof Error
-            ? discountError.message
-            : "Invalid code"
-          : giftCardError instanceof Error
-            ? giftCardError.message
-            : "Invalid code";
+        discountError instanceof Error ? discountError.message : "Invalid code";
       return { success: false, error } as const;
     }
   }

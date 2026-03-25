@@ -77,7 +77,7 @@ export function CouponCode({
     setRemoving(null);
   };
 
-  const hasAppliedCode = couponPromotions.length > 0 || !!appliedGiftCard;
+  const hasAppliedCode = couponPromotions.length > 0 && !!appliedGiftCard;
 
   return (
     <div>
