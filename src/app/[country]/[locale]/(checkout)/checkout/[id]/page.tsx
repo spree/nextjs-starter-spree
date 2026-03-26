@@ -14,6 +14,7 @@ import {
 } from "@/components/checkout/PaymentSection";
 import { Summary } from "@/components/checkout/Summary";
 import { PolicyConsent } from "@/components/policy/PolicyConsent";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
@@ -105,6 +106,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   );
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [policyConsent, setPolicyConsent] = useState(false);
+  const [policyError, setPolicyError] = useState(false);
 
   const fulfillments = cart?.fulfillments ?? [];
 
@@ -475,9 +477,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(null);
 
     if (policies.length > 0 && !policyConsent) {
+      setPolicyError(true);
       setError(
         "You must agree to the store policies before placing your order",
       );
+      document
+        .getElementById("policy-consent")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("policy-consent")?.focus();
       return;
     }
 
@@ -594,12 +601,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     <div>
       {/* Error banner */}
       {error && (
-        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-6">
-          <p className="text-sm text-red-700 flex items-center gap-2">
-            <CircleAlert className="h-4 w-4 flex-shrink-0" />
-            {error}
-          </p>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Contact + Delivery */}
@@ -655,8 +660,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           <PolicyConsent
             policies={policies}
             checked={policyConsent}
-            onCheckedChange={setPolicyConsent}
+            onCheckedChange={(checked) => {
+              setPolicyConsent(checked);
+              if (checked) setPolicyError(false);
+            }}
             basePath={basePath}
+            error={policyError}
           />
         </div>
       )}

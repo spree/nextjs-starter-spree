@@ -41,6 +41,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [policyConsent, setPolicyConsent] = useState(false);
+  const [policyError, setPolicyError] = useState(false);
 
   useEffect(() => {
     getPolicies().then((all) =>
@@ -76,7 +77,12 @@ export default function RegisterPage() {
     }
 
     if (policies.length > 0 && !policyConsent) {
+      setPolicyError(true);
       setError("You must agree to the store policies to create an account");
+      document
+        .getElementById("policy-consent")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("policy-consent")?.focus();
       return;
     }
 
@@ -233,8 +239,12 @@ export default function RegisterPage() {
               <PolicyConsent
                 policies={policies}
                 checked={policyConsent}
-                onCheckedChange={setPolicyConsent}
+                onCheckedChange={(checked) => {
+                  setPolicyConsent(checked);
+                  if (checked) setPolicyError(false);
+                }}
                 basePath={basePath}
+                error={policyError}
               />
             )}
 
