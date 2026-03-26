@@ -88,7 +88,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         {/* Products */}
         <CategoryProductsContent
-          categoryPermalink={fullPermalink}
           categoryId={category.id}
           categoryName={category.name}
           basePath={basePath}

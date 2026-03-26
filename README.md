@@ -84,6 +84,9 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 | `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
 | `SENTRY_PROJECT` | Sentry project slug (for source map uploads) | _(none)_ |
 | `SENTRY_AUTH_TOKEN` | Sentry auth token (for source map uploads in CI) | _(none)_ |
+| `SPREE_WEBHOOK_SECRET` | Webhook endpoint secret key (for transactional emails) | _(disabled)_ |
+| `RESEND_API_KEY` | [Resend](https://resend.com) API key for sending emails in production | _(dev: writes to disk)_ |
+| `EMAIL_FROM` | "From" address for transactional emails (e.g. `Store <orders@mystore.com>`) | `orders@example.com` |
 | `SENTRY_SEND_DEFAULT_PII` | Send PII (IP addresses, cookies, user data) to Sentry server-side | `false` |
 | `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` | Send PII to Sentry client-side | `false` |
 
@@ -234,6 +237,61 @@ All components are in `src/components/` and can be customized or replaced as nee
 
 To customize API behavior, modify the server actions in `src/lib/data/`.
 
+## Transactional Emails
+
+Customer-facing emails (order confirmation, shipping notification, password reset) are rendered in the storefront using [react-email](https://react.email) and sent via [Resend](https://resend.com). The Spree backend delivers events to the storefront via webhooks.
+
+### Setup
+
+1. **Create a webhook endpoint** in Spree Admin → Settings → Developers → Webhooks:
+   - Subscribe to: `order.completed`, `order.canceled`, `order.shipped`, `customer.password_reset_requested`
+   - Copy the secret key
+
+2. **Add environment variables** to `.env.local`:
+
+```env
+SPREE_WEBHOOK_SECRET=your_webhook_endpoint_secret_key
+RESEND_API_KEY=re_your_resend_api_key        # production only
+EMAIL_FROM=Your Store <orders@your-domain.com>  # production only
+```
+
+3. **For local development**, use [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/) to expose your storefront:
+
+```bash
+brew install cloudflared
+cloudflared tunnel --url http://localhost:3001
+```
+
+Use the tunnel URL as the webhook endpoint URL in Spree Admin. No `RESEND_API_KEY` needed in dev — emails are rendered to HTML files in `.next/emails/` with a `file://` link logged to the console.
+
+### Email Templates
+
+Templates are in `src/lib/emails/` as React components:
+
+| Template | Event | Description |
+|----------|-------|-------------|
+| `order-confirmation.tsx` | `order.completed` | Order placed with items, totals, addresses |
+| `order-canceled.tsx` | `order.canceled` | Cancellation notice |
+| `shipment-shipped.tsx` | `order.shipped` | Shipping notification with tracking link |
+| `password-reset.tsx` | `customer.password_reset_requested` | Password reset link |
+
+### Previewing Templates
+
+```bash
+npm run email:dev
+```
+
+Opens the [react-email](https://react.email) dev server with all templates and mock data for live preview.
+
+### How It Works
+
+```
+Spree Backend → Webhook POST → /api/webhooks/spree → render email → send via Resend
+                (signed HMAC)   (signature verified)   (react-email)   (or write to disk in dev)
+```
+
+The webhook route handler (`src/app/api/webhooks/spree/route.ts`) uses `createWebhookHandler` from `@spree/next/webhooks` — signature verification and event routing are handled automatically.
+
 ## Deploy on Vercel
 
 The easiest way to deploy is using [Vercel](https://vercel.com/new):
@@ -242,6 +300,7 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 2. Import the repository in Vercel
 3. Add environment variables:
    - `SPREE_API_URL` and `SPREE_PUBLISHABLE_KEY` (required)
+   - `SPREE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM` (for transactional emails)
    - `GTM_ID` (optional — Google Tag Manager)
    - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy
