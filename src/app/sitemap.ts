@@ -1,21 +1,7 @@
-import { listCategories, listCountries, listProducts } from "@spree/next";
+import { listCategories, listMarkets, listProducts } from "@spree/next";
 import type { Category, StoreProduct } from "@spree/sdk";
 import type { MetadataRoute } from "next";
 import { getStoreUrl } from "@/lib/seo";
-
-/**
- * Sitemap locale mode — controls which country/locale combinations are
- * included in the generated sitemap.
- *
- * Set via the SITEMAP_LOCALE_MODE env variable:
- *   - "default"  — only the store's default country and locale (default)
- *   - "selected" — only the countries listed in SITEMAP_COUNTRIES (comma-separated ISO codes)
- *   - "all"      — every country available in the Spree store
- *
- * Each country resolves its locale from country.market.default_locale, falling back
- * to the store's default locale.
- */
-type SitemapLocaleMode = "default" | "selected" | "all";
 
 interface CountryLocale {
   country: string;
@@ -25,7 +11,6 @@ interface CountryLocale {
 /** Google's limit is 50,000 URLs per sitemap file. */
 const URLS_PER_SITEMAP = 50_000;
 const STATIC_PAGES_PER_LOCALE = 3;
-const VALID_LOCALE_MODES: SitemapLocaleMode[] = ["default", "selected", "all"];
 const MAX_PAGES = 1000;
 
 /**
@@ -217,65 +202,31 @@ export default async function sitemap(props: {
 
 /**
  * Resolves the list of country/locale pairs to include in the sitemap
- * based on the SITEMAP_LOCALE_MODE environment variable.
+ * by fetching all markets from the Spree API. Each market contains its
+ * countries and default locale, so no env-based configuration is needed.
  */
 async function resolveCountryLocales(): Promise<CountryLocale[]> {
-  const rawMode = process.env.SITEMAP_LOCALE_MODE || "default";
-  let mode: SitemapLocaleMode;
-  if (VALID_LOCALE_MODES.includes(rawMode as SitemapLocaleMode)) {
-    mode = rawMode as SitemapLocaleMode;
-  } else {
-    console.warn(
-      `Invalid SITEMAP_LOCALE_MODE "${rawMode}". Expected one of: ${VALID_LOCALE_MODES.join(", ")}. Falling back to "default".`,
-    );
-    mode = "default";
-  }
-
-  const storeDefaultLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
-
-  if (mode === "default") {
-    const defaultCountry = (
-      process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us"
-    ).toLowerCase();
-
-    return [{ country: defaultCountry, locale: storeDefaultLocale }];
-  }
-
-  // For "all" and "selected" modes we need the countries from the API
   const localeOptions = getDefaultLocaleOptions();
-  const countriesResponse = await listCountries(localeOptions);
-  const allCountries = countriesResponse.data;
+  const { data: markets } = await listMarkets(localeOptions);
 
-  if (mode === "selected") {
-    const selectedIsos = (process.env.SITEMAP_COUNTRIES || "")
-      .split(",")
-      .map((iso) => iso.trim().toLowerCase())
-      .filter(Boolean);
+  const seen = new Set<string>();
+  const result: CountryLocale[] = [];
 
-    if (selectedIsos.length === 0) {
-      console.warn(
-        "SITEMAP_LOCALE_MODE is 'selected' but SITEMAP_COUNTRIES is empty. Falling back to default country.",
-      );
-      const defaultCountry = (
-        process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us"
-      ).toLowerCase();
-      return [{ country: defaultCountry, locale: storeDefaultLocale }];
-    }
-
-    return selectedIsos.map((iso) => {
-      const found = allCountries.find((c) => c.iso.toLowerCase() === iso);
-      return {
+  for (const market of markets) {
+    for (const country of market.countries ?? []) {
+      const iso = country.iso.toLowerCase();
+      if (seen.has(iso)) continue;
+      seen.add(iso);
+      result.push({
         country: iso,
-        locale: found?.market?.default_locale || storeDefaultLocale,
-      };
-    });
+        locale: market.default_locale || localeOptions.locale,
+      });
+    }
   }
 
-  // mode === "all"
-  return allCountries.map((c) => ({
-    country: c.iso.toLowerCase(),
-    locale: c.market?.default_locale || storeDefaultLocale,
-  }));
+  return result.length > 0
+    ? result
+    : [{ country: localeOptions.country, locale: localeOptions.locale }];
 }
 
 /**
