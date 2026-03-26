@@ -1,6 +1,6 @@
 "use client";
 
-import type { Address, AddressParams, Cart, Country } from "@spree/sdk";
+import type { Address, AddressParams, Cart, Country, Policy } from "@spree/sdk";
 import { CircleAlert, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,6 +13,7 @@ import {
   type PaymentSectionHandle,
 } from "@/components/checkout/PaymentSection";
 import { Summary } from "@/components/checkout/Summary";
+import { PolicyConsent } from "@/components/policy/PolicyConsent";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
@@ -20,6 +21,7 @@ import {
   trackAddShippingInfo,
   trackBeginCheckout,
 } from "@/lib/analytics/gtm";
+import { REGISTRATION_POLICY_SLUGS } from "@/lib/constants/policies";
 import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
   applyCode,
@@ -36,6 +38,7 @@ import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
 } from "@/lib/data/payment";
+import { getPolicies } from "@/lib/data/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 interface CheckoutPageProps {
@@ -100,6 +103,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [sectionErrors, setSectionErrors] = useState<Record<string, string[]>>(
     {},
   );
+  const [policies, setPolicies] = useState<Policy[]>([]);
+  const [policyConsent, setPolicyConsent] = useState(false);
 
   const fulfillments = cart?.fulfillments ?? [];
 
@@ -184,12 +189,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     if (!paymentError) setError(null);
 
     try {
-      const [cartData, market, addressesData, authStatus] = await Promise.all([
-        getCheckoutOrder(cartId),
-        resolveMarket(urlCountry).catch(() => null),
-        getAddresses(),
-        checkAuth(),
-      ]);
+      const [cartData, market, addressesData, authStatus, allPolicies] =
+        await Promise.all([
+          getCheckoutOrder(cartId),
+          resolveMarket(urlCountry).catch(() => null),
+          getAddresses(),
+          checkAuth(),
+          getPolicies(),
+        ]);
 
       const countriesData = market
         ? await getMarketCountries(market.id).catch(() => ({
@@ -212,6 +219,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
+      setPolicies(
+        authStatus
+          ? allPolicies.filter(
+              (p) => !REGISTRATION_POLICY_SLUGS.includes(p.slug),
+            )
+          : allPolicies,
+      );
 
       if (!beginCheckoutFiredRef.current) {
         try {
@@ -460,6 +474,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setSectionErrors({});
     setError(null);
 
+    if (policies.length > 0 && !policyConsent) {
+      setError(
+        "You must agree to the store policies before placing your order",
+      );
+      return;
+    }
+
     // Refresh cart to get latest requirements
     const freshOrder = await getCheckoutOrder(cart.id);
     if (!freshOrder) {
@@ -627,6 +648,18 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           errors={sectionErrors.payment}
         />
       </div>
+
+      {/* Policy consent */}
+      {policies.length > 0 && (
+        <div className="mt-6">
+          <PolicyConsent
+            policies={policies}
+            checked={policyConsent}
+            onCheckedChange={setPolicyConsent}
+            basePath={basePath}
+          />
+        </div>
+      )}
 
       {/* Pay now button — Shopify: black, tall, minimal radius, bold */}
       <button

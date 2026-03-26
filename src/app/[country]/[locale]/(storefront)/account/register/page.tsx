@@ -1,9 +1,11 @@
 "use client";
 
+import type { Policy } from "@spree/sdk";
 import { CircleAlert, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { PolicyConsent } from "@/components/policy/PolicyConsent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +19,8 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { REGISTRATION_POLICY_SLUGS } from "@/lib/constants/policies";
+import { getPolicies } from "@/lib/data/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function RegisterPage() {
@@ -35,6 +39,16 @@ export default function RegisterPage() {
     useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [policies, setPolicies] = useState<Policy[]>([]);
+  const [policyConsent, setPolicyConsent] = useState(false);
+
+  useEffect(() => {
+    getPolicies().then((all) =>
+      setPolicies(
+        all.filter((p) => REGISTRATION_POLICY_SLUGS.includes(p.slug)),
+      ),
+    );
+  }, []);
 
   // Redirect if already authenticated
   // useEffect is needed here to prevent rendering issues.
@@ -58,6 +72,11 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (policies.length > 0 && !policyConsent) {
+      setError("You must agree to the store policies to create an account");
       return;
     }
 
@@ -209,6 +228,15 @@ export default function RegisterPage() {
                 </div>
               </div>
             </Field>
+
+            {policies.length > 0 && (
+              <PolicyConsent
+                policies={policies}
+                checked={policyConsent}
+                onCheckedChange={setPolicyConsent}
+                basePath={basePath}
+              />
+            )}
 
             <div className="w-full">
               <Button
