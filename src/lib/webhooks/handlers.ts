@@ -8,7 +8,9 @@ import { sendEmail } from "@/lib/emails/send";
 import { ShipmentShippedEmail } from "@/lib/emails/shipment-shipped";
 
 const STORE_NAME = process.env.NEXT_PUBLIC_STORE_NAME || "Store";
-const STORE_URL = process.env.STORE_URL || "http://localhost:3001";
+const STORE_URL =
+  process.env.STORE_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
 
 /**
  * Handle order.completed webhook — send order confirmation email.
@@ -20,8 +22,15 @@ export async function handleOrderCompleted(event: WebhookEvent<Order>) {
   const customerName =
     order.shipping_address?.full_name || order.billing_address?.full_name || "";
 
+  const deliveryMethodNames = [
+    ...new Set(
+      (order.fulfillments ?? [])
+        .map((f) => f.delivery_method?.name)
+        .filter(Boolean),
+    ),
+  ];
   const deliveryMethodName =
-    order.fulfillments?.[0]?.delivery_method?.name || undefined;
+    deliveryMethodNames.length === 1 ? deliveryMethodNames[0] : undefined;
 
   await sendEmail({
     to: order.email,
@@ -162,14 +171,9 @@ export async function handlePasswordReset(
   // Build the reset URL by appending the token to the redirect_url.
   // If no redirect_url was provided (e.g. no allowed origins configured),
   // fall back to the storefront's reset-password page.
-  let resetUrl: string;
-  if (redirect_url) {
-    const url = new URL(redirect_url);
-    url.searchParams.set("token", reset_token);
-    resetUrl = url.toString();
-  } else {
-    resetUrl = `${STORE_URL}/account/reset-password?token=${reset_token}`;
-  }
+  const url = new URL(redirect_url ?? "/account/reset-password", STORE_URL);
+  url.searchParams.set("token", reset_token);
+  const resetUrl = url.toString();
 
   await sendEmail({
     to: email,

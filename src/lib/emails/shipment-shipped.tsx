@@ -90,8 +90,11 @@ export function ShipmentShippedEmail({
 
               {/* Shipped Items */}
               <Section>
-                {shipment.items.map((item) => (
-                  <Row key={item.name} style={itemRow}>
+                {shipment.items.map((item, index) => (
+                  <Row
+                    key={`${item.name}-${item.options_text ?? index}`}
+                    style={itemRow}
+                  >
                     <Column style={itemImageCol}>
                       {item.thumbnail_url ? (
                         <Img

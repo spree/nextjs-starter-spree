@@ -50,8 +50,8 @@ export function PasswordResetEmail({
           <Hr style={hr} />
 
           <Text style={disclaimer}>
-            This link will expire in 15 minutes. If you didn't request a
-            password reset, you can safely ignore this email.
+            This link will expire shortly. If you didn't request a password
+            reset, you can safely ignore this email.
           </Text>
 
           <Text style={footer}>

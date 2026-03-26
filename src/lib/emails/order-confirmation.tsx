@@ -91,8 +91,11 @@ export function OrderConfirmationEmail({
             Order Summary
           </Heading>
           <Section>
-            {items.map((item) => (
-              <Row key={item.name} style={itemRow}>
+            {items.map((item, index) => (
+              <Row
+                key={`${item.name}-${item.options_text ?? index}`}
+                style={itemRow}
+              >
                 <Column style={itemImageCol}>
                   {item.thumbnail_url ? (
                     <Img
