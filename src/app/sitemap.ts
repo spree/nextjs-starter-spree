@@ -1,7 +1,7 @@
 import { listCategories, listMarkets, listProducts } from "@spree/next";
-import type { Category, Image, StoreProduct } from "@spree/sdk";
+import type { Category, Media, StoreProduct } from "@spree/sdk";
 
-type ProductWithImages = StoreProduct & { images?: Image[] };
+type ProductWithMedia = StoreProduct & { media?: Media[] };
 
 import type { MetadataRoute } from "next";
 import { getStoreUrl } from "@/lib/seo";
@@ -174,11 +174,11 @@ export default async function sitemap(props: {
         ...safeLastModified(product.updated_at),
         changeFrequency: "weekly",
         priority: 0.6,
-        ...(product.images && product.images.length > 0
+        ...(product.media && product.media.length > 0
           ? {
-              images: product.images
-                .map((img) => img.original_url)
-                .filter((url): url is string => url != null),
+              images: product.media
+                .map((img: Media) => img.original_url)
+                .filter((url: string | null): url is string => url != null),
             }
           : {}),
       });
@@ -254,18 +254,18 @@ function safeLastModified(
   return { lastModified: date };
 }
 
-async function fetchAllProducts(): Promise<ProductWithImages[]> {
+async function fetchAllProducts(): Promise<ProductWithMedia[]> {
   const localeOptions = getDefaultLocaleOptions();
-  const allProducts: ProductWithImages[] = [];
+  const allProducts: ProductWithMedia[] = [];
   let page = 1;
   let totalPages = 1;
 
   do {
     const response = await listProducts(
-      { page, limit: 100, expand: ["images"] },
+      { page, limit: 100, expand: ["media"] },
       localeOptions,
     );
-    allProducts.push(...(response.data as ProductWithImages[]));
+    allProducts.push(...(response.data as ProductWithMedia[]));
     totalPages = response.meta.pages;
     page++;
   } while (page <= totalPages && page <= MAX_PAGES);
