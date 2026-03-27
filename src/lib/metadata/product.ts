@@ -15,7 +15,7 @@ export async function generateProductMetadata({
 }: ProductMetadataParams): Promise<Metadata> {
   let product;
   try {
-    product = await getCachedProduct(slug, PRODUCT_PAGE_EXPAND, locale);
+    product = await getCachedProduct(slug, PRODUCT_PAGE_EXPAND);
   } catch {
     return { title: "Product Not Found" };
   }

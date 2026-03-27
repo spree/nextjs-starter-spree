@@ -17,11 +17,10 @@ export async function generateCategoryMetadata({
 
   let category;
   try {
-    category = await getCachedCategory(
-      fullPermalink,
-      ["ancestors", "children"],
-      locale,
-    );
+    category = await getCachedCategory(fullPermalink, [
+      "ancestors",
+      "children",
+    ]);
   } catch {
     return { title: "Category Not Found" };
   }

@@ -27,7 +27,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   let product;
   try {
-    product = await getCachedProduct(slug, PRODUCT_PAGE_EXPAND, locale);
+    product = await getCachedProduct(slug, PRODUCT_PAGE_EXPAND);
   } catch {
     notFound();
   }
