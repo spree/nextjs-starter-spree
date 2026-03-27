@@ -1,15 +1,13 @@
 "use client";
 
 import type { Country, Market } from "@spree/sdk";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   type ReactNode,
-  useCallback,
   useContext,
+  useEffect,
   useMemo,
-  useRef,
-  useState,
 } from "react";
 import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
@@ -33,8 +31,6 @@ interface StoreContextValue {
   locale: string;
   currency: string;
   countries: CountryWithMarket[];
-  setCountry: (country: string) => void;
-  setLocale: (locale: string) => void;
   loading: boolean;
 }
 
@@ -83,38 +79,25 @@ function resolveCountryAndCurrency(
   countries: CountryWithMarket[],
   urlCountry: string,
 ): {
-  country: CountryWithMarket | undefined;
-  currency: string;
-  locale: string;
+  selectedCountry: CountryWithMarket | undefined;
+  effectiveCountry: CountryWithMarket | undefined;
   needsRedirect: boolean;
 } {
-  const country = findCountry(countries, urlCountry);
+  const selectedCountry = findCountry(countries, urlCountry);
 
-  if (country) {
+  if (selectedCountry) {
     return {
-      country,
-      currency: country.currency || "USD",
-      locale: country.default_locale || "en",
+      selectedCountry,
+      effectiveCountry: selectedCountry,
       needsRedirect: false,
     };
   }
 
-  // Country not found — redirect to first available country
   const defaultCountry = countries[0];
-  if (defaultCountry) {
-    return {
-      country: defaultCountry,
-      currency: defaultCountry.currency || "USD",
-      locale: defaultCountry.default_locale || "en",
-      needsRedirect: true,
-    };
-  }
-
   return {
-    country: undefined,
-    currency: "USD",
-    locale: "en",
-    needsRedirect: false,
+    selectedCountry: undefined,
+    effectiveCountry: defaultCountry,
+    needsRedirect: Boolean(defaultCountry),
   };
 }
 
@@ -124,61 +107,36 @@ export function StoreProvider({
   initialLocale,
   initialMarkets,
 }: StoreProviderProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const pathnameRef = useRef(pathname);
-  pathnameRef.current = pathname;
-
-  const initialCountries = useMemo(
+  const countries = useMemo(
     () => buildCountriesFromMarkets(initialMarkets),
     [initialMarkets],
   );
 
-  const initialResolved = useMemo(
-    () => resolveCountryAndCurrency(initialCountries, initialCountry),
-    [initialCountries, initialCountry],
+  const resolved = useMemo(
+    () => resolveCountryAndCurrency(countries, initialCountry),
+    [countries, initialCountry],
   );
 
-  const [country, setCountryState] = useState(
-    initialResolved.country?.iso.toLowerCase() || initialCountry,
-  );
-  const [locale, setLocaleState] = useState(
-    initialResolved.locale || initialLocale,
-  );
-  const [currency, setCurrency] = useState(initialResolved.currency);
-  const [countries] = useState(initialCountries);
+  const country = (
+    resolved.effectiveCountry?.iso || initialCountry
+  ).toLowerCase();
+  const locale = resolved.selectedCountry
+    ? initialLocale
+    : (resolved.effectiveCountry?.default_locale ?? initialLocale);
+  const currency = resolved.effectiveCountry?.currency ?? "USD";
   const loading = false;
 
-  // Handle redirect if country from URL is not valid
-  const redirectHandled = useRef(false);
-  if (
-    initialResolved.needsRedirect &&
-    initialResolved.country &&
-    !redirectHandled.current
-  ) {
-    redirectHandled.current = true;
-    const newLocale = initialResolved.locale;
+  useEffect(() => {
+    if (!resolved.needsRedirect || !resolved.effectiveCountry) return;
+
+    const newLocale = resolved.effectiveCountry.default_locale || "en";
     const pathRest = getPathWithoutPrefix(pathname);
-    const newPath = `/${initialResolved.country.iso.toLowerCase()}/${newLocale}${pathRest}`;
-    setStoreCookies(initialResolved.country.iso.toLowerCase(), newLocale);
-    router.replace(newPath);
-  }
-
-  const setCountry = useCallback(
-    (newCountry: string): void => {
-      setCountryState(newCountry);
-      const countryObj = findCountry(countries, newCountry);
-      if (countryObj) {
-        setCurrency(countryObj.currency);
-        setLocaleState(countryObj.default_locale);
-      }
-    },
-    [countries],
-  );
-
-  const setLocale = useCallback((newLocale: string): void => {
-    setLocaleState(newLocale);
-  }, []);
+    const nextCountry = resolved.effectiveCountry.iso.toLowerCase();
+    const newPath = `/${nextCountry}/${newLocale}${pathRest}`;
+    setStoreCookies(nextCountry, newLocale);
+    window.location.replace(newPath);
+  }, [pathname, resolved]);
 
   const value = useMemo<StoreContextValue>(
     () => ({
@@ -188,11 +146,9 @@ export function StoreProvider({
       locale,
       currency,
       countries,
-      setCountry,
-      setLocale,
       loading,
     }),
-    [country, locale, currency, countries, setCountry, setLocale],
+    [country, locale, currency, countries],
   );
 
   return (

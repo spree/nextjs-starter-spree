@@ -3,7 +3,7 @@
 import type { Category } from "@spree/sdk";
 import { ArrowLeft, Check, ChevronRight, User, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,8 @@ import {
   SheetFooter,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useCart } from "@/contexts/CartContext";
-import { type CountryWithMarket, useStore } from "@/contexts/StoreContext";
-import { updateOrderMarket } from "@/lib/data/checkout";
-import { setStoreCookies } from "@/lib/utils/cookies";
-import { getPathWithoutPrefix } from "@/lib/utils/path";
+import { useStore } from "@/contexts/StoreContext";
+import { useCountrySwitch } from "@/hooks/useCountrySwitch";
 
 // Convert ISO country code to flag emoji
 function countryToFlag(countryCode: string): string {
@@ -48,10 +45,12 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
   const rafRef = useRef<number | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { country, currency, countries, setCountry } = useStore();
-  const { cart, refreshCart } = useCart();
+  const { country, currency, countries } = useStore();
   const router = useRouter();
-  const pathname = usePathname();
+  const { isCountryNavigating, handleCountrySelect } = useCountrySwitch({
+    currentCountry: country,
+    onBeforeNavigate: () => setOpen(false),
+  });
 
   const currentPanel = panelStack[panelStack.length - 1];
 
@@ -88,26 +87,6 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
       timeoutRef.current = null;
       setPanelStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
     }, 300);
-  };
-
-  const handleCountrySelect = async (entry: CountryWithMarket) => {
-    const newLocale = entry.default_locale || "en";
-    const newCurrency = entry.currency;
-    const pathRest = getPathWithoutPrefix(pathname);
-    const newPath = `/${entry.iso.toLowerCase()}/${newLocale}${pathRest}`;
-
-    if (cart && (cart.currency !== newCurrency || cart.locale !== newLocale)) {
-      const result = await updateOrderMarket(cart.id, {
-        currency: newCurrency,
-        locale: newLocale,
-      });
-      if (!result.success) return;
-      await refreshCart();
-    }
-
-    setStoreCookies(entry.iso.toLowerCase(), newLocale);
-    setCountry(entry.iso.toLowerCase());
-    router.push(newPath);
   };
 
   const handleOpenChange = (value: boolean) => {
@@ -423,6 +402,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                   <button
                     key={c.iso}
                     type="button"
+                    disabled={isCountryNavigating}
                     onClick={() => handleCountrySelect(c)}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-base transition-colors ${
                       isSelected

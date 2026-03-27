@@ -9,12 +9,11 @@ export const PRODUCT_PAGE_EXPAND = [
   "metafields",
 ];
 
-export const getCachedProduct = cache(
-  (slugOrId: string, expand: string[], locale: string) =>
-    getProduct(slugOrId, { expand }, { locale }),
+export const getCachedProduct = cache((slugOrId: string, expand: string[]) =>
+  getProduct(slugOrId, { expand }),
 );
 
 export const getCachedCategory = cache(
-  (idOrPermalink: string, expand: string[], locale: string) =>
-    getCategory(idOrPermalink, { expand }, { locale }),
+  (idOrPermalink: string, expand: string[]) =>
+    getCategory(idOrPermalink, { expand }),
 );

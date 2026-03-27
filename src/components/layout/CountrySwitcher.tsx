@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,11 +9,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCart } from "@/contexts/CartContext";
-import { type CountryWithMarket, useStore } from "@/contexts/StoreContext";
-import { updateOrderMarket } from "@/lib/data/checkout";
-import { setStoreCookies } from "@/lib/utils/cookies";
-import { getPathWithoutPrefix } from "@/lib/utils/path";
+import { useStore } from "@/contexts/StoreContext";
+import { useCountrySwitch } from "@/hooks/useCountrySwitch";
 
 // Convert ISO country code to flag emoji
 // Uses regional indicator symbols: A=🇦 (U+1F1E6), B=🇧 (U+1F1E7), etc.
@@ -29,35 +25,10 @@ function countryToFlag(countryCode: string): string {
 }
 
 export function CountrySwitcher() {
-  const { country, currency, countries, setCountry, loading } = useStore();
-  const { cart, refreshCart } = useCart();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Handle country selection — derive locale and currency from the country's market
-  const handleCountrySelect = async (entry: CountryWithMarket) => {
-    const newLocale = entry.default_locale || "en";
-    const newCurrency = entry.currency;
-    const pathRest = getPathWithoutPrefix(pathname);
-    const newPath = `/${entry.iso.toLowerCase()}/${newLocale}${pathRest}`;
-
-    // Update existing cart if currency or locale changed
-    if (cart && (cart.currency !== newCurrency || cart.locale !== newLocale)) {
-      const result = await updateOrderMarket(cart.id, {
-        currency: newCurrency,
-        locale: newLocale,
-      });
-      if (!result.success) {
-        return;
-      }
-      await refreshCart();
-    }
-
-    setStoreCookies(entry.iso.toLowerCase(), newLocale);
-    setCountry(entry.iso.toLowerCase());
-
-    router.push(newPath);
-  };
+  const { country, currency, countries, loading } = useStore();
+  const { isCountryNavigating, handleCountrySelect } = useCountrySwitch({
+    currentCountry: country,
+  });
 
   if (loading) {
     return (
@@ -86,6 +57,7 @@ export function CountrySwitcher() {
           return (
             <DropdownMenuItem
               key={c.iso}
+              disabled={isCountryNavigating}
               onSelect={() => handleCountrySelect(c)}
             >
               <span className="text-lg leading-none">

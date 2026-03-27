@@ -3,11 +3,9 @@
  * e.g. "/us/en/products" -> "/us/en"
  */
 export function extractBasePath(pathname: string): string {
-  const match = pathname.match(/^\/([a-z]{2})\/([a-z]{2})(\/|$)/i);
-  if (match) {
-    return `/${match[1]}/${match[2]}`;
-  }
-  return "";
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length < 2) return "";
+  return `/${segments[0]}/${segments[1]}`;
 }
 
 /**
@@ -15,6 +13,7 @@ export function extractBasePath(pathname: string): string {
  * e.g. "/us/en/products/shoes" -> "/products/shoes"
  */
 export function getPathWithoutPrefix(pathname: string): string {
-  const match = pathname.match(/^\/[a-z]{2}\/[a-z]{2}(\/.*)?$/i);
-  return match?.[1] || "";
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length <= 2) return "";
+  return `/${segments.slice(2).join("/")}`;
 }
