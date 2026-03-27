@@ -20,7 +20,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { REGISTRATION_POLICY_SLUGS } from "@/lib/constants/policies";
-import { getPolicies } from "@/lib/data/policies";
+import { getPoliciesStrict } from "@/lib/data/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function RegisterPage() {
@@ -40,15 +40,20 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [policies, setPolicies] = useState<Policy[]>([]);
+  const [policiesLoading, setPoliciesLoading] = useState(true);
+  const [policiesLoadError, setPoliciesLoadError] = useState(false);
   const [policyConsent, setPolicyConsent] = useState(false);
   const [policyError, setPolicyError] = useState(false);
 
   useEffect(() => {
-    getPolicies().then((all) =>
-      setPolicies(
-        all.filter((p) => REGISTRATION_POLICY_SLUGS.includes(p.slug)),
-      ),
-    );
+    getPoliciesStrict()
+      .then((all) =>
+        setPolicies(
+          all.filter((p) => REGISTRATION_POLICY_SLUGS.includes(p.slug)),
+        ),
+      )
+      .catch(() => setPoliciesLoadError(true))
+      .finally(() => setPoliciesLoading(false));
   }, []);
 
   // Redirect if already authenticated
@@ -73,6 +78,18 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (policiesLoading) {
+      setError("Please wait while store policies are loading");
+      return;
+    }
+
+    if (policiesLoadError) {
+      setError(
+        "Unable to load store policies. Please refresh the page and try again.",
+      );
       return;
     }
 
@@ -235,6 +252,15 @@ export default function RegisterPage() {
               </div>
             </Field>
 
+            {policiesLoadError && (
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertDescription>
+                  Unable to load store policies. Please refresh the page.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {policies.length > 0 && (
               <PolicyConsent
                 policies={policies}
@@ -251,7 +277,7 @@ export default function RegisterPage() {
             <div className="w-full">
               <Button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || policiesLoading || policiesLoadError}
                 size="lg"
                 className="w-full"
               >

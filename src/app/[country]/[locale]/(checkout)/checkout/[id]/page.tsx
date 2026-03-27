@@ -39,7 +39,7 @@ import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
 } from "@/lib/data/payment";
-import { getPolicies } from "@/lib/data/policies";
+import { getPoliciesStrict } from "@/lib/data/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 interface CheckoutPageProps {
@@ -197,7 +197,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           resolveMarket(urlCountry).catch(() => null),
           getAddresses(),
           checkAuth(),
-          getPolicies(),
+          getPoliciesStrict().catch(() => [] as Policy[]),
         ]);
 
       const countriesData = market
@@ -221,6 +221,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
+      // Authenticated users already accepted registration policies during sign-up.
+      // Spree has no consent-records API, so authStatus is the best available heuristic.
       setPolicies(
         authStatus
           ? allPolicies.filter(

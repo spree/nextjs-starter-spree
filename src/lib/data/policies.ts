@@ -12,6 +12,12 @@ export async function getPolicies(): Promise<Policy[]> {
   return result.data;
 }
 
+/** Strict variant that propagates errors — use for consent-gating flows. */
+export async function getPoliciesStrict(): Promise<Policy[]> {
+  const result = await _listPolicies();
+  return result.data;
+}
+
 export async function getPolicy(slug: string): Promise<Policy | null> {
   return withFallback(() => _getPolicy(slug), null);
 }

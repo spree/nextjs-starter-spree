@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getPolicy } from "@/lib/data/policies";
 import { getStoreName } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+
 interface PolicyPageProps {
   params: Promise<{
     country: string;
