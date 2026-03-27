@@ -1,5 +1,8 @@
 import { listCategories, listMarkets, listProducts } from "@spree/next";
-import type { Category, StoreProduct } from "@spree/sdk";
+import type { Category, Image, StoreProduct } from "@spree/sdk";
+
+type ProductWithImages = StoreProduct & { images?: Image[] };
+
 import type { MetadataRoute } from "next";
 import { getStoreUrl } from "@/lib/seo";
 
@@ -251,9 +254,9 @@ function safeLastModified(
   return { lastModified: date };
 }
 
-async function fetchAllProducts(): Promise<StoreProduct[]> {
+async function fetchAllProducts(): Promise<ProductWithImages[]> {
   const localeOptions = getDefaultLocaleOptions();
-  const allProducts: StoreProduct[] = [];
+  const allProducts: ProductWithImages[] = [];
   let page = 1;
   let totalPages = 1;
 
@@ -262,7 +265,7 @@ async function fetchAllProducts(): Promise<StoreProduct[]> {
       { page, limit: 100, expand: ["images"] },
       localeOptions,
     );
-    allProducts.push(...response.data);
+    allProducts.push(...(response.data as ProductWithImages[]));
     totalPages = response.meta.pages;
     page++;
   } while (page <= totalPages && page <= MAX_PAGES);
