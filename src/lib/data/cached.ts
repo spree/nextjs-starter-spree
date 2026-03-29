@@ -1,12 +1,13 @@
-import { getCategory, getProduct } from "@spree/next";
 import { cache } from "react";
+import { getCategory } from "./categories";
+import { getProduct } from "./products";
 
 /** Expand list used on the product detail page (shared by page + metadata). */
 export const PRODUCT_PAGE_EXPAND = [
   "variants",
   "media",
   "option_types",
-  "metafields",
+  "custom_fields",
 ];
 
 export const getCachedProduct = cache((slugOrId: string, expand: string[]) =>

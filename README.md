@@ -29,7 +29,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and [S
 - **TypeScript** - Full type safety
 - **Sentry** - Error tracking and performance monitoring with source maps
 - [@spree/sdk](https://spreecommerce.org/docs/developer/sdk/quickstart) - Official Spree Commerce SDK
-- [@spree/next](https://spreecommerce.org/docs/developer/storefront/nextjs/spree-next-package) - Server actions, caching, and cookie-based auth
+- [@spree/next](https://spreecommerce.org/docs/developer/storefront/nextjs/spree-next-package) - Cookie-based auth, middleware, and webhook helpers
 
 ## Architecture
 
@@ -41,8 +41,8 @@ This starter follows a **server-first pattern**:
 4. **Cache Revalidation** - Uses Next.js cache tags for efficient updates
 
 ```
-Browser → Server Action → Spree API
-         (with httpOnly cookies)
+Browser → Server Action → @spree/sdk → Spree API
+         (with httpOnly cookies via @spree/next helpers)
 ```
 
 ## Getting Started
@@ -149,17 +149,17 @@ src/
 
 ## Server Actions
 
-All data fetching is done through server actions in `src/lib/data/`:
+All data fetching is done through server actions in `src/lib/data/`. These call `@spree/sdk` directly, using `@spree/next` helpers for auth cookies and locale resolution:
 
 ```typescript
-// Products
+// Products — uses getLocaleOptions() for locale-aware reads
 import { getProducts, getProduct, getProductFilters } from '@/lib/data/products'
 
 const products = await getProducts({ limit: 12 })
-const product = await getProduct('product-slug', { expand: ['variants', 'images'] })
-const filters = await getProductFilters({ taxon_id: 'txn_xxx' })
+const product = await getProduct('product-slug', { expand: ['variants', 'media'] })
+const filters = await getProductFilters()
 
-// Cart
+// Cart — uses getCartOptions()/requireCartId() for cart operations
 import { getCart, addToCart, updateCartItem, removeCartItem } from '@/lib/data/cart'
 
 const cart = await getCart()
@@ -167,7 +167,7 @@ await addToCart('var_xxx', 1)
 await updateCartItem('li_xxx', 2)
 await removeCartItem('li_xxx')
 
-// Authentication
+// Authentication — uses withAuthRefresh() for authenticated endpoints
 import { login, register, logout, getCustomer } from '@/lib/data/customer'
 
 const result = await login('user@example.com', 'password')
@@ -181,29 +181,35 @@ await register({
 const customer = await getCustomer()
 await logout()
 
-// Addresses
+// Addresses — uses withAuthRefresh() for customer data
 import { getAddresses, createAddress, updateAddress, deleteAddress } from '@/lib/data/addresses'
 
 const addresses = await getAddresses()
-await createAddress({ firstname: 'John', ... })
+await createAddress({ first_name: 'John', ... })
 ```
 
 ## Authentication Flow
 
 1. User submits login form
-2. Server action calls Spree API with credentials
-3. JWT token is stored in an httpOnly cookie
-4. Subsequent requests include the token automatically
+2. Server action calls `@spree/sdk` to authenticate
+3. JWT token is stored in an httpOnly cookie via `@spree/next` cookie helpers
+4. Subsequent requests use `withAuthRefresh()` which reads the token automatically
 5. Token is never accessible to client-side JavaScript
 
 ```typescript
-// src/lib/data/cookies.ts
-export async function setAuthToken(token: string) {
-  const cookieStore = await cookies()
-  cookieStore.set('_spree_jwt', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+// src/lib/data/customer.ts
+import { getClient, withAuthRefresh, setAccessToken, setRefreshToken } from '@spree/next'
+
+export async function login(email: string, password: string) {
+  const result = await getClient().auth.login({ email, password })
+  await setAccessToken(result.token)
+  await setRefreshToken(result.refresh_token)
+  return { success: true, user: result.user }
+}
+
+export async function getCustomer() {
+  return withAuthRefresh(async (options) => {
+    return getClient().customer.get(options)
   })
 }
 ```
@@ -235,7 +241,7 @@ All components are in `src/components/` and can be customized or replaced as nee
 
 ### Data Layer
 
-To customize API behavior, modify the server actions in `src/lib/data/`.
+To customize API behavior, modify the server actions in `src/lib/data/`. These call `@spree/sdk` directly, using `@spree/next` helpers for auth cookies and locale resolution.
 
 ## Transactional Emails
 

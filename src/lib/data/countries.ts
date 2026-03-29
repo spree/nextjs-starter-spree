@@ -1,14 +1,13 @@
 "use server";
 
-import {
-  getCountry as _getCountry,
-  listCountries as _listCountries,
-} from "@spree/next";
+import { getClient, getLocaleOptions } from "@spree/next";
 
 export async function getCountries() {
-  return _listCountries();
+  const options = await getLocaleOptions();
+  return getClient().countries.list(options);
 }
 
 export async function getCountry(iso: string) {
-  return _getCountry(iso, { expand: ["states"] });
+  const options = await getLocaleOptions();
+  return getClient().countries.get(iso, { expand: ["states"] }, options);
 }

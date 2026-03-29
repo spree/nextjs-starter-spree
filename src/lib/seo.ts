@@ -1,4 +1,4 @@
-import type { Category, StoreProduct } from "@spree/sdk";
+import type { Category, Media, Product } from "@spree/sdk";
 
 /**
  * Default social image path (stored in public/).
@@ -64,7 +64,7 @@ export function stripHtml(html: string): string {
  * https://schema.org/Product
  */
 export function buildProductJsonLd(
-  product: StoreProduct,
+  product: Product,
   canonicalUrl: string,
 ): Record<string, unknown> {
   const schema: Record<string, unknown> = {
@@ -83,7 +83,7 @@ export function buildProductJsonLd(
   }
 
   const imageUrls = (product.media || [])
-    .map((img) => img.original_url || img.large_url)
+    .map((img: Media) => img.original_url || img.large_url)
     .filter(Boolean);
   // Fall back to thumbnail_url if no media from expand
   if (imageUrls.length === 0 && product.thumbnail_url) {

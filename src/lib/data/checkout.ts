@@ -1,17 +1,11 @@
 "use server";
 
-import {
-  applyDiscountCode as _applyDiscountCode,
-  applyGiftCard as _applyGiftCard,
-  removeDiscountCode as _removeDiscountCode,
-  removeGiftCard as _removeGiftCard,
-  selectDeliveryRate as _selectDeliveryRate,
-  getCart,
-  getOrder,
-  updateCart,
-} from "@spree/next";
+import { getCartOptions, getClient, requireCartId } from "@spree/next";
 import type { AddressParams, Cart } from "@spree/sdk";
 import { SpreeError } from "@spree/sdk";
+import { updateTag } from "next/cache";
+import { getCart } from "./cart";
+import { getOrder } from "./orders";
 import { actionResult, withFallback } from "./utils";
 
 export async function getCheckoutOrder(cartId: string): Promise<Cart | null> {
@@ -49,7 +43,10 @@ export async function updateOrderAddresses(
   },
 ) {
   return actionResult(async () => {
-    const cart = await updateCart(addresses);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.update(id, addresses, options);
+    updateTag("checkout");
     return { cart };
   }, "Failed to update addresses");
 }
@@ -59,7 +56,10 @@ export async function updateOrderMarket(
   params: { currency: string; locale: string },
 ) {
   return actionResult(async () => {
-    const cart = await updateCart(params);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.update(id, params, options);
+    updateTag("checkout");
     return { cart };
   }, "Failed to update order market");
 }
@@ -70,7 +70,15 @@ export async function selectDeliveryRate(
   deliveryRateId: string,
 ) {
   return actionResult(async () => {
-    const cart = await _selectDeliveryRate(fulfillmentId, deliveryRateId);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.fulfillments.update(
+      id,
+      fulfillmentId,
+      { selected_delivery_rate_id: deliveryRateId },
+      options,
+    );
+    updateTag("checkout");
     return { cart };
   }, "Failed to select delivery rate");
 }
@@ -80,9 +88,14 @@ export async function selectDeliveryRate(
  * Single input field on checkout, backend determines the type.
  */
 export async function applyCode(cartId: string, code: string) {
+  const options = await getCartOptions();
+  const id = await requireCartId();
+
   // Try discount code first (more common)
   try {
-    const cart = await _applyDiscountCode(code);
+    const cart = await getClient().carts.discountCodes.apply(id, code, options);
+    updateTag("checkout");
+    updateTag("cart");
     return { success: true, cart, type: "discount" as const };
   } catch (discountError) {
     // Only fall back to gift card if the discount code was not found (422/404).
@@ -97,7 +110,9 @@ export async function applyCode(cartId: string, code: string) {
 
     // Discount code not found — try gift card
     try {
-      const cart = await _applyGiftCard(code);
+      const cart = await getClient().carts.giftCards.apply(id, code, options);
+      updateTag("checkout");
+      updateTag("cart");
       return { success: true, cart, type: "gift_card" as const };
     } catch (giftCardError) {
       // Gift card also failed. If it's a specific error (expired, redeemed, etc.)
@@ -124,14 +139,30 @@ function errorMessage(err: unknown): string {
 
 export async function removeDiscountCode(cartId: string, code: string) {
   return actionResult(async () => {
-    const cart = await _removeDiscountCode(code);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.discountCodes.remove(
+      id,
+      code,
+      options,
+    );
+    updateTag("checkout");
+    updateTag("cart");
     return { cart };
   }, "Failed to remove discount code");
 }
 
 export async function removeGiftCard(cartId: string, giftCardId: string) {
   return actionResult(async () => {
-    const cart = await _removeGiftCard(giftCardId);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.giftCards.remove(
+      id,
+      giftCardId,
+      options,
+    );
+    updateTag("checkout");
+    updateTag("cart");
     return { cart };
   }, "Failed to remove gift card");
 }

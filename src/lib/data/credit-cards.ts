@@ -1,19 +1,27 @@
 "use server";
 
-import {
-  deleteCreditCard as _deleteCreditCard,
-  listCreditCards,
-} from "@spree/next";
+import { getClient, withAuthRefresh } from "@spree/next";
 import type { CreditCard } from "@spree/sdk";
+import { updateTag } from "next/cache";
 import { actionResult, withFallback } from "./utils";
 
 export async function getCreditCards(): Promise<{ data: CreditCard[] }> {
-  return withFallback(() => listCreditCards(), { data: [] });
+  return withFallback(
+    async () => {
+      return withAuthRefresh(async (options) => {
+        return getClient().customer.creditCards.list(undefined, options);
+      });
+    },
+    { data: [] } as { data: CreditCard[] },
+  );
 }
 
 export async function deleteCreditCard(id: string) {
   return actionResult(async () => {
-    await _deleteCreditCard(id);
+    await withAuthRefresh(async (options) => {
+      return getClient().customer.creditCards.delete(id, options);
+    });
+    updateTag("credit-cards");
     return {};
   }, "Failed to delete credit card");
 }

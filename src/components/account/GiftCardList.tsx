@@ -139,14 +139,13 @@ function GiftCardItem({ card }: { card: GiftCard }) {
       </div>
 
       {/* Additional info */}
-      <div className="pt-4 border-t border-gray-100">
-        <div className="flex justify-between text-sm text-gray-500">
-          <span>Added on {formatDate(card.created_at)}</span>
-          {card.redeemed_at && (
-            <span>Fully redeemed on {formatDate(card.redeemed_at)}</span>
-          )}
+      {card.redeemed_at && (
+        <div className="pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-500">
+            Fully redeemed on {formatDate(card.redeemed_at)}
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 }

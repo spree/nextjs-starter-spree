@@ -143,7 +143,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   }, []);
 
   // Track cart key for sidebar updates
-  const cartKey = cart ? `${cart.id}-${cart.updated_at}` : null;
+  const cartKey = cart
+    ? `${cart.id}-${cart.total}-${cart.total_quantity}`
+    : null;
   const prevOrderKeyRef = useRef(cartKey);
 
   useEffect(() => {

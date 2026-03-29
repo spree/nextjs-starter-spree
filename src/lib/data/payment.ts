@@ -1,11 +1,9 @@
 "use server";
 
-import {
-  complete,
-  completePaymentSession,
-  createPaymentSession,
-  getCart,
-} from "@spree/next";
+import { getCartOptions, getClient, requireCartId } from "@spree/next";
+import type { Order } from "@spree/sdk";
+import { updateTag } from "next/cache";
+import { getCart } from "./cart";
 import { actionResult } from "./utils";
 
 export async function createCheckoutPaymentSession(
@@ -14,12 +12,19 @@ export async function createCheckoutPaymentSession(
   stripePaymentMethodId?: string,
 ) {
   return actionResult(async () => {
-    const session = await createPaymentSession({
-      payment_method_id: paymentMethodId,
-      ...(stripePaymentMethodId && {
-        external_data: { stripe_payment_method_id: stripePaymentMethodId },
-      }),
-    });
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const session = await getClient().carts.paymentSessions.create(
+      id,
+      {
+        payment_method_id: paymentMethodId,
+        ...(stripePaymentMethodId && {
+          external_data: { stripe_payment_method_id: stripePaymentMethodId },
+        }),
+      },
+      options,
+    );
+    updateTag("checkout");
     return { session };
   }, "Failed to create payment session");
 }
@@ -29,7 +34,15 @@ export async function completeCheckoutPaymentSession(
   sessionId: string,
 ) {
   return actionResult(async () => {
-    const session = await completePaymentSession(sessionId);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const session = await getClient().carts.paymentSessions.complete(
+      id,
+      sessionId,
+      undefined,
+      options,
+    );
+    updateTag("checkout");
     return { session };
   }, "Failed to complete payment session");
 }
@@ -41,7 +54,10 @@ export async function completeCheckoutPaymentSession(
  */
 export async function completeCheckoutOrder(cartId: string) {
   try {
-    const order = await complete(cartId);
+    const options = await getCartOptions();
+    const order: Order = await getClient().carts.complete(cartId, options);
+    updateTag("checkout");
+    updateTag("cart");
     return { success: true as const, order };
   } catch (error: unknown) {
     if (error && typeof error === "object" && "status" in error) {
@@ -61,8 +77,6 @@ export async function completeCheckoutOrder(cartId: string) {
 /**
  * Confirms payment and completes the order after returning from an offsite
  * payment gateway (e.g. CashApp, 3D Secure).
- *
- * Flow: getCart(cartId) → completePaymentSession → completeCheckoutOrder
  */
 export async function confirmPaymentAndCompleteCart(
   cartId: string,
@@ -82,7 +96,14 @@ export async function confirmPaymentAndCompleteCart(
     }
 
     if (sessionId) {
-      const sessionResult = await completePaymentSession(sessionId);
+      const options = await getCartOptions();
+      const id = await requireCartId();
+      const sessionResult = await getClient().carts.paymentSessions.complete(
+        id,
+        sessionId,
+        undefined,
+        options,
+      );
       if (sessionResult.status === "failed") {
         return {
           success: false,
@@ -91,8 +112,6 @@ export async function confirmPaymentAndCompleteCart(
       }
     }
 
-    // Complete the order — if the backend already completed it during
-    // session completion, completeCheckoutOrder handles 403/422 gracefully.
     const result = await completeCheckoutOrder(cartId);
     if (result.success) {
       return { success: true, order: result.order };

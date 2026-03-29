@@ -1,26 +1,35 @@
 "use server";
 
-import {
-  createAddress as _createAddress,
-  deleteAddress as _deleteAddress,
-  getAddress as _getAddress,
-  updateAddress as _updateAddress,
-  listAddresses,
-} from "@spree/next";
-import type { AddressParams } from "@spree/sdk";
+import { getClient, withAuthRefresh } from "@spree/next";
+import type { Address, AddressParams } from "@spree/sdk";
+import { updateTag } from "next/cache";
 import { actionResult, withFallback } from "./utils";
 
 export async function getAddresses() {
-  return withFallback(() => listAddresses(), { data: [] });
+  return withFallback(
+    async () => {
+      return withAuthRefresh(async (options) => {
+        return getClient().customer.addresses.list(undefined, options);
+      });
+    },
+    { data: [] } as { data: Address[] },
+  );
 }
 
 export async function getAddress(id: string) {
-  return withFallback(() => _getAddress(id), null);
+  return withFallback(async () => {
+    return withAuthRefresh(async (options) => {
+      return getClient().customer.addresses.get(id, options);
+    });
+  }, null);
 }
 
 export async function createAddress(address: AddressParams) {
   return actionResult(async () => {
-    const result = await _createAddress(address);
+    const result = await withAuthRefresh(async (options) => {
+      return getClient().customer.addresses.create(address, options);
+    });
+    updateTag("addresses");
     return { address: result };
   }, "Failed to create address");
 }
@@ -30,14 +39,20 @@ export async function updateAddress(
   address: Partial<AddressParams>,
 ) {
   return actionResult(async () => {
-    const result = await _updateAddress(id, address);
+    const result = await withAuthRefresh(async (options) => {
+      return getClient().customer.addresses.update(id, address, options);
+    });
+    updateTag("addresses");
     return { address: result };
   }, "Failed to update address");
 }
 
 export async function deleteAddress(id: string) {
   return actionResult(async () => {
-    await _deleteAddress(id);
+    await withAuthRefresh(async (options) => {
+      return getClient().customer.addresses.delete(id, options);
+    });
+    updateTag("addresses");
     return {};
   }, "Failed to delete address");
 }

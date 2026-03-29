@@ -1,20 +1,43 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const mockClient = {
+  auth: {
+    login: vi.fn(),
+    logout: vi.fn(),
+  },
+  customers: {
+    create: vi.fn(),
+  },
+  customer: {
+    get: vi.fn(),
+    update: vi.fn(),
+  },
+  carts: {
+    associate: vi.fn(),
+  },
+};
+
 vi.mock("@spree/next", () => ({
-  getCustomer: vi.fn(),
-  login: vi.fn(),
-  register: vi.fn(),
-  logout: vi.fn(),
-  updateCustomer: vi.fn(),
+  getClient: () => mockClient,
+  withAuthRefresh: vi.fn(
+    async (fn: (options: { token: string }) => Promise<unknown>) => {
+      return fn({ token: "jwt-token" });
+    },
+  ),
+  getAccessToken: vi.fn().mockResolvedValue("jwt-token"),
+  setAccessToken: vi.fn(),
+  clearAccessToken: vi.fn(),
+  getRefreshToken: vi.fn().mockResolvedValue(undefined),
+  setRefreshToken: vi.fn(),
+  clearRefreshToken: vi.fn(),
+  getCartToken: vi.fn().mockResolvedValue(undefined),
+  getCartId: vi.fn().mockResolvedValue(undefined),
+  clearCartCookies: vi.fn(),
 }));
 
-import {
-  getCustomer as getCustomerSdk,
-  login as loginSdk,
-  logout as logoutSdk,
-  register as registerSdk,
-  updateCustomer as updateCustomerSdk,
-} from "@spree/next";
+vi.mock("next/cache", () => ({
+  updateTag: vi.fn(),
+}));
 
 import {
   getCustomer,
@@ -23,13 +46,6 @@ import {
   register,
   updateCustomer,
 } from "@/lib/data/customer";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- test fixtures are intentionally partial
-const mockGetCustomer = getCustomerSdk as any;
-const mockLogin = loginSdk as any;
-const mockRegister = registerSdk as any;
-const mockLogout = logoutSdk as any;
-const mockUpdateCustomer = updateCustomerSdk as any;
 
 const mockUser = {
   id: "user-1",
@@ -44,30 +60,43 @@ describe("customer server actions", () => {
   });
 
   describe("getCustomer", () => {
-    it("delegates to @spree/next", async () => {
-      mockGetCustomer.mockResolvedValue(mockUser);
+    it("fetches current customer via SDK", async () => {
+      mockClient.customer.get.mockResolvedValue(mockUser);
 
       const result = await getCustomer();
 
-      expect(mockGetCustomer).toHaveBeenCalledOnce();
+      expect(mockClient.customer.get).toHaveBeenCalledWith({
+        token: "jwt-token",
+      });
       expect(result).toBe(mockUser);
     });
   });
 
   describe("login", () => {
-    it("delegates with email and password", async () => {
-      mockLogin.mockResolvedValue(mockUser);
+    it("logs in and returns user", async () => {
+      mockClient.auth.login.mockResolvedValue({
+        token: "jwt",
+        refresh_token: "rt",
+        user: mockUser,
+      });
 
       const result = await login("test@example.com", "password123");
 
-      expect(mockLogin).toHaveBeenCalledWith("test@example.com", "password123");
-      expect(result).toBe(mockUser);
+      expect(mockClient.auth.login).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+      });
+      expect(result).toEqual({ success: true, user: mockUser });
     });
   });
 
   describe("register", () => {
-    it("delegates with params object", async () => {
-      mockRegister.mockResolvedValue(mockUser);
+    it("creates account and returns user", async () => {
+      mockClient.customers.create.mockResolvedValue({
+        token: "jwt",
+        refresh_token: "rt",
+        user: mockUser,
+      });
 
       const result = await register({
         email: "test@example.com",
@@ -77,41 +106,44 @@ describe("customer server actions", () => {
         last_name: "User",
       });
 
-      expect(mockRegister).toHaveBeenCalledWith({
+      expect(mockClient.customers.create).toHaveBeenCalledWith({
         email: "test@example.com",
         password: "pass",
         password_confirmation: "pass",
         first_name: "Test",
         last_name: "User",
       });
-      expect(result).toBe(mockUser);
+      expect(result).toEqual({ success: true, user: mockUser });
     });
   });
 
   describe("logout", () => {
-    it("delegates to @spree/next", async () => {
-      mockLogout.mockResolvedValue(undefined);
-
+    it("clears cookies", async () => {
       await logout();
 
-      expect(mockLogout).toHaveBeenCalledOnce();
+      const { clearAccessToken, clearRefreshToken, clearCartCookies } =
+        await import("@spree/next");
+      expect(clearAccessToken).toHaveBeenCalled();
+      expect(clearRefreshToken).toHaveBeenCalled();
+      expect(clearCartCookies).toHaveBeenCalled();
     });
   });
 
   describe("updateCustomer", () => {
     it("returns success with customer", async () => {
-      mockUpdateCustomer.mockResolvedValue(mockUser);
+      mockClient.customer.update.mockResolvedValue(mockUser);
 
       const result = await updateCustomer({ first_name: "Updated" });
 
-      expect(mockUpdateCustomer).toHaveBeenCalledWith({
-        first_name: "Updated",
-      });
+      expect(mockClient.customer.update).toHaveBeenCalledWith(
+        { first_name: "Updated" },
+        { token: "jwt-token" },
+      );
       expect(result).toEqual({ success: true, customer: mockUser });
     });
 
     it("returns error on failure", async () => {
-      mockUpdateCustomer.mockRejectedValue(new Error("Email taken"));
+      mockClient.customer.update.mockRejectedValue(new Error("Email taken"));
 
       const result = await updateCustomer({ email: "taken@example.com" });
 
@@ -122,7 +154,7 @@ describe("customer server actions", () => {
     });
 
     it("returns fallback message for non-Error throws", async () => {
-      mockUpdateCustomer.mockRejectedValue("unexpected");
+      mockClient.customer.update.mockRejectedValue("unexpected");
 
       const result = await updateCustomer({ first_name: "Test" });
 

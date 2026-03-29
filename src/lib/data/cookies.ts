@@ -1,10 +1,7 @@
 "use server";
 
-import { cookies } from "next/headers";
-
-const AUTH_TOKEN_KEY = "_spree_jwt";
+import { getAccessToken } from "@spree/next";
 
 export async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return !!cookieStore.get(AUTH_TOKEN_KEY)?.value;
+  return !!(await getAccessToken());
 }
