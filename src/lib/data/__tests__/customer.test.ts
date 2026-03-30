@@ -35,6 +35,21 @@ vi.mock("@spree/next", () => ({
   clearCartCookies: vi.fn(),
 }));
 
+vi.mock("@spree/sdk", () => ({
+  SpreeError: class SpreeError extends Error {
+    code: string;
+    status: number;
+    constructor(
+      response: { error: { code: string; message: string } },
+      status: number,
+    ) {
+      super(response.error.message);
+      this.code = response.error.code;
+      this.status = status;
+    }
+  },
+}));
+
 vi.mock("next/cache", () => ({
   updateTag: vi.fn(),
 }));
@@ -69,6 +84,42 @@ describe("customer server actions", () => {
         token: "jwt-token",
       });
       expect(result).toBe(mockUser);
+    });
+
+    it("clears tokens on 401 auth failure", async () => {
+      const { SpreeError } = await import("@spree/sdk");
+      const { withAuthRefresh } = await import("@spree/next");
+      (withAuthRefresh as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new SpreeError(
+          { error: { code: "unauthorized", message: "Unauthorized" } },
+          401,
+        ),
+      );
+
+      const result = await getCustomer();
+
+      expect(result).toBeNull();
+      const { clearAccessToken, clearRefreshToken } = await import(
+        "@spree/next"
+      );
+      expect(clearAccessToken).toHaveBeenCalled();
+      expect(clearRefreshToken).toHaveBeenCalled();
+    });
+
+    it("does not clear tokens on transient errors", async () => {
+      const { withAuthRefresh } = await import("@spree/next");
+      (withAuthRefresh as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("Network error"),
+      );
+
+      const result = await getCustomer();
+
+      expect(result).toBeNull();
+      const { clearAccessToken, clearRefreshToken } = await import(
+        "@spree/next"
+      );
+      expect(clearAccessToken).not.toHaveBeenCalled();
+      expect(clearRefreshToken).not.toHaveBeenCalled();
     });
   });
 
