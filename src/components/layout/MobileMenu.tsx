@@ -333,7 +333,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                       <Link
                         key={child.id}
                         href={`${basePath}/c/${child.permalink}`}
-                        onClick={() => setOpen(false)}
+                        onClick={() => handleOpenChange(false)}
                         className={linkClass}
                       >
                         {child.name}
@@ -346,7 +346,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                 <div className="border-t border-gray-200 px-4 py-3">
                   <Link
                     href={`${basePath}/c/${panel.category.permalink}`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => handleOpenChange(false)}
                     className="block w-full text-center text-sm text-gray-500 hover:text-gray-900 py-2 transition-colors"
                   >
                     View all {panel.category.name}
