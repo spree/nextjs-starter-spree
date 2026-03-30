@@ -1,29 +1,21 @@
 "use client";
 
-import type { Policy } from "@spree/sdk";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CONSENT_POLICIES } from "@/lib/constants/policies";
 import { cn } from "@/lib/utils";
 
 interface PolicyConsentProps {
-  policies: Policy[];
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
-  basePath: string;
   error?: boolean;
 }
 
 export function PolicyConsent({
-  policies,
   checked,
   onCheckedChange,
-  basePath,
   error,
 }: PolicyConsentProps) {
-  if (policies.length === 0) {
-    return null;
-  }
-
   return (
     <div className="flex items-start gap-2.5">
       <Checkbox
@@ -37,12 +29,12 @@ export function PolicyConsent({
         className={cn("text-sm", error ? "text-red-500" : "text-gray-900")}
       >
         I agree to the{" "}
-        {policies.map((policy, index) => (
-          <span key={policy.id}>
-            {index > 0 && index < policies.length - 1 && ", "}
-            {index > 0 && index === policies.length - 1 && " and "}
+        {CONSENT_POLICIES.map((policy, index) => (
+          <span key={policy.slug}>
+            {index > 0 && index < CONSENT_POLICIES.length - 1 && ", "}
+            {index > 0 && index === CONSENT_POLICIES.length - 1 && " and "}
             <Link
-              href={`${basePath}/policies/${policy.slug}`}
+              href={`/policies/${policy.slug}`}
               target="_blank"
               className={cn(
                 "underline",

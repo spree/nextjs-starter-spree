@@ -1,9 +1,7 @@
+import { getPolicy } from "@spree/next";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPolicy } from "@/lib/data/policies";
 import { getStoreName } from "@/lib/seo";
-
-export const dynamic = "force-dynamic";
 
 interface PolicyPageProps {
   params: Promise<{
@@ -17,7 +15,7 @@ export async function generateMetadata({
   params,
 }: PolicyPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const policy = await getPolicy(slug);
+  const policy = await getPolicy(slug).catch(() => null);
 
   if (!policy) {
     return { title: "Policy Not Found" };
@@ -32,7 +30,7 @@ export async function generateMetadata({
 
 export default async function PolicyPage({ params }: PolicyPageProps) {
   const { slug } = await params;
-  const policy = await getPolicy(slug);
+  const policy = await getPolicy(slug).catch(() => null);
 
   if (!policy) {
     notFound();

@@ -2,7 +2,6 @@ import type { Category } from "@spree/sdk";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { getCategories } from "@/lib/data/categories";
-import { getPolicies } from "@/lib/data/policies";
 
 interface StorefrontLayoutProps {
   children: React.ReactNode;
@@ -37,15 +36,12 @@ export default async function StorefrontLayout({
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
 
-  const [rootCategories, policies] = await Promise.all([
-    getCategories({
-      depth_eq: 0,
-      expand: ["children.children"],
-    })
-      .then((res) => res.data)
-      .catch(() => []),
-    getPolicies(),
-  ]);
+  const rootCategories = await getCategories({
+    depth_eq: 0,
+    expand: ["children.children"],
+  })
+    .then((res) => res.data)
+    .catch(() => [] as Category[]);
 
   return (
     <>
@@ -56,7 +52,7 @@ export default async function StorefrontLayout({
         </nav>
       )}
       <main className="flex-1">{children}</main>
-      <Footer policies={policies} />
+      <Footer />
     </>
   );
 }

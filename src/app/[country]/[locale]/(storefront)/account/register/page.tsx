@@ -1,6 +1,5 @@
 "use client";
 
-import type { Policy } from "@spree/sdk";
 import { CircleAlert, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,8 +18,6 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { REGISTRATION_POLICY_SLUGS } from "@/lib/constants/policies";
-import { getPoliciesStrict } from "@/lib/data/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function RegisterPage() {
@@ -39,22 +36,8 @@ export default function RegisterPage() {
     useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [policiesLoading, setPoliciesLoading] = useState(true);
-  const [policiesLoadError, setPoliciesLoadError] = useState(false);
   const [policyConsent, setPolicyConsent] = useState(false);
   const [policyError, setPolicyError] = useState(false);
-
-  useEffect(() => {
-    getPoliciesStrict()
-      .then((all) =>
-        setPolicies(
-          all.filter((p) => REGISTRATION_POLICY_SLUGS.includes(p.slug)),
-        ),
-      )
-      .catch(() => setPoliciesLoadError(true))
-      .finally(() => setPoliciesLoading(false));
-  }, []);
 
   // Redirect if already authenticated
   // useEffect is needed here to prevent rendering issues.
@@ -81,19 +64,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (policiesLoading) {
-      setError("Please wait while store policies are loading");
-      return;
-    }
-
-    if (policiesLoadError) {
-      setError(
-        "Unable to load store policies. Please refresh the page and try again.",
-      );
-      return;
-    }
-
-    if (policies.length > 0 && !policyConsent) {
+    if (!policyConsent) {
       setPolicyError(true);
       setError("You must agree to the store policies to create an account");
       document
@@ -252,32 +223,19 @@ export default function RegisterPage() {
               </div>
             </Field>
 
-            {policiesLoadError && (
-              <Alert variant="destructive">
-                <CircleAlert />
-                <AlertDescription>
-                  Unable to load store policies. Please refresh the page.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {policies.length > 0 && (
-              <PolicyConsent
-                policies={policies}
-                checked={policyConsent}
-                onCheckedChange={(checked) => {
-                  setPolicyConsent(checked);
-                  if (checked) setPolicyError(false);
-                }}
-                basePath={basePath}
-                error={policyError}
-              />
-            )}
+            <PolicyConsent
+              checked={policyConsent}
+              onCheckedChange={(checked) => {
+                setPolicyConsent(checked);
+                if (checked) setPolicyError(false);
+              }}
+              error={policyError}
+            />
 
             <div className="w-full">
               <Button
                 type="submit"
-                disabled={submitting || policiesLoading || policiesLoadError}
+                disabled={submitting}
                 size="lg"
                 className="w-full"
               >

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Address, AddressParams, Cart, Country, Policy } from "@spree/sdk";
+import type { Address, AddressParams, Cart, Country } from "@spree/sdk";
 import { CircleAlert, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -22,7 +22,6 @@ import {
   trackAddShippingInfo,
   trackBeginCheckout,
 } from "@/lib/analytics/gtm";
-import { CHECKOUT_CONSENT_POLICY_SLUGS } from "@/lib/constants/policies";
 import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
   applyCode,
@@ -39,7 +38,6 @@ import {
   completeCheckoutOrder,
   completeCheckoutPaymentSession,
 } from "@/lib/data/payment";
-import { getPoliciesStrict } from "@/lib/data/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 interface CheckoutPageProps {
@@ -104,7 +102,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [sectionErrors, setSectionErrors] = useState<Record<string, string[]>>(
     {},
   );
-  const [policies, setPolicies] = useState<Policy[]>([]);
   const [policyConsent, setPolicyConsent] = useState(false);
   const [policyError, setPolicyError] = useState(false);
 
@@ -191,14 +188,12 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     if (!paymentError) setError(null);
 
     try {
-      const [cartData, market, addressesData, authStatus, allPolicies] =
-        await Promise.all([
-          getCheckoutOrder(cartId),
-          resolveMarket(urlCountry).catch(() => null),
-          getAddresses(),
-          checkAuth(),
-          getPoliciesStrict().catch(() => [] as Policy[]),
-        ]);
+      const [cartData, market, addressesData, authStatus] = await Promise.all([
+        getCheckoutOrder(cartId),
+        resolveMarket(urlCountry).catch(() => null),
+        getAddresses(),
+        checkAuth(),
+      ]);
 
       const countriesData = market
         ? await getMarketCountries(market.id).catch(() => ({
@@ -221,15 +216,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      // Authenticated users accepted terms during registration — no consent checkbox.
-      // Guests see only the terms-of-service checkbox; other policies are in the footer.
-      setPolicies(
-        authStatus
-          ? []
-          : allPolicies.filter((p) =>
-              CHECKOUT_CONSENT_POLICY_SLUGS.includes(p.slug),
-            ),
-      );
 
       if (!beginCheckoutFiredRef.current) {
         try {
@@ -478,7 +464,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setSectionErrors({});
     setError(null);
 
-    if (policies.length > 0 && !policyConsent) {
+    if (!isAuthenticated && !policyConsent) {
       setPolicyError(true);
       setError(
         "You must agree to the store policies before placing your order",
@@ -656,17 +642,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         />
       </div>
 
-      {/* Policy consent */}
-      {policies.length > 0 && (
+      {/* Policy consent — guests only, authenticated users accepted at registration */}
+      {!isAuthenticated && (
         <div className="mt-6">
           <PolicyConsent
-            policies={policies}
             checked={policyConsent}
             onCheckedChange={(checked) => {
               setPolicyConsent(checked);
               if (checked) setPolicyError(false);
             }}
-            basePath={basePath}
             error={policyError}
           />
         </div>

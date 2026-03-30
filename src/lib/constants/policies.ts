@@ -1,11 +1,12 @@
-/**
- * Policy slugs that users accept during registration.
- * Used to filter them out in checkout for authenticated users.
- */
-export const REGISTRATION_POLICY_SLUGS = ["privacy-policy", "terms-of-service"];
+export const POLICY_LINKS = [
+  { name: "Shipping Policy", slug: "shipping-policy" },
+  { name: "Privacy Policy", slug: "privacy-policy" },
+  { name: "Returns Policy", slug: "returns-policy" },
+  { name: "Terms of Service", slug: "terms-of-service" },
+];
 
-/**
- * Policy slugs that require explicit consent at checkout (checkbox).
- * Only shown to guest users — authenticated users accepted these during registration.
- */
-export const CHECKOUT_CONSENT_POLICY_SLUGS = ["terms-of-service"];
+/** Policies shown in the consent checkbox (checkout + registration). */
+export const CONSENT_POLICIES = [
+  { name: "Privacy Policy", slug: "privacy-policy" },
+  { name: "Terms of Service", slug: "terms-of-service" },
+];

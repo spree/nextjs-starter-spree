@@ -1,13 +1,12 @@
 "use client";
 
-import type { Policy } from "@spree/sdk";
 import { ArrowLeft, ChevronDown, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
-import { getPolicies } from "@/lib/data/policies";
+import { POLICY_LINKS } from "@/lib/constants/policies";
 import { extractBasePath } from "@/lib/utils/path";
 
 const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
@@ -39,11 +38,7 @@ function CheckoutHeader() {
   );
 }
 
-interface CheckoutFooterProps {
-  policies: Policy[];
-}
-
-function CheckoutFooter({ policies }: CheckoutFooterProps) {
+function CheckoutFooter() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const currentYear = new Date().getFullYear();
@@ -53,9 +48,9 @@ function CheckoutFooter({ policies }: CheckoutFooterProps) {
       <p>
         &copy; {currentYear} {storeName}. All rights reserved.
       </p>
-      {policies.map((policy) => (
+      {POLICY_LINKS.map((policy) => (
         <Link
-          key={policy.id}
+          key={policy.slug}
           href={`${basePath}/policies/${policy.slug}`}
           target="_blank"
           className="text-gray-500 underline hover:text-gray-700"
@@ -99,12 +94,6 @@ interface CheckoutLayoutProps {
 }
 
 function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
-  const [policies, setPolicies] = useState<Policy[]>([]);
-
-  useEffect(() => {
-    getPolicies().then(setPolicies);
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Mobile header */}
@@ -129,7 +118,7 @@ function CheckoutLayoutContent({ children }: CheckoutLayoutProps) {
             {children}
           </div>
           <div className="px-5 lg:pl-10 lg:pr-12 pb-4">
-            <CheckoutFooter policies={policies} />
+            <CheckoutFooter />
           </div>
         </div>
 
