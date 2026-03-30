@@ -36,7 +36,8 @@ async function finalizeAuth(token: string, refreshToken: string) {
         spreeToken: cartToken,
       });
     } catch {
-      // Cart association failure is non-fatal
+      // Cart belongs to another user or is invalid — clear stale cookies
+      await clearCartCookies();
     }
   }
 
@@ -192,9 +193,21 @@ export async function updateCustomer(data: {
   email?: string;
 }) {
   return actionResult(async () => {
-    const customer = await withAuthRefresh(async (options) => {
-      return getClient().customer.update(data, options);
-    });
+    let customer;
+    try {
+      customer = await withAuthRefresh(async (options) => {
+        return getClient().customer.update(data, options);
+      });
+    } catch (error) {
+      if (
+        error instanceof SpreeError &&
+        (error.status === 401 || error.status === 403)
+      ) {
+        await clearAccessToken();
+        await clearRefreshToken();
+      }
+      throw error;
+    }
     updateTag("customer");
     return { customer };
   }, "Update failed");
