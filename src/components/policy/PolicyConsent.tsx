@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CONSENT_POLICIES } from "@/lib/constants/policies";
 import { cn } from "@/lib/utils";
+import { extractBasePath } from "@/lib/utils/path";
 
 interface PolicyConsentProps {
   checked: boolean;
@@ -16,6 +18,8 @@ export function PolicyConsent({
   onCheckedChange,
   error,
 }: PolicyConsentProps) {
+  const pathname = usePathname();
+  const basePath = extractBasePath(pathname);
   return (
     <div className="flex items-start gap-2.5">
       <Checkbox
@@ -34,7 +38,7 @@ export function PolicyConsent({
             {index > 0 && index < CONSENT_POLICIES.length - 1 && ", "}
             {index > 0 && index === CONSENT_POLICIES.length - 1 && " and "}
             <Link
-              href={`/policies/${policy.slug}`}
+              href={`${basePath}/policies/${policy.slug}`}
               target="_blank"
               className={cn(
                 "underline",
