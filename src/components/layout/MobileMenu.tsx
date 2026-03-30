@@ -96,9 +96,6 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
     }
   };
 
-  // Flatten root categories: show their children directly instead of taxonomy names
-  const menuCategories = rootCategories.flatMap((root) => root.children ?? []);
-
   // Shared link style
   const linkClass =
     "text-left text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2.5 text-base transition-colors";
@@ -232,7 +229,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
               >
                 All Products
               </Link>
-              {menuCategories.map((category) =>
+              {rootCategories.map((category) =>
                 category.children && category.children.length > 0 ? (
                   <button
                     key={category.id}

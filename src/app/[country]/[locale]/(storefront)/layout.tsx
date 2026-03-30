@@ -43,14 +43,12 @@ export default async function StorefrontLayout({
     .then((res) => res.data)
     .catch(() => []);
 
-  const menuCategories = rootCategories.flatMap((root) => root.children ?? []);
-
   return (
     <>
       <Header rootCategories={rootCategories} />
-      {menuCategories.length > 0 && (
+      {rootCategories.length > 0 && (
         <nav aria-label="Category navigation" className="sr-only">
-          <CategoryLinks categories={menuCategories} basePath={basePath} />
+          <CategoryLinks categories={rootCategories} basePath={basePath} />
         </nav>
       )}
       <main className="flex-1">{children}</main>
