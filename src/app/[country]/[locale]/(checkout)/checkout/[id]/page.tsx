@@ -22,7 +22,7 @@ import {
   trackAddShippingInfo,
   trackBeginCheckout,
 } from "@/lib/analytics/gtm";
-import { REGISTRATION_POLICY_SLUGS } from "@/lib/constants/policies";
+import { CHECKOUT_CONSENT_POLICY_SLUGS } from "@/lib/constants/policies";
 import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
   applyCode,
@@ -221,14 +221,14 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setCountries(countriesData.data);
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
-      // Authenticated users already accepted registration policies during sign-up.
-      // Spree has no consent-records API, so authStatus is the best available heuristic.
+      // Authenticated users accepted terms during registration — no consent checkbox.
+      // Guests see only the terms-of-service checkbox; other policies are in the footer.
       setPolicies(
         authStatus
-          ? allPolicies.filter(
-              (p) => !REGISTRATION_POLICY_SLUGS.includes(p.slug),
-            )
-          : allPolicies,
+          ? []
+          : allPolicies.filter((p) =>
+              CHECKOUT_CONSENT_POLICY_SLUGS.includes(p.slug),
+            ),
       );
 
       if (!beginCheckoutFiredRef.current) {
