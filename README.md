@@ -312,7 +312,6 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
    - `SPREE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM` (for transactional emails)
    - `GTM_ID` (optional — Google Tag Manager)
    - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
-   - `SITEMAP_LOCALE_MODE`, `SITEMAP_COUNTRIES` (optional — for multi-region sitemap)
 4. Deploy
 
 ## License
