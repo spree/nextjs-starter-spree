@@ -1,7 +1,7 @@
-import { listCategories, listMarkets, listProducts } from "@spree/next";
-import type { Category, Media, StoreProduct } from "@spree/sdk";
+import { getClient } from "@spree/next";
+import type { Category, Media, Product } from "@spree/sdk";
 
-type ProductWithMedia = StoreProduct & { media?: Media[] };
+type ProductWithMedia = Product & { media?: Media[] };
 
 import type { MetadataRoute } from "next";
 import { getStoreUrl } from "@/lib/seo";
@@ -33,11 +33,11 @@ function getDefaultLocaleOptions() {
  * `next build` process reuse already-fetched data instead of hitting the
  * API O(chunks) times.
  */
-let cachedProducts: Promise<StoreProduct[]> | null = null;
+let cachedProducts: Promise<ProductWithMedia[]> | null = null;
 let cachedCategories: Promise<Category[]> | null = null;
 let cachedCountryLocales: Promise<CountryLocale[]> | null = null;
 
-function getCachedProducts(): Promise<StoreProduct[]> {
+function getCachedProducts(): Promise<ProductWithMedia[]> {
   if (!cachedProducts) {
     cachedProducts = fetchAllProducts().catch((err) => {
       cachedProducts = null;
@@ -121,7 +121,7 @@ export default async function sitemap(props: {
   }
 
   let countryLocales: CountryLocale[];
-  let allProducts: StoreProduct[];
+  let allProducts: ProductWithMedia[];
   let allCategories: Category[];
 
   try {
@@ -171,7 +171,7 @@ export default async function sitemap(props: {
     for (const product of allProducts) {
       entries.push({
         url: `${basePath}/products/${product.slug}`,
-        ...safeLastModified(product.updated_at),
+        lastModified: new Date(),
         changeFrequency: "weekly",
         priority: 0.6,
         ...(product.media && product.media.length > 0
@@ -188,7 +188,7 @@ export default async function sitemap(props: {
     for (const category of nonRootCategories) {
       entries.push({
         url: `${basePath}/c/${category.permalink}`,
-        ...safeLastModified(category.updated_at),
+        lastModified: new Date(),
         changeFrequency: "weekly",
         priority: 0.5,
       });
@@ -210,7 +210,7 @@ export default async function sitemap(props: {
  */
 async function resolveCountryLocales(): Promise<CountryLocale[]> {
   const localeOptions = getDefaultLocaleOptions();
-  const { data: markets } = await listMarkets(localeOptions);
+  const { data: markets } = await getClient().markets.list(localeOptions);
 
   const seen = new Set<string>();
   const result: CountryLocale[] = [];
@@ -240,18 +240,12 @@ async function fetchTotalCount(
   resource: "products" | "categories",
 ): Promise<number> {
   const localeOptions = getDefaultLocaleOptions();
-  const fetcher = resource === "products" ? listProducts : listCategories;
-  const response = await fetcher({ page: 1, limit: 1 }, localeOptions);
+  const client = getClient();
+  const response =
+    resource === "products"
+      ? await client.products.list({ page: 1, limit: 1 }, localeOptions)
+      : await client.categories.list({ page: 1, limit: 1 }, localeOptions);
   return response.meta.count;
-}
-
-function safeLastModified(
-  dateStr: string | null | undefined,
-): { lastModified: Date } | Record<string, never> {
-  if (!dateStr) return {};
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return {};
-  return { lastModified: date };
 }
 
 async function fetchAllProducts(): Promise<ProductWithMedia[]> {
@@ -261,7 +255,7 @@ async function fetchAllProducts(): Promise<ProductWithMedia[]> {
   let totalPages = 1;
 
   do {
-    const response = await listProducts(
+    const response = await getClient().products.list(
       { page, limit: 100, expand: ["media"] },
       localeOptions,
     );
@@ -280,7 +274,10 @@ async function fetchAllCategories(): Promise<Category[]> {
   let totalPages = 1;
 
   do {
-    const response = await listCategories({ page, limit: 100 }, localeOptions);
+    const response = await getClient().categories.list(
+      { page, limit: 100 },
+      localeOptions,
+    );
     allCategories.push(...response.data);
     totalPages = response.meta.pages;
     page++;
