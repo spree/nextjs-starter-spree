@@ -20,7 +20,7 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and [S
 - **Multi-Region Support** - Country, currency, and language switching via URL segments, powered by [Spree Markets](https://spreecommerce.org/docs/developer/core-concepts/markets)
 - **Responsive Design** - Mobile-first Tailwind CSS styling
 - **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
-- **Store Policies** - Dynamic policy pages (Privacy Policy, Terms of Service, etc.) fetched from Spree API, with consent checkboxes on registration and checkout
+- **Store Policies** - Policy pages fetched from Spree API, with consent checkboxes on registration and guest checkout
 - **SEO-ready** - meta tags, JSON-LD, OpenGraph - all built in!
 - **Error Tracking** - Sentry integration for both server-side and client-side error monitoring with source maps
 
