@@ -3,7 +3,6 @@
 import type { Category } from "@spree/sdk";
 import { ArrowLeft, Check, ChevronRight, User, X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,6 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { country, currency, countries } = useStore();
-  const router = useRouter();
   const { isCountryNavigating, handleCountrySelect } = useCountrySwitch({
     currentCountry: country,
     onBeforeNavigate: () => setOpen(false),
