@@ -3,6 +3,7 @@
 import type { Category } from "@spree/sdk";
 import { ArrowLeft, Check, ChevronRight, User, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { country, currency, countries } = useStore();
+  const router = useRouter();
   const { isCountryNavigating, handleCountrySelect } = useCountrySwitch({
     currentCountry: country,
     onBeforeNavigate: () => setOpen(false),
@@ -94,6 +96,11 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
       setPanelStack([{ kind: "main" }]);
       setAnimatedIndex(0);
     }
+  };
+
+  const handleNavigate = (href: string) => {
+    setOpen(false);
+    router.push(href);
   };
 
   // Flatten root categories: show their children directly instead of taxonomy names
@@ -218,20 +225,20 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
             }`}
           >
             <nav className="flex flex-col gap-1 px-4 flex-1 overflow-y-auto pt-2">
-              <Link
-                href={basePath || "/"}
-                onClick={() => setOpen(false)}
+              <button
+                type="button"
+                onClick={() => handleNavigate(basePath || "/")}
                 className={linkClass}
               >
                 Home
-              </Link>
-              <Link
-                href={`${basePath}/products`}
-                onClick={() => setOpen(false)}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNavigate(`${basePath}/products`)}
                 className={linkClass}
               >
                 All Products
-              </Link>
+              </button>
               {menuCategories.map((category) =>
                 category.children && category.children.length > 0 ? (
                   <button
@@ -244,23 +251,25 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </button>
                 ) : (
-                  <Link
+                  <button
                     key={category.id}
-                    href={`${basePath}/c/${category.permalink}`}
-                    onClick={() => setOpen(false)}
+                    type="button"
+                    onClick={() =>
+                      handleNavigate(`${basePath}/c/${category.permalink}`)
+                    }
                     className={linkClass}
                   >
                     {category.name}
-                  </Link>
+                  </button>
                 ),
               )}
-              <Link
-                href={`${basePath}/#contact`}
-                onClick={() => setOpen(false)}
+              <button
+                type="button"
+                onClick={() => handleNavigate(`${basePath}/#contact`)}
                 className={linkClass}
               >
                 Contact
-              </Link>
+              </button>
             </nav>
 
             {/* Footer: Country switcher (mobile + tablet) + Account (mobile only) */}
@@ -333,27 +342,33 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                       </button>
                     ) : (
-                      <Link
+                      <button
                         key={child.id}
-                        href={`${basePath}/c/${child.permalink}`}
-                        onClick={() => setOpen(false)}
+                        type="button"
+                        onClick={() =>
+                          handleNavigate(`${basePath}/c/${child.permalink}`)
+                        }
                         className={linkClass}
                       >
                         {child.name}
-                      </Link>
+                      </button>
                     ),
                   )}
                 </nav>
 
                 {/* "View all" at the bottom */}
                 <div className="border-t border-gray-200 px-4 py-3">
-                  <Link
-                    href={`${basePath}/c/${panel.category.permalink}`}
-                    onClick={() => setOpen(false)}
-                    className="block w-full text-center text-sm text-gray-500 hover:text-gray-900 py-2 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleNavigate(
+                        `${basePath}/c/${panel.category.permalink}`,
+                      )
+                    }
+                    className="w-full text-center text-sm text-gray-500 hover:text-gray-900 py-2 transition-colors"
                   >
                     View all {panel.category.name}
-                  </Link>
+                  </button>
                 </div>
               </div>
             );
