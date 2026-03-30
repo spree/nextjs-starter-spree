@@ -378,75 +378,81 @@ function ExpressCheckoutInner({
 
   return (
     <div className="w-full">
-      {processing && (
-        <div className="flex flex-col items-center justify-center py-8">
+      {/* Shared container — smoothly transitions between buttons and finalizing state */}
+      <div className="relative overflow-hidden">
+        {/* Finalizing overlay — fades in on top of the button area */}
+        <div
+          className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-opacity duration-500 ease-out ${
+            processing ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
           <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
           <p className="mt-4 text-sm font-medium text-gray-700">
             Finalizing your payment...
           </p>
         </div>
-      )}
 
-      {/* Buttons + spinner share the same space to avoid layout shift */}
-      <div className="relative min-h-12">
-        {/* Spinner — overlays the button area, fades out when ready */}
-        <div
-          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-            available === null && !processing
-              ? "opacity-100"
-              : "opacity-0 pointer-events-none"
-          }`}
-        >
-          <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-        </div>
+        {/* Buttons area — min-h keeps space, content fades out when processing */}
+        <div className="relative min-h-12">
+          {/* Spinner — overlays the button area, fades out when ready */}
+          <div
+            className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+              available === null && !processing
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          </div>
 
-        {/* Buttons — always mounted so Stripe can init, fade in when ready */}
-        <div
-          className={`transition-opacity duration-300 ease-out ${
-            available === true && !processing ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <ExpressCheckoutElement
-            options={{
-              paymentMethods: {
-                applePay: "auto",
-                googlePay: "auto",
-                link: "auto",
-              },
-              buttonType: {
-                applePay: "check-out",
-                googlePay: "checkout",
-              },
-              buttonTheme: {
-                applePay: "black",
-                googlePay: "black",
-              },
-              layout: {
-                maxColumns,
-                maxRows: 2,
-              },
-              emailRequired: true,
-              phoneNumberRequired: true,
-              shippingAddressRequired: true,
-            }}
-            onReady={handleReady}
-            onClick={handleClick}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-            onShippingAddressChange={handleShippingAddressChange}
-            onShippingRateChange={handleShippingRateChange}
-          />
-          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-          {available && showDivider && (
-            <div className="relative mt-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+          {/* Buttons — always mounted so Stripe can init, fade in when ready */}
+          <div
+            className={`transition-opacity duration-300 ease-out ${
+              available === true && !processing ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <ExpressCheckoutElement
+              options={{
+                paymentMethods: {
+                  applePay: "auto",
+                  googlePay: "auto",
+                  link: "auto",
+                },
+                buttonType: {
+                  applePay: "check-out",
+                  googlePay: "checkout",
+                },
+                buttonTheme: {
+                  applePay: "black",
+                  googlePay: "black",
+                },
+                layout: {
+                  maxColumns,
+                  maxRows: 2,
+                },
+                emailRequired: true,
+                phoneNumberRequired: true,
+                shippingAddressRequired: true,
+              }}
+              onReady={handleReady}
+              onClick={handleClick}
+              onConfirm={handleConfirm}
+              onCancel={handleCancel}
+              onShippingAddressChange={handleShippingAddressChange}
+              onShippingRateChange={handleShippingRateChange}
+            />
+            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            {available && showDivider && (
+              <div className="relative mt-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">or</span>
+                </div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">or</span>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
