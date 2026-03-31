@@ -49,25 +49,24 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
     trackViewItem(product, currency);
   }, [product, currency]);
 
-  // Get media for the gallery - variant media takes priority
   const galleryImages = useMemo((): Media[] => {
-    // If selected variant has media, show those
-    if (selectedVariant?.media && selectedVariant.media.length > 0) {
-      return selectedVariant.media;
-    }
-    // Otherwise show product media
     return product.media || [];
-  }, [selectedVariant, product.media]);
+  }, [product.media]);
 
-  // Get pricing info from selected variant or product (using nested price objects)
+  const variantImageIndex = useMemo((): number | null => {
+    if (!selectedVariant?.media || selectedVariant.media.length === 0) {
+      return null;
+    }
+    const variantMediaId = selectedVariant.media[0].id;
+    const index = galleryImages.findIndex((m) => m.id === variantMediaId);
+    return index >= 0 ? index : null;
+  }, [selectedVariant, galleryImages]);
+
   const price = selectedVariant?.price ?? product.price;
   const originalPrice =
     selectedVariant?.original_price ?? product.original_price;
   const displayPrice = price?.display_amount;
 
-  // Compute on_sale locally: item is on sale if current price is less than original price
-  // or if compare_at_amount is set (manual markdown)
-  // Use amount_in_cents for comparison (integers, no floating point issues)
   const currentAmountCents = price?.amount_in_cents;
   const originalAmountCents = originalPrice?.amount_in_cents;
   const compareAtAmountCents = price?.compare_at_amount_in_cents;
@@ -79,11 +78,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
       currentAmountCents != null &&
       currentAmountCents < compareAtAmountCents);
 
-  // Strikethrough price: show original_price if different from current, or compare_at_amount for manual markdowns
   const strikethroughPrice = onSale
-    ? originalPrice?.display_amount !== displayPrice
-      ? originalPrice?.display_amount
-      : price?.display_compare_at_amount
+    ? ((originalPrice?.display_amount &&
+      originalPrice.display_amount !== displayPrice
+        ? originalPrice.display_amount
+        : price?.display_compare_at_amount) ?? null)
     : null;
 
   // Purchasability
@@ -121,7 +120,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Media Gallery */}
         <div>
-          <MediaGallery images={galleryImages} productName={product.name} />
+          <MediaGallery
+            images={galleryImages}
+            productName={product.name}
+            activeIndex={variantImageIndex}
+          />
         </div>
 
         {/* Product Info */}
