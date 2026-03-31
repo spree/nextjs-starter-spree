@@ -90,16 +90,21 @@ export function createWebhookHandler(options: CreateWebhookHandlerOptions) {
       return NextResponse.json({ received: true, handled: false });
     }
 
-    const work = handler(event).catch((error) => {
-      console.error(`[spree-webhook] Error handling ${name}:`, error);
-    });
-
     if (waitUntil) {
+      // Fire-and-forget with waitUntil — errors are logged but response is immediate
+      const work = handler(event).catch((error) => {
+        console.error(`[spree-webhook] Error handling ${name}:`, error);
+      });
       waitUntil(work);
-    } else {
-      await work;
+      return NextResponse.json({ received: true, handled: true });
     }
 
-    return NextResponse.json({ received: true, handled: true });
+    try {
+      await handler(event);
+      return NextResponse.json({ received: true, handled: true });
+    } catch (error) {
+      console.error(`[spree-webhook] Error handling ${name}:`, error);
+      return NextResponse.json({ error: "Handler failed" }, { status: 500 });
+    }
   };
 }

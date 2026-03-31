@@ -42,7 +42,9 @@ function setLocaleCookies(
  * - Syncing spree_country / spree_locale cookies with URL segments so
  *   server-side data fetching (via `getLocaleOptions()`) uses the correct market
  */
-export function createSpreeMiddleware(config: SpreeMiddlewareConfig = {}) {
+export function createSpreeMiddleware(
+  config: SpreeMiddlewareConfig = {},
+): (request: NextRequest) => NextResponse {
   const defaultCountry = config.defaultCountry ?? "us";
   const defaultLocale = config.defaultLocale ?? "en";
   const staticRoutes = config.staticRoutes ?? [

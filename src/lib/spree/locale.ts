@@ -5,12 +5,11 @@ const DEFAULT_COUNTRY_COOKIE = "spree_country";
 const DEFAULT_LOCALE_COOKIE = "spree_locale";
 
 /**
- * Read locale/currency/country from cookies (set by middleware).
+ * Read locale/country from cookies (set by middleware).
  * Falls back to config defaults.
  */
 export async function getLocaleOptions(): Promise<{
   locale?: string;
-  currency?: string;
   country?: string;
 }> {
   const config = getConfig();
