@@ -36,17 +36,20 @@ export async function generateProductMetadata({
     : undefined;
 
   const firstMedia = (product.media || [])[0];
-  const rawOgUrl = firstMedia?.original_url || product.thumbnail_url || null;
+  const ogSrc =
+    firstMedia?.og_image_url ||
+    firstMedia?.original_url ||
+    product.thumbnail_url ||
+    null;
   const ogImage =
-    rawOgUrl && storeUrl
+    ogSrc && storeUrl
       ? {
-          url: `${storeUrl}/_next/image?url=${encodeURIComponent(rawOgUrl)}&w=1200&q=75`,
-          width: 1200,
-          height: 630,
+          url: `${storeUrl}/_next/image?url=${encodeURIComponent(ogSrc)}&w=1200&q=75`,
+          ...(firstMedia?.og_image_url ? { width: 1200, height: 630 } : {}),
           alt: firstMedia?.alt || product.name,
         }
-      : rawOgUrl
-        ? { url: rawOgUrl, alt: firstMedia?.alt || product.name }
+      : ogSrc
+        ? { url: ogSrc, alt: firstMedia?.alt || product.name }
         : null;
 
   return {

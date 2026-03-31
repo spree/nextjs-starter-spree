@@ -21,7 +21,7 @@ export function MediaGallery({
   productName,
   activeIndex,
 }: MediaGalleryProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(activeIndex ?? 0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mainImageErrorUrl, setMainImageErrorUrl] = useState<string | null>(
     null,
