@@ -52,7 +52,10 @@ export async function withAuthRefresh<T>(
   const options = await getAuthOptions();
 
   if (!options.token) {
-    throw new Error("Not authenticated");
+    throw new SpreeError(
+      { error: { code: "unauthorized", message: "Not authenticated" } },
+      401,
+    );
   }
 
   try {

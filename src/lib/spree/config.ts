@@ -28,7 +28,7 @@ export function getClient(): Client {
       initSpreeNext({ baseUrl, publishableKey });
     } else {
       throw new Error(
-        "@spree/next is not configured. Either call initSpreeNext() or set SPREE_API_URL and SPREE_PUBLISHABLE_KEY environment variables.",
+        "Spree client is not configured. Either call initSpreeNext() or set SPREE_API_URL and SPREE_PUBLISHABLE_KEY environment variables.",
       );
     }
   }

@@ -37,21 +37,19 @@ export default async function CountryLocaleLayout({
 
   // Validate that the URL country belongs to an available market.
   // If not, redirect server-side to avoid SSR with wrong prices.
-  if (markets.length > 0) {
-    const isValidCountry = markets.some((market) =>
-      market.countries?.some(
-        (c) => c.iso.toLowerCase() === country.toLowerCase(),
-      ),
-    );
+  const isValidCountry = markets.some((market) =>
+    market.countries?.some(
+      (c) => c.iso.toLowerCase() === country.toLowerCase(),
+    ),
+  );
 
-    if (!isValidCountry) {
-      const defaultMarket = markets.find((m) => m.default) ?? markets[0];
-      const fallbackCountry =
-        defaultMarket.countries?.[0]?.iso.toLowerCase() ?? DEFAULT_COUNTRY;
-      const fallbackLocale = defaultMarket.default_locale ?? DEFAULT_LOCALE;
+  if (!isValidCountry) {
+    const defaultMarket = markets.find((m) => m.default) ?? markets[0];
+    const fallbackCountry =
+      defaultMarket?.countries?.[0]?.iso.toLowerCase() ?? DEFAULT_COUNTRY;
+    const fallbackLocale = defaultMarket?.default_locale ?? DEFAULT_LOCALE;
 
-      redirect(`/${fallbackCountry}/${fallbackLocale}`);
-    }
+    redirect(`/${fallbackCountry}/${fallbackLocale}`);
   }
 
   return (

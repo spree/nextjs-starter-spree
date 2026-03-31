@@ -29,7 +29,6 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and [S
 - **TypeScript** - Full type safety
 - **Sentry** - Error tracking and performance monitoring with source maps
 - [@spree/sdk](https://spreecommerce.org/docs/developer/sdk/quickstart) - Official Spree Commerce SDK
-- [@spree/next](https://spreecommerce.org/docs/developer/storefront/nextjs/spree-next-package) - Cookie-based auth, middleware, and webhook helpers
 
 ## Architecture
 
@@ -42,7 +41,7 @@ This starter follows a **server-first pattern**:
 
 ```
 Browser → Server Action → @spree/sdk → Spree API
-         (with httpOnly cookies via @spree/next helpers)
+         (with httpOnly cookies via src/lib/spree helpers)
 ```
 
 ## Getting Started
@@ -133,7 +132,7 @@ src/
 │   ├── AuthContext.tsx         # Client-side auth state
 │   └── CartContext.tsx         # Client-side cart state sync
 └── lib/
-    ├── spree.ts                # SDK client configuration
+    ├── spree/                  # Spree integration helpers (auth, cookies, middleware, webhooks)
     └── data/                   # Server Actions
         ├── addresses.ts        # Address CRUD operations
         ├── cart.ts             # Cart operations
@@ -149,7 +148,7 @@ src/
 
 ## Server Actions
 
-All data fetching is done through server actions in `src/lib/data/`. These call `@spree/sdk` directly, using `@spree/next` helpers for auth cookies and locale resolution:
+All data fetching is done through server actions in `src/lib/data/`. These call `@spree/sdk` directly, using helpers in `src/lib/spree/` for auth cookies and locale resolution:
 
 ```typescript
 // Products — uses getLocaleOptions() for locale-aware reads
@@ -192,13 +191,13 @@ await createAddress({ first_name: 'John', ... })
 
 1. User submits login form
 2. Server action calls `@spree/sdk` to authenticate
-3. JWT token is stored in an httpOnly cookie via `@spree/next` cookie helpers
+3. JWT token is stored in an httpOnly cookie via `src/lib/spree` cookie helpers
 4. Subsequent requests use `withAuthRefresh()` which reads the token automatically
 5. Token is never accessible to client-side JavaScript
 
 ```typescript
 // src/lib/data/customer.ts
-import { getClient, withAuthRefresh, setAccessToken, setRefreshToken } from '@spree/next'
+import { getClient, withAuthRefresh, setAccessToken, setRefreshToken } from '@/lib/spree'
 
 export async function login(email: string, password: string) {
   const result = await getClient().auth.login({ email, password })
@@ -241,7 +240,7 @@ All components are in `src/components/` and can be customized or replaced as nee
 
 ### Data Layer
 
-To customize API behavior, modify the server actions in `src/lib/data/`. These call `@spree/sdk` directly, using `@spree/next` helpers for auth cookies and locale resolution.
+To customize API behavior, modify the server actions in `src/lib/data/`. These call `@spree/sdk` directly, using helpers in `src/lib/spree/` for auth cookies and locale resolution.
 
 ## Transactional Emails
 
@@ -296,7 +295,7 @@ Spree Backend → Webhook POST → /api/webhooks/spree → render email → send
                 (signed HMAC)   (signature verified)   (react-email)   (or write to disk in dev)
 ```
 
-The webhook route handler (`src/app/api/webhooks/spree/route.ts`) uses `createWebhookHandler` from `@spree/next/webhooks` — signature verification and event routing are handled automatically.
+The webhook route handler (`src/app/api/webhooks/spree/route.ts`) uses `createWebhookHandler` from `src/lib/spree/webhooks` — signature verification and event routing are handled automatically.
 
 ## Deploy on Vercel
 
