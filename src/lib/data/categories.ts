@@ -1,7 +1,7 @@
 "use server";
 
-import { getClient, getLocaleOptions } from "@spree/next";
 import type { CategoryListParams, ProductListParams } from "@spree/sdk";
+import { getClient, getLocaleOptions } from "@/lib/spree";
 
 export async function getCategories(params?: CategoryListParams) {
   const options = await getLocaleOptions();

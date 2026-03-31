@@ -1,5 +1,8 @@
 "use server";
 
+import type { Customer } from "@spree/sdk";
+import { SpreeError } from "@spree/sdk";
+import { updateTag } from "next/cache";
 import {
   clearAccessToken,
   clearCartCookies,
@@ -12,10 +15,7 @@ import {
   setAccessToken,
   setRefreshToken,
   withAuthRefresh,
-} from "@spree/next";
-import type { Customer } from "@spree/sdk";
-import { SpreeError } from "@spree/sdk";
-import { updateTag } from "next/cache";
+} from "@/lib/spree";
 import { actionResult } from "./utils";
 
 /**

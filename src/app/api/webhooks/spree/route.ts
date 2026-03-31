@@ -1,6 +1,6 @@
-import { createWebhookHandler } from "@spree/next/webhooks";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createWebhookHandler } from "@/lib/spree/webhooks";
 import {
   handleOrderCanceled,
   handleOrderCompleted,

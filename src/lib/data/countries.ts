@@ -1,6 +1,6 @@
 "use server";
 
-import { getClient, getLocaleOptions } from "@spree/next";
+import { getClient, getLocaleOptions } from "@/lib/spree";
 
 export async function getCountries() {
   const options = await getLocaleOptions();

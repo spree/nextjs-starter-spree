@@ -1,8 +1,8 @@
 "use server";
 
-import { getClient, getLocaleOptions } from "@spree/next";
 import type { Market } from "@spree/sdk";
 import { cacheLife, cacheTag } from "next/cache";
+import { getClient, getLocaleOptions } from "@/lib/spree";
 
 async function cachedListMarkets(options: {
   locale?: string;

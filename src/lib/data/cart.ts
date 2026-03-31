@@ -1,5 +1,7 @@
 "use server";
 
+import type { Cart, CreateCartParams } from "@spree/sdk";
+import { updateTag } from "next/cache";
 import {
   clearCartCookies,
   getAccessToken,
@@ -9,9 +11,7 @@ import {
   getClient,
   requireCartId,
   setCartCookies,
-} from "@spree/next";
-import type { Cart, CreateCartParams } from "@spree/sdk";
-import { updateTag } from "next/cache";
+} from "@/lib/spree";
 import { actionResult } from "./utils";
 
 /**

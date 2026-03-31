@@ -13,7 +13,7 @@ const mockClient = {
   orders: { get: vi.fn() },
 };
 
-vi.mock("@spree/next", () => ({
+vi.mock("@/lib/spree", () => ({
   getClient: () => mockClient,
   getCartToken: vi.fn().mockResolvedValue("order-token-123"),
   getCartId: vi.fn().mockResolvedValue("order-1"),

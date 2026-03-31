@@ -1,9 +1,9 @@
 "use server";
 
-import { getCartOptions, getClient, requireCartId } from "@spree/next";
 import type { AddressParams, Cart } from "@spree/sdk";
 import { SpreeError } from "@spree/sdk";
 import { updateTag } from "next/cache";
+import { getCartOptions, getClient, requireCartId } from "@/lib/spree";
 import { getCart } from "./cart";
 import { getOrder } from "./orders";
 import { actionResult, withFallback } from "./utils";

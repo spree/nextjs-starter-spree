@@ -17,7 +17,7 @@ const mockClient = {
   },
 };
 
-vi.mock("@spree/next", () => ({
+vi.mock("@/lib/spree", () => ({
   getClient: () => mockClient,
   withAuthRefresh: vi.fn(
     async (fn: (options: { token: string }) => Promise<unknown>) => {
@@ -88,7 +88,7 @@ describe("customer server actions", () => {
 
     it("clears tokens on 401 auth failure", async () => {
       const { SpreeError } = await import("@spree/sdk");
-      const { withAuthRefresh } = await import("@spree/next");
+      const { withAuthRefresh } = await import("@/lib/spree");
       (withAuthRefresh as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
         new SpreeError(
           { error: { code: "unauthorized", message: "Unauthorized" } },
@@ -100,14 +100,14 @@ describe("customer server actions", () => {
 
       expect(result).toBeNull();
       const { clearAccessToken, clearRefreshToken } = await import(
-        "@spree/next"
+        "@/lib/spree"
       );
       expect(clearAccessToken).toHaveBeenCalled();
       expect(clearRefreshToken).toHaveBeenCalled();
     });
 
     it("does not clear tokens on transient errors", async () => {
-      const { withAuthRefresh } = await import("@spree/next");
+      const { withAuthRefresh } = await import("@/lib/spree");
       (withAuthRefresh as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
         new Error("Network error"),
       );
@@ -116,7 +116,7 @@ describe("customer server actions", () => {
 
       expect(result).toBeNull();
       const { clearAccessToken, clearRefreshToken } = await import(
-        "@spree/next"
+        "@/lib/spree"
       );
       expect(clearAccessToken).not.toHaveBeenCalled();
       expect(clearRefreshToken).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe("customer server actions", () => {
       await logout();
 
       const { clearAccessToken, clearRefreshToken, clearCartCookies } =
-        await import("@spree/next");
+        await import("@/lib/spree");
       expect(clearAccessToken).toHaveBeenCalled();
       expect(clearRefreshToken).toHaveBeenCalled();
       expect(clearCartCookies).toHaveBeenCalled();

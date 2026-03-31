@@ -1,7 +1,7 @@
 "use server";
 
-import { getClient, withAuthRefresh } from "@spree/next";
 import type { GiftCard } from "@spree/sdk";
+import { getClient, withAuthRefresh } from "@/lib/spree";
 import { withFallback } from "./utils";
 
 export async function getGiftCards() {

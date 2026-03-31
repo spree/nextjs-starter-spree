@@ -1,4 +1,4 @@
-import { createSpreeMiddleware } from "@spree/next/middleware";
+import { createSpreeMiddleware } from "@/lib/spree/middleware";
 
 const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us";
 const DEFAULT_LOCALE = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";

@@ -14,7 +14,7 @@ const mockClient = {
   },
 };
 
-vi.mock("@spree/next", () => ({
+vi.mock("@/lib/spree", () => ({
   getClient: () => mockClient,
   getCartToken: vi.fn().mockResolvedValue("order-token-123"),
   getCartId: vi.fn().mockResolvedValue("cart-1"),
@@ -186,7 +186,7 @@ describe("cart server actions", () => {
 
   describe("associateCartWithUser", () => {
     it("returns success", async () => {
-      const { getAccessToken } = await import("@spree/next");
+      const { getAccessToken } = await import("@/lib/spree");
       (getAccessToken as ReturnType<typeof vi.fn>).mockResolvedValue(
         "jwt-token",
       );

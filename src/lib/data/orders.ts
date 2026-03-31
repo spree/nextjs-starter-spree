@@ -1,7 +1,7 @@
 "use server";
 
-import { getCartOptions, getClient, withAuthRefresh } from "@spree/next";
 import type { OrderListParams } from "@spree/sdk";
+import { getCartOptions, getClient, withAuthRefresh } from "@/lib/spree";
 import { withFallback } from "./utils";
 
 export async function getOrders(params?: OrderListParams) {

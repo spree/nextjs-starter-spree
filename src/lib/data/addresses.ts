@@ -1,8 +1,8 @@
 "use server";
 
-import { getClient, withAuthRefresh } from "@spree/next";
 import type { Address, AddressParams } from "@spree/sdk";
 import { updateTag } from "next/cache";
+import { getClient, withAuthRefresh } from "@/lib/spree";
 import { actionResult, withFallback } from "./utils";
 
 export async function getAddresses() {

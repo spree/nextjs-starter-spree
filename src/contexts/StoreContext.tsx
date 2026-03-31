@@ -1,16 +1,7 @@
 "use client";
 
 import type { Country, Market } from "@spree/sdk";
-import { usePathname } from "next/navigation";
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-} from "react";
-import { setStoreCookies } from "@/lib/utils/cookies";
-import { getPathWithoutPrefix } from "@/lib/utils/path";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
 
 /** Country enriched with market info (currency, locale, etc.) */
 export interface CountryWithMarket extends Country {
@@ -75,68 +66,29 @@ function findCountry(
   );
 }
 
-function resolveCountryAndCurrency(
-  countries: CountryWithMarket[],
-  urlCountry: string,
-): {
-  selectedCountry: CountryWithMarket | undefined;
-  effectiveCountry: CountryWithMarket | undefined;
-  needsRedirect: boolean;
-} {
-  const selectedCountry = findCountry(countries, urlCountry);
-
-  if (selectedCountry) {
-    return {
-      selectedCountry,
-      effectiveCountry: selectedCountry,
-      needsRedirect: false,
-    };
-  }
-
-  const defaultCountry = countries[0];
-  return {
-    selectedCountry: undefined,
-    effectiveCountry: defaultCountry,
-    needsRedirect: Boolean(defaultCountry),
-  };
-}
-
 export function StoreProvider({
   children,
   initialCountry,
   initialLocale,
   initialMarkets,
 }: StoreProviderProps) {
-  const pathname = usePathname();
   const countries = useMemo(
     () => buildCountriesFromMarkets(initialMarkets),
     [initialMarkets],
   );
 
-  const resolved = useMemo(
-    () => resolveCountryAndCurrency(countries, initialCountry),
+  const selectedCountry = useMemo(
+    () => findCountry(countries, initialCountry),
     [countries, initialCountry],
   );
 
-  const country = (
-    resolved.effectiveCountry?.iso || initialCountry
-  ).toLowerCase();
-  const locale = resolved.selectedCountry
+  // The layout performs server-side validation, so the URL country should
+  // always be valid. Use fallbacks only as a defensive measure.
+  const country = (selectedCountry?.iso || initialCountry).toLowerCase();
+  const locale = selectedCountry
     ? initialLocale
-    : (resolved.effectiveCountry?.default_locale ?? initialLocale);
-  const currency = resolved.effectiveCountry?.currency ?? "USD";
-  const loading = false;
-
-  useEffect(() => {
-    if (!resolved.needsRedirect || !resolved.effectiveCountry) return;
-
-    const newLocale = resolved.effectiveCountry.default_locale || "en";
-    const pathRest = getPathWithoutPrefix(pathname);
-    const nextCountry = resolved.effectiveCountry.iso.toLowerCase();
-    const newPath = `/${nextCountry}/${newLocale}${pathRest}`;
-    setStoreCookies(nextCountry, newLocale);
-    window.location.replace(newPath);
-  }, [pathname, resolved]);
+    : (countries[0]?.default_locale ?? initialLocale);
+  const currency = selectedCountry?.currency ?? countries[0]?.currency ?? "USD";
 
   const value = useMemo<StoreContextValue>(
     () => ({
@@ -146,7 +98,7 @@ export function StoreProvider({
       locale,
       currency,
       countries,
-      loading,
+      loading: false,
     }),
     [country, locale, currency, countries],
   );

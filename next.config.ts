@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
   },
-  transpilePackages: ["@spree/next", "@spree/sdk"],
+  transpilePackages: ["@spree/sdk"],
   turbopack: {
     root: __dirname,
   },
