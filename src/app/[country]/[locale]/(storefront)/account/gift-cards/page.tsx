@@ -1,8 +1,10 @@
 import { Gift, Info } from "lucide-react";
+import { connection } from "next/server";
 import { GiftCardList } from "@/components/account/GiftCardList";
 import { getGiftCards } from "@/lib/data/gift-cards";
 
 export default async function GiftCardsPage() {
+  await connection();
   const response = await getGiftCards();
   const cards = response.data;
 

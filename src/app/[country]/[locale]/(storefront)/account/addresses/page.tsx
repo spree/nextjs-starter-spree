@@ -1,4 +1,5 @@
 import { MapPin } from "lucide-react";
+import { connection } from "next/server";
 import { AddressManagement } from "@/components/addresses/AddressManagement";
 import type { User } from "@/contexts/AuthContext";
 import { getAddresses } from "@/lib/data/addresses";
@@ -6,7 +7,7 @@ import { getCountries } from "@/lib/data/countries";
 import { getCustomer } from "@/lib/data/customer";
 
 export default async function AddressesPage() {
-  // Fetch data in parallel on the server
+  await connection();
   const [addressResponse, countriesResponse, customer] = await Promise.all([
     getAddresses(),
     getCountries(),

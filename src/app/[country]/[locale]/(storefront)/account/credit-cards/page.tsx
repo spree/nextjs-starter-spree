@@ -1,8 +1,10 @@
 import { CreditCard, Lock } from "lucide-react";
+import { connection } from "next/server";
 import { CreditCardList } from "@/components/account/CreditCardList";
 import { getCreditCards } from "@/lib/data/credit-cards";
 
 export default async function CreditCardsPage() {
+  await connection();
   const response = await getCreditCards();
   const cards = response.data;
 
