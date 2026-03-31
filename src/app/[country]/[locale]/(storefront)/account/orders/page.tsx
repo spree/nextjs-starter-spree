@@ -1,5 +1,6 @@
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { OrderList } from "@/components/account/OrderList";
 import { Button } from "@/components/ui/button";
 import { getOrders } from "@/lib/data/orders";
@@ -9,6 +10,7 @@ interface OrdersPageProps {
 }
 
 export default async function OrdersPage({ params }: OrdersPageProps) {
+  await connection();
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
 

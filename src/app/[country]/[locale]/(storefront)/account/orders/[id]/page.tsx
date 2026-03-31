@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { OrderDetail } from "@/components/account/OrderDetail";
 import { getOrder } from "@/lib/data/orders";
 
@@ -13,6 +14,7 @@ interface OrderDetailPageProps {
 export default async function OrderDetailPage({
   params,
 }: OrderDetailPageProps) {
+  await connection();
   const { country, locale, id } = await params;
   const basePath = `/${country}/${locale}`;
   const order = await getOrder(id);
