@@ -1,11 +1,22 @@
 "use server";
 
 import type { CategoryListParams, ProductListParams } from "@spree/sdk";
+import { cacheLife, cacheTag } from "next/cache";
 import { getClient, getLocaleOptions } from "@/lib/spree";
+
+async function cachedListCategories(
+  params: CategoryListParams | undefined,
+  options: { locale?: string; country?: string },
+) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("categories");
+  return getClient().categories.list(params, options);
+}
 
 export async function getCategories(params?: CategoryListParams) {
   const options = await getLocaleOptions();
-  return getClient().categories.list(params, options);
+  return cachedListCategories(params, options);
 }
 
 export async function getCategory(
