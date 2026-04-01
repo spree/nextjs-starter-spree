@@ -199,7 +199,7 @@ export default async function sitemap(props: {
         ...(product.media && product.media.length > 0
           ? {
               images: product.media
-                .map((img: Media) => img.original_url)
+                .map((img: Media) => img.original_url || img.large_url)
                 .filter((url: string | null): url is string => url != null),
             }
           : {}),
