@@ -1,7 +1,14 @@
 import type { Category, Media, Product } from "@spree/sdk";
 import { getClient } from "@/lib/spree";
 
-type ProductWithMedia = Product & { media?: Media[] };
+type ProductWithMedia = Product & {
+  media?: Media[];
+  updated_at?: string;
+};
+
+type CategoryWithTimestamp = Category & {
+  updated_at?: string;
+};
 
 import type { MetadataRoute } from "next";
 import { getStoreUrl } from "@/lib/seo";
@@ -11,17 +18,25 @@ interface CountryLocale {
   locale: string;
 }
 
+interface LocaleOptions {
+  locale: string;
+  country: string;
+}
+
 /** Google's limit is 50,000 URLs per sitemap file. */
 const URLS_PER_SITEMAP = 50_000;
 const STATIC_PAGES_PER_LOCALE = 3;
+const ITEMS_PER_PAGE = 100;
 const MAX_PAGES = 1000;
+/** Maximum items we can actually fetch, given pagination limits. */
+const MAX_FETCHABLE_ITEMS = ITEMS_PER_PAGE * MAX_PAGES;
 
 /**
  * Default locale options for build-time API calls.
  * During build (generateSitemaps / sitemap), cookies() is not available,
  * so we pass explicit locale options to bypass the cookie-based resolution.
  */
-function getDefaultLocaleOptions() {
+function getDefaultLocaleOptions(): LocaleOptions {
   return {
     locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en",
     country: process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us",
@@ -34,7 +49,7 @@ function getDefaultLocaleOptions() {
  * API O(chunks) times.
  */
 let cachedProducts: Promise<ProductWithMedia[]> | null = null;
-let cachedCategories: Promise<Category[]> | null = null;
+let cachedCategories: Promise<CategoryWithTimestamp[]> | null = null;
 let cachedCountryLocales: Promise<CountryLocale[]> | null = null;
 
 function getCachedProducts(): Promise<ProductWithMedia[]> {
@@ -47,7 +62,7 @@ function getCachedProducts(): Promise<ProductWithMedia[]> {
   return cachedProducts;
 }
 
-function getCachedCategories(): Promise<Category[]> {
+function getCachedCategories(): Promise<CategoryWithTimestamp[]> {
   if (!cachedCategories) {
     cachedCategories = fetchAllCategories().catch((err) => {
       cachedCategories = null;
@@ -89,7 +104,9 @@ export async function generateSitemaps() {
     ]);
 
     const urlsPerLocale =
-      STATIC_PAGES_PER_LOCALE + productCount + categoryCount;
+      STATIC_PAGES_PER_LOCALE +
+      Math.min(productCount, MAX_FETCHABLE_ITEMS) +
+      Math.min(categoryCount, MAX_FETCHABLE_ITEMS);
     const totalUrls = urlsPerLocale * countryLocales.length;
     const sitemapCount = Math.max(1, Math.ceil(totalUrls / URLS_PER_SITEMAP));
 
@@ -106,23 +123,30 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
 
-  const storeUrl = getStoreUrl();
-  const baseUrl = (storeUrl || process.env.NEXT_PUBLIC_SITE_URL || "").replace(
-    /\/$/,
-    "",
-  );
+  const candidate = (
+    getStoreUrl() ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    ""
+  ).replace(/\/$/, "");
 
-  if (!baseUrl) {
+  let baseUrl: string;
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error(`Unsupported protocol: ${parsed.protocol}`);
+    }
+    baseUrl = parsed.origin + parsed.pathname.replace(/\/$/, "");
+  } catch {
     console.error(
-      "Sitemap generation skipped: neither STORE_URL nor NEXT_PUBLIC_SITE_URL is set. " +
-        "Sitemaps require absolute URLs.",
+      "Sitemap generation skipped: STORE_URL / NEXT_PUBLIC_SITE_URL is missing or invalid. " +
+        "Sitemaps require absolute http(s) URLs.",
     );
     return [];
   }
 
   let countryLocales: CountryLocale[];
   let allProducts: ProductWithMedia[];
-  let allCategories: Category[];
+  let allCategories: CategoryWithTimestamp[];
 
   try {
     [countryLocales, allProducts, allCategories] = await Promise.all([
@@ -139,29 +163,25 @@ export default async function sitemap(props: {
 
   // Build entries for all locales, then slice to the requested chunk.
   // For most stores (< 50k URLs) this produces a single chunk so no slicing occurs.
-  const now = new Date();
   const entries: MetadataRoute.Sitemap = [];
 
   for (const { country, locale } of countryLocales) {
     const basePath = `${baseUrl}/${country}/${locale}`;
 
-    // Static pages
+    // Static pages — no reliable publish timestamp, omit lastModified
     entries.push(
       {
         url: basePath,
-        lastModified: now,
         changeFrequency: "daily",
         priority: 1,
       },
       {
         url: `${basePath}/products`,
-        lastModified: now,
         changeFrequency: "daily",
         priority: 0.8,
       },
       {
         url: `${basePath}/c`,
-        lastModified: now,
         changeFrequency: "weekly",
         priority: 0.7,
       },
@@ -171,7 +191,9 @@ export default async function sitemap(props: {
     for (const product of allProducts) {
       entries.push({
         url: `${basePath}/products/${product.slug}`,
-        lastModified: new Date(),
+        ...(product.updated_at
+          ? { lastModified: new Date(product.updated_at) }
+          : {}),
         changeFrequency: "weekly",
         priority: 0.6,
         ...(product.media && product.media.length > 0
@@ -188,7 +210,9 @@ export default async function sitemap(props: {
     for (const category of nonRootCategories) {
       entries.push({
         url: `${basePath}/c/${category.permalink}`,
-        lastModified: new Date(),
+        ...(category.updated_at
+          ? { lastModified: new Date(category.updated_at) }
+          : {}),
         changeFrequency: "weekly",
         priority: 0.5,
       });
@@ -256,7 +280,7 @@ async function fetchAllProducts(): Promise<ProductWithMedia[]> {
 
   do {
     const response = await getClient().products.list(
-      { page, limit: 100, expand: ["media"] },
+      { page, limit: ITEMS_PER_PAGE, expand: ["media"] },
       localeOptions,
     );
     allProducts.push(...(response.data as ProductWithMedia[]));
@@ -267,15 +291,15 @@ async function fetchAllProducts(): Promise<ProductWithMedia[]> {
   return allProducts;
 }
 
-async function fetchAllCategories(): Promise<Category[]> {
+async function fetchAllCategories(): Promise<CategoryWithTimestamp[]> {
   const localeOptions = getDefaultLocaleOptions();
-  const allCategories: Category[] = [];
+  const allCategories: CategoryWithTimestamp[] = [];
   let page = 1;
   let totalPages = 1;
 
   do {
     const response = await getClient().categories.list(
-      { page, limit: 100 },
+      { page, limit: ITEMS_PER_PAGE },
       localeOptions,
     );
     allCategories.push(...response.data);

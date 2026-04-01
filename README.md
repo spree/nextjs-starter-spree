@@ -80,8 +80,9 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_DEFAULT_COUNTRY` | Default country ISO code, used for initial redirects before API data loads | `us` |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | Default locale code | `en` |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for sitemap and robots.txt generation (e.g. `https://mystore.com`) | _(required for sitemap)_ |
+| `NEXT_PUBLIC_DEFAULT_COUNTRY` | Default country ISO code, used for initial redirects and as build-time fallback for sitemap generation | `us` |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | Default locale code, used for initial redirects and as build-time fallback for sitemap generation | `en` |
 | `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ |
 | `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
 | `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
