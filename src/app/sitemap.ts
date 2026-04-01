@@ -1,5 +1,5 @@
-import { getClient } from "@spree/next";
 import type { Category, Media, Product } from "@spree/sdk";
+import { getClient } from "@/lib/spree";
 
 type ProductWithMedia = Product & { media?: Media[] };
 
