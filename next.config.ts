@@ -31,6 +31,16 @@ const nextConfig: NextConfig = {
         hostname: "**.spree.sh",
         pathname: "/rails/active_storage/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        pathname: "/rails/active_storage/**",
+      },
+      {
+        protocol: "http",
+        hostname: "**.localhost",
+        pathname: "/rails/active_storage/**",
+      },
     ],
   },
 };
