@@ -5,7 +5,6 @@ import { getProduct } from "./products";
 /** Expand list used on the product detail page (shared by page + metadata). */
 export const PRODUCT_PAGE_EXPAND = [
   "variants",
-  "variants.media",
   "media",
   "option_types",
   "custom_fields",
