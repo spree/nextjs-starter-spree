@@ -8,8 +8,8 @@ import { sendEmail } from "@/lib/emails/send";
 import { ShipmentShippedEmail } from "@/lib/emails/shipment-shipped";
 
 const STORE_NAME = process.env.NEXT_PUBLIC_STORE_NAME || "Store";
-const STORE_URL =
-  process.env.STORE_URL ||
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
 
 /**
@@ -63,7 +63,7 @@ export async function handleOrderCompleted(event: WebhookEvent<Order>) {
       orderNumber: order.number,
       customerName,
       storeName: STORE_NAME,
-      storeUrl: STORE_URL,
+      storeUrl: SITE_URL,
       items: (order.items || []).map((item) => ({
         name: item.name,
         slug: item.slug,
@@ -105,7 +105,7 @@ export async function handleOrderCanceled(event: WebhookEvent<Order>) {
       orderNumber: order.number,
       customerName,
       storeName: STORE_NAME,
-      storeUrl: STORE_URL,
+      storeUrl: SITE_URL,
       items: (order.items || []).map((item) => ({
         name: item.name,
         slug: item.slug,
@@ -173,7 +173,7 @@ export async function handleOrderShipped(event: WebhookEvent<Order>) {
       orderNumber: order.number,
       customerName,
       storeName: STORE_NAME,
-      storeUrl: STORE_URL,
+      storeUrl: SITE_URL,
       shipments,
     }),
   });
@@ -204,7 +204,7 @@ export async function handlePasswordReset(
   // Build the reset URL by appending the token to the redirect_url.
   // If no redirect_url was provided (e.g. no allowed origins configured),
   // fall back to the storefront's reset-password page.
-  const url = new URL(redirect_url ?? "/account/reset-password", STORE_URL);
+  const url = new URL(redirect_url ?? "/account/reset-password", SITE_URL);
   url.searchParams.set("token", reset_token);
   const resetUrl = url.toString();
 
@@ -214,7 +214,7 @@ export async function handlePasswordReset(
     react: createElement(PasswordResetEmail, {
       resetUrl,
       storeName: STORE_NAME,
-      storeUrl: STORE_URL,
+      storeUrl: SITE_URL,
     }),
   });
 

@@ -7,11 +7,11 @@ import type { Category, Media, Product } from "@spree/sdk";
 export const SOCIAL_IMAGE_PATH = "/social-image.png";
 
 /**
- * Get the store URL from the STORE_URL environment variable.
+ * Get the store URL from the NEXT_PUBLIC_SITE_URL environment variable.
  * Returns undefined if not set.
  */
 export function getStoreUrl(): string | undefined {
-  return process.env.STORE_URL || undefined;
+  return process.env.NEXT_PUBLIC_SITE_URL || undefined;
 }
 
 /**
