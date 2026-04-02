@@ -1,18 +1,21 @@
-"use client";
-
+import type { Category } from "@spree/sdk";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useStore } from "@/contexts/StoreContext";
 import { POLICY_LINKS } from "@/lib/constants/policies";
-import { extractBasePath } from "@/lib/utils/path";
 
-export function Footer() {
-  const { storeName, storeDescription } = useStore();
-  const pathname = usePathname();
-  const basePath = extractBasePath(pathname);
+const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+const storeDescription =
+  process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
+  "A modern e-commerce storefront powered by Spree Commerce and Next.js.";
+
+interface FooterProps {
+  rootCategories: Category[];
+  basePath: string;
+}
+
+export function Footer({ rootCategories, basePath }: FooterProps) {
   return (
     <footer className="bg-primary text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
@@ -32,14 +35,16 @@ export function Footer() {
                   All Products
                 </Link>
               </li>
-              <li>
-                <Link
-                  href={`${basePath}/products`}
-                  className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
-                >
-                  Categories
-                </Link>
-              </li>
+              {rootCategories.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    href={`${basePath}/c/${category.permalink}`}
+                    className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -94,8 +99,15 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-neutral-800 text-xs text-neutral-500 text-center">
           <p>
-            &copy; {new Date().getFullYear()} {storeName}. Powered by Spree
-            Commerce.
+            &copy; {new Date().getFullYear()} {storeName}. Powered by
+            <Link
+              href="https://spreecommerce.org"
+              target="_blank"
+              className="text-neutral-400 hover:text-neutral-200 transition-colors"
+            >
+              Spree Commerce
+            </Link>{" "}
+            & Next.js.
           </p>
         </div>
       </div>
