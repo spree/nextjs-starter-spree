@@ -204,6 +204,11 @@ export async function handlePasswordReset(
   // Build the reset URL by appending the token to the redirect_url.
   // If no redirect_url was provided (e.g. no allowed origins configured),
   // fall back to the storefront's reset-password page.
+  if (!SITE_URL) {
+    throw new Error(
+      "Missing NEXT_PUBLIC_SITE_URL configuration — cannot build password reset link",
+    );
+  }
   const url = new URL(redirect_url ?? "/account/reset-password", SITE_URL);
   url.searchParams.set("token", reset_token);
   const resetUrl = url.toString();
