@@ -12,6 +12,8 @@ type CategoryWithTimestamp = Category & {
 
 import type { MetadataRoute } from "next";
 
+export const dynamic = "force-dynamic";
+
 interface CountryLocale {
   country: string;
   locale: string;
@@ -43,32 +45,52 @@ function getDefaultLocaleOptions(): LocaleOptions {
 }
 
 /**
- * Module-level cache so that multiple sitemap({id}) calls during the same
+ * Module-level caches so that multiple sitemap({id}) calls during the same
  * `next build` process reuse already-fetched data instead of hitting the
  * API O(chunks) times.
+ *
+ * Products and categories are cached per locale:country because Spree
+ * returns locale-dependent slugs/permalinks.
  */
-let cachedProducts: Promise<ProductWithMedia[]> | null = null;
-let cachedCategories: Promise<CategoryWithTimestamp[]> | null = null;
+const cachedProductsByLocale = new Map<string, Promise<ProductWithMedia[]>>();
+const cachedCategoriesByLocale = new Map<
+  string,
+  Promise<CategoryWithTimestamp[]>
+>();
 let cachedCountryLocales: Promise<CountryLocale[]> | null = null;
 
-function getCachedProducts(): Promise<ProductWithMedia[]> {
-  if (!cachedProducts) {
-    cachedProducts = fetchAllProducts().catch((err) => {
-      cachedProducts = null;
-      throw err;
-    });
-  }
-  return cachedProducts;
+function localeCacheKey(locale: string, country: string): string {
+  return `${locale}:${country}`;
 }
 
-function getCachedCategories(): Promise<CategoryWithTimestamp[]> {
-  if (!cachedCategories) {
-    cachedCategories = fetchAllCategories().catch((err) => {
-      cachedCategories = null;
+function getCachedProducts(
+  localeOpts: LocaleOptions,
+): Promise<ProductWithMedia[]> {
+  const key = localeCacheKey(localeOpts.locale, localeOpts.country);
+  let cached = cachedProductsByLocale.get(key);
+  if (!cached) {
+    cached = fetchAllProducts(localeOpts).catch((err) => {
+      cachedProductsByLocale.delete(key);
       throw err;
     });
+    cachedProductsByLocale.set(key, cached);
   }
-  return cachedCategories;
+  return cached;
+}
+
+function getCachedCategories(
+  localeOpts: LocaleOptions,
+): Promise<CategoryWithTimestamp[]> {
+  const key = localeCacheKey(localeOpts.locale, localeOpts.country);
+  let cached = cachedCategoriesByLocale.get(key);
+  if (!cached) {
+    cached = fetchAllCategories(localeOpts).catch((err) => {
+      cachedCategoriesByLocale.delete(key);
+      throw err;
+    });
+    cachedCategoriesByLocale.set(key, cached);
+  }
+  return cached;
 }
 
 function getCachedCountryLocales(): Promise<CountryLocale[]> {
@@ -90,7 +112,7 @@ function getCachedCountryLocales(): Promise<CountryLocale[]> {
  *
  * @see https://nextjs.org/docs/app/api-reference/functions/generate-sitemaps
  */
-export async function generateSitemaps() {
+export async function generateSitemaps(): Promise<Array<{ id: number }>> {
   try {
     const countryLocales = await getCachedCountryLocales();
 
@@ -140,21 +162,13 @@ export default async function sitemap(props: {
   }
 
   let countryLocales: CountryLocale[];
-  let allProducts: ProductWithMedia[];
-  let allCategories: CategoryWithTimestamp[];
 
   try {
-    [countryLocales, allProducts, allCategories] = await Promise.all([
-      getCachedCountryLocales(),
-      getCachedProducts(),
-      getCachedCategories(),
-    ]);
+    countryLocales = await getCachedCountryLocales();
   } catch (err) {
     console.error("Sitemap generation failed: API unavailable.", err);
     return [];
   }
-
-  const nonRootCategories = allCategories.filter((c) => !c.is_root);
 
   // Build entries for all locales, then slice to the requested chunk.
   // For most stores (< 50k URLs) this produces a single chunk so no slicing occurs.
@@ -162,6 +176,22 @@ export default async function sitemap(props: {
 
   for (const { country, locale } of countryLocales) {
     const basePath = `${baseUrl}/${country}/${locale}`;
+    const localeOpts: LocaleOptions = { locale, country };
+
+    let products: ProductWithMedia[];
+    let categories: CategoryWithTimestamp[];
+
+    try {
+      [products, categories] = await Promise.all([
+        getCachedProducts(localeOpts),
+        getCachedCategories(localeOpts),
+      ]);
+    } catch (err) {
+      console.error(`Sitemap: skipping ${country}/${locale} — API error.`, err);
+      continue;
+    }
+
+    const nonRootCategories = categories.filter((c) => !c.is_root);
 
     // Static pages — no reliable publish timestamp, omit lastModified
     entries.push(
@@ -182,8 +212,8 @@ export default async function sitemap(props: {
       },
     );
 
-    // Product pages with image sitemaps
-    for (const product of allProducts) {
+    // Product pages with image sitemaps (locale-aware slugs)
+    for (const product of products) {
       entries.push({
         url: `${basePath}/products/${product.slug}`,
         ...(product.updated_at
@@ -201,7 +231,7 @@ export default async function sitemap(props: {
       });
     }
 
-    // Category pages
+    // Category pages (locale-aware permalinks)
     for (const category of nonRootCategories) {
       entries.push({
         url: `${basePath}/c/${category.permalink}`,
@@ -267,8 +297,9 @@ async function fetchTotalCount(
   return response.meta.count;
 }
 
-async function fetchAllProducts(): Promise<ProductWithMedia[]> {
-  const localeOptions = getDefaultLocaleOptions();
+async function fetchAllProducts(
+  localeOptions: LocaleOptions,
+): Promise<ProductWithMedia[]> {
   const allProducts: ProductWithMedia[] = [];
   let page = 1;
   let totalPages = 1;
@@ -286,8 +317,9 @@ async function fetchAllProducts(): Promise<ProductWithMedia[]> {
   return allProducts;
 }
 
-async function fetchAllCategories(): Promise<CategoryWithTimestamp[]> {
-  const localeOptions = getDefaultLocaleOptions();
+async function fetchAllCategories(
+  localeOptions: LocaleOptions,
+): Promise<CategoryWithTimestamp[]> {
   const allCategories: CategoryWithTimestamp[] = [];
   let page = 1;
   let totalPages = 1;
