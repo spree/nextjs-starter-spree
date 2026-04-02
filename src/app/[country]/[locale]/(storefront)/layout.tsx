@@ -45,14 +45,14 @@ export default async function StorefrontLayout({
 
   return (
     <>
-      <Header rootCategories={rootCategories} />
+      <Header rootCategories={rootCategories} basePath={basePath} />
       {rootCategories.length > 0 && (
         <nav aria-label="Category navigation" className="sr-only">
           <CategoryLinks categories={rootCategories} basePath={basePath} />
         </nav>
       )}
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer rootCategories={rootCategories} basePath={basePath} />
     </>
   );
 }
