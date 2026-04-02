@@ -11,7 +11,6 @@ type CategoryWithTimestamp = Category & {
 };
 
 import type { MetadataRoute } from "next";
-import { getStoreUrl } from "@/lib/seo";
 
 interface CountryLocale {
   country: string;
@@ -123,11 +122,7 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
 
-  const candidate = (
-    getStoreUrl() ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    ""
-  ).replace(/\/$/, "");
+  const candidate = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
 
   let baseUrl: string;
   try {
@@ -138,7 +133,7 @@ export default async function sitemap(props: {
     baseUrl = parsed.origin + parsed.pathname.replace(/\/$/, "");
   } catch {
     console.error(
-      "Sitemap generation skipped: STORE_URL / NEXT_PUBLIC_SITE_URL is missing or invalid. " +
+      "Sitemap generation skipped: NEXT_PUBLIC_SITE_URL is missing or invalid. " +
         "Sitemaps require absolute http(s) URLs.",
     );
     return [];
