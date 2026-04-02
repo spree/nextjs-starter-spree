@@ -102,7 +102,7 @@ export function CouponCode({
                   onClick={() => handleRemoveDiscount(promotion.code)}
                   disabled={removing === promotion.code}
                   aria-label={`Remove code ${promotion.code}`}
-                  className="text-gray-400 hover:text-gray-600 p-0.5"
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer p-0.5"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -128,7 +128,7 @@ export function CouponCode({
               onClick={handleRemoveGiftCard}
               disabled={removing === appliedGiftCard.id}
               aria-label="Remove gift card"
-              className="text-gray-400 hover:text-gray-600 p-0.5"
+              className="text-gray-400 hover:text-gray-600 cursor-pointer p-0.5"
             >
               <X className="h-3.5 w-3.5" />
             </button>
