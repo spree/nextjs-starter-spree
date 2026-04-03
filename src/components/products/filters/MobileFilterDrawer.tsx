@@ -9,7 +9,6 @@ import { Check, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 import { AVAILABILITY_LABELS, getActiveFilterCount } from "@/lib/utils/filters";
 import type { PriceBucket } from "@/lib/utils/price-buckets";
 import { findMatchingBucket } from "@/lib/utils/price-buckets";
@@ -168,7 +167,7 @@ function MobileOptionSection({
   selectedValues: string[];
   onToggle: (id: string) => void;
 }) {
-  const isColorFilter = isColorOption(filter.label);
+  const isColorFilter = filter.kind === "color_swatch";
 
   return (
     <div>
@@ -190,14 +189,21 @@ function MobileOptionSection({
                 }`}
               >
                 <span
-                  className={`w-7 h-7 rounded-lg shrink-0 border-2 transition-colors ${
+                  className={`w-7 h-7 rounded-lg shrink-0 border-2 transition-colors overflow-hidden ${
                     isSelected
                       ? "border-gray-500 ring-2 ring-primary-200"
                       : "border-gray-200"
                   }`}
-                  style={{
-                    backgroundColor: resolveColor(option.label),
-                  }}
+                  style={
+                    option.image_url
+                      ? {
+                          backgroundImage: `url(${option.image_url})`,
+                          backgroundSize: "cover",
+                        }
+                      : option.color_code
+                        ? { backgroundColor: option.color_code }
+                        : { backgroundColor: "#e5e7eb" }
+                  }
                 />
                 <span
                   className={`text-sm flex-1 text-left ${isSelected ? "font-medium text-gray-900" : "text-gray-700"}`}

@@ -1,6 +1,5 @@
 import type { OptionFilter } from "@spree/sdk";
 import { DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 
 interface OptionDropdownContentProps {
   filter: OptionFilter;
@@ -13,7 +12,7 @@ export function OptionDropdownContent({
   selectedValues,
   onToggle,
 }: OptionDropdownContentProps) {
-  const isColorFilter = isColorOption(filter.label);
+  const isColorFilter = filter.kind === "color_swatch";
 
   return (
     <>
@@ -28,10 +27,17 @@ export function OptionDropdownContent({
           >
             {isColorFilter && (
               <span
-                className="w-4 h-4 rounded-sm border border-gray-200 shrink-0"
-                style={{
-                  backgroundColor: resolveColor(option.label),
-                }}
+                className="w-4 h-4 rounded-sm border border-gray-200 shrink-0 overflow-hidden"
+                style={
+                  option.image_url
+                    ? {
+                        backgroundImage: `url(${option.image_url})`,
+                        backgroundSize: "cover",
+                      }
+                    : option.color_code
+                      ? { backgroundColor: option.color_code }
+                      : { backgroundColor: "#e5e7eb" }
+                }
               />
             )}
             <span className="flex-1">{option.label}</span>
