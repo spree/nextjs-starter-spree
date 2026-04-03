@@ -51,41 +51,44 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <JsonLd data={buildBreadcrumbJsonLd(category, basePath, storeUrl)} />
       )}
 
-      {/* Banner Image — returns null when image missing or fails to load */}
-      <CategoryBanner imageUrl={category.image_url} name={category.name} />
+      <div
+        className="flex flex-col justify-end min-h-[350px] bg-gray-50 bg-cover bg-center"
+        style={{ backgroundImage: `url(${category.image_url})` }}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
+          <Breadcrumbs category={category} basePath={basePath} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Breadcrumbs category={category} basePath={basePath} />
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
-        </div>
-
-        {/* Description */}
-        {category.description && (
-          <p className="mb-8 text-gray-600">{category.description}</p>
-        )}
-
-        {/* Subcategories */}
-        {category.children && category.children.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Subcategories
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {category.children.map((child) => (
-                <Link
-                  key={child.id}
-                  href={`${basePath}/c/${child.permalink}`}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition-colors"
-                >
-                  {child.name}
-                </Link>
-              ))}
-            </div>
+          <div className="mb-4">
+            <h1 className="text-4xl font-bold text-gray-900">
+              {category.name}
+            </h1>
           </div>
-        )}
 
+          {/* Description */}
+          {category.description && (
+            <p className="mb-4 text-gray-600">{category.description}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Subcategories */}
+      {category.children && category.children.length > 0 && (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+          <div className="flex flex-wrap gap-2 items-center border-b border-gray-100 pb-4">
+            {category.children.map((child) => (
+              <Link
+                key={child.id}
+                href={`${basePath}/c/${child.permalink}`}
+                className="px-1.5 py-1 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors"
+              >
+                {child.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* Products */}
         <CategoryProductsContent
           categoryId={category.id}

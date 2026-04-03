@@ -4,9 +4,9 @@ export default function CategoryLoading() {
   return (
     <div>
       {/* Banner skeleton */}
-      <div className="w-full h-48 md:h-64 lg:h-80 bg-gray-200 animate-pulse" />
+      <div className="w-full h-48 md:h-64 lg:h-80 bg-gray-50 animate-pulse" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
         {/* Breadcrumb skeleton */}
         <div className="flex items-center gap-2 mb-8">
           <div className="h-4 bg-gray-200 rounded w-12 animate-pulse" />
