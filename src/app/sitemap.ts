@@ -1,4 +1,5 @@
 import type { Category, Media, Product } from "@spree/sdk";
+import { getStoreUrl } from "@/lib/seo";
 import { getClient } from "@/lib/spree";
 
 type ProductWithMedia = Product & {
@@ -144,7 +145,7 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
 
-  const candidate = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+  const candidate = (getStoreUrl() || "").replace(/\/$/, "");
 
   let baseUrl: string;
   try {

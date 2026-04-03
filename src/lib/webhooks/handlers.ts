@@ -10,6 +10,7 @@ import { ShipmentShippedEmail } from "@/lib/emails/shipment-shipped";
 const STORE_NAME = process.env.NEXT_PUBLIC_STORE_NAME || "Store";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ||
   (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
 
 /**

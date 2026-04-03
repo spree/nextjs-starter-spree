@@ -11,7 +11,11 @@ export const SOCIAL_IMAGE_PATH = "/social-image.png";
  * Returns undefined if not set.
  */
 export function getStoreUrl(): string | undefined {
-  return process.env.NEXT_PUBLIC_SITE_URL || undefined;
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ||
+    undefined
+  );
 }
 
 /**
