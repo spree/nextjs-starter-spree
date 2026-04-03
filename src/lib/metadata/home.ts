@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { buildCanonicalUrl, SOCIAL_IMAGE_PATH } from "@/lib/seo";
-import { getStoreDescription, getStoreName, getStoreUrl } from "@/lib/store";
+import {
+  getStoreMetaDescription,
+  getStoreSeoTitle,
+  getStoreUrl,
+} from "@/lib/store";
 
 interface HomeMetadataParams {
   country: string;
@@ -11,9 +15,8 @@ export async function generateHomeMetadata({
   country,
   locale,
 }: HomeMetadataParams): Promise<Metadata> {
-  const storeName = process.env.STORE_SEO_TITLE || getStoreName();
-  const description =
-    process.env.STORE_META_DESCRIPTION || getStoreDescription();
+  const storeName = getStoreSeoTitle();
+  const description = getStoreMetaDescription();
   const storeUrl = getStoreUrl();
   const canonicalUrl = storeUrl
     ? buildCanonicalUrl(storeUrl, `/${country}/${locale}`)

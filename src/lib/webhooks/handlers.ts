@@ -13,7 +13,7 @@ const SITE_URL =
   getStoreUrl() ||
   (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
 
-if (!SITE_URL) {
+if (!SITE_URL && process.env.NODE_ENV === "production") {
   console.warn(
     "[webhooks] NEXT_PUBLIC_SITE_URL is not set — email links will be broken",
   );

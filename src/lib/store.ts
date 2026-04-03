@@ -50,7 +50,7 @@ export function getStoreDescription(): string {
  * Get the default country ISO code (lowercase).
  */
 export function getDefaultCountry(): string {
-  return process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us";
+  return (process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us").toLowerCase();
 }
 
 /**
@@ -58,6 +58,22 @@ export function getDefaultCountry(): string {
  */
 export function getDefaultLocale(): string {
   return process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
+}
+
+/**
+ * Get the SEO title, preferring STORE_SEO_TITLE and falling back to the
+ * store name (NEXT_PUBLIC_STORE_NAME).
+ */
+export function getStoreSeoTitle(): string {
+  return process.env.STORE_SEO_TITLE || getStoreName();
+}
+
+/**
+ * Get the meta description, preferring STORE_META_DESCRIPTION and falling
+ * back to the store description (NEXT_PUBLIC_STORE_DESCRIPTION).
+ */
+export function getStoreMetaDescription(): string {
+  return process.env.STORE_META_DESCRIPTION || getStoreDescription();
 }
 
 /**
