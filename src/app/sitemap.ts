@@ -1,5 +1,5 @@
 import type { Category, Media, Product } from "@spree/sdk";
-import { getStoreUrl } from "@/lib/seo";
+import { ensureProtocol, getStoreUrl } from "@/lib/seo";
 import { getClient } from "@/lib/spree";
 
 type ProductWithMedia = Product & {
@@ -145,7 +145,7 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
 
-  const candidate = (getStoreUrl() || "").replace(/\/$/, "");
+  const candidate = ensureProtocol(getStoreUrl() || "").replace(/\/$/, "");
 
   let baseUrl: string;
   try {
@@ -156,7 +156,8 @@ export default async function sitemap(props: {
     baseUrl = parsed.origin + parsed.pathname.replace(/\/$/, "");
   } catch {
     console.error(
-      "Sitemap generation skipped: NEXT_PUBLIC_SITE_URL is missing or invalid. " +
+      "Sitemap generation skipped: neither NEXT_PUBLIC_SITE_URL nor " +
+        "NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL is set or valid. " +
         "Sitemaps require absolute http(s) URLs.",
     );
     return [];
