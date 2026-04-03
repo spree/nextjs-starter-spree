@@ -57,8 +57,8 @@ import {
   removeDiscountCode,
   removeGiftCard,
   selectDeliveryRate,
+  updateCartMarket,
   updateOrderAddresses,
-  updateOrderMarket,
 } from "@/lib/data/checkout";
 
 const mockOrder = {
@@ -141,12 +141,12 @@ describe("checkout server actions", () => {
     });
   });
 
-  describe("updateOrderMarket", () => {
+  describe("updateCartMarket", () => {
     it("returns success with updated order", async () => {
       const updatedOrder = { ...mockOrder, currency: "EUR", locale: "de" };
       mockClient.carts.update.mockResolvedValue(updatedOrder);
 
-      const result = await updateOrderMarket("order-1", {
+      const result = await updateCartMarket("order-1", {
         currency: "EUR",
         locale: "de",
       });
@@ -164,7 +164,7 @@ describe("checkout server actions", () => {
         new Error("Currency not supported"),
       );
 
-      const result = await updateOrderMarket("order-1", {
+      const result = await updateCartMarket("order-1", {
         currency: "XYZ",
         locale: "en",
       });
@@ -178,7 +178,7 @@ describe("checkout server actions", () => {
     it("returns fallback message for non-Error throws", async () => {
       mockClient.carts.update.mockRejectedValue("unexpected");
 
-      const result = await updateOrderMarket("order-1", {
+      const result = await updateCartMarket("order-1", {
         currency: "EUR",
         locale: "de",
       });

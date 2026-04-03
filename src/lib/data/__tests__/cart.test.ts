@@ -19,6 +19,7 @@ vi.mock("@/lib/spree", () => ({
   getCartToken: vi.fn().mockResolvedValue("order-token-123"),
   getCartId: vi.fn().mockResolvedValue("cart-1"),
   getAccessToken: vi.fn().mockResolvedValue(undefined),
+  getLocaleOptions: vi.fn().mockResolvedValue({ locale: "en", country: "us" }),
   setCartCookies: vi.fn(),
   clearCartCookies: vi.fn(),
   getCartOptions: vi.fn().mockResolvedValue({
@@ -75,6 +76,23 @@ describe("cart server actions", () => {
       const result = await getOrCreateCart();
       expect(result).toBe(mockCart);
       expect(mockClient.carts.create).not.toHaveBeenCalled();
+    });
+
+    it("passes locale options when creating a new cart", async () => {
+      const { getCartId, getLocaleOptions } = await import("@/lib/spree");
+      (getCartId as ReturnType<typeof vi.fn>).mockResolvedValueOnce(undefined);
+      (getLocaleOptions as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        locale: "de",
+        country: "de",
+      });
+      mockClient.carts.create.mockResolvedValue(mockCart);
+
+      await getOrCreateCart();
+
+      expect(mockClient.carts.create).toHaveBeenCalledWith(undefined, {
+        locale: "de",
+        country: "de",
+      });
     });
   });
 

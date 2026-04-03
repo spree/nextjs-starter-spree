@@ -9,6 +9,7 @@ import {
   getCartOptions,
   getCartToken,
   getClient,
+  getLocaleOptions,
   requireCartId,
   setCartCookies,
 } from "@/lib/spree";
@@ -59,12 +60,13 @@ export async function getOrCreateCart(
   if (existing) return existing;
 
   const token = await getAccessToken();
+  const localeOptions = await getLocaleOptions();
   const cartParams =
     params && Object.keys(params).length > 0 ? params : undefined;
-  const cart = await getClient().carts.create(
-    cartParams,
-    token ? { token } : undefined,
-  );
+  const cart = await getClient().carts.create(cartParams, {
+    ...localeOptions,
+    ...(token ? { token } : undefined),
+  });
 
   await setCartCookies(cart.id, cart.token);
 
