@@ -54,7 +54,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         className="flex flex-col justify-end min-h-[350px] bg-gray-50 bg-cover bg-center"
         style={{ backgroundImage: `url(${category.image_url})` }}
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs category={category} basePath={basePath} />
 
           <div className="mb-4">
