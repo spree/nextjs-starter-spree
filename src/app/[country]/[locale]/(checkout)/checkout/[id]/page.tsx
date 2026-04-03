@@ -148,7 +148,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   // Track cart key for sidebar updates
   const cartKey = cart
-    ? `${cart.id}-${cart.total}-${cart.total_quantity}-${cart.gift_card_total ?? ""}`
+    ? `${cart.id}-${cart.total}-${cart.total_quantity}-${cart.amount_due ?? ""}`
     : null;
   const prevOrderKeyRef = useRef(cartKey);
 
