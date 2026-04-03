@@ -8,6 +8,7 @@ export const PRODUCT_PAGE_EXPAND = [
   "media",
   "option_types",
   "custom_fields",
+  "categories.ancestors",
 ];
 
 export const getCachedProduct = cache((slugOrId: string, expand: string[]) =>

@@ -121,6 +121,7 @@ export function buildBreadcrumbJsonLd(
   category: Category,
   basePath: string,
   storeUrl: string,
+  product?: { name: string; slug: string },
 ): Record<string, unknown> {
   const items: Array<{ name: string; url: string }> = [
     { name: "Home", url: buildCanonicalUrl(storeUrl, basePath) },
@@ -144,6 +145,13 @@ export function buildBreadcrumbJsonLd(
     name: category.name,
     url: buildCanonicalUrl(storeUrl, `${basePath}/c/${category.permalink}`),
   });
+
+  if (product) {
+    items.push({
+      name: product.name,
+      url: buildCanonicalUrl(storeUrl, `${basePath}/products/${product.slug}`),
+    });
+  }
 
   return {
     "@context": "https://schema.org",

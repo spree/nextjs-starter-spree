@@ -61,6 +61,7 @@ export function CategoryProductsContent({
     <ProductListingLayout
       {...listing}
       basePath={basePath}
+      categoryId={categoryId}
       onFilterChange={listing.handleFilterChange}
       listId={listId}
       listName={listName}

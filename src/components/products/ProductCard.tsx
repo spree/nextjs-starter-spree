@@ -10,6 +10,7 @@ import { trackSelectItem } from "@/lib/analytics/gtm";
 interface ProductCardProps {
   product: Product;
   basePath?: string;
+  categoryId?: string;
   index?: number;
   listId?: string;
   listName?: string;
@@ -18,6 +19,7 @@ interface ProductCardProps {
 export const ProductCard = memo(function ProductCard({
   product,
   basePath = "",
+  categoryId,
   index,
   listId,
   listName,
@@ -54,7 +56,7 @@ export const ProductCard = memo(function ProductCard({
 
   return (
     <Link
-      href={`${basePath}/products/${product.slug}`}
+      href={`${basePath}/products/${product.slug}${categoryId ? `?category_id=${categoryId}` : ""}`}
       className="group block"
       onClick={handleClick}
     >

@@ -1,9 +1,16 @@
+import type { Category } from "@spree/sdk";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCachedProduct, PRODUCT_PAGE_EXPAND } from "@/lib/data/cached";
 import { generateProductMetadata } from "@/lib/metadata/product";
-import { buildCanonicalUrl, buildProductJsonLd, getStoreUrl } from "@/lib/seo";
+import {
+  buildBreadcrumbJsonLd,
+  buildCanonicalUrl,
+  buildProductJsonLd,
+  getStoreUrl,
+} from "@/lib/seo";
 import { ProductDetails } from "./ProductDetails";
 
 interface ProductPageProps {
@@ -11,6 +18,9 @@ interface ProductPageProps {
     country: string;
     locale: string;
     slug: string;
+  }>;
+  searchParams: Promise<{
+    category_id?: string;
   }>;
 }
 
@@ -21,8 +31,24 @@ export async function generateMetadata({
   return generateProductMetadata({ country, locale, slug });
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+function findBreadcrumbCategory(
+  categories: Category[],
+  categoryId?: string,
+): Category | undefined {
+  if (categories.length === 0) return undefined;
+  if (categoryId) {
+    const match = categories.find((c) => c.id === categoryId);
+    if (match) return match;
+  }
+  return categories[0];
+}
+
+export default async function ProductPage({
+  params,
+  searchParams,
+}: ProductPageProps) {
   const { country, locale, slug } = await params;
+  const { category_id } = await searchParams;
   const basePath = `/${country}/${locale}`;
 
   let product;
@@ -40,11 +66,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
       )
     : undefined;
 
+  const breadcrumbCategory = findBreadcrumbCategory(
+    product.categories || [],
+    category_id,
+  );
+
   return (
     <>
       {canonicalUrl && (
         <JsonLd data={buildProductJsonLd(product, canonicalUrl)} />
       )}
+      {breadcrumbCategory && storeUrl && (
+        <JsonLd
+          data={buildBreadcrumbJsonLd(breadcrumbCategory, basePath, storeUrl, {
+            name: product.name,
+            slug: product.slug,
+          })}
+        />
+      )}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        {breadcrumbCategory && (
+          <Breadcrumbs
+            category={breadcrumbCategory}
+            basePath={basePath}
+            productName={product.name}
+          />
+        )}
+      </div>
       <ProductDetails product={product} basePath={basePath} />
     </>
   );

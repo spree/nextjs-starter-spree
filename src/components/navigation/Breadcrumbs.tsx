@@ -5,9 +5,14 @@ import Link from "next/link";
 interface BreadcrumbsProps {
   category: Category;
   basePath: string;
+  productName?: string;
 }
 
-export function Breadcrumbs({ category, basePath }: BreadcrumbsProps) {
+export function Breadcrumbs({
+  category,
+  basePath,
+  productName,
+}: BreadcrumbsProps) {
   // Build breadcrumb items from ancestors + current category
   const items = [{ name: "Home", href: basePath }];
 
@@ -21,8 +26,17 @@ export function Breadcrumbs({ category, basePath }: BreadcrumbsProps) {
     });
   }
 
-  // Add current category (not a link)
-  items.push({ name: category.name, href: "" });
+  // On PDP, the category is a link and the product name is the last item.
+  // On category pages, the category itself is the last (non-clickable) item.
+  if (productName) {
+    items.push({
+      name: category.name,
+      href: `${basePath}/c/${category.permalink}`,
+    });
+    items.push({ name: productName, href: "" });
+  } else {
+    items.push({ name: category.name, href: "" });
+  }
 
   return (
     <nav aria-label="Breadcrumb" className="mb-6">
