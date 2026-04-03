@@ -1,52 +1,11 @@
 import type { Category, Media, Product } from "@spree/sdk";
+import { ensureProtocol, getStoreName, getStoreUrl } from "@/lib/store";
 
 /**
  * Default social image path (stored in public/).
  * Replace public/social-image.png with your own 1200x630 OG image.
  */
 export const SOCIAL_IMAGE_PATH = "/social-image.png";
-
-/**
- * Get the store URL, preferring NEXT_PUBLIC_SITE_URL and falling back to
- * NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL. Returns undefined if neither
- * variable is set.
- */
-export function getStoreUrl(): string | undefined {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ||
-    undefined
-  );
-}
-
-/**
- * Get the store name from environment variables.
- */
-export function getStoreName(): string {
-  return process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
-}
-
-/**
- * Get the store description from environment variables.
- */
-export function getStoreDescription(): string {
-  return (
-    process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
-    "A modern e-commerce storefront powered by Spree Commerce and Next.js."
-  );
-}
-
-/**
- * Ensure a URL has a protocol prefix.
- * If the URL doesn't start with http:// or https://, prepend https://.
- */
-export function ensureProtocol(url: string): string {
-  const trimmed = url.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed;
-  }
-  return `https://${trimmed}`;
-}
 
 /**
  * Build a full canonical URL from a store URL and a relative path.
@@ -182,7 +141,7 @@ export function buildOrganizationJsonLd(): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: storeName,
-    ...(storeUrl ? { url: ensureProtocol(storeUrl) } : {}),
+    ...(storeUrl ? { url: storeUrl } : {}),
   };
 
   if (logoUrl) {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPolicy } from "@/lib/data/policies";
-import { getStoreName } from "@/lib/seo";
+import { getStoreName } from "@/lib/store";
 
 interface PolicyPageProps {
   params: Promise<{

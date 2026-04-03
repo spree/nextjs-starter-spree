@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
 import { Button } from "@/components/ui/button";
 import { generateHomeMetadata } from "@/lib/metadata/home";
-import { getStoreDescription, getStoreName } from "@/lib/seo";
+import { getStoreDescription, getStoreName } from "@/lib/store";
 
 interface HomePageProps {
   params: Promise<{

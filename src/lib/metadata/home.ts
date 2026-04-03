@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import {
-  buildCanonicalUrl,
-  getStoreDescription,
-  getStoreName,
-  getStoreUrl,
-  SOCIAL_IMAGE_PATH,
-} from "@/lib/seo";
+import { buildCanonicalUrl, SOCIAL_IMAGE_PATH } from "@/lib/seo";
+import { getStoreDescription, getStoreName, getStoreUrl } from "@/lib/store";
 
 interface HomeMetadataParams {
   country: string;

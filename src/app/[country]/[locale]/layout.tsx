@@ -6,9 +6,7 @@ import { StoreProvider } from "@/contexts/StoreContext";
 import { getMarkets } from "@/lib/data/markets";
 import { generateStoreMetadata } from "@/lib/metadata/store";
 import { buildOrganizationJsonLd } from "@/lib/seo";
-
-const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us";
-const DEFAULT_LOCALE = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
+import { getDefaultCountry, getDefaultLocale } from "@/lib/store";
 
 interface CountryLocaleLayoutProps {
   children: React.ReactNode;
@@ -46,8 +44,8 @@ export default async function CountryLocaleLayout({
   if (!isValidCountry) {
     const defaultMarket = markets.find((m) => m.default) ?? markets[0];
     const fallbackCountry =
-      defaultMarket?.countries?.[0]?.iso.toLowerCase() ?? DEFAULT_COUNTRY;
-    const fallbackLocale = defaultMarket?.default_locale ?? DEFAULT_LOCALE;
+      defaultMarket?.countries?.[0]?.iso.toLowerCase() ?? getDefaultCountry();
+    const fallbackLocale = defaultMarket?.default_locale ?? getDefaultLocale();
 
     redirect(`/${fallbackCountry}/${fallbackLocale}`);
   }

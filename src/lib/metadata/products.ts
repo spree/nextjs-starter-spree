@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { buildCanonicalUrl, getStoreUrl } from "@/lib/seo";
+import { buildCanonicalUrl } from "@/lib/seo";
+import { getStoreUrl } from "@/lib/store";
 
 interface ProductsMetadataParams {
   country: string;

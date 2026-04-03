@@ -6,12 +6,18 @@ import { OrderConfirmationEmail } from "@/lib/emails/order-confirmation";
 import { PasswordResetEmail } from "@/lib/emails/password-reset";
 import { sendEmail } from "@/lib/emails/send";
 import { ShipmentShippedEmail } from "@/lib/emails/shipment-shipped";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
-const STORE_NAME = process.env.NEXT_PUBLIC_STORE_NAME || "Store";
+const STORE_NAME = getStoreName();
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ||
+  getStoreUrl() ||
   (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
+
+if (!SITE_URL) {
+  console.warn(
+    "[webhooks] NEXT_PUBLIC_SITE_URL is not set — email links will be broken",
+  );
+}
 
 /**
  * Idempotency guard — prevents duplicate email sends when Spree retries

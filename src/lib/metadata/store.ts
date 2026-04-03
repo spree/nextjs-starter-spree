@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import {
-  ensureProtocol,
-  getStoreDescription,
-  getStoreName,
-  getStoreUrl,
-  SOCIAL_IMAGE_PATH,
-} from "@/lib/seo";
+import { SOCIAL_IMAGE_PATH } from "@/lib/seo";
+import { getStoreDescription, getStoreName, getStoreUrl } from "@/lib/store";
 
 function normalizeOpenGraphLocale(locale: string): string {
   const parts = locale.split(/[-_]/);
@@ -30,7 +25,7 @@ export async function generateStoreMetadata({
   let metadataBaseSpread: Partial<{ metadataBase: URL }> = {};
   if (storeUrl) {
     try {
-      metadataBaseSpread = { metadataBase: new URL(ensureProtocol(storeUrl)) };
+      metadataBaseSpread = { metadataBase: new URL(storeUrl) };
     } catch {
       metadataBaseSpread = {};
     }

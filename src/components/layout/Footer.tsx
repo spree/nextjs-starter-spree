@@ -1,11 +1,10 @@
 import type { Category } from "@spree/sdk";
 import Link from "next/link";
 import { POLICY_LINKS } from "@/lib/constants/policies";
+import { getStoreDescription, getStoreName } from "@/lib/store";
 
-const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
-const storeDescription =
-  process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
-  "A modern e-commerce storefront powered by Spree Commerce and Next.js.";
+const storeName = getStoreName();
+const storeDescription = getStoreDescription();
 
 interface FooterProps {
   rootCategories: Category[];

@@ -7,9 +7,10 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { POLICY_LINKS } from "@/lib/constants/policies";
+import { getStoreName } from "@/lib/store";
 import { extractBasePath } from "@/lib/utils/path";
 
-const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+const storeName = getStoreName();
 
 function CheckoutHeader() {
   const pathname = usePathname();
