@@ -3,7 +3,6 @@
 import type { OptionType, Variant } from "@spree/sdk";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 
 interface VariantPickerProps {
   variants: Variant[];
@@ -130,7 +129,7 @@ export function VariantPicker({
       {optionTypes.map((optionType) => {
         const values = Array.from(optionValuesMap[optionType.id] || []);
         const selectedValue = selectedOptions[optionType.id];
-        const isColor = isColorOption(optionType.name);
+        const isColor = optionType.kind === "color_swatch";
 
         return (
           <div key={optionType.id}>
@@ -168,14 +167,21 @@ export function VariantPicker({
                       disabled={!isAvailable}
                       title={optionValue?.label || value}
                       className={`
-                        w-10 h-10 rounded-lg border-1 transition-all relative
+                        w-10 h-10 rounded-lg border transition-all relative overflow-hidden
                         ${isSelected ? "border-gray-900 ring-2 ring-primary ring-offset-2" : "border-gray-200"}
                         ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}
                         ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
-                      style={{
-                        backgroundColor: resolveColor(value),
-                      }}
+                      style={
+                        optionValue?.image_url
+                          ? {
+                              backgroundImage: `url(${optionValue.image_url})`,
+                              backgroundSize: "cover",
+                            }
+                          : optionValue?.color_code
+                            ? { backgroundColor: optionValue.color_code }
+                            : { backgroundColor: "#e5e7eb" }
+                      }
                     >
                       {!isPurchasable && isAvailable && (
                         <span className="absolute inset-0 flex items-center justify-center">
