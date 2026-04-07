@@ -17,7 +17,7 @@
     "@next/third-parties": "^16.1.6",
     "@react-email/components": "^1.0.10",
     "@sentry/nextjs": "^10.38.0",
-    "@spree/sdk": "^0.20.1",
+    "@spree/sdk": "^0.20.2",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
     "class-variance-authority": "^0.7.1",
