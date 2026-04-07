@@ -13,6 +13,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface LineItem {
   name: string;
@@ -26,8 +27,8 @@ interface LineItem {
 interface OrderCanceledEmailProps {
   orderNumber: string;
   customerName: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
   items: LineItem[];
   displayTotal: string;
 }
@@ -35,8 +36,8 @@ interface OrderCanceledEmailProps {
 export function OrderCanceledEmail({
   orderNumber,
   customerName,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl() || "http://localhost:3001",
   items,
   displayTotal,
 }: OrderCanceledEmailProps) {

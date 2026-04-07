@@ -11,17 +11,18 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface PasswordResetEmailProps {
   resetUrl: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
 }
 
 export function PasswordResetEmail({
   resetUrl,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl() || "http://localhost:3001",
 }: PasswordResetEmailProps) {
   return (
     <Html>

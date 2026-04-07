@@ -14,6 +14,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface ShippedItem {
   name: string;
@@ -35,16 +36,16 @@ interface Shipment {
 interface ShipmentShippedEmailProps {
   orderNumber: string;
   customerName: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
   shipments: Shipment[];
 }
 
 export function ShipmentShippedEmail({
   orderNumber,
   customerName,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl() || "http://localhost:3001",
   shipments,
 }: ShipmentShippedEmailProps) {
   const firstName = customerName.split(" ")[0] || "there";

@@ -13,6 +13,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface LineItem {
   name: string;
@@ -40,8 +41,8 @@ interface Address {
 interface OrderConfirmationEmailProps {
   orderNumber: string;
   customerName: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
   items: LineItem[];
   displayItemTotal: string;
   displayDeliveryTotal: string;
@@ -56,8 +57,8 @@ interface OrderConfirmationEmailProps {
 export function OrderConfirmationEmail({
   orderNumber,
   customerName,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl() || "http://localhost:3001",
   items,
   displayItemTotal,
   displayDeliveryTotal,

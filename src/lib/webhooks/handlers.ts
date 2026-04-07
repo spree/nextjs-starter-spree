@@ -69,8 +69,6 @@ export async function handleOrderCompleted(event: WebhookEvent<Order>) {
     react: createElement(OrderConfirmationEmail, {
       orderNumber: order.number,
       customerName,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
       items: (order.items || []).map((item) => ({
         name: item.name,
         slug: item.slug,
@@ -111,8 +109,6 @@ export async function handleOrderCanceled(event: WebhookEvent<Order>) {
     react: createElement(OrderCanceledEmail, {
       orderNumber: order.number,
       customerName,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
       items: (order.items || []).map((item) => ({
         name: item.name,
         slug: item.slug,
@@ -179,8 +175,6 @@ export async function handleOrderShipped(event: WebhookEvent<Order>) {
     react: createElement(ShipmentShippedEmail, {
       orderNumber: order.number,
       customerName,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
       shipments,
     }),
   });
@@ -225,8 +219,6 @@ export async function handlePasswordReset(
     subject: `${STORE_NAME} Password Reset`,
     react: createElement(PasswordResetEmail, {
       resetUrl,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
     }),
   });
 

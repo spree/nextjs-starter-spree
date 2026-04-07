@@ -5,8 +5,6 @@ export default function Preview() {
     <OrderCanceledEmail
       orderNumber="R987654321"
       customerName="Jane Smith"
-      storeName="Spree Store"
-      storeUrl="http://localhost:3001"
       items={[
         {
           name: "Classic Tote Bag",

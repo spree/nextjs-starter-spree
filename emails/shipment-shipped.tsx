@@ -5,8 +5,6 @@ export default function Preview() {
     <ShipmentShippedEmail
       orderNumber="R987654321"
       customerName="Jane Smith"
-      storeName="Spree Store"
-      storeUrl="http://localhost:3001"
       shipments={[
         {
           number: "H123456789",
