@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StoreProvider } from "@/contexts/StoreContext";
 import { getMarkets } from "@/lib/data/markets";
@@ -82,6 +84,8 @@ export default async function CountryLocaleLayout({
         <AuthProvider>
           <JsonLd data={buildOrganizationJsonLd()} />
           {children}
+          <CartDrawer />
+          <Toaster />
         </AuthProvider>
       </StoreProvider>
     </NextIntlClientProvider>
