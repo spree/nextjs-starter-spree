@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { Suspense } from "react";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { StoreProvider } from "@/contexts/StoreContext";
 import { getMarkets } from "@/lib/data/markets";
 import { generateStoreMetadata } from "@/lib/metadata/store";
@@ -61,16 +65,22 @@ export default async function CountryLocaleLayout({
       messages={messages}
       locale={locale as "en" | "de" | "pl"}
     >
-      <StoreProvider
-        initialCountry={country}
-        initialLocale={locale}
-        initialMarkets={markets}
-      >
-        <AuthProvider>
-          <JsonLd data={buildOrganizationJsonLd()} />
-          {children}
-        </AuthProvider>
-      </StoreProvider>
+      <Suspense>
+        <CartProvider>
+          <StoreProvider
+            initialCountry={country}
+            initialLocale={locale}
+            initialMarkets={markets}
+          >
+            <AuthProvider>
+              <JsonLd data={buildOrganizationJsonLd()} />
+              {children}
+              <CartDrawer />
+              <Toaster />
+            </AuthProvider>
+          </StoreProvider>
+        </CartProvider>
+      </Suspense>
     </NextIntlClientProvider>
   );
 }
