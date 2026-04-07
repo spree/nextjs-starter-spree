@@ -1,8 +1,6 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { Suspense } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -27,29 +25,24 @@ export const metadata: Metadata = {
   description: getStoreDescription(),
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-
   return (
-    <html lang={locale}>
+    <html lang="en">
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}
       >
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <Suspense>
-            <CartProvider>
-              {children}
-              <CartDrawer />
-              <Toaster />
-            </CartProvider>
-          </Suspense>
-        </NextIntlClientProvider>
+        <Suspense>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+            <Toaster />
+          </CartProvider>
+        </Suspense>
       </body>
     </html>
   );

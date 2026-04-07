@@ -7,19 +7,25 @@ function isValidLocale(value: string | undefined): value is Locale {
   return !!value && supportedLocales.includes(value as Locale);
 }
 
-export default getRequestConfig(async ({ requestLocale }) => {
-  // Prefer the route-derived locale (from the [locale] path segment).
-  // Default to "en" if the route segment is invalid or missing.
-  const requested = (await requestLocale) as string | undefined;
-  const locale: Locale = isValidLocale(requested) ? requested : "en";
+export default getRequestConfig(async ({ locale, requestLocale }) => {
+  // 1. Use explicit locale if provided (e.g. getMessages({ locale: 'en' }))
+  // 2. Fall back to requestLocale from the [locale] route segment
+  // 3. Default to "en"
+  let resolvedLocale: Locale;
+
+  if (isValidLocale(locale)) {
+    resolvedLocale = locale;
+  } else {
+    const requested = await requestLocale;
+    resolvedLocale = isValidLocale(requested) ? requested : "en";
+  }
 
   let messages: IntlMessages;
   try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
+    messages = (await import(`../../messages/${resolvedLocale}.json`)).default;
   } catch {
-    // Fallback to English if locale file doesn't exist
     messages = (await import("../../messages/en.json")).default;
   }
 
-  return { locale, messages };
+  return { locale: resolvedLocale, messages };
 });

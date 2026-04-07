@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StoreProvider } from "@/contexts/StoreContext";
@@ -52,16 +54,23 @@ export default async function CountryLocaleLayout({
     redirect(`/${fallbackCountry}/${fallbackLocale}`);
   }
 
+  const messages = await getMessages({ locale: locale as "en" | "de" | "pl" });
+
   return (
-    <StoreProvider
-      initialCountry={country}
-      initialLocale={locale}
-      initialMarkets={markets}
+    <NextIntlClientProvider
+      messages={messages}
+      locale={locale as "en" | "de" | "pl"}
     >
-      <AuthProvider>
-        <JsonLd data={buildOrganizationJsonLd()} />
-        {children}
-      </AuthProvider>
-    </StoreProvider>
+      <StoreProvider
+        initialCountry={country}
+        initialLocale={locale}
+        initialMarkets={markets}
+      >
+        <AuthProvider>
+          <JsonLd data={buildOrganizationJsonLd()} />
+          {children}
+        </AuthProvider>
+      </StoreProvider>
+    </NextIntlClientProvider>
   );
 }
