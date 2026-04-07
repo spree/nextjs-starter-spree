@@ -41,5 +41,5 @@ export default async function OrderDetailPage({
     );
   }
 
-  return <OrderDetail order={order} basePath={basePath} />;
+  return <OrderDetail order={order} basePath={basePath} locale={locale} />;
 }

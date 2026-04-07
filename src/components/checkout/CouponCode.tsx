@@ -91,7 +91,8 @@ export function CouponCode({
     }
   };
 
-  const hasAppliedCode = couponPromotions.length > 0 || !!appliedGiftCard;
+  // Hide the input only when both a coupon and a gift card are applied
+  const hasAllCodesApplied = couponPromotions.length > 0 && !!appliedGiftCard;
 
   return (
     <div>
@@ -153,7 +154,7 @@ export function CouponCode({
       )}
 
       {/* Apply new code — single input for discount codes and gift cards */}
-      {!hasAppliedCode && (
+      {!hasAllCodesApplied && (
         <form onSubmit={handleApply} className="flex gap-2">
           <Input
             type="text"

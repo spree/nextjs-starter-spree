@@ -1,168 +1,29 @@
-"use client";
-
-import type { Address, Fulfillment, Order } from "@spree/sdk";
-import { ChevronLeft, CircleAlert } from "lucide-react";
+import type { Order } from "@spree/sdk";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { AddressBlock } from "@/components/order/AddressBlock";
+import { FulfillmentBlock } from "@/components/order/FulfillmentBlock";
+import { LineItemCard } from "@/components/order/LineItemCard";
 import { OrderTotals } from "@/components/order/OrderTotals";
 import { PaymentInfo } from "@/components/order/PaymentInfo";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { ProductImage } from "@/components/ui/product-image";
-import { formatDateTime, getFulfillmentStatusColor } from "@/lib/utils/format";
-
-function LineItemCard({
-  item,
-  basePath,
-}: {
-  item: Order["items"][number];
-  basePath: string;
-}) {
-  const t = useTranslations("orders");
-  return (
-    <div className="flex gap-4">
-      <Link
-        href={`${basePath}/products/${item.slug}`}
-        className="relative w-24 h-24 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0"
-      >
-        <ProductImage
-          src={item.thumbnail_url}
-          alt={item.name}
-          fill
-          className="object-cover"
-          sizes="96px"
-        />
-      </Link>
-
-      <div className="flex-1 min-w-0">
-        <Link
-          href={`${basePath}/products/${item.slug}`}
-          className="text-sm font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2"
-        >
-          {item.name}
-        </Link>
-        <div className="mt-1 text-sm text-gray-900">{item.display_price}</div>
-        {item.options_text && (
-          <p className="mt-1 text-xs text-gray-500">{item.options_text}</p>
-        )}
-        <p className="mt-1 text-xs text-gray-500">
-          {t("qty", { quantity: item.quantity })}
-        </p>
-        <Link
-          href={`${basePath}/products/${item.slug}`}
-          className="mt-2 inline-block text-sm text-primary hover:text-primary font-medium"
-        >
-          {t("orderAgain")}
-        </Link>
-      </div>
-
-      <div className="text-sm font-medium text-gray-900">
-        {item.display_total}
-      </div>
-    </div>
-  );
-}
-
-function FulfillmentBlock({
-  fulfillment,
-  shipAddress,
-  basePath,
-  lineItems,
-}: {
-  fulfillment: Fulfillment;
-  shipAddress: Address | null;
-  basePath: string;
-  lineItems: Order["items"];
-}) {
-  const t = useTranslations("orders");
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex flex-col lg:flex-row lg:gap-6 gap-4">
-          {shipAddress && (
-            <div className="lg:w-1/2">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                {t("deliveryAddress")}
-              </h3>
-              <AddressBlock address={shipAddress} />
-            </div>
-          )}
-          <div className="lg:w-1/2 lg:flex justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                {t("shippingMethod")}
-              </h3>
-              <p className="text-sm text-gray-900">
-                {fulfillment.delivery_method?.name || t("canceled")}
-              </p>
-              {fulfillment.stock_location && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {t("shippedFrom", {
-                    location: fulfillment.stock_location.name,
-                  })}
-                </p>
-              )}
-              <span
-                className={`inline-flex items-center mt-2 px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getFulfillmentStatusColor(fulfillment.status)}`}
-              >
-                {fulfillment.status}
-              </span>
-            </div>
-            <div className="mt-4 lg:mt-0">
-              {fulfillment.status === "shipped" && fulfillment.tracking_url ? (
-                <Button size="sm" asChild>
-                  <a
-                    href={fulfillment.tracking_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t("trackItems")}
-                  </a>
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" disabled>
-                  {t("trackItems")}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {fulfillment.status === "canceled" && !fulfillment.fulfilled_at && (
-          <Alert variant="destructive" className="mt-3">
-            <CircleAlert />
-            <AlertDescription>{t("shipmentCanceledRefund")}</AlertDescription>
-          </Alert>
-        )}
-        {fulfillment.status !== "canceled" &&
-          fulfillment.status !== "shipped" &&
-          !fulfillment.tracking && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-xl text-sm text-gray-500 text-center">
-              {t("noTrackingInfo")}
-            </div>
-          )}
-      </div>
-
-      <div className="divide-y divide-gray-200">
-        {lineItems.map((item) => (
-          <div key={item.id} className="px-6 py-4">
-            <LineItemCard item={item} basePath={basePath} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+import { formatDateTime } from "@/lib/utils/format";
 
 interface OrderDetailProps {
   order: Order;
   basePath: string;
+  locale: string;
 }
 
-export function OrderDetail({ order, basePath }: OrderDetailProps) {
-  const t = useTranslations("orders");
-  const locale = useLocale();
+export async function OrderDetail({
+  order,
+  basePath,
+  locale,
+}: OrderDetailProps) {
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "orders",
+  });
   const hasFulfillments = order.fulfillments && order.fulfillments.length > 0;
 
   return (
