@@ -1,8 +1,6 @@
-"use client";
-
 import type { Order } from "@spree/sdk";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import {
   formatDate,
@@ -10,14 +8,31 @@ import {
   getPaymentStatusColor,
 } from "@/lib/utils/format";
 
+function getStatusLabel(
+  status: string | null,
+  t: (key: string) => string,
+): string {
+  if (!status) return t("notAvailable");
+  // Map API statuses like "balance_due" to translation keys like "balanceDue"
+  const key = status.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+  try {
+    return t(key);
+  } catch {
+    return status.replace(/_/g, " ");
+  }
+}
+
 interface OrderListProps {
   orders: Order[];
   basePath: string;
+  locale: string;
 }
 
-export function OrderList({ orders, basePath }: OrderListProps) {
-  const t = useTranslations("orders");
-  const locale = useLocale();
+export async function OrderList({ orders, basePath, locale }: OrderListProps) {
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "orders",
+  });
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -66,15 +81,14 @@ export function OrderList({ orders, basePath }: OrderListProps) {
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getPaymentStatusColor(order.payment_status)}`}
                   >
-                    {order.payment_status?.replace("_", " ") ||
-                      t("notAvailable")}
+                    {getStatusLabel(order.payment_status ?? null, t)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium capitalize ${getFulfillmentStatusColor(order.fulfillment_status)}`}
                   >
-                    {order.fulfillment_status || t("notAvailable")}
+                    {getStatusLabel(order.fulfillment_status ?? null, t)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">

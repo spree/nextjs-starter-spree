@@ -45,6 +45,7 @@ function CheckoutFooter() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const t = useTranslations("checkoutLayout");
+  const tp = useTranslations("policies");
 
   return (
     <footer className="py-4 text-xs text-gray-500 border-t border-gray-200 mt-auto flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -58,7 +59,7 @@ function CheckoutFooter() {
           target="_blank"
           className="text-gray-500 underline hover:text-gray-700"
         >
-          {policy.name}
+          {tp(policy.nameKey)}
         </Link>
       ))}
     </footer>

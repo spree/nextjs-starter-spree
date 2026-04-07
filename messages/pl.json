@@ -159,7 +159,8 @@
     "priceRangeBucket": "{min} – {max}",
     "properties": "Właściwości",
     "yes": "Tak",
-    "no": "Nie"
+    "no": "Nie",
+    "optionFilterChip": "{filter}: {value}"
   },
   "navigation": {
     "home": "Strona główna",
@@ -256,7 +257,7 @@
     "deleting": "Usuwanie...",
     "cancel": "Anuluj",
     "edit": "Edytuj",
-    "failedToDeleteAddress": "Nie udało się usunąć adresu",
+    "failedToDeleteAddress": "Nie udało się usunąć adresu. Spróbuj ponownie.",
     "addFirstAddress": "Dodaj swój pierwszy adres",
     "addAddress": "Dodaj adres"
   },
@@ -431,7 +432,7 @@
     "remove": "Usuń",
     "cancel": "Anuluj",
     "confirmRemoveDescription": "Karta {label} kończąca się na {digits} zostanie usunięta z Twojego konta. Tej operacji nie można cofnąć.",
-    "failedToRemove": "Nie udało się usunąć karty: {error}"
+    "failedToRemove": "Nie udało się usunąć karty. Spróbuj ponownie."
   },
   "giftCards": {
     "giftCards": "Karty podarunkowe",
@@ -493,6 +494,10 @@
   },
   "policies": {
     "policyNotFound": "Nie znaleziono regulaminu",
-    "noContent": "Brak treści dla tego regulaminu."
+    "noContent": "Brak treści dla tego regulaminu.",
+    "shippingPolicy": "Polityka wysyłki",
+    "privacyPolicy": "Polityka prywatności",
+    "returnsPolicy": "Polityka zwrotów",
+    "termsOfService": "Regulamin"
   }
 }

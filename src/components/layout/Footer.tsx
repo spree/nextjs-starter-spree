@@ -20,6 +20,7 @@ export async function Footer({
   locale,
 }: FooterProps) {
   const t = await getTranslations({ locale, namespace: "footer" });
+  const tp = await getTranslations({ locale, namespace: "policies" });
 
   return (
     <footer className="bg-primary text-gray-300">
@@ -103,7 +104,7 @@ export async function Footer({
                     href={`${basePath}/policies/${policy.slug}`}
                     className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                   >
-                    {policy.name}
+                    {tp(policy.nameKey)}
                   </Link>
                 </li>
               ))}

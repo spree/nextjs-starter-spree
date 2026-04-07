@@ -40,7 +40,7 @@ export default async function OrdersPage({ params }: OrdersPageProps) {
           </Button>
         </div>
       ) : (
-        <OrderList orders={orders} basePath={basePath} />
+        <OrderList orders={orders} basePath={basePath} locale={locale} />
       )}
     </div>
   );

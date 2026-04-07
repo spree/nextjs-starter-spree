@@ -159,7 +159,8 @@
     "priceRangeBucket": "{min} – {max}",
     "properties": "Properties",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "optionFilterChip": "{filter}: {value}"
   },
   "navigation": {
     "home": "Home",
@@ -256,7 +257,7 @@
     "deleting": "Deleting...",
     "cancel": "Cancel",
     "edit": "Edit",
-    "failedToDeleteAddress": "Failed to delete address",
+    "failedToDeleteAddress": "Failed to delete address. Please try again.",
     "addFirstAddress": "Add Your First Address",
     "addAddress": "Add Address"
   },
@@ -431,7 +432,7 @@
     "remove": "Remove",
     "cancel": "Cancel",
     "confirmRemoveDescription": "This will remove the {label} ending in {digits} from your account. This action cannot be undone.",
-    "failedToRemove": "Failed to remove card: {error}"
+    "failedToRemove": "Failed to remove card. Please try again."
   },
   "giftCards": {
     "giftCards": "Gift Cards",
@@ -493,6 +494,10 @@
   },
   "policies": {
     "policyNotFound": "Policy Not Found",
-    "noContent": "No content available for this policy."
+    "noContent": "No content available for this policy.",
+    "shippingPolicy": "Shipping Policy",
+    "privacyPolicy": "Privacy Policy",
+    "returnsPolicy": "Returns Policy",
+    "termsOfService": "Terms of Service"
   }
 }

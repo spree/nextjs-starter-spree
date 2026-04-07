@@ -116,7 +116,7 @@ export function CreditCardList({ initialCards }: CreditCardListProps) {
     if (result.success) {
       setCards((prev) => prev.filter((card) => card.id !== id));
     } else {
-      alert(t("failedToRemove", { error: result.error }));
+      alert(t("failedToRemove"));
     }
   };
 

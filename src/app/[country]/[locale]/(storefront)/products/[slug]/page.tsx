@@ -90,6 +90,7 @@ export default async function ProductPage({
             category={breadcrumbCategory}
             basePath={basePath}
             productName={product.name}
+            locale={locale}
           />
         )}
       </div>

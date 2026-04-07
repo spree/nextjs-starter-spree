@@ -43,26 +43,34 @@ export function CouponCode({
     setApplying(true);
     setError(null);
 
-    const result = await onApply(code.trim());
-    if (result.success) {
-      setCode("");
-    } else {
-      setError(result.error || t("invalidCode"));
+    try {
+      const result = await onApply(code.trim());
+      if (result.success) {
+        setCode("");
+      } else {
+        setError(result.error || t("invalidCode"));
+      }
+    } catch {
+      setError(t("invalidCode"));
+    } finally {
+      setApplying(false);
     }
-
-    setApplying(false);
   };
 
   const handleRemoveDiscount = async (discountCode: string) => {
     setRemoving(discountCode);
     setError(null);
 
-    const result = await onRemoveDiscount(discountCode);
-    if (!result.success) {
-      setError(result.error || t("failedToRemove"));
+    try {
+      const result = await onRemoveDiscount(discountCode);
+      if (!result.success) {
+        setError(result.error || t("failedToRemove"));
+      }
+    } catch {
+      setError(t("failedToRemove"));
+    } finally {
+      setRemoving(null);
     }
-
-    setRemoving(null);
   };
 
   const handleRemoveGiftCard = async () => {
@@ -71,12 +79,16 @@ export function CouponCode({
     setRemoving(appliedGiftCard.id);
     setError(null);
 
-    const result = await onRemoveGiftCard(appliedGiftCard.id);
-    if (!result.success) {
-      setError(result.error || t("failedToRemoveGiftCard"));
+    try {
+      const result = await onRemoveGiftCard(appliedGiftCard.id);
+      if (!result.success) {
+        setError(result.error || t("failedToRemoveGiftCard"));
+      }
+    } catch {
+      setError(t("failedToRemoveGiftCard"));
+    } finally {
+      setRemoving(null);
     }
-
-    setRemoving(null);
   };
 
   const hasAppliedCode = couponPromotions.length > 0 || !!appliedGiftCard;

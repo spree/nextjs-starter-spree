@@ -157,7 +157,7 @@ export function AddressManagement({
     if (result.success) {
       setAddresses((prev) => prev.filter((addr) => addr.id !== id));
     } else {
-      alert(`${t("failedToDeleteAddress")}: ${result.error}`);
+      alert(t("failedToDeleteAddress"));
     }
   };
 

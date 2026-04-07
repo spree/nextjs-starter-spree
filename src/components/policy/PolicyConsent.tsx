@@ -22,6 +22,7 @@ export function PolicyConsent({
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const t = useTranslations("checkout");
+  const tp = useTranslations("policies");
   return (
     <div className="flex items-start gap-2.5">
       <Checkbox
@@ -53,7 +54,7 @@ export function PolicyConsent({
                   : "text-primary hover:text-primary/70",
               )}
             >
-              {policy.name}
+              {tp(policy.nameKey)}
             </Link>
           </span>
         ))}

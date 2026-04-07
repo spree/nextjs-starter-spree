@@ -1,22 +1,25 @@
-"use client";
-
 import type { Category } from "@spree/sdk";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 interface BreadcrumbsProps {
   category: Category;
   basePath: string;
   productName?: string;
+  locale: string;
 }
 
-export function Breadcrumbs({
+export async function Breadcrumbs({
   category,
   basePath,
   productName,
+  locale,
 }: BreadcrumbsProps) {
-  const t = useTranslations("navigation");
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "navigation",
+  });
   // Build breadcrumb items from ancestors + current category
   const items = [{ name: t("home"), href: basePath }];
 
