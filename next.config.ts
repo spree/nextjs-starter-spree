@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
   },
-  transpilePackages: ["@spree/next", "@spree/sdk"],
+  transpilePackages: ["@spree/sdk"],
   turbopack: {
     root: __dirname,
   },
@@ -22,26 +22,17 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "localhost",
-      },
-      {
-        protocol: "http",
-        hostname: "127.0.0.1",
+        pathname: "/rails/active_storage/**",
       },
       {
         protocol: "https",
-        hostname: "**.amazonaws.com",
+        hostname: "**.vendo.dev",
+        pathname: "/rails/active_storage/**",
       },
       {
         protocol: "https",
-        hostname: "**.cloudfront.net",
-      },
-      {
-        protocol: "https",
-        hostname: "**.digitaloceanspaces.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.blob.core.windows.net",
+        hostname: "**.spree.sh",
+        pathname: "/rails/active_storage/**",
       },
     ],
   },

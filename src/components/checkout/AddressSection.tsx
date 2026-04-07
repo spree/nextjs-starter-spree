@@ -9,6 +9,7 @@ import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
 import { AddressSelector } from "@/components/checkout/AddressSelector";
 import { Input } from "@/components/ui/input";
+import type { User } from "@/contexts/AuthContext";
 import { useCountryStates } from "@/hooks/useCountryStates";
 import {
   type AddressFormData,
@@ -27,8 +28,8 @@ interface AddressSectionProps {
   onEmailBlur: (email: string) => Promise<void>;
   onAutoSave: (data: {
     email: string;
-    ship_address?: AddressParams;
-    ship_address_id?: string;
+    shipping_address?: AddressParams;
+    shipping_address_id?: string;
   }) => Promise<void>;
   onUpdateSavedAddress?: (
     id: string,
@@ -37,13 +38,14 @@ interface AddressSectionProps {
   errors?: string[];
   saving?: boolean;
   processing?: boolean;
+  user?: User | null;
 }
 
 const REQUIRED_ADDRESS_FIELDS: (keyof AddressFormData)[] = [
-  "lastname",
+  "last_name",
   "address1",
   "city",
-  "zipcode",
+  "postal_code",
   "country_iso",
 ];
 
@@ -57,9 +59,12 @@ function buildAutoSaveHash(
   savedAddressId?: string,
 ): string {
   if (savedAddressId) {
-    return JSON.stringify({ email, ship_address_id: savedAddressId });
+    return JSON.stringify({ email, shipping_address_id: savedAddressId });
   }
-  return JSON.stringify({ email, ship_address: formDataToAddress(address) });
+  return JSON.stringify({
+    email,
+    shipping_address: formDataToAddress(address),
+  });
 }
 
 export function AddressSection({
@@ -75,6 +80,7 @@ export function AddressSection({
   errors,
   saving,
   processing,
+  user,
 }: AddressSectionProps) {
   const t = useTranslations("checkout");
   const tc = useTranslations("common");
@@ -83,16 +89,25 @@ export function AddressSection({
   // Determine initial saved address: use the first saved address when the
   // cart doesn't have a shipping address yet (authenticated users).
   const initialSavedAddress =
-    !cart.ship_address && isAuthenticated && initialSavedAddresses.length > 0
+    !cart.shipping_address &&
+    isAuthenticated &&
+    initialSavedAddresses.length > 0
       ? initialSavedAddresses[0]
       : undefined;
 
   const [email, setEmail] = useState(cart.email || "");
-  const [shipAddress, setShipAddress] = useState<AddressFormData>(() =>
-    initialSavedAddress
-      ? addressToFormData(initialSavedAddress)
-      : addressToFormData(cart.ship_address),
-  );
+  const [shipAddress, setShipAddress] = useState<AddressFormData>(() => {
+    if (initialSavedAddress) return addressToFormData(initialSavedAddress);
+    const formData = addressToFormData(cart.shipping_address);
+    // Pre-fill name from user profile when address has no name yet
+    if (!formData.first_name && user?.first_name) {
+      formData.first_name = user.first_name;
+    }
+    if (!formData.last_name && user?.last_name) {
+      formData.last_name = user.last_name;
+    }
+    return formData;
+  });
   const [savedAddresses, setSavedAddresses] = useState(initialSavedAddresses);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
@@ -128,7 +143,7 @@ export function AddressSection({
         try {
           await onAutoSave({
             email: currentEmail,
-            ship_address_id: savedAddrId,
+            shipping_address_id: savedAddrId,
           });
           lastSavedRef.current = hash;
         } catch {
@@ -144,7 +159,7 @@ export function AddressSection({
       try {
         await onAutoSave({
           email: currentEmail,
-          ship_address: formDataToAddress(currentAddress),
+          shipping_address: formDataToAddress(currentAddress),
         });
         lastSavedRef.current = hash;
       } catch {
@@ -292,6 +307,7 @@ export function AddressSection({
             }
             onFieldBlur={handleFieldBlur}
             idPrefix="ship"
+            user={user}
           />
         ) : (
           <div onBlur={handleContainerBlur}>

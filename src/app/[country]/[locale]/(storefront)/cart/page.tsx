@@ -23,7 +23,12 @@ export default function CartPage() {
 
   // Track view_cart when cart loads with items
   useEffect(() => {
-    if (!loading && cart && cart.item_count > 0 && !viewCartFiredRef.current) {
+    if (
+      !loading &&
+      cart &&
+      cart.total_quantity > 0 &&
+      !viewCartFiredRef.current
+    ) {
       trackViewCart(cart);
       viewCartFiredRef.current = true;
     }
@@ -38,7 +43,7 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-32 mb-8"></div>
           <div className="space-y-4">
@@ -53,7 +58,7 @@ export default function CartPage() {
 
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-16">
         <div className="text-center">
           <ShoppingBag
             className="w-24 h-24 text-gray-300 mx-auto"
@@ -76,7 +81,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">
         {t("shoppingCart")}
       </h1>
@@ -148,16 +153,18 @@ export default function CartPage() {
                 <dt className="text-gray-500">{tc("subtotal")}</dt>
                 <dd className="text-gray-900">{cart.display_item_total}</dd>
               </div>
-              {cart.promo_total && parseFloat(cart.promo_total) < 0 && (
+              {cart.discount_total && parseFloat(cart.discount_total) < 0 && (
                 <div className="flex justify-between text-green-600">
                   <dt>{tc("discount")}</dt>
-                  <dd>{cart.display_promo_total}</dd>
+                  <dd>{cart.display_discount_total}</dd>
                 </div>
               )}
-              {cart.ship_total && parseFloat(cart.ship_total) > 0 && (
+              {cart.delivery_total && parseFloat(cart.delivery_total) > 0 && (
                 <div className="flex justify-between">
                   <dt className="text-gray-500">{tc("shipping")}</dt>
-                  <dd className="text-gray-900">{cart.display_ship_total}</dd>
+                  <dd className="text-gray-900">
+                    {cart.display_delivery_total}
+                  </dd>
                 </div>
               )}
               {cart.tax_total && parseFloat(cart.tax_total) > 0 && (
@@ -174,6 +181,32 @@ export default function CartPage() {
                   {cart.display_total}
                 </dd>
               </div>
+
+              {cart.gift_card && parseFloat(cart.gift_card_total) > 0 ? (
+                <div className="flex justify-between text-green-600">
+                  <dt>{t("giftCard")}</dt>
+                  <dd>-{cart.display_gift_card_total}</dd>
+                </div>
+              ) : cart.store_credit_total &&
+                parseFloat(cart.store_credit_total) > 0 ? (
+                <div className="flex justify-between text-green-600">
+                  <dt>{t("storeCredit")}</dt>
+                  <dd>-{cart.display_store_credit_total}</dd>
+                </div>
+              ) : null}
+
+              {cart.amount_due &&
+                cart.amount_due !== cart.total &&
+                parseFloat(cart.amount_due) > 0 && (
+                  <div className="border-t pt-4 flex justify-between">
+                    <dt className="text-lg font-medium text-gray-900">
+                      {t("amountDue")}
+                    </dt>
+                    <dd className="text-lg font-bold text-gray-900">
+                      {cart.display_amount_due}
+                    </dd>
+                  </div>
+                )}
             </dl>
 
             <div className="mt-6 space-y-3">

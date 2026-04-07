@@ -10,7 +10,6 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 import {
   getActiveFilterCount,
   getAvailabilityLabel,
@@ -173,12 +172,12 @@ function MobileOptionSection({
   selectedValues: string[];
   onToggle: (id: string) => void;
 }) {
-  const isColorFilter = isColorOption(filter.presentation);
+  const isColorFilter = filter.kind === "color_swatch";
 
   return (
     <div>
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-        {filter.presentation}
+        {filter.label}
       </h3>
       {isColorFilter ? (
         <div className="space-y-1">
@@ -195,19 +194,26 @@ function MobileOptionSection({
                 }`}
               >
                 <span
-                  className={`w-7 h-7 rounded-lg shrink-0 border-2 transition-colors ${
+                  className={`w-7 h-7 rounded-lg shrink-0 border-2 transition-colors overflow-hidden ${
                     isSelected
                       ? "border-gray-500 ring-2 ring-primary-200"
                       : "border-gray-200"
                   }`}
-                  style={{
-                    backgroundColor: resolveColor(option.presentation),
-                  }}
+                  style={
+                    option.image_url
+                      ? {
+                          backgroundImage: `url(${option.image_url})`,
+                          backgroundSize: "cover",
+                        }
+                      : option.color_code
+                        ? { backgroundColor: option.color_code }
+                        : { backgroundColor: "#e5e7eb" }
+                  }
                 />
                 <span
                   className={`text-sm flex-1 text-left ${isSelected ? "font-medium text-gray-900" : "text-gray-700"}`}
                 >
-                  {option.presentation}
+                  {option.label}
                 </span>
                 <span className="text-xs text-gray-400">({option.count})</span>
                 {isSelected && (
@@ -233,7 +239,7 @@ function MobileOptionSection({
                     : "border-gray-300 text-gray-700 hover:border-gray-400"
                 }`}
               >
-                {option.presentation}
+                {option.label}
               </button>
             );
           })}

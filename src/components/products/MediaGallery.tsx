@@ -1,10 +1,10 @@
 "use client";
 
-import type { Image as SpreeImage } from "@spree/sdk";
+import type { Media } from "@spree/sdk";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductImage } from "@/components/ui/product-image";
 
 /** Tiny 10×10 neutral gray PNG used as a blur placeholder while images load. */
@@ -12,17 +12,29 @@ const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIElEQVQYV2P4////MwwMDAxMDAwMDGQJMJCvkGwNZCsEAGebBwVss9lRAAAAAElFTkSuQmCC";
 
 interface MediaGalleryProps {
-  images: SpreeImage[];
+  images: Media[];
   productName: string;
+  activeIndex?: number | null;
 }
 
-export function MediaGallery({ images, productName }: MediaGalleryProps) {
+export function MediaGallery({
+  images,
+  productName,
+  activeIndex,
+}: MediaGalleryProps) {
   const t = useTranslations("products");
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(activeIndex ?? 0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mainImageErrorUrl, setMainImageErrorUrl] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    if (activeIndex != null) {
+      setSelectedIndex(activeIndex);
+      setMainImageErrorUrl(null);
+    }
+  }, [activeIndex]);
 
   if (images.length === 0) {
     return (

@@ -1,11 +1,14 @@
 "use client";
 
 import type { Cart } from "@spree/sdk";
-import { CircleCheckBig } from "lucide-react";
+import { CircleCheckBig, Package } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { use, useEffect, useRef, useState } from "react";
+import { AddressBlock } from "@/components/order/AddressBlock";
+import { OrderTotals } from "@/components/order/OrderTotals";
+import { PaymentInfo } from "@/components/order/PaymentInfo";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { useCheckout } from "@/contexts/CheckoutContext";
@@ -111,7 +114,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   }
 
   const customerName =
-    order.bill_address?.full_name || order.ship_address?.full_name || "";
+    order.billing_address?.full_name || order.shipping_address?.full_name || "";
 
   return (
     <div className="py-8 max-w-2xl mx-auto">
@@ -167,103 +170,93 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         </ul>
 
         {/* Totals */}
-        <div className="px-6 py-4 border-t border-gray-200 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">{tc("subtotal")}</span>
-            <span className="text-gray-900">{order.display_item_total}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">{tc("shipping")}</span>
-            <span className="text-gray-900">{order.display_ship_total}</span>
-          </div>
-          {order.promo_total && Number.parseFloat(order.promo_total) !== 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">{tc("discount")}</span>
-              <span className="text-green-600">
-                {order.display_promo_total}
-              </span>
+        <div className="px-6 py-4 border-t border-gray-200">
+          <OrderTotals order={order} />
+        </div>
+      </div>
+
+      {/* Shipping & Payment */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+          {/* Shipping Method */}
+          {order.fulfillments && order.fulfillments.length > 0 && (
+            <div className="px-6 py-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                {t("shippingMethod")}
+              </h3>
+              {order.fulfillments.map((fulfillment) => (
+                <div
+                  key={fulfillment.id}
+                  className="flex items-start gap-3 mb-2 last:mb-0"
+                >
+                  <Package className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {fulfillment.delivery_method?.name ||
+                        t("standardShipping")}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {fulfillment.display_cost}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">{tc("tax")}</span>
-            <span className="text-gray-900">{order.display_tax_total}</span>
-          </div>
-          <div className="pt-2 border-t border-gray-200 flex justify-between">
-            <span className="font-semibold text-gray-900">{tc("total")}</span>
-            <span className="font-semibold text-gray-900">
-              {order.display_total}
-            </span>
-          </div>
+
+          {/* Payment Information */}
+          {order.payments && order.payments.length > 0 && (
+            <div className="px-6 py-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                {t("payment")}
+              </h3>
+              {order.payments
+                .filter((p) => p.status !== "void" && p.status !== "invalid")
+                .map((payment) => (
+                  <div key={payment.id} className="mb-3 last:mb-0">
+                    <PaymentInfo
+                      payment={payment}
+                      storeCreditLabel={
+                        order.gift_card ? t("giftCard") : undefined
+                      }
+                    />
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Contact & Addresses */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">
-            {t("contactInformation")}
-          </h2>
-        </div>
-        <div className="px-6 py-4">
-          {order.email && (
-            <p className="text-sm text-gray-600 mb-4">{order.email}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
+          {order.shipping_address && (
+            <div className="px-6 py-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                {t("shippingAddress")}
+              </h3>
+              <AddressBlock address={order.shipping_address} />
+            </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {order.ship_address && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  {t("shippingAddress")}
-                </h3>
-                <div className="text-sm text-gray-600 space-y-0.5">
-                  <p className="font-medium text-gray-800">
-                    {order.ship_address.full_name}
-                  </p>
-                  {order.ship_address.company && (
-                    <p>{order.ship_address.company}</p>
-                  )}
-                  <p>{order.ship_address.address1}</p>
-                  {order.ship_address.address2 && (
-                    <p>{order.ship_address.address2}</p>
-                  )}
-                  <p>
-                    {order.ship_address.city}, {order.ship_address.state_text}{" "}
-                    {order.ship_address.zipcode}
-                  </p>
-                  <p>{order.ship_address.country_name}</p>
-                  {order.ship_address.phone && (
-                    <p className="mt-1">{order.ship_address.phone}</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {order.bill_address && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  {t("billingAddress")}
-                </h3>
-                <div className="text-sm text-gray-600 space-y-0.5">
-                  <p className="font-medium text-gray-800">
-                    {order.bill_address.full_name}
-                  </p>
-                  {order.bill_address.company && (
-                    <p>{order.bill_address.company}</p>
-                  )}
-                  <p>{order.bill_address.address1}</p>
-                  {order.bill_address.address2 && (
-                    <p>{order.bill_address.address2}</p>
-                  )}
-                  <p>
-                    {order.bill_address.city}, {order.bill_address.state_text}{" "}
-                    {order.bill_address.zipcode}
-                  </p>
-                  <p>{order.bill_address.country_name}</p>
-                </div>
-              </div>
-            )}
-          </div>
+          {order.billing_address && (
+            <div className="px-6 py-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                {t("billingAddress")}
+              </h3>
+              <AddressBlock address={order.billing_address} />
+            </div>
+          )}
         </div>
+
+        {order.email && (
+          <div className="px-6 py-3 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              {t("confirmationSentTo")}{" "}
+              <span className="font-medium text-gray-700">{order.email}</span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Actions */}

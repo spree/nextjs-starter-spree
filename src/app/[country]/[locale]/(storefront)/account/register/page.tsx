@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { PolicyConsent } from "@/components/policy/PolicyConsent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +39,8 @@ export default function RegisterPage() {
     useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [policyConsent, setPolicyConsent] = useState(false);
+  const [policyError, setPolicyError] = useState(false);
 
   // Redirect if already authenticated
   // useEffect is needed here to prevent rendering issues.
@@ -61,6 +64,16 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError(t("passwordTooShort"));
+      return;
+    }
+
+    if (!policyConsent) {
+      setPolicyError(true);
+      setError(ta("policyConsentRequired"));
+      document
+        .getElementById("policy-consent")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("policy-consent")?.focus();
       return;
     }
 
@@ -112,7 +125,7 @@ export default function RegisterPage() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  placeholder="John"
+                  placeholder={t("firstNamePlaceholder")}
                 />
               </Field>
 
@@ -124,7 +137,7 @@ export default function RegisterPage() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  placeholder="Doe"
+                  placeholder={t("lastNamePlaceholder")}
                 />
               </Field>
             </div>
@@ -137,7 +150,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
               />
             </Field>
 
@@ -212,6 +225,15 @@ export default function RegisterPage() {
                 </div>
               </div>
             </Field>
+
+            <PolicyConsent
+              checked={policyConsent}
+              onCheckedChange={(checked) => {
+                setPolicyConsent(checked);
+                if (checked) setPolicyError(false);
+              }}
+              error={policyError}
+            />
 
             <div className="w-full">
               <Button

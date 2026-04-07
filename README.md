@@ -1,8 +1,30 @@
 # Spree Storefront
 
-A modern, headless e-commerce storefront built with Next.js 16, React 19, and the [Spree API v3](https://spreecommerce.org/docs/api-reference).
+A modern, headless e-commerce storefront built with Next.js 16, React 19, and [Spree API v3](https://spreecommerce.org/docs/api-reference).
 
-## Tech Stack
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fspree%2Fstorefront&env=SPREE_API_URL&envDefaults=%7B%22SPREE_API_URL%22%3A%22SPREE_PUBLISHABLE_KEY%22%7D)
+
+## Features
+
+- **Product Catalog** - Browse, search, filter products by categories, and use faceted navigation. Search and facet filtering powered by [Meilisearch](https://spreecommerce.org/docs/integrations/search/meilisearch)
+- **Product Details** - View product information with variant selection and media
+- **Shopping Cart** - Add, update, and remove items with server-side state
+- **One-page Checkout** - Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
+- **Stripe payments** - native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments, and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe)
+- **Customer Account** - Full account management:
+  - Profile management
+  - Order history with detailed order view
+  - Address book (create, edit, delete)
+  - Gift Cards and Store Credit
+  - Saved payment methods
+- **Multi-Region Support** - Country, currency, and language switching via URL segments, powered by [Spree Markets](https://spreecommerce.org/docs/developer/core-concepts/markets)
+- **Responsive Design** - Mobile-first Tailwind CSS styling
+- **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
+- **Store Policies** - Policy pages fetched from Spree API, with consent checkboxes on registration and guest checkout
+- **SEO-ready** - meta tags, JSON-LD, OpenGraph - all built in!
+- **Error Tracking** - Sentry integration for both server-side and client-side error monitoring with source maps
+
+## Technology
 
 - **Next.js 16** - App Router, Server Actions, Turbopack
 - **React 19** - Latest React with improved Server Components
@@ -10,40 +32,19 @@ A modern, headless e-commerce storefront built with Next.js 16, React 19, and th
 - **TypeScript** - Full type safety
 - **Sentry** - Error tracking and performance monitoring with source maps
 - [@spree/sdk](https://spreecommerce.org/docs/developer/sdk/quickstart) - Official Spree Commerce SDK
-- [@spree/next](https://spreecommerce.org/docs/developer/storefront/nextjs/spree-next-package) - Server actions, caching, and cookie-based auth
-
-## Features
-
-- **Server-First Architecture** - All API calls happen server-side using Next.js Server Actions
-- **Secure Authentication** - JWT tokens stored in httpOnly cookies (not localStorage)
-- **Product Catalog** - Browse, search, filter products by categories and with faceted navigation
-- **Product Details** - View product information with variant selection and images
-- **Shopping Cart** - Add, update, and remove items with server-side state
-- **One-page Checkout** - Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
-- **Stripe payments** - native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe)
-- **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
-- **Customer Account** - Full account management:
-  - Profile management
-  - Order history with detailed order view
-  - Address book (create, edit, delete)
-  - Gift Cards and Store Credit
-  - Saved payment methods
-- **Multi-Region Support** - Country and currency switching via URL segments
-- **Responsive Design** - Mobile-first Tailwind CSS styling
-- **Error Tracking** - Sentry integration for both server-side and client-side error monitoring with source maps
 
 ## Architecture
 
 This starter follows a **server-first pattern**:
 
-1. **Server Actions** (`src/lib/data/`) - All API calls are made server-side
+1. **Server-First Architecture** - All API calls happen server-side using Next.js Server Actions
 2. **httpOnly Cookies** - Auth tokens and cart tokens are stored securely
 3. **No Client-Side API Calls** - The Spree API key is never exposed to the browser
 4. **Cache Revalidation** - Uses Next.js cache tags for efficient updates
 
 ```
-Browser → Server Action → Spree API
-         (with httpOnly cookies)
+Browser → Server Action → @spree/sdk → Spree API
+         (with httpOnly cookies via src/lib/spree helpers)
 ```
 
 ## Getting Started
@@ -80,11 +81,17 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for sitemap and robots.txt generation (e.g. `https://mystore.com`) | _(required for sitemap)_ |
+| `NEXT_PUBLIC_DEFAULT_COUNTRY` | Default country ISO code, used for initial redirects and as build-time fallback for sitemap generation | `us` |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | Default locale code, used for initial redirects and as build-time fallback for sitemap generation | `en` |
 | `GTM_ID` | Google Tag Manager container ID (e.g. `GTM-XXXXXXX`) | _(disabled)_ |
 | `SENTRY_DSN` | Sentry DSN for error tracking (e.g. `https://key@o0.ingest.sentry.io/0`) | _(disabled)_ |
 | `SENTRY_ORG` | Sentry organization slug (for source map uploads) | _(none)_ |
 | `SENTRY_PROJECT` | Sentry project slug (for source map uploads) | _(none)_ |
 | `SENTRY_AUTH_TOKEN` | Sentry auth token (for source map uploads in CI) | _(none)_ |
+| `SPREE_WEBHOOK_SECRET` | Webhook endpoint secret key (for transactional emails) | _(disabled)_ |
+| `RESEND_API_KEY` | [Resend](https://resend.com) API key for sending emails in production | _(dev: writes to disk)_ |
+| `EMAIL_FROM` | "From" address for transactional emails (e.g. `Store <orders@mystore.com>`) | `orders@example.com` |
 | `SENTRY_SEND_DEFAULT_PII` | Send PII (IP addresses, cookies, user data) to Sentry server-side | `false` |
 | `NEXT_PUBLIC_SENTRY_SEND_DEFAULT_PII` | Send PII to Sentry client-side | `false` |
 
@@ -119,6 +126,7 @@ src/
 │       │   ├── register/       # Registration
 │       │   └── profile/        # Profile settings
 │       ├── cart/               # Shopping cart
+│       ├── policies/           # Store policy pages
 │       ├── products/           # Product listing
 │       │   └── [slug]/         # Product details
 │       ├── t/[...permalink]/   # Taxon/category pages
@@ -131,7 +139,7 @@ src/
 │   ├── AuthContext.tsx         # Client-side auth state
 │   └── CartContext.tsx         # Client-side cart state sync
 └── lib/
-    ├── spree.ts                # SDK client configuration
+    ├── spree/                  # Spree integration helpers (auth, cookies, middleware, webhooks)
     └── data/                   # Server Actions
         ├── addresses.ts        # Address CRUD operations
         ├── cart.ts             # Cart operations
@@ -140,6 +148,7 @@ src/
         ├── credit-cards.ts     # Payment methods
         ├── customer.ts         # Auth & profile
         ├── orders.ts           # Order history
+        ├── policies.ts         # Store policies
         ├── products.ts         # Product queries
         ├── store.ts            # Store configuration
         └── taxonomies.ts       # Categories/taxons
@@ -147,17 +156,17 @@ src/
 
 ## Server Actions
 
-All data fetching is done through server actions in `src/lib/data/`:
+All data fetching is done through server actions in `src/lib/data/`. These call `@spree/sdk` directly, using helpers in `src/lib/spree/` for auth cookies and locale resolution:
 
 ```typescript
-// Products
+// Products — uses getLocaleOptions() for locale-aware reads
 import { getProducts, getProduct, getProductFilters } from '@/lib/data/products'
 
 const products = await getProducts({ limit: 12 })
-const product = await getProduct('product-slug', { expand: ['variants', 'images'] })
-const filters = await getProductFilters({ taxon_id: 'txn_xxx' })
+const product = await getProduct('product-slug', { expand: ['variants', 'media'] })
+const filters = await getProductFilters()
 
-// Cart
+// Cart — uses getCartOptions()/requireCartId() for cart operations
 import { getCart, addToCart, updateCartItem, removeCartItem } from '@/lib/data/cart'
 
 const cart = await getCart()
@@ -165,7 +174,7 @@ await addToCart('var_xxx', 1)
 await updateCartItem('li_xxx', 2)
 await removeCartItem('li_xxx')
 
-// Authentication
+// Authentication — uses withAuthRefresh() for authenticated endpoints
 import { login, register, logout, getCustomer } from '@/lib/data/customer'
 
 const result = await login('user@example.com', 'password')
@@ -179,29 +188,35 @@ await register({
 const customer = await getCustomer()
 await logout()
 
-// Addresses
+// Addresses — uses withAuthRefresh() for customer data
 import { getAddresses, createAddress, updateAddress, deleteAddress } from '@/lib/data/addresses'
 
 const addresses = await getAddresses()
-await createAddress({ firstname: 'John', ... })
+await createAddress({ first_name: 'John', ... })
 ```
 
 ## Authentication Flow
 
 1. User submits login form
-2. Server action calls Spree API with credentials
-3. JWT token is stored in an httpOnly cookie
-4. Subsequent requests include the token automatically
+2. Server action calls `@spree/sdk` to authenticate
+3. JWT token is stored in an httpOnly cookie via `src/lib/spree` cookie helpers
+4. Subsequent requests use `withAuthRefresh()` which reads the token automatically
 5. Token is never accessible to client-side JavaScript
 
 ```typescript
-// src/lib/data/cookies.ts
-export async function setAuthToken(token: string) {
-  const cookieStore = await cookies()
-  cookieStore.set('_spree_jwt', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+// src/lib/data/customer.ts
+import { getClient, withAuthRefresh, setAccessToken, setRefreshToken } from '@/lib/spree'
+
+export async function login(email: string, password: string) {
+  const result = await getClient().auth.login({ email, password })
+  await setAccessToken(result.token)
+  await setRefreshToken(result.refresh_token)
+  return { success: true, user: result.user }
+}
+
+export async function getCustomer() {
+  return withAuthRefresh(async (options) => {
+    return getClient().customer.get(options)
   })
 }
 ```
@@ -211,12 +226,12 @@ export async function setAuthToken(token: string) {
 The storefront supports multiple countries and currencies via URL segments:
 
 ```
-/us/en/products          # US store, English
-/de/de/products          # German store, German
-/uk/en/products          # UK store, English
+/us/en/products          # US Market, English language
+/de/de/products          # European Market, German language
+/uk/en/products          # UK Market, English
 ```
 
-Use the `CountrySwitcher` component to change regions.
+Use the `CountrySwitcher` component to change [Markets](https://spreecommerce.org/docs/developer/core-concepts/markets).
 
 ## Customization
 
@@ -233,7 +248,62 @@ All components are in `src/components/` and can be customized or replaced as nee
 
 ### Data Layer
 
-To customize API behavior, modify the server actions in `src/lib/data/`.
+To customize API behavior, modify the server actions in `src/lib/data/`. These call `@spree/sdk` directly, using helpers in `src/lib/spree/` for auth cookies and locale resolution.
+
+## Transactional Emails
+
+Customer-facing emails (order confirmation, shipping notification, password reset) are rendered in the storefront using [react-email](https://react.email) and sent via [Resend](https://resend.com). The Spree backend delivers events to the storefront via webhooks.
+
+### Setup
+
+1. **Create a webhook endpoint** in Spree Admin → Settings → Developers → Webhooks:
+   - Subscribe to: `order.completed`, `order.canceled`, `order.shipped`, `customer.password_reset_requested`
+   - Copy the secret key
+
+2. **Add environment variables** to `.env.local`:
+
+```env
+SPREE_WEBHOOK_SECRET=your_webhook_endpoint_secret_key
+RESEND_API_KEY=re_your_resend_api_key        # production only
+EMAIL_FROM=Your Store <orders@your-domain.com>  # production only
+```
+
+3. **For local development**, use [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/) to expose your storefront:
+
+```bash
+brew install cloudflared
+cloudflared tunnel --url http://localhost:3001
+```
+
+Use the tunnel URL as the webhook endpoint URL in Spree Admin. No `RESEND_API_KEY` needed in dev — emails are rendered to HTML files in `.next/emails/` with a `file://` link logged to the console.
+
+### Email Templates
+
+Templates are in `src/lib/emails/` as React components:
+
+| Template | Event | Description |
+|----------|-------|-------------|
+| `order-confirmation.tsx` | `order.completed` | Order placed with items, totals, addresses |
+| `order-canceled.tsx` | `order.canceled` | Cancellation notice |
+| `shipment-shipped.tsx` | `order.shipped` | Shipping notification with tracking link |
+| `password-reset.tsx` | `customer.password_reset_requested` | Password reset link |
+
+### Previewing Templates
+
+```bash
+npm run email:dev
+```
+
+Opens the [react-email](https://react.email) dev server with all templates and mock data for live preview.
+
+### How It Works
+
+```
+Spree Backend → Webhook POST → /api/webhooks/spree → render email → send via Resend
+                (signed HMAC)   (signature verified)   (react-email)   (or write to disk in dev)
+```
+
+The webhook route handler (`src/app/api/webhooks/spree/route.ts`) uses `createWebhookHandler` from `src/lib/spree/webhooks` — signature verification and event routing are handled automatically.
 
 ## Deploy on Vercel
 
@@ -243,6 +313,7 @@ The easiest way to deploy is using [Vercel](https://vercel.com/new):
 2. Import the repository in Vercel
 3. Add environment variables:
    - `SPREE_API_URL` and `SPREE_PUBLISHABLE_KEY` (required)
+   - `SPREE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM` (for transactional emails)
    - `GTM_ID` (optional — Google Tag Manager)
    - `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional — for error tracking with readable stack traces)
 4. Deploy

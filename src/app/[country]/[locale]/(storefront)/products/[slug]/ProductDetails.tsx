@@ -1,16 +1,17 @@
 "use client";
 
-import type { Product, Image as SpreeImage, Variant } from "@spree/sdk";
+import type { Media, Product, Variant } from "@spree/sdk";
 import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MediaGallery } from "@/components/products/MediaGallery";
+import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useStore } from "@/contexts/StoreContext";
-import { trackAddToCart } from "@/lib/analytics/gtm";
+import { trackAddToCart, trackViewItem } from "@/lib/analytics/gtm";
 
 interface ProductDetailsProps {
   product: Product;
@@ -22,9 +23,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   const { currency } = useStore();
   const t = useTranslations("products");
 
-  // Filter out master variant from variants list
+  // Filter variants list
   const variants = useMemo(() => {
-    return (product.variants || []).filter((v) => !v.is_master);
+    return (product.variants || []).filter(Boolean);
   }, [product.variants]);
 
   const hasVariants = variants.length > 0;
@@ -32,38 +33,41 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
 
   // Initialize with default variant or first available variant
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(() => {
-    if (product.default_variant && !product.default_variant.is_master) {
+    if (product.default_variant) {
       return product.default_variant;
     }
     if (hasVariants) {
       return variants.find((v) => v.purchasable) || variants[0];
     }
-    // For products without variants, use master variant
-    return product.master_variant || product.default_variant || null;
+    // For products without variants, use default variant
+    return product.default_variant || null;
   });
 
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Get images for the gallery - variant images take priority
-  const galleryImages = useMemo((): SpreeImage[] => {
-    // If selected variant has images, show those
-    if (selectedVariant?.images && selectedVariant.images.length > 0) {
-      return selectedVariant.images;
-    }
-    // Otherwise show product images
-    return product.images || [];
-  }, [selectedVariant, product.images]);
+  // Track product view (analytics - client-only side effect)
+  useEffect(() => {
+    trackViewItem(product, currency);
+  }, [product, currency]);
 
-  // Get pricing info from selected variant or product (using nested price objects)
+  const galleryImages = useMemo((): Media[] => {
+    return product.media || [];
+  }, [product.media]);
+
+  const variantImageIndex = useMemo((): number | null => {
+    if (!selectedVariant) return null;
+    const index = galleryImages.findIndex((m) =>
+      m.variant_ids.includes(selectedVariant.id),
+    );
+    return index >= 0 ? index : null;
+  }, [selectedVariant, galleryImages]);
+
   const price = selectedVariant?.price ?? product.price;
   const originalPrice =
     selectedVariant?.original_price ?? product.original_price;
   const displayPrice = price?.display_amount;
 
-  // Compute on_sale locally: item is on sale if current price is less than original price
-  // or if compare_at_amount is set (manual markdown)
-  // Use amount_in_cents for comparison (integers, no floating point issues)
   const currentAmountCents = price?.amount_in_cents;
   const originalAmountCents = originalPrice?.amount_in_cents;
   const compareAtAmountCents = price?.compare_at_amount_in_cents;
@@ -75,11 +79,11 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
       currentAmountCents != null &&
       currentAmountCents < compareAtAmountCents);
 
-  // Strikethrough price: show original_price if different from current, or compare_at_amount for manual markdowns
   const strikethroughPrice = onSale
-    ? originalPrice?.display_amount !== displayPrice
-      ? originalPrice?.display_amount
-      : price?.display_compare_at_amount
+    ? ((originalPrice?.display_amount &&
+      originalPrice.display_amount !== displayPrice
+        ? originalPrice.display_amount
+        : price?.display_compare_at_amount) ?? null)
     : null;
 
   // Purchasability
@@ -113,11 +117,15 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Media Gallery */}
         <div>
-          <MediaGallery images={galleryImages} productName={product.name} />
+          <MediaGallery
+            images={galleryImages}
+            productName={product.name}
+            activeIndex={variantImageIndex}
+          />
         </div>
 
         {/* Product Info */}
@@ -209,12 +217,16 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 {t("description")}
               </h2>
+              {/* Description is admin-authored HTML from the Spree CMS backend (trusted source) */}
               <div
                 className="text-gray-600 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               />
             </div>
           )}
+
+          {/* Custom Fields */}
+          <ProductCustomFields customFields={product.custom_fields} />
 
           {/* Product Details */}
           <div className="mt-8 border-t pt-8">

@@ -10,20 +10,31 @@ import { Input } from "@/components/ui/input";
 interface CouponCodeProps {
   cart: Cart;
   onApply: (code: string) => Promise<{ success: boolean; error?: string }>;
-  onRemove: (code: string) => Promise<{ success: boolean; error?: string }>;
+  onRemoveDiscount: (
+    code: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onRemoveGiftCard: (
+    giftCardId: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
+export function CouponCode({
+  cart,
+  onApply,
+  onRemoveDiscount,
+  onRemoveGiftCard,
+}: CouponCodeProps) {
   const t = useTranslations("coupon");
   const [code, setCode] = useState("");
   const [applying, setApplying] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const appliedPromotions = cart.promotions || [];
-  const couponPromotions = appliedPromotions.filter(
+  const appliedDiscounts = cart.discounts || [];
+  const couponPromotions = appliedDiscounts.filter(
     (p): p is typeof p & { code: string } => !!p.code,
   );
+  const appliedGiftCard = cart.gift_card;
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,11 +53,11 @@ export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
     setApplying(false);
   };
 
-  const handleRemove = async (code: string) => {
-    setRemoving(code);
+  const handleRemoveDiscount = async (discountCode: string) => {
+    setRemoving(discountCode);
     setError(null);
 
-    const result = await onRemove(code);
+    const result = await onRemoveDiscount(discountCode);
     if (!result.success) {
       setError(result.error || t("failedToRemove"));
     }
@@ -54,11 +65,25 @@ export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
     setRemoving(null);
   };
 
-  const hasAppliedCode = couponPromotions.length > 0;
+  const handleRemoveGiftCard = async () => {
+    if (!appliedGiftCard) return;
+
+    setRemoving(appliedGiftCard.id);
+    setError(null);
+
+    const result = await onRemoveGiftCard(appliedGiftCard.id);
+    if (!result.success) {
+      setError(result.error || t("failedToRemoveGiftCard"));
+    }
+
+    setRemoving(null);
+  };
+
+  const hasAppliedCode = couponPromotions.length > 0 || !!appliedGiftCard;
 
   return (
     <div>
-      {/* Applied codes */}
+      {/* Applied discount codes */}
       {couponPromotions.length > 0 && (
         <div className="space-y-2 mb-3">
           {couponPromotions.map((promotion) => (
@@ -76,12 +101,12 @@ export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
               </div>
               {promotion.code && (
                 <button
-                  onClick={() => handleRemove(promotion.code)}
+                  onClick={() => handleRemoveDiscount(promotion.code)}
                   disabled={removing === promotion.code}
                   aria-label={t("removeCoupon", {
                     code: promotion.code || promotion.name,
                   })}
-                  className="text-gray-400 hover:text-gray-600 p-0.5"
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer p-0.5"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -91,7 +116,31 @@ export function CouponCode({ cart, onApply, onRemove }: CouponCodeProps) {
         </div>
       )}
 
-      {/* Apply new code — Shopify style: input + Apply button in a row */}
+      {/* Applied gift card */}
+      {appliedGiftCard && (
+        <div className="space-y-2 mb-3">
+          <div className="flex items-center justify-between rounded-sm border border-gray-200 bg-gray-50 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-medium text-gray-900">
+                {t("giftCardCode", { code: appliedGiftCard.code })}
+              </span>
+              <span className="text-gray-500">
+                -{cart.display_gift_card_total}
+              </span>
+            </div>
+            <button
+              onClick={handleRemoveGiftCard}
+              disabled={removing === appliedGiftCard.id}
+              aria-label={t("removeGiftCard")}
+              className="text-gray-400 hover:text-gray-600 cursor-pointer p-0.5"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Apply new code — single input for discount codes and gift cards */}
       {!hasAppliedCode && (
         <form onSubmit={handleApply} className="flex gap-2">
           <Input

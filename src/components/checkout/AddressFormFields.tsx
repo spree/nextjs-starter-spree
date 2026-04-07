@@ -57,19 +57,19 @@ export function AddressFormFields({
       <div className="grid grid-cols-2 gap-3">
         <Input
           type="text"
-          id={`${idPrefix}-firstname`}
+          id={`${idPrefix}-first_name`}
           aria-label={t("firstName")}
-          value={address.firstname}
-          onChange={(e) => onChange("firstname", e.target.value)}
+          value={address.first_name}
+          onChange={(e) => onChange("first_name", e.target.value)}
           placeholder={t("firstName")}
         />
         <Input
           type="text"
-          id={`${idPrefix}-lastname`}
+          id={`${idPrefix}-last_name`}
           aria-label={t("lastName")}
           required
-          value={address.lastname}
-          onChange={(e) => onChange("lastname", e.target.value)}
+          value={address.last_name}
+          onChange={(e) => onChange("last_name", e.target.value)}
           placeholder={t("lastName")}
         />
       </div>
@@ -155,11 +155,11 @@ export function AddressFormFields({
         )}
         <Input
           type="text"
-          id={`${idPrefix}-zipcode`}
+          id={`${idPrefix}-postal_code`}
           aria-label={t("zipCode")}
           required
-          value={address.zipcode}
-          onChange={(e) => onChange("zipcode", e.target.value)}
+          value={address.postal_code}
+          onChange={(e) => onChange("postal_code", e.target.value)}
           placeholder={t("zipCode")}
         />
       </div>

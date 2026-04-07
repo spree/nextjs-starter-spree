@@ -1,52 +1,45 @@
 "use server";
 
-import type { SpreeNextOptions } from "@spree/next";
-import {
-  listMarketCountries as _listMarketCountries,
-  listMarkets as _listMarkets,
-  resolveMarket as _resolveMarket,
-} from "@spree/next";
+import type { Market } from "@spree/sdk";
 import { cacheLife, cacheTag } from "next/cache";
-import { cookies } from "next/headers";
+import { getClient, getLocaleOptions } from "@/lib/spree";
 
-const DEFAULT_COUNTRY_COOKIE = "spree_country";
-const DEFAULT_LOCALE_COOKIE = "spree_locale";
-
-async function getLocaleOptions(): Promise<SpreeNextOptions> {
-  const cookieStore = await cookies();
-  return {
-    locale: cookieStore.get(DEFAULT_LOCALE_COOKIE)?.value,
-    country: cookieStore.get(DEFAULT_COUNTRY_COOKIE)?.value,
-  };
-}
-
-async function cachedListMarkets(options: SpreeNextOptions) {
+async function cachedListMarkets(options: {
+  locale?: string;
+  country?: string;
+}) {
   "use cache";
   cacheLife("hours");
   cacheTag("markets");
-  return _listMarkets(options);
+  return getClient().markets.list(options);
 }
 
-async function cachedResolveMarket(country: string, options: SpreeNextOptions) {
+async function cachedResolveMarket(
+  country: string,
+  options: { locale?: string; country?: string },
+) {
   "use cache";
   cacheLife("hours");
   cacheTag("resolved-market");
-  return _resolveMarket(country, options);
+  return getClient().markets.resolve(country, options);
 }
 
 async function cachedListMarketCountries(
   marketId: string,
-  options: SpreeNextOptions,
+  options: { locale?: string; country?: string },
 ) {
   "use cache";
   cacheLife("hours");
   cacheTag("market-countries");
-  return _listMarketCountries(marketId, options);
+  return getClient().markets.countries.list(marketId, options);
 }
 
-export async function getMarkets() {
-  const options = await getLocaleOptions();
-  return cachedListMarkets(options);
+export async function getMarkets(options?: {
+  locale?: string;
+  country?: string;
+}): Promise<{ data: Market[] }> {
+  const resolvedOptions = options ?? (await getLocaleOptions());
+  return cachedListMarkets(resolvedOptions);
 }
 
 export async function resolveMarket(country: string) {

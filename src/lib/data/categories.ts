@@ -1,26 +1,39 @@
 "use server";
 
-import {
-  getCategory as _getCategory,
-  listCategories,
-  listCategoryProducts,
-} from "@spree/next";
 import type { CategoryListParams, ProductListParams } from "@spree/sdk";
+import { cacheLife, cacheTag } from "next/cache";
+import { getClient, getLocaleOptions } from "@/lib/spree";
+
+async function cachedListCategories(
+  params: CategoryListParams | undefined,
+  options: { locale?: string; country?: string },
+) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("categories");
+  return getClient().categories.list(params, options);
+}
 
 export async function getCategories(params?: CategoryListParams) {
-  return listCategories(params);
+  const options = await getLocaleOptions();
+  return cachedListCategories(params, options);
 }
 
 export async function getCategory(
   idOrPermalink: string,
   params?: CategoryListParams,
 ) {
-  return _getCategory(idOrPermalink, params);
+  const options = await getLocaleOptions();
+  return getClient().categories.get(idOrPermalink, params, options);
 }
 
 export async function getCategoryProducts(
   categoryId: string,
   params?: ProductListParams,
 ) {
-  return listCategoryProducts(categoryId, params);
+  const options = await getLocaleOptions();
+  return getClient().products.list(
+    { ...params, in_category: categoryId },
+    options,
+  );
 }

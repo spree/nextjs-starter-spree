@@ -11,6 +11,7 @@ import { trackSelectItem } from "@/lib/analytics/gtm";
 interface ProductCardProps {
   product: Product;
   basePath?: string;
+  categoryId?: string;
   index?: number;
   listId?: string;
   listName?: string;
@@ -19,6 +20,7 @@ interface ProductCardProps {
 export const ProductCard = memo(function ProductCard({
   product,
   basePath = "",
+  categoryId,
   index,
   listId,
   listName,
@@ -30,9 +32,6 @@ export const ProductCard = memo(function ProductCard({
   // Current display price
   const displayPrice = product.price?.display_amount;
 
-  // Compute on_sale locally: product is on sale if current price is less than original price
-  // or if compare_at_amount is set (manual markdown)
-  // Use amount_in_cents for comparison (integers, no floating point issues)
   const currentAmountCents = product.price?.amount_in_cents;
   const originalAmountCents = product.original_price?.amount_in_cents;
   const compareAtAmountCents = product.price?.compare_at_amount_in_cents;
@@ -44,11 +43,11 @@ export const ProductCard = memo(function ProductCard({
       currentAmountCents != null &&
       currentAmountCents < compareAtAmountCents);
 
-  // Strikethrough price: show original_price if different from current, or compare_at_amount for manual markdowns
   const strikethroughPrice = onSale
-    ? product.original_price?.display_amount !== displayPrice
-      ? product.original_price?.display_amount
-      : product.price?.display_compare_at_amount
+    ? ((product.original_price?.display_amount &&
+      product.original_price.display_amount !== displayPrice
+        ? product.original_price.display_amount
+        : product.price?.display_compare_at_amount) ?? null)
     : null;
 
   const handleClick = () => {
@@ -59,7 +58,7 @@ export const ProductCard = memo(function ProductCard({
 
   return (
     <Link
-      href={`${basePath}/products/${product.slug}`}
+      href={`${basePath}/products/${product.slug}${categoryId ? `?category_id=${categoryId}` : ""}`}
       className="group block"
       onClick={handleClick}
     >
@@ -70,7 +69,7 @@ export const ProductCard = memo(function ProductCard({
           alt={product.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 300px"
           iconClassName="w-16 h-16"
         />
         {onSale && (

@@ -18,12 +18,26 @@
     "continueShopping": "Weiter einkaufen",
     "orderSummary": "Bestellübersicht",
     "selectCountry": "Land auswählen",
-    "myAccount": "Mein Konto"
+    "myAccount": "Mein Konto",
+    "giftCard": "Geschenkkarte",
+    "storeCredit": "Guthaben",
+    "amountDue": "Fälliger Betrag"
   },
   "header": {
     "categories": "Kategorien",
     "openCart": "Warenkorb öffnen",
-    "account": "Konto"
+    "account": "Konto",
+    "closeMenu": "Menü schließen",
+    "openMenu": "Menü öffnen",
+    "menu": "Menü",
+    "selectCountry": "Land auswählen",
+    "home": "Startseite",
+    "allProducts": "Alle Produkte",
+    "contact": "Kontakt",
+    "viewAllCategory": "Alle {category} anzeigen",
+    "openSearch": "Suche öffnen",
+    "closeSearch": "Suche schließen",
+    "myAccount": "Mein Konto"
   },
   "footer": {
     "description": "Ein moderner E-Commerce-Shop, betrieben von Spree Commerce und Next.js.",
@@ -34,6 +48,8 @@
     "myAccount": "Mein Konto",
     "orderHistory": "Bestellverlauf",
     "cart": "Warenkorb",
+    "policies": "Richtlinien",
+    "poweredBy": "Betrieben von",
     "copyright": "© {year} {storeName}. Unterstützt durch Spree Commerce."
   },
   "home": {
@@ -65,7 +81,10 @@
     "proceedToCheckout": "Zur Kasse gehen",
     "itemCount": "({count, plural, one {# Artikel} other {# Artikel}})",
     "shippingCalculatedAtCheckout": "Wird an der Kasse berechnet",
-    "removeItemLabel": "{name} entfernen"
+    "removeItemLabel": "{name} entfernen",
+    "giftCard": "Geschenkkarte",
+    "storeCredit": "Guthaben",
+    "amountDue": "Fälliger Betrag"
   },
   "products": {
     "allProducts": "Alle Produkte",
@@ -137,7 +156,10 @@
     "openImageZoom": "Bildzoom öffnen",
     "priceUnder": "Unter {price}",
     "priceAbove": "{price}+",
-    "priceRangeBucket": "{min} – {max}"
+    "priceRangeBucket": "{min} – {max}",
+    "properties": "Eigenschaften",
+    "yes": "Ja",
+    "no": "Nein"
   },
   "navigation": {
     "home": "Startseite",
@@ -201,7 +223,11 @@
     "paymentProcessingError": "Bei der Zahlung ist ein Fehler aufgetreten.",
     "failedToCompletePaymentSession": "Zahlungssitzung konnte nicht abgeschlossen werden",
     "noOrder": "Keine Bestellung",
-    "confirmingPayment": "Ihre Zahlung wird bestätigt..."
+    "confirmingPayment": "Ihre Zahlung wird bestätigt...",
+    "policyConsentRequired": "Sie müssen den Geschäftsrichtlinien zustimmen, bevor Sie Ihre Bestellung aufgeben",
+    "iAgreeToThe": "Ich stimme zu",
+    "policySeparatorComma": ", ",
+    "policySeparatorAnd": "und"
   },
   "address": {
     "firstName": "Vorname",
@@ -225,8 +251,14 @@
     "saveAddress": "Adresse speichern",
     "failedToSave": "Adresse konnte nicht gespeichert werden",
     "deleteAddressTitle": "Adresse löschen?",
+    "deleteAddressConfirmation": "Diese Adresse wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
     "delete": "Löschen",
-    "deleting": "Wird gelöscht..."
+    "deleting": "Wird gelöscht...",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "failedToDeleteAddress": "Adresse konnte nicht gelöscht werden",
+    "addFirstAddress": "Erste Adresse hinzufügen",
+    "addAddress": "Adresse hinzufügen"
   },
   "account": {
     "myAccount": "Mein Konto",
@@ -259,7 +291,8 @@
     "setAsDefault": "Als Standard festlegen",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen",
-    "forgotPassword": "Passwort vergessen?"
+    "forgotPassword": "Passwort vergessen?",
+    "policyConsentRequired": "Sie müssen den Geschäftsrichtlinien zustimmen, um ein Konto zu erstellen"
   },
   "register": {
     "createAccount": "Konto erstellen",
@@ -273,7 +306,10 @@
     "signIn": "Anmelden",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
     "firstName": "Vorname",
-    "lastName": "Nachname"
+    "lastName": "Nachname",
+    "firstNamePlaceholder": "Max",
+    "lastNamePlaceholder": "Mustermann",
+    "emailPlaceholder": "sie@beispiel.de"
   },
   "orders": {
     "orderHistory": "Bestellverlauf",
@@ -323,7 +359,8 @@
     "unknownShipmentStatus": "Unbekannt",
     "orderTitle": "Bestellung #{number}",
     "shipmentCanceledRefund": "Sendung storniert — eine Rückerstattung wurde veranlasst.",
-    "shippingMethodUnavailable": "Nicht verfügbar"
+    "shippingMethodUnavailable": "Nicht verfügbar",
+    "totalColumn": "Gesamt"
   },
   "orderPlaced": {
     "thanksForOrder": "Vielen Dank für Ihre Bestellung, {name}!",
@@ -336,7 +373,12 @@
     "billingAddress": "Rechnungsadresse",
     "orderNotFound": "Bestellung nicht gefunden",
     "failedToLoad": "Bestelldetails konnten nicht geladen werden.",
-    "qty": "Menge: {quantity}"
+    "qty": "Menge: {quantity}",
+    "shippingMethod": "Versandart",
+    "standardShipping": "Standardversand",
+    "payment": "Zahlung",
+    "giftCard": "Geschenkkarte",
+    "confirmationSentTo": "Bestätigung gesendet an"
   },
   "coupon": {
     "placeholder": "Geschenkkarte oder Rabattcode",
@@ -345,7 +387,10 @@
     "invalidCode": "Ungültiger Gutscheincode",
     "applyFailed": "Gutschein konnte nicht angewendet werden. Bitte versuchen Sie es erneut.",
     "failedToRemove": "Gutscheincode konnte nicht entfernt werden",
+    "failedToRemoveGiftCard": "Geschenkkarte konnte nicht entfernt werden",
     "removeCoupon": "Gutschein {code} entfernen",
+    "removeGiftCard": "Geschenkkarte entfernen",
+    "giftCardCode": "Geschenkkarte {code}",
     "applying": "Wird angewendet...",
     "removing": "Wird entfernt..."
   },
@@ -382,7 +427,11 @@
     "removePaymentMethodTitle": "Zahlungsmethode entfernen?",
     "endingIn": "endet auf",
     "cardEndingIn": "{label} endet auf {digits}",
-    "cardExpires": "Gültig bis {month}/{year}"
+    "cardExpires": "Gültig bis {month}/{year}",
+    "remove": "Entfernen",
+    "cancel": "Abbrechen",
+    "confirmRemoveDescription": "Die {label} mit Endung {digits} wird von Ihrem Konto entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "failedToRemove": "Karte konnte nicht entfernt werden: {error}"
   },
   "giftCards": {
     "giftCards": "Geschenkkarten",
@@ -406,6 +455,8 @@
     "copyCodeToClipboard": "Code in die Zwischenablage kopieren",
     "expiresOn": "Läuft ab am {date}",
     "percentUsed": "{percent}% verwendet",
+    "activeGiftCardsCount": "Aktive Geschenkkarten ({count})",
+    "expiredRedeemedCount": "Abgelaufen / Eingelöst ({count})",
     "giftCardsHelpText": "Geschenkkarten können beim Checkout zum Bezahlen Ihrer Bestellungen verwendet werden. Das verbleibende Guthaben wird für zukünftige Einkäufe gespeichert."
   },
   "forgotPassword": {
@@ -439,5 +490,9 @@
     "success": "Passwort erfolgreich zurückgesetzt",
     "successDescription": "Ihr Passwort wurde aktualisiert. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
     "signIn": "Anmelden"
+  },
+  "policies": {
+    "policyNotFound": "Richtlinie nicht gefunden",
+    "noContent": "Für diese Richtlinie sind keine Inhalte verfügbar."
   }
 }

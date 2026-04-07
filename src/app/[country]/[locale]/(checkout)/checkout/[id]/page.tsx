@@ -8,12 +8,15 @@ import { useTranslations } from "next-intl";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
 import { CouponCode } from "@/components/checkout/CouponCode";
+import { DeliveryMethodSection } from "@/components/checkout/DeliveryMethodSection";
 import {
   PaymentSection,
   type PaymentSectionHandle,
 } from "@/components/checkout/PaymentSection";
-import { ShippingMethodSection } from "@/components/checkout/ShippingMethodSection";
 import { Summary } from "@/components/checkout/Summary";
+import { PolicyConsent } from "@/components/policy/PolicyConsent";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCheckout } from "@/contexts/CheckoutContext";
 import {
   trackAddPaymentInfo,
@@ -22,10 +25,11 @@ import {
 } from "@/lib/analytics/gtm";
 import { getAddresses, updateAddress } from "@/lib/data/addresses";
 import {
-  applyCouponCode,
+  applyCode,
   getCheckoutOrder,
-  removeCouponCode,
-  selectShippingRate,
+  removeDiscountCode,
+  removeGiftCard,
+  selectDeliveryRate,
   updateOrderAddresses,
 } from "@/lib/data/checkout";
 import { isAuthenticated as checkAuth } from "@/lib/data/cookies";
@@ -48,15 +52,17 @@ interface CheckoutPageProps {
 // Sidebar summary component
 function CheckoutSidebar({
   cart,
-  onApplyCoupon,
-  onRemoveCoupon,
+  onApplyCode,
+  onRemoveDiscount,
+  onRemoveGiftCard,
 }: {
   cart: Cart;
-  onApplyCoupon: (
+  onApplyCode: (code: string) => Promise<{ success: boolean; error?: string }>;
+  onRemoveDiscount: (
     code: string,
   ) => Promise<{ success: boolean; error?: string }>;
-  onRemoveCoupon: (
-    code: string,
+  onRemoveGiftCard: (
+    giftCardId: string,
   ) => Promise<{ success: boolean; error?: string }>;
 }) {
   return (
@@ -65,8 +71,9 @@ function CheckoutSidebar({
       <div className="mt-6 pt-6 border-t border-gray-200">
         <CouponCode
           cart={cart}
-          onApply={onApplyCoupon}
-          onRemove={onRemoveCoupon}
+          onApply={onApplyCode}
+          onRemoveDiscount={onRemoveDiscount}
+          onRemoveGiftCard={onRemoveGiftCard}
         />
       </div>
     </>
@@ -82,6 +89,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const { setSummaryContent } = useCheckout();
   const t = useTranslations("checkout");
   const tc = useTranslations("common");
+  const { user, loading: authLoading } = useAuth();
 
   // Pick up payment errors from the confirm-payment redirect
   const paymentError = searchParams.get("payment_error");
@@ -97,8 +105,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const [sectionErrors, setSectionErrors] = useState<Record<string, string[]>>(
     {},
   );
+  const [policyConsent, setPolicyConsent] = useState(false);
+  const [policyError, setPolicyError] = useState(false);
 
-  const shipments = cart?.shipments ?? [];
+  const fulfillments = cart?.fulfillments ?? [];
 
   const cartRef = useRef(cart);
   cartRef.current = cart;
@@ -109,25 +119,37 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const beginCheckoutFiredRef = useRef(false);
   const paymentRef = useRef<PaymentSectionHandle>(null);
 
-  // Handle coupon code application
-  const handleApplyCoupon = useCallback(async (code: string) => {
+  // Handle code application (discount code or gift card — single input field)
+  const handleApplyCode = useCallback(async (code: string) => {
     const currentOrder = cartRef.current;
     if (!currentOrder)
       return { success: false, error: tRef.current("noOrder") };
 
-    const result = await applyCouponCode(currentOrder.id, code);
+    const result = await applyCode(currentOrder.id, code);
     if (result.success && result.cart) {
       setCart(result.cart);
     }
     return result;
   }, []);
 
-  const handleRemoveCoupon = useCallback(async (couponCode: string) => {
+  const handleRemoveDiscount = useCallback(async (discountCode: string) => {
     const currentOrder = cartRef.current;
     if (!currentOrder)
       return { success: false, error: tRef.current("noOrder") };
 
-    const result = await removeCouponCode(currentOrder.id, couponCode);
+    const result = await removeDiscountCode(currentOrder.id, discountCode);
+    if (result.success && result.cart) {
+      setCart(result.cart);
+    }
+    return result;
+  }, []);
+
+  const handleRemoveGiftCard = useCallback(async (giftCardId: string) => {
+    const currentOrder = cartRef.current;
+    if (!currentOrder)
+      return { success: false, error: tRef.current("noOrder") };
+
+    const result = await removeGiftCard(currentOrder.id, giftCardId);
     if (result.success && result.cart) {
       setCart(result.cart);
     }
@@ -135,7 +157,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   }, []);
 
   // Track cart key for sidebar updates
-  const cartKey = cart ? `${cart.id}-${cart.updated_at}` : null;
+  const cartKey = cart
+    ? `${cart.id}-${cart.total}-${cart.total_quantity}-${cart.amount_due ?? ""}`
+    : null;
   const prevOrderKeyRef = useRef(cartKey);
 
   useEffect(() => {
@@ -151,14 +175,22 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       setSummaryContent(
         <CheckoutSidebar
           cart={cart}
-          onApplyCoupon={handleApplyCoupon}
-          onRemoveCoupon={handleRemoveCoupon}
+          onApplyCode={handleApplyCode}
+          onRemoveDiscount={handleRemoveDiscount}
+          onRemoveGiftCard={handleRemoveGiftCard}
         />,
       );
     } else {
       setSummaryContent(null);
     }
-  }, [cart, cartKey, setSummaryContent, handleApplyCoupon, handleRemoveCoupon]);
+  }, [
+    cart,
+    cartKey,
+    setSummaryContent,
+    handleApplyCode,
+    handleRemoveDiscount,
+    handleRemoveGiftCard,
+  ]);
 
   // Load cart and market-scoped countries
   const loadOrder = useCallback(async () => {
@@ -239,8 +271,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   const handleAutoSave = useCallback(
     async (addressData: {
       email: string;
-      ship_address?: AddressParams;
-      ship_address_id?: string;
+      shipping_address?: AddressParams;
+      shipping_address_id?: string;
     }) => {
       const currentOrder = cartRef.current;
       if (!currentOrder) return;
@@ -251,11 +283,11 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       try {
         const updateResult = await updateOrderAddresses(currentOrder.id, {
           email: addressData.email,
-          ...(addressData.ship_address && {
-            ship_address: addressData.ship_address,
+          ...(addressData.shipping_address && {
+            shipping_address: addressData.shipping_address,
           }),
-          ...(addressData.ship_address_id && {
-            ship_address_id: addressData.ship_address_id,
+          ...(addressData.shipping_address_id && {
+            shipping_address_id: addressData.shipping_address_id,
           }),
         });
 
@@ -276,9 +308,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     [],
   );
 
-  // Handle shipping rate selection
-  const handleShippingRateSelect = useCallback(
-    async (shipmentId: string, rateId: string) => {
+  // Handle delivery rate selection
+  const handleDeliveryRateSelect = useCallback(
+    async (fulfillmentId: string, rateId: string) => {
       const currentOrder = cartRef.current;
       if (!currentOrder) return;
 
@@ -289,9 +321,9 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       let trackingRateName: string | undefined;
 
       try {
-        const result = await selectShippingRate(
+        const result = await selectDeliveryRate(
           currentOrder.id,
-          shipmentId,
+          fulfillmentId,
           rateId,
         );
         if (!result.success) {
@@ -299,8 +331,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         } else if (result.cart) {
           setCart(result.cart);
 
-          const selectedRate = result.cart.shipments
-            ?.flatMap((s) => s.shipping_rates || [])
+          const selectedRate = result.cart.fulfillments
+            ?.flatMap((s) => s.delivery_rates || [])
             ?.find((r) => r.id === rateId);
           trackingOrder = result.cart;
           trackingRateName = selectedRate?.name;
@@ -324,7 +356,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   // Handle billing address update (called by PaymentSection before gateway confirmation)
   const handleUpdateBillingAddress = useCallback(
-    async (data: { bill_address: AddressParams }): Promise<boolean> => {
+    async (data: {
+      billing_address?: AddressParams;
+      use_shipping?: boolean;
+    }): Promise<boolean> => {
       const currentOrder = cartRef.current;
       if (!currentOrder) return false;
 
@@ -332,7 +367,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
       try {
         const updateResult = await updateOrderAddresses(currentOrder.id, {
-          bill_address: data.bill_address,
+          ...(data.billing_address && {
+            billing_address: data.billing_address,
+          }),
+          ...(data.use_shipping && { use_shipping: data.use_shipping }),
         });
 
         if (!updateResult.success) {
@@ -441,6 +479,16 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setSectionErrors({});
     setError(null);
 
+    if (!isAuthenticated && !policyConsent) {
+      setPolicyError(true);
+      setError(t("policyConsentRequired"));
+      document
+        .getElementById("policy-consent")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("policy-consent")?.focus();
+      return;
+    }
+
     // Refresh cart to get latest requirements
     const freshOrder = await getCheckoutOrder(cart.id);
     if (!freshOrder) {
@@ -496,7 +544,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
   };
 
   // Loading state
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="animate-pulse space-y-6">
         <div className="h-8 bg-gray-200 rounded w-1/3" />
@@ -552,12 +600,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     <div>
       {/* Error banner */}
       {error && (
-        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-6">
-          <p className="text-sm text-red-700 flex items-center gap-2">
-            <CircleAlert className="h-4 w-4 flex-shrink-0" />
-            {error}
-          </p>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Contact + Delivery */}
@@ -577,14 +623,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           errors={sectionErrors.address}
           saving={saving}
           processing={processing}
+          user={user}
         />
       </div>
 
       {/* Shipping method */}
       <div id="checkout-section-shipping" className="mt-6">
-        <ShippingMethodSection
-          shipments={shipments}
-          onShippingRateSelect={handleShippingRateSelect}
+        <DeliveryMethodSection
+          fulfillments={fulfillments}
+          onDeliveryRateSelect={handleDeliveryRateSelect}
           processing={processing}
           errors={sectionErrors.shipping}
         />
@@ -605,6 +652,20 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           errors={sectionErrors.payment}
         />
       </div>
+
+      {/* Policy consent — guests only, authenticated users accepted at registration */}
+      {!isAuthenticated && (
+        <div className="mt-6">
+          <PolicyConsent
+            checked={policyConsent}
+            onCheckedChange={(checked) => {
+              setPolicyConsent(checked);
+              if (checked) setPolicyError(false);
+            }}
+            error={policyError}
+          />
+        </div>
+      )}
 
       {/* Pay now button — Shopify: black, tall, minimal radius, bold */}
       <button

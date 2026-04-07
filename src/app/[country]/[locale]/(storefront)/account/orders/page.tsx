@@ -1,74 +1,23 @@
-"use client";
-
-import type { Order } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { connection } from "next/server";
+import { getTranslations } from "next-intl/server";
+import { OrderList } from "@/components/account/OrderList";
 import { Button } from "@/components/ui/button";
 import { getOrders } from "@/lib/data/orders";
-import {
-  getPaymentStatusColor,
-  getShipmentStatusColor,
-  PAYMENT_STATE_KEY,
-  SHIPMENT_STATE_KEY,
-} from "@/lib/utils/order-status";
-import { extractBasePath } from "@/lib/utils/path";
 
-function formatDate(dateString: string | null, locale: string): string {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString(locale, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+interface OrdersPageProps {
+  params: Promise<{ country: string; locale: string }>;
 }
 
-export default function OrdersPage() {
-  const t = useTranslations("orders");
-  const tc = useTranslations("common");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const basePath = extractBasePath(pathname);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function OrdersPage({ params }: OrdersPageProps) {
+  await connection();
+  const t = await getTranslations("orders");
+  const { country, locale } = await params;
+  const basePath = `/${country}/${locale}`;
 
-  useEffect(() => {
-    async function loadOrders() {
-      try {
-        const response = await getOrders({ limit: 50 });
-        // Filter to only show completed orders
-        setOrders(response.data.filter((o) => o.completed_at !== null));
-      } catch {
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadOrders();
-  }, []);
-
-  if (loading) {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          {t("orderHistory")}
-        </h1>
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border border-gray-200 p-6"
-            >
-              <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const response = await getOrders({ limit: 50 });
+  const orders = response.data.filter((order) => order.completed_at !== null);
 
   return (
     <div>
@@ -88,92 +37,7 @@ export default function OrdersPage() {
           </Button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t("order")}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t("date")}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t("payment")}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t("shipment")}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {tc("total")}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t("actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">
-                        #{order.number}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500">
-                        {formatDate(order.completed_at, locale)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getPaymentStatusColor(order.payment_state)}`}
-                      >
-                        {order.payment_state
-                          ? PAYMENT_STATE_KEY[order.payment_state]
-                            ? t(
-                                PAYMENT_STATE_KEY[
-                                  order.payment_state
-                                ] as keyof IntlMessages["orders"],
-                              )
-                            : order.payment_state
-                          : t("notAvailable")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getShipmentStatusColor(order.shipment_state)}`}
-                      >
-                        {order.shipment_state
-                          ? SHIPMENT_STATE_KEY[order.shipment_state]
-                            ? t(
-                                SHIPMENT_STATE_KEY[
-                                  order.shipment_state
-                                ] as keyof IntlMessages["orders"],
-                              )
-                            : order.shipment_state
-                          : t("notAvailable")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className="text-sm font-medium text-gray-900">
-                        {order.display_total}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <Button variant="link" size="sm" asChild>
-                        <Link href={`${basePath}/account/orders/${order.id}`}>
-                          {t("view")}
-                        </Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <OrderList orders={orders} basePath={basePath} />
       )}
     </div>
   );

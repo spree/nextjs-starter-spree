@@ -17,7 +17,7 @@ import {
   register as registerAction,
 } from "@/lib/data/customer";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   first_name?: string | null;

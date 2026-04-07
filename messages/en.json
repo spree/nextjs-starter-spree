@@ -18,12 +18,26 @@
     "continueShopping": "Continue Shopping",
     "orderSummary": "Order Summary",
     "selectCountry": "Select Country",
-    "myAccount": "My Account"
+    "myAccount": "My Account",
+    "giftCard": "Gift card",
+    "storeCredit": "Store credit",
+    "amountDue": "Amount due"
   },
   "header": {
     "categories": "Categories",
     "openCart": "Open cart",
-    "account": "Account"
+    "account": "Account",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "menu": "Menu",
+    "selectCountry": "Select Country",
+    "home": "Home",
+    "allProducts": "All Products",
+    "contact": "Contact",
+    "viewAllCategory": "View all {category}",
+    "openSearch": "Open search",
+    "closeSearch": "Close search",
+    "myAccount": "My Account"
   },
   "footer": {
     "description": "A modern e-commerce storefront powered by Spree Commerce and Next.js.",
@@ -34,6 +48,8 @@
     "myAccount": "My Account",
     "orderHistory": "Order History",
     "cart": "Cart",
+    "policies": "Policies",
+    "poweredBy": "Powered by",
     "copyright": "© {year} {storeName}. Powered by Spree Commerce."
   },
   "home": {
@@ -65,7 +81,10 @@
     "proceedToCheckout": "Proceed to Checkout",
     "itemCount": "({count, plural, one {# item} other {# items}})",
     "shippingCalculatedAtCheckout": "Calculated at checkout",
-    "removeItemLabel": "Remove {name}"
+    "removeItemLabel": "Remove {name}",
+    "giftCard": "Gift card",
+    "storeCredit": "Store credit",
+    "amountDue": "Amount due"
   },
   "products": {
     "allProducts": "All Products",
@@ -137,7 +156,10 @@
     "openImageZoom": "Open image zoom",
     "priceUnder": "Under {price}",
     "priceAbove": "{price}+",
-    "priceRangeBucket": "{min} – {max}"
+    "priceRangeBucket": "{min} – {max}",
+    "properties": "Properties",
+    "yes": "Yes",
+    "no": "No"
   },
   "navigation": {
     "home": "Home",
@@ -201,7 +223,11 @@
     "paymentProcessingError": "An error occurred during payment.",
     "failedToCompletePaymentSession": "Failed to complete payment session",
     "noOrder": "No order",
-    "confirmingPayment": "Confirming your payment..."
+    "confirmingPayment": "Confirming your payment...",
+    "policyConsentRequired": "You must agree to the store policies before placing your order",
+    "iAgreeToThe": "I agree to the",
+    "policySeparatorComma": ", ",
+    "policySeparatorAnd": "and"
   },
   "address": {
     "firstName": "First name",
@@ -225,8 +251,14 @@
     "saveAddress": "Save Address",
     "failedToSave": "Failed to save address",
     "deleteAddressTitle": "Delete address?",
+    "deleteAddressConfirmation": "This will permanently delete this address. This action cannot be undone.",
     "delete": "Delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "failedToDeleteAddress": "Failed to delete address",
+    "addFirstAddress": "Add Your First Address",
+    "addAddress": "Add Address"
   },
   "account": {
     "myAccount": "My Account",
@@ -259,7 +291,8 @@
     "setAsDefault": "Set as default",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "forgotPassword": "Forgot password?"
+    "forgotPassword": "Forgot password?",
+    "policyConsentRequired": "You must agree to the store policies to create an account"
   },
   "register": {
     "createAccount": "Create Account",
@@ -273,7 +306,10 @@
     "signIn": "Sign in",
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "firstName": "First name",
-    "lastName": "Last name"
+    "lastName": "Last name",
+    "firstNamePlaceholder": "John",
+    "lastNamePlaceholder": "Doe",
+    "emailPlaceholder": "you@example.com"
   },
   "orders": {
     "orderHistory": "Order History",
@@ -323,7 +359,8 @@
     "unknownShipmentStatus": "Unknown",
     "orderTitle": "Order #{number}",
     "shipmentCanceledRefund": "Shipment canceled — a refund has been issued.",
-    "shippingMethodUnavailable": "Unavailable"
+    "shippingMethodUnavailable": "Unavailable",
+    "totalColumn": "Total"
   },
   "orderPlaced": {
     "thanksForOrder": "Thanks for your order, {name}!",
@@ -336,7 +373,12 @@
     "billingAddress": "Billing Address",
     "orderNotFound": "Order not found",
     "failedToLoad": "Failed to load order details.",
-    "qty": "Qty: {quantity}"
+    "qty": "Qty: {quantity}",
+    "shippingMethod": "Shipping Method",
+    "standardShipping": "Standard Shipping",
+    "payment": "Payment",
+    "giftCard": "Gift Card",
+    "confirmationSentTo": "Confirmation sent to"
   },
   "coupon": {
     "placeholder": "Gift card or discount code",
@@ -345,7 +387,10 @@
     "invalidCode": "Invalid coupon code",
     "applyFailed": "Could not apply coupon. Please try again.",
     "failedToRemove": "Failed to remove coupon code",
+    "failedToRemoveGiftCard": "Failed to remove gift card",
     "removeCoupon": "Remove coupon {code}",
+    "removeGiftCard": "Remove gift card",
+    "giftCardCode": "Gift card {code}",
     "applying": "Applying...",
     "removing": "Removing..."
   },
@@ -382,7 +427,11 @@
     "removePaymentMethodTitle": "Remove payment method?",
     "endingIn": "ending in",
     "cardEndingIn": "{label} ending in {digits}",
-    "cardExpires": "Expires {month}/{year}"
+    "cardExpires": "Expires {month}/{year}",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "confirmRemoveDescription": "This will remove the {label} ending in {digits} from your account. This action cannot be undone.",
+    "failedToRemove": "Failed to remove card: {error}"
   },
   "giftCards": {
     "giftCards": "Gift Cards",
@@ -406,6 +455,8 @@
     "copyCodeToClipboard": "Copy code to clipboard",
     "expiresOn": "Expires {date}",
     "percentUsed": "{percent}% used",
+    "activeGiftCardsCount": "Active Gift Cards ({count})",
+    "expiredRedeemedCount": "Expired / Redeemed ({count})",
     "giftCardsHelpText": "Gift cards can be used during checkout to pay for your orders. The remaining balance will be saved for future purchases."
   },
   "forgotPassword": {
@@ -439,5 +490,9 @@
     "success": "Password reset successful",
     "successDescription": "Your password has been updated. You can now sign in with your new password.",
     "signIn": "Sign in"
+  },
+  "policies": {
+    "policyNotFound": "Policy Not Found",
+    "noContent": "No content available for this policy."
   }
 }

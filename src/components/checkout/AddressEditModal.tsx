@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import type { User } from "@/contexts/AuthContext";
 import { useCountryStates } from "@/hooks/useCountryStates";
 import {
   type AddressFormData,
@@ -20,12 +21,12 @@ import { AddressFormFields } from "./AddressFormFields";
 interface AddressEditModalProps {
   address: {
     id?: string;
-    firstname: string | null;
-    lastname: string | null;
+    first_name: string | null;
+    last_name: string | null;
     address1: string | null;
     address2: string | null;
     city: string | null;
-    zipcode: string | null;
+    postal_code: string | null;
     phone: string | null;
     company: string | null;
     country_iso: string;
@@ -40,6 +41,7 @@ interface AddressEditModalProps {
   ) => Promise<void>;
   onClose: () => void;
   title?: string;
+  user?: User | null;
 }
 
 export function AddressEditModal({
@@ -49,12 +51,18 @@ export function AddressEditModal({
   onSave,
   onClose,
   title,
+  user,
 }: AddressEditModalProps) {
   const t = useTranslations("address");
   const tc = useTranslations("common");
-  const [formData, setFormData] = useState<AddressFormData>(
-    address ? addressToFormData(address) : { ...emptyAddress },
-  );
+  const [formData, setFormData] = useState<AddressFormData>(() => {
+    if (address) return addressToFormData(address);
+    return {
+      ...emptyAddress,
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
+    };
+  });
   const [states, loadingStates] = useCountryStates(
     formData.country_iso,
     fetchStates,

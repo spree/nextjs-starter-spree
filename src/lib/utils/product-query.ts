@@ -13,7 +13,7 @@ export function buildProductQueryParams(
   const params: ProductListParams = {};
 
   if (searchQuery) {
-    params.multi_search = searchQuery;
+    params.search = searchQuery;
   }
 
   if (filters.priceMin !== undefined) {
@@ -39,4 +39,28 @@ export function buildProductQueryParams(
   }
 
   return params;
+}
+
+/**
+ * Wrap flat param keys in Ransack q[...] format.
+ *
+ * The SDK does this automatically for `products.list()` via `transformListParams`,
+ * but `products.filters()` passes params raw.  We replicate the same wrapping so
+ * the backend applies filters when computing facet counts.
+ */
+export function wrapInRansackParams(
+  flat: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(flat)) {
+    if (value === undefined) continue;
+    if (key.startsWith("q[")) {
+      result[key] = value;
+    } else if (Array.isArray(value)) {
+      result[`q[${key}][]`] = value;
+    } else {
+      result[`q[${key}]`] = value;
+    }
+  }
+  return result;
 }

@@ -1,4 +1,4 @@
-import type { Category, StoreProduct } from "@spree/sdk";
+import type { Category, Media, Product } from "@spree/sdk";
 
 /**
  * Default social image path (stored in public/).
@@ -7,11 +7,16 @@ import type { Category, StoreProduct } from "@spree/sdk";
 export const SOCIAL_IMAGE_PATH = "/social-image.png";
 
 /**
- * Get the store URL from the STORE_URL environment variable.
- * Returns undefined if not set.
+ * Get the store URL, preferring NEXT_PUBLIC_SITE_URL and falling back to
+ * NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL. Returns undefined if neither
+ * variable is set.
  */
 export function getStoreUrl(): string | undefined {
-  return process.env.STORE_URL || undefined;
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ||
+    undefined
+  );
 }
 
 /**
@@ -64,7 +69,7 @@ export function stripHtml(html: string): string {
  * https://schema.org/Product
  */
 export function buildProductJsonLd(
-  product: StoreProduct,
+  product: Product,
   canonicalUrl: string,
 ): Record<string, unknown> {
   const schema: Record<string, unknown> = {
@@ -82,10 +87,10 @@ export function buildProductJsonLd(
     schema.sku = product.default_variant.sku;
   }
 
-  const imageUrls = (product.images || [])
-    .map((img) => img.original_url || img.large_url)
+  const imageUrls = (product.media || [])
+    .map((img: Media) => img.original_url || img.large_url)
     .filter(Boolean);
-  // Fall back to thumbnail_url if no images from includes
+  // Fall back to thumbnail_url if no media from expand
   if (imageUrls.length === 0 && product.thumbnail_url) {
     imageUrls.push(product.thumbnail_url);
   }
@@ -116,6 +121,7 @@ export function buildBreadcrumbJsonLd(
   category: Category,
   basePath: string,
   storeUrl: string,
+  product?: { name: string; slug: string },
 ): Record<string, unknown> {
   const items: Array<{ name: string; url: string }> = [
     { name: "Home", url: buildCanonicalUrl(storeUrl, basePath) },
@@ -139,6 +145,13 @@ export function buildBreadcrumbJsonLd(
     name: category.name,
     url: buildCanonicalUrl(storeUrl, `${basePath}/c/${category.permalink}`),
   });
+
+  if (product) {
+    items.push({
+      name: product.name,
+      url: buildCanonicalUrl(storeUrl, `${basePath}/products/${product.slug}`),
+    });
+  }
 
   return {
     "@context": "https://schema.org",

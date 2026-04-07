@@ -4,7 +4,7 @@ import type { Product } from "@spree/sdk";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -17,9 +17,11 @@ import { getProducts } from "@/lib/data/products";
 
 interface SearchBarProps {
   basePath: string;
+  autoFocus?: boolean;
+  onNavigate?: () => void;
 }
 
-export function SearchBar({ basePath }: SearchBarProps) {
+export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
   const t = useTranslations("products");
@@ -29,8 +31,9 @@ export function SearchBar({ basePath }: SearchBarProps) {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const requestIdRef = useRef(0);
 
   // Fetch suggestions
   const fetchSuggestions = useCallback(
@@ -40,62 +43,53 @@ export function SearchBar({ basePath }: SearchBarProps) {
         return;
       }
 
+      const currentRequestId = requestIdRef.current;
       setLoading(true);
       try {
         const response = await getProducts({
-          multi_search: searchQuery,
+          search: searchQuery,
           fields: ["name", "slug", "price", "thumbnail_url"],
           limit: 6,
         });
+        // Discard stale responses if a newer query has been issued
+        if (requestIdRef.current !== currentRequestId) return;
         setSuggestions(response.data);
         if (response.data.length > 0) {
           trackQuickSearch(response.data, searchQuery, currency);
         }
       } catch (error) {
+        if (requestIdRef.current !== currentRequestId) return;
         console.error("Search failed:", error);
         setSuggestions([]);
       } finally {
-        setLoading(false);
+        if (requestIdRef.current === currentRequestId) {
+          setLoading(false);
+        }
       }
     },
     [currency],
   );
 
-  // Debounced search
-  useEffect(() => {
+  // Debounced search — called from onChange handler, no useEffect needed
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
+    setIsOpen(true);
+    setSelectedIndex(-1);
+    requestIdRef.current += 1;
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
-    if (query.length >= 2) {
+    if (value.length >= 2) {
       debounceRef.current = setTimeout(() => {
-        fetchSuggestions(query);
+        fetchSuggestions(value);
       }, 300);
     } else {
       setSuggestions([]);
+      setLoading(false);
     }
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [query, fetchSuggestions]);
-
-  // Close on click outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  };
 
   // Handle form submit
   const handleSubmit = (e: React.FormEvent) => {
@@ -104,6 +98,7 @@ export function SearchBar({ basePath }: SearchBarProps) {
       router.push(`${basePath}/products?q=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       inputRef.current?.blur();
+      onNavigate?.();
     }
   };
 
@@ -113,6 +108,21 @@ export function SearchBar({ basePath }: SearchBarProps) {
     router.push(`${basePath}/products/${product.slug}`);
     setIsOpen(false);
     setQuery("");
+    onNavigate?.();
+  };
+
+  // Close suggestions on blur — delayed to allow click on suggestions
+  const handleBlur = () => {
+    blurTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 200);
+  };
+
+  // Cancel blur timeout when interacting with suggestions
+  const handleSuggestionsMouseDown = () => {
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+    }
   };
 
   // Handle keyboard navigation
@@ -146,21 +156,19 @@ export function SearchBar({ basePath }: SearchBarProps) {
     isOpen && (suggestions.length > 0 || loading || query.length >= 2);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       <form onSubmit={handleSubmit}>
         <InputGroup>
           <InputGroupInput
             ref={inputRef}
             type="search"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setIsOpen(true);
-              setSelectedIndex(-1);
-            }}
+            onChange={(e) => handleQueryChange(e.target.value)}
             onFocus={() => setIsOpen(true)}
+            onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder={t("search")}
+            autoFocus={autoFocus}
             role="combobox"
             aria-expanded={showSuggestions}
             aria-controls="search-suggestions"
@@ -178,76 +186,82 @@ export function SearchBar({ basePath }: SearchBarProps) {
 
       {/* Suggestions dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl z-50 overflow-hidden">
-          {loading ? (
-            <div className="p-4 text-center text-gray-500 text-sm">
-              {t("searching")}
-            </div>
-          ) : suggestions.length > 0 ? (
-            <ul id="search-suggestions" role="listbox">
-              {suggestions.map((product, index) => (
-                <li
-                  key={product.id}
-                  id={`search-option-${index}`}
-                  role="option"
-                  aria-selected={index === selectedIndex}
-                  tabIndex={-1}
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleSuggestionClick(product, index)}
+        <div
+          className="fixed left-0 right-0 mt-1 bg-white border-b border-gray-200 z-50"
+          onMouseDown={handleSuggestionsMouseDown}
+        >
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            {loading ? (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                {t("searching")}
+              </div>
+            ) : suggestions.length > 0 ? (
+              <ul id="search-suggestions" role="listbox">
+                {suggestions.map((product, index) => (
+                  <li
+                    key={product.id}
+                    id={`search-option-${index}`}
+                    role="option"
+                    aria-selected={index === selectedIndex}
                     tabIndex={-1}
-                    className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${
-                      index === selectedIndex ? "bg-gray-50" : ""
-                    }`}
                   >
-                    {/* Thumbnail */}
-                    <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-                      <ProductImage
-                        src={product.thumbnail_url}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        iconClassName="w-5 h-5"
-                      />
-                    </div>
-                    {/* Name and price */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {product.name}
-                      </p>
-                      {product.price?.display_amount && (
-                        <p className="text-sm text-gray-500">
-                          {product.price.display_amount}
+                    <button
+                      type="button"
+                      onClick={() => handleSuggestionClick(product, index)}
+                      tabIndex={-1}
+                      className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${
+                        index === selectedIndex ? "bg-gray-50" : ""
+                      }`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
+                        <ProductImage
+                          src={product.thumbnail_url}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                          iconClassName="w-5 h-5"
+                        />
+                      </div>
+                      {/* Name and price */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {product.name}
                         </p>
-                      )}
-                    </div>
-                  </button>
-                </li>
-              ))}
-              {/* View all results link */}
-              {query.trim() && (
-                <li className="border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      router.push(
-                        `${basePath}/products?q=${encodeURIComponent(query.trim())}`,
-                      );
-                      setIsOpen(false);
-                    }}
-                    className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
-                  >
-                    {t("viewAllResultsFor", { query: query.trim() })}
-                  </button>
-                </li>
-              )}
-            </ul>
-          ) : query.length >= 2 ? (
-            <div className="p-4 text-center text-gray-500 text-sm">
-              {t("noProductsFound")}
-            </div>
-          ) : null}
+                        {product.price?.display_amount && (
+                          <p className="text-sm text-gray-500">
+                            {product.price.display_amount}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  </li>
+                ))}
+                {/* View all results link */}
+                {query.trim() && (
+                  <li className="border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        router.push(
+                          `${basePath}/products?q=${encodeURIComponent(query.trim())}`,
+                        );
+                        setIsOpen(false);
+                        onNavigate?.();
+                      }}
+                      className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
+                    >
+                      {t("viewAllResultsFor", { query: query.trim() })}
+                    </button>
+                  </li>
+                )}
+              </ul>
+            ) : query.length >= 2 ? (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                {t("noProductsFound")}
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import { Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
+import { Suspense } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/contexts/CartContext";
@@ -41,11 +42,13 @@ export default async function RootLayout({
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}
       >
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <CartProvider>
-            {children}
-            <CartDrawer />
-            <Toaster />
-          </CartProvider>
+          <Suspense>
+            <CartProvider>
+              {children}
+              <CartDrawer />
+              <Toaster />
+            </CartProvider>
+          </Suspense>
         </NextIntlClientProvider>
       </body>
     </html>

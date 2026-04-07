@@ -17,6 +17,7 @@ interface ProductListingLayoutProps {
   hasMore: boolean;
   totalCount: number;
   basePath: string;
+  categoryId?: string;
   filtersData: ProductFiltersResponse | null;
   filtersLoading: boolean;
   activeFilters: ActiveFilters;
@@ -34,6 +35,7 @@ export function ProductListingLayout({
   hasMore,
   totalCount,
   basePath,
+  categoryId,
   filtersData,
   filtersLoading,
   activeFilters,
@@ -74,6 +76,7 @@ export function ProductListingLayout({
           <ProductGrid
             products={products}
             basePath={basePath}
+            categoryId={categoryId}
             listId={listId}
             listName={listName}
           />

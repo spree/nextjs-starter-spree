@@ -1,15 +1,11 @@
 "use server";
 
-import {
-  getShipments as _getShipments,
-  selectShippingRate as _selectShippingRate,
-  applyCoupon,
-  getCart,
-  getOrder,
-  removeCoupon,
-  updateCart,
-} from "@spree/next";
 import type { AddressParams, Cart } from "@spree/sdk";
+import { SpreeError } from "@spree/sdk";
+import { updateTag } from "next/cache";
+import { getCartOptions, getClient, requireCartId } from "@/lib/spree";
+import { getCart } from "./cart";
+import { getOrder } from "./orders";
 import { actionResult, withFallback } from "./utils";
 
 export async function getCheckoutOrder(cartId: string): Promise<Cart | null> {
@@ -38,57 +34,135 @@ export async function getCompletedOrder(cartId: string): Promise<Cart | null> {
 export async function updateOrderAddresses(
   cartId: string,
   addresses: {
-    ship_address?: AddressParams;
-    bill_address?: AddressParams;
-    ship_address_id?: string;
-    bill_address_id?: string;
+    shipping_address?: AddressParams;
+    billing_address?: AddressParams;
+    shipping_address_id?: string;
+    billing_address_id?: string;
+    use_shipping?: boolean;
     email?: string;
   },
 ) {
   return actionResult(async () => {
-    const cart = await updateCart(addresses);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.update(id, addresses, options);
+    updateTag("checkout");
     return { cart };
   }, "Failed to update addresses");
 }
 
-export async function updateOrderMarket(
+export async function updateCartMarket(
   cartId: string,
   params: { currency: string; locale: string },
 ) {
   return actionResult(async () => {
-    const cart = await updateCart(params);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.update(id, params, options);
+    updateTag("checkout");
     return { cart };
   }, "Failed to update order market");
 }
 
-export async function getShipments(cartId: string) {
-  return withFallback(async () => {
-    const response = await _getShipments();
-    return response.data;
-  }, []);
-}
-
-export async function selectShippingRate(
+export async function selectDeliveryRate(
   cartId: string,
-  shipmentId: string,
-  shippingRateId: string,
+  fulfillmentId: string,
+  deliveryRateId: string,
 ) {
   return actionResult(async () => {
-    const cart = await _selectShippingRate(shipmentId, shippingRateId);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.fulfillments.update(
+      id,
+      fulfillmentId,
+      { selected_delivery_rate_id: deliveryRateId },
+      options,
+    );
+    updateTag("checkout");
     return { cart };
-  }, "Failed to select shipping rate");
+  }, "Failed to select delivery rate");
 }
 
-export async function applyCouponCode(cartId: string, couponCode: string) {
-  return actionResult(async () => {
-    const cart = await applyCoupon(couponCode);
-    return { cart };
-  }, "Failed to apply coupon code");
+/**
+ * Apply a code to the cart — tries discount code first, then gift card.
+ * Single input field on checkout, backend determines the type.
+ */
+export async function applyCode(cartId: string, code: string) {
+  const options = await getCartOptions();
+  const id = await requireCartId();
+
+  // Try discount code first (more common)
+  try {
+    const cart = await getClient().carts.discountCodes.apply(id, code, options);
+    updateTag("checkout");
+    updateTag("cart");
+    return { success: true, cart, type: "discount" as const };
+  } catch (discountError) {
+    // Only fall back to gift card if the discount code was not found (422/404).
+    // Network errors, 500s, etc. should surface the backend message directly.
+    const isNotFound =
+      discountError instanceof SpreeError &&
+      (discountError.status === 422 || discountError.status === 404);
+
+    if (!isNotFound) {
+      return { success: false, error: errorMessage(discountError) } as const;
+    }
+
+    // Discount code not found — try gift card
+    try {
+      const cart = await getClient().carts.giftCards.apply(id, code, options);
+      updateTag("checkout");
+      updateTag("cart");
+      return { success: true, cart, type: "gift_card" as const };
+    } catch (giftCardError) {
+      // Gift card also failed. If it's a specific error (expired, redeemed, etc.)
+      // show the backend message. If both are just "not found", show the
+      // discount error (the more common scenario).
+      const isGiftCardNotFound =
+        giftCardError instanceof SpreeError &&
+        (giftCardError.code === "gift_card_not_found" ||
+          giftCardError.code === "record_not_found");
+
+      return {
+        success: false,
+        error: isGiftCardNotFound
+          ? errorMessage(discountError)
+          : errorMessage(giftCardError),
+      } as const;
+    }
+  }
 }
 
-export async function removeCouponCode(cartId: string, couponCode: string) {
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : "The entered code is not valid";
+}
+
+export async function removeDiscountCode(cartId: string, code: string) {
   return actionResult(async () => {
-    const cart = await removeCoupon(couponCode);
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.discountCodes.remove(
+      id,
+      code,
+      options,
+    );
+    updateTag("checkout");
+    updateTag("cart");
     return { cart };
-  }, "Failed to remove coupon code");
+  }, "Failed to remove discount code");
+}
+
+export async function removeGiftCard(cartId: string, giftCardId: string) {
+  return actionResult(async () => {
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const cart = await getClient().carts.giftCards.remove(
+      id,
+      giftCardId,
+      options,
+    );
+    updateTag("checkout");
+    updateTag("cart");
+    return { cart };
+  }, "Failed to remove gift card");
 }

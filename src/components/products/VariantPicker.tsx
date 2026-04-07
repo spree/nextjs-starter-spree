@@ -4,7 +4,6 @@ import type { OptionType, Variant } from "@spree/sdk";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { isColorOption, resolveColor } from "@/lib/utils/color-map";
 
 interface VariantPickerProps {
   variants: Variant[];
@@ -132,18 +131,18 @@ export function VariantPicker({
       {optionTypes.map((optionType) => {
         const values = Array.from(optionValuesMap[optionType.id] || []);
         const selectedValue = selectedOptions[optionType.id];
-        const isColor = isColorOption(optionType.name);
+        const isColor = optionType.kind === "color_swatch";
 
         return (
           <div key={optionType.id}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-900">
-                {optionType.presentation}
+                {optionType.label}
               </span>
               {selectedValue && (
                 <span className="text-sm text-gray-500">
-                  {getOptionValueDetails(optionType.id, selectedValue)
-                    ?.presentation || selectedValue}
+                  {getOptionValueDetails(optionType.id, selectedValue)?.label ||
+                    selectedValue}
                 </span>
               )}
             </div>
@@ -168,16 +167,23 @@ export function VariantPicker({
                       key={value}
                       onClick={() => handleOptionSelect(optionType.id, value)}
                       disabled={!isAvailable}
-                      title={optionValue?.presentation || value}
+                      title={optionValue?.label || value}
                       className={`
-                        w-10 h-10 rounded-lg border-1 transition-all relative
+                        w-10 h-10 rounded-lg border transition-all relative overflow-hidden
                         ${isSelected ? "border-gray-900 ring-2 ring-primary ring-offset-2" : "border-gray-200"}
                         ${!isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}
                         ${!isPurchasable && isAvailable ? "opacity-50" : ""}
                       `}
-                      style={{
-                        backgroundColor: resolveColor(value),
-                      }}
+                      style={
+                        optionValue?.image_url
+                          ? {
+                              backgroundImage: `url(${optionValue.image_url})`,
+                              backgroundSize: "cover",
+                            }
+                          : optionValue?.color_code
+                            ? { backgroundColor: optionValue.color_code }
+                            : { backgroundColor: "#e5e7eb" }
+                      }
                     >
                       {!isPurchasable && isAvailable && (
                         <span className="absolute inset-0 flex items-center justify-center">
@@ -215,7 +221,7 @@ export function VariantPicker({
                           : ""
                       }
                     >
-                      {optionValue?.presentation || value}
+                      {optionValue?.label || value}
                       {!isPurchasable && isAvailable && (
                         <span className="ml-1 text-xs text-gray-400">
                           {t("outOfStockVariant")}

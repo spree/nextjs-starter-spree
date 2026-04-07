@@ -10,14 +10,12 @@ import { trackViewItemList } from "@/lib/analytics/gtm";
 import { getCategoryProducts } from "@/lib/data/categories";
 
 interface CategoryProductsContentProps {
-  categoryPermalink: string;
   categoryId: string;
   categoryName: string;
   basePath: string;
 }
 
 export function CategoryProductsContent({
-  categoryPermalink,
   categoryId,
   categoryName,
   basePath,
@@ -26,13 +24,12 @@ export function CategoryProductsContent({
   const { currency } = useStore();
 
   const fetchFn = useCallback(
-    (params: ProductListParams) =>
-      getCategoryProducts(categoryPermalink, params),
-    [categoryPermalink],
+    (params: ProductListParams) => getCategoryProducts(categoryId, params),
+    [categoryId],
   );
 
   const filterParams = useMemo(
-    () => ({ category_id: categoryId }),
+    () => ({ in_category: categoryId }),
     [categoryId],
   );
 
@@ -66,6 +63,7 @@ export function CategoryProductsContent({
     <ProductListingLayout
       {...listing}
       basePath={basePath}
+      categoryId={categoryId}
       onFilterChange={listing.handleFilterChange}
       listId={listId}
       listName={listName}

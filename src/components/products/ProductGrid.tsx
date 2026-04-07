@@ -4,6 +4,7 @@ import { ProductCard } from "./ProductCard";
 interface ProductGridProps {
   products: Product[];
   basePath?: string;
+  categoryId?: string;
   listId?: string;
   listName?: string;
   emptyMessage?: string;
@@ -12,6 +13,7 @@ interface ProductGridProps {
 export function ProductGrid({
   products,
   basePath = "",
+  categoryId,
   listId,
   listName,
   emptyMessage,
@@ -25,12 +27,13 @@ export function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product, index) => (
         <ProductCard
           key={product.id}
           product={product}
           basePath={basePath}
+          categoryId={categoryId}
           index={index}
           listId={listId}
           listName={listName}

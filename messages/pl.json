@@ -18,12 +18,26 @@
     "continueShopping": "Kontynuuj zakupy",
     "orderSummary": "Podsumowanie zamówienia",
     "selectCountry": "Wybierz kraj",
-    "myAccount": "Moje konto"
+    "myAccount": "Moje konto",
+    "giftCard": "Karta podarunkowa",
+    "storeCredit": "Kredyt sklepowy",
+    "amountDue": "Do zapłaty"
   },
   "header": {
     "categories": "Kategorie",
     "openCart": "Otwórz koszyk",
-    "account": "Konto"
+    "account": "Konto",
+    "closeMenu": "Zamknij menu",
+    "openMenu": "Otwórz menu",
+    "menu": "Menu",
+    "selectCountry": "Wybierz kraj",
+    "home": "Strona główna",
+    "allProducts": "Wszystkie produkty",
+    "contact": "Kontakt",
+    "viewAllCategory": "Zobacz wszystkie {category}",
+    "openSearch": "Otwórz wyszukiwanie",
+    "closeSearch": "Zamknij wyszukiwanie",
+    "myAccount": "Moje konto"
   },
   "footer": {
     "description": "Nowoczesny sklep internetowy oparty na Spree Commerce i Next.js.",
@@ -34,6 +48,8 @@
     "myAccount": "Moje konto",
     "orderHistory": "Historia zamówień",
     "cart": "Koszyk",
+    "policies": "Regulaminy",
+    "poweredBy": "Zasilany przez",
     "copyright": "© {year} {storeName}. Zasilany przez Spree Commerce."
   },
   "home": {
@@ -65,7 +81,10 @@
     "proceedToCheckout": "Przejdź do kasy",
     "itemCount": "({count, plural, one {# produkt} few {# produkty} many {# produktów} other {# produktów}})",
     "shippingCalculatedAtCheckout": "Obliczona przy kasie",
-    "removeItemLabel": "Usuń {name}"
+    "removeItemLabel": "Usuń {name}",
+    "giftCard": "Karta podarunkowa",
+    "storeCredit": "Kredyt sklepowy",
+    "amountDue": "Do zapłaty"
   },
   "products": {
     "allProducts": "Wszystkie produkty",
@@ -137,7 +156,10 @@
     "openImageZoom": "Otwórz powiększenie zdjęcia",
     "priceUnder": "Poniżej {price}",
     "priceAbove": "{price}+",
-    "priceRangeBucket": "{min} – {max}"
+    "priceRangeBucket": "{min} – {max}",
+    "properties": "Właściwości",
+    "yes": "Tak",
+    "no": "Nie"
   },
   "navigation": {
     "home": "Strona główna",
@@ -201,7 +223,11 @@
     "paymentProcessingError": "Wystąpił błąd podczas przetwarzania płatności.",
     "failedToCompletePaymentSession": "Nie udało się zakończyć sesji płatności",
     "noOrder": "Brak zamówienia",
-    "confirmingPayment": "Potwierdzanie płatności..."
+    "confirmingPayment": "Potwierdzanie płatności...",
+    "policyConsentRequired": "Musisz zaakceptować regulamin sklepu przed złożeniem zamówienia",
+    "iAgreeToThe": "Zgadzam się z",
+    "policySeparatorComma": ", ",
+    "policySeparatorAnd": "i"
   },
   "address": {
     "firstName": "Imię",
@@ -225,8 +251,14 @@
     "saveAddress": "Zapisz adres",
     "failedToSave": "Nie udało się zapisać adresu",
     "deleteAddressTitle": "Usunąć adres?",
+    "deleteAddressConfirmation": "Ten adres zostanie trwale usunięty. Tej operacji nie można cofnąć.",
     "delete": "Usuń",
-    "deleting": "Usuwanie..."
+    "deleting": "Usuwanie...",
+    "cancel": "Anuluj",
+    "edit": "Edytuj",
+    "failedToDeleteAddress": "Nie udało się usunąć adresu",
+    "addFirstAddress": "Dodaj swój pierwszy adres",
+    "addAddress": "Dodaj adres"
   },
   "account": {
     "myAccount": "Moje konto",
@@ -259,7 +291,8 @@
     "setAsDefault": "Ustaw jako domyślny",
     "showPassword": "Pokaż hasło",
     "hidePassword": "Ukryj hasło",
-    "forgotPassword": "Zapomniałeś hasła?"
+    "forgotPassword": "Zapomniałeś hasła?",
+    "policyConsentRequired": "Musisz zaakceptować regulamin sklepu, aby utworzyć konto"
   },
   "register": {
     "createAccount": "Utwórz konto",
@@ -273,7 +306,10 @@
     "signIn": "Zaloguj się",
     "unexpectedError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
     "firstName": "Imię",
-    "lastName": "Nazwisko"
+    "lastName": "Nazwisko",
+    "firstNamePlaceholder": "Jan",
+    "lastNamePlaceholder": "Kowalski",
+    "emailPlaceholder": "ty@przyklad.pl"
   },
   "orders": {
     "orderHistory": "Historia zamówień",
@@ -323,7 +359,8 @@
     "unknownShipmentStatus": "Nieznany",
     "orderTitle": "Zamówienie #{number}",
     "shipmentCanceledRefund": "Przesyłka anulowana — zwrot został wystawiony.",
-    "shippingMethodUnavailable": "Niedostępna"
+    "shippingMethodUnavailable": "Niedostępna",
+    "totalColumn": "Suma"
   },
   "orderPlaced": {
     "thanksForOrder": "Dziękujemy za zamówienie, {name}!",
@@ -336,7 +373,12 @@
     "billingAddress": "Adres rozliczeniowy",
     "orderNotFound": "Zamówienie nie zostało znalezione",
     "failedToLoad": "Nie udało się załadować szczegółów zamówienia.",
-    "qty": "Ilość: {quantity}"
+    "qty": "Ilość: {quantity}",
+    "shippingMethod": "Metoda wysyłki",
+    "standardShipping": "Wysyłka standardowa",
+    "payment": "Płatność",
+    "giftCard": "Karta podarunkowa",
+    "confirmationSentTo": "Potwierdzenie wysłane do"
   },
   "coupon": {
     "placeholder": "Karta podarunkowa lub kod rabatowy",
@@ -345,7 +387,10 @@
     "invalidCode": "Nieprawidłowy kod kuponu",
     "applyFailed": "Nie udało się zastosować kuponu. Spróbuj ponownie.",
     "failedToRemove": "Nie udało się usunąć kodu kuponu",
+    "failedToRemoveGiftCard": "Nie udało się usunąć karty podarunkowej",
     "removeCoupon": "Usuń kupon {code}",
+    "removeGiftCard": "Usuń kartę podarunkową",
+    "giftCardCode": "Karta podarunkowa {code}",
     "applying": "Stosowanie...",
     "removing": "Usuwanie..."
   },
@@ -382,7 +427,11 @@
     "removePaymentMethodTitle": "Usunąć metodę płatności?",
     "endingIn": "kończąca się na",
     "cardEndingIn": "{label} kończąca się na {digits}",
-    "cardExpires": "Ważna do {month}/{year}"
+    "cardExpires": "Ważna do {month}/{year}",
+    "remove": "Usuń",
+    "cancel": "Anuluj",
+    "confirmRemoveDescription": "Karta {label} kończąca się na {digits} zostanie usunięta z Twojego konta. Tej operacji nie można cofnąć.",
+    "failedToRemove": "Nie udało się usunąć karty: {error}"
   },
   "giftCards": {
     "giftCards": "Karty podarunkowe",
@@ -406,6 +455,8 @@
     "copyCodeToClipboard": "Skopiuj kod do schowka",
     "expiresOn": "Wygasa {date}",
     "percentUsed": "{percent}% wykorzystano",
+    "activeGiftCardsCount": "Aktywne karty podarunkowe ({count})",
+    "expiredRedeemedCount": "Wygasłe / Wykorzystane ({count})",
     "giftCardsHelpText": "Karty podarunkowe mogą być używane podczas składania zamówienia do opłacenia zakupów. Pozostałe saldo zostanie zapisane na przyszłe zakupy."
   },
   "forgotPassword": {
@@ -439,5 +490,9 @@
     "success": "Hasło zostało zresetowane",
     "successDescription": "Twoje hasło zostało zaktualizowane. Możesz się teraz zalogować nowym hasłem.",
     "signIn": "Zaloguj się"
+  },
+  "policies": {
+    "policyNotFound": "Nie znaleziono regulaminu",
+    "noContent": "Brak treści dla tego regulaminu."
   }
 }
