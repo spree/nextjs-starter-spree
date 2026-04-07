@@ -28,7 +28,7 @@ export async function Footer({
           <div className="col-span-1 md:col-span-2">
             <span className="text-xl font-bold text-white">{storeName}</span>
             <p className="mt-4 text-sm text-neutral-400">
-              {envStoreDescription || t("description")}
+              {t("description") || envStoreDescription}
             </p>
           </div>
 
