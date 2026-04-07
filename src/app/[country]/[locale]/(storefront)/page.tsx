@@ -23,7 +23,10 @@ export async function generateMetadata({
 export default async function HomePage({ params }: HomePageProps) {
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
-  const t = await getTranslations("home");
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "home",
+  });
   const storeName = getStoreName();
 
   return (

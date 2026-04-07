@@ -7,9 +7,17 @@ import { getAddresses } from "@/lib/data/addresses";
 import { getCountries } from "@/lib/data/countries";
 import { getCustomer } from "@/lib/data/customer";
 
-export default async function AddressesPage() {
+interface AddressesPageProps {
+  params: Promise<{ country: string; locale: string }>;
+}
+
+export default async function AddressesPage({ params }: AddressesPageProps) {
   await connection();
-  const t = await getTranslations("account");
+  const { locale } = await params;
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "account",
+  });
   const [addressResponse, countriesResponse, customer] = await Promise.all([
     getAddresses(),
     getCountries(),

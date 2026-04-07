@@ -14,10 +14,15 @@ const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
 interface HeaderProps {
   rootCategories: Category[];
   basePath: string;
+  locale: Locale;
 }
 
-export async function Header({ rootCategories, basePath }: HeaderProps) {
-  const t = await getTranslations("header");
+export async function Header({
+  rootCategories,
+  basePath,
+  locale,
+}: HeaderProps) {
+  const t = await getTranslations({ locale, namespace: "header" });
 
   return (
     <SearchToggle

@@ -15,11 +15,14 @@ interface PolicyPageProps {
 export async function generateMetadata({
   params,
 }: PolicyPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const policy = await getPolicy(slug);
 
   if (!policy) {
-    const t = await getTranslations("policies");
+    const t = await getTranslations({
+      locale: locale as Locale,
+      namespace: "policies",
+    });
     return { title: t("policyNotFound") };
   }
 
@@ -31,10 +34,10 @@ export async function generateMetadata({
 }
 
 export default async function PolicyPage({ params }: PolicyPageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const [policy, t] = await Promise.all([
     getPolicy(slug),
-    getTranslations("policies"),
+    getTranslations({ locale: locale as Locale, namespace: "policies" }),
   ]);
 
   if (!policy) {

@@ -11,10 +11,15 @@ const storeDescription =
 interface FooterProps {
   rootCategories: Category[];
   basePath: string;
+  locale: Locale;
 }
 
-export async function Footer({ rootCategories, basePath }: FooterProps) {
-  const t = await getTranslations("footer");
+export async function Footer({
+  rootCategories,
+  basePath,
+  locale,
+}: FooterProps) {
+  const t = await getTranslations({ locale, namespace: "footer" });
 
   return (
     <footer className="bg-primary text-gray-300">

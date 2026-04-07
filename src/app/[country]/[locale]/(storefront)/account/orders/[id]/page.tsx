@@ -16,8 +16,11 @@ export default async function OrderDetailPage({
   params,
 }: OrderDetailPageProps) {
   await connection();
-  const t = await getTranslations("orders");
   const { country, locale, id } = await params;
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "orders",
+  });
   const basePath = `/${country}/${locale}`;
   const order = await getOrder(id);
 

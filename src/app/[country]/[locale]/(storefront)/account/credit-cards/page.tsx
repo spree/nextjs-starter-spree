@@ -4,9 +4,19 @@ import { getTranslations } from "next-intl/server";
 import { CreditCardList } from "@/components/account/CreditCardList";
 import { getCreditCards } from "@/lib/data/credit-cards";
 
-export default async function CreditCardsPage() {
+interface CreditCardsPageProps {
+  params: Promise<{ country: string; locale: string }>;
+}
+
+export default async function CreditCardsPage({
+  params,
+}: CreditCardsPageProps) {
   await connection();
-  const t = await getTranslations("creditCards");
+  const { locale } = await params;
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "creditCards",
+  });
   const response = await getCreditCards();
   const cards = response.data;
 

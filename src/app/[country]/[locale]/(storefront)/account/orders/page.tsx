@@ -12,8 +12,11 @@ interface OrdersPageProps {
 
 export default async function OrdersPage({ params }: OrdersPageProps) {
   await connection();
-  const t = await getTranslations("orders");
   const { country, locale } = await params;
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "orders",
+  });
   const basePath = `/${country}/${locale}`;
 
   const response = await getOrders({ limit: 50 });

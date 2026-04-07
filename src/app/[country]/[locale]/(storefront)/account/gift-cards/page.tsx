@@ -4,9 +4,17 @@ import { getTranslations } from "next-intl/server";
 import { GiftCardList } from "@/components/account/GiftCardList";
 import { getGiftCards } from "@/lib/data/gift-cards";
 
-export default async function GiftCardsPage() {
+interface GiftCardsPageProps {
+  params: Promise<{ country: string; locale: string }>;
+}
+
+export default async function GiftCardsPage({ params }: GiftCardsPageProps) {
   await connection();
-  const t = await getTranslations("giftCards");
+  const { locale } = await params;
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "giftCards",
+  });
   const response = await getGiftCards();
   const cards = response.data;
 
