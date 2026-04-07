@@ -12,13 +12,9 @@ export interface CountryWithMarket extends Country {
 }
 
 const storeName = getStoreName();
-const storeDescription =
-  process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
-  "A modern e-commerce storefront powered by Spree Commerce and Next.js.";
 
 interface StoreContextValue {
   storeName: string;
-  storeDescription: string;
   country: string;
   locale: string;
   currency: string;
@@ -94,7 +90,6 @@ export function StoreProvider({
   const value = useMemo<StoreContextValue>(
     () => ({
       storeName,
-      storeDescription,
       country,
       locale,
       currency,

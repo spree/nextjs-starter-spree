@@ -4,9 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 
 const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
-const storeDescription =
-  process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
-  "A modern e-commerce storefront powered by Spree Commerce and Next.js.";
+const envStoreDescription = process.env.NEXT_PUBLIC_STORE_DESCRIPTION;
 
 interface FooterProps {
   rootCategories: Category[];
@@ -29,7 +27,9 @@ export async function Footer({
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <span className="text-xl font-bold text-white">{storeName}</span>
-            <p className="mt-4 text-sm text-neutral-400">{storeDescription}</p>
+            <p className="mt-4 text-sm text-neutral-400">
+              {envStoreDescription || t("description")}
+            </p>
           </div>
 
           {/* Links */}
