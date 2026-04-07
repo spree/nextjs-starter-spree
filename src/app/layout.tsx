@@ -2,7 +2,10 @@ import { GoogleTagManager } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-import { getStoreDescription, getStoreName } from "@/lib/seo";
+import { Suspense } from "react";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/contexts/CartContext";
 
 const gtmId = process.env.GTM_ID;
 
@@ -11,14 +14,16 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-const rootStoreName = getStoreName();
+const rootStoreName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
 
 export const metadata: Metadata = {
   title: {
     template: `%s | ${rootStoreName}`,
     default: rootStoreName,
   },
-  description: getStoreDescription(),
+  description:
+    process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
+    "A modern e-commerce storefront powered by Spree Commerce and Next.js.",
 };
 
 export default function RootLayout({
@@ -32,7 +37,13 @@ export default function RootLayout({
       <body
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <Suspense>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+            <Toaster />
+          </CartProvider>
+        </Suspense>
       </body>
     </html>
   );

@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
-import { Suspense } from "react";
-import { CartDrawer } from "@/components/cart/CartDrawer";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CartProvider } from "@/contexts/CartContext";
 import { StoreProvider } from "@/contexts/StoreContext";
 import { getMarkets } from "@/lib/data/markets";
 import { generateStoreMetadata } from "@/lib/metadata/store";
 import { buildOrganizationJsonLd } from "@/lib/seo";
+import deMessages from "../../../../messages/de.json";
+import enMessages from "../../../../messages/en.json";
+import plMessages from "../../../../messages/pl.json";
 
 const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us";
 const DEFAULT_LOCALE = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
+
+const messagesMap: Record<string, IntlMessages> = {
+  en: enMessages,
+  de: deMessages,
+  pl: plMessages,
+};
 
 interface CountryLocaleLayoutProps {
   children: React.ReactNode;
@@ -58,29 +62,24 @@ export default async function CountryLocaleLayout({
     redirect(`/${fallbackCountry}/${fallbackLocale}`);
   }
 
-  const messages = await getMessages({ locale: locale as "en" | "de" | "pl" });
+  // Load messages statically (no runtime data access) to avoid blocking prerender
+  const messages = messagesMap[locale] || messagesMap.en;
 
   return (
     <NextIntlClientProvider
       messages={messages}
       locale={locale as "en" | "de" | "pl"}
     >
-      <Suspense>
-        <CartProvider>
-          <StoreProvider
-            initialCountry={country}
-            initialLocale={locale}
-            initialMarkets={markets}
-          >
-            <AuthProvider>
-              <JsonLd data={buildOrganizationJsonLd()} />
-              {children}
-              <CartDrawer />
-              <Toaster />
-            </AuthProvider>
-          </StoreProvider>
-        </CartProvider>
-      </Suspense>
+      <StoreProvider
+        initialCountry={country}
+        initialLocale={locale}
+        initialMarkets={markets}
+      >
+        <AuthProvider>
+          <JsonLd data={buildOrganizationJsonLd()} />
+          {children}
+        </AuthProvider>
+      </StoreProvider>
     </NextIntlClientProvider>
   );
 }
