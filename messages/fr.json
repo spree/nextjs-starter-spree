@@ -228,7 +228,7 @@
     "policyConsentRequired": "Vous devez accepter les politiques du magasin avant de passer votre commande",
     "iAgreeToThe": "J'accepte les",
     "policySeparatorComma": ", ",
-    "policySeparatorAnd": "et"
+    "policySeparatorAnd": " et "
   },
   "address": {
     "firstName": "Prenom",

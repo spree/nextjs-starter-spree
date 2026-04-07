@@ -11,7 +11,7 @@ function normalizeType(type: string): string {
 
 function renderBooleanValue(
   value: unknown,
-  t: ReturnType<typeof useTranslations>,
+  t: ReturnType<typeof useTranslations<"products">>,
 ): React.ReactNode {
   return value ? t("yes") : t("no");
 }
@@ -19,7 +19,7 @@ function renderBooleanValue(
 function renderValue(
   field: CustomField,
   normalizedType: string,
-  t: ReturnType<typeof useTranslations>,
+  t: ReturnType<typeof useTranslations<"products">>,
 ): React.ReactNode {
   switch (normalizedType) {
     case "Boolean":

@@ -18,22 +18,32 @@ export async function generateMetadata({
   const { slug, locale } = await params;
   const policy = await getPolicy(slug);
 
+  const storeName = getStoreName();
+
   if (!policy) {
     const t = await getTranslations({
       locale: locale as Locale,
       namespace: "policies",
     });
-    return { title: t("policyNotFound") };
+    return {
+      title: t("policyNotFound"),
+      description: t("noContent"),
+    };
   }
-
-  const storeName = getStoreName();
 
   return {
     title: storeName ? `${policy.name} | ${storeName}` : policy.name,
+    description: `${policy.name} — ${storeName}`,
+    openGraph: {
+      title: policy.name,
+      description: `${policy.name} — ${storeName}`,
+    },
   };
 }
 
-export default async function PolicyPage({ params }: PolicyPageProps) {
+export default async function PolicyPage({
+  params,
+}: PolicyPageProps): Promise<React.JSX.Element> {
   const { slug, locale } = await params;
   const [policy, t] = await Promise.all([
     getPolicy(slug),

@@ -37,7 +37,7 @@ export default function RootLayout({
       <body
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}
       >
-        <Suspense>
+        <Suspense fallback={null}>
           <CartProvider>
             {children}
             <CartDrawer />

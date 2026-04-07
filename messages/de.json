@@ -228,7 +228,7 @@
     "policyConsentRequired": "Sie müssen den Geschäftsrichtlinien zustimmen, bevor Sie Ihre Bestellung aufgeben",
     "iAgreeToThe": "Ich stimme zu",
     "policySeparatorComma": ", ",
-    "policySeparatorAnd": "und"
+    "policySeparatorAnd": " und "
   },
   "address": {
     "firstName": "Vorname",

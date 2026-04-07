@@ -43,7 +43,7 @@ export function PolicyConsent({
               t("policySeparatorComma")}
             {index > 0 &&
               index === CONSENT_POLICIES.length - 1 &&
-              ` ${t("policySeparatorAnd")} `}
+              t("policySeparatorAnd")}
             <Link
               href={`${basePath}/policies/${policy.slug}`}
               target="_blank"
