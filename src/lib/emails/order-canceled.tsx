@@ -37,7 +37,7 @@ export function OrderCanceledEmail({
   orderNumber,
   customerName,
   storeName = getStoreName(),
-  storeUrl = getStoreUrl() || "http://localhost:3001",
+  storeUrl = getStoreUrl(),
   items,
   displayTotal,
 }: OrderCanceledEmailProps) {
@@ -110,10 +110,15 @@ export function OrderCanceledEmail({
           </Text>
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>

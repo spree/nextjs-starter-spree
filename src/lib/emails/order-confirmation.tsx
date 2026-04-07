@@ -58,7 +58,7 @@ export function OrderConfirmationEmail({
   orderNumber,
   customerName,
   storeName = getStoreName(),
-  storeUrl = getStoreUrl() || "http://localhost:3001",
+  storeUrl = getStoreUrl(),
   items,
   displayItemTotal,
   displayDeliveryTotal,
@@ -111,14 +111,20 @@ export function OrderConfirmationEmail({
                   )}
                 </Column>
                 <Column style={itemDetailsCol}>
-                  <Link
-                    href={
-                      item.slug ? `${storeUrl}/products/${item.slug}` : storeUrl
-                    }
-                    style={itemName}
-                  >
-                    {item.name}
-                  </Link>
+                  {storeUrl ? (
+                    <Link
+                      href={
+                        item.slug
+                          ? `${storeUrl}/products/${item.slug}`
+                          : storeUrl
+                      }
+                      style={itemName}
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <Text style={itemName}>{item.name}</Text>
+                  )}
                   {item.options_text && (
                     <Text style={itemOptions}>{item.options_text}</Text>
                   )}
@@ -197,10 +203,15 @@ export function OrderConfirmationEmail({
           <Hr style={hr} />
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>

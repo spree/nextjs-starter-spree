@@ -9,9 +9,7 @@ import { ShipmentShippedEmail } from "@/lib/emails/shipment-shipped";
 import { getStoreName, getStoreUrl } from "@/lib/store";
 
 const STORE_NAME = getStoreName();
-const SITE_URL =
-  getStoreUrl() ||
-  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
+const SITE_URL = getStoreUrl();
 
 if (!SITE_URL && process.env.NODE_ENV === "production") {
   console.warn(

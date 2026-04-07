@@ -22,7 +22,7 @@ interface PasswordResetEmailProps {
 export function PasswordResetEmail({
   resetUrl,
   storeName = getStoreName(),
-  storeUrl = getStoreUrl() || "http://localhost:3001",
+  storeUrl = getStoreUrl(),
 }: PasswordResetEmailProps) {
   return (
     <Html>
@@ -56,10 +56,15 @@ export function PasswordResetEmail({
           </Text>
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>

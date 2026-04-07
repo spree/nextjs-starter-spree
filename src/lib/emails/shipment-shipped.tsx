@@ -45,7 +45,7 @@ export function ShipmentShippedEmail({
   orderNumber,
   customerName,
   storeName = getStoreName(),
-  storeUrl = getStoreUrl() || "http://localhost:3001",
+  storeUrl = getStoreUrl(),
   shipments,
 }: ShipmentShippedEmailProps) {
   const firstName = customerName.split(" ")[0] || "there";
@@ -110,16 +110,20 @@ export function ShipmentShippedEmail({
                       )}
                     </Column>
                     <Column style={itemDetailsCol}>
-                      <Link
-                        href={
-                          item.slug
-                            ? `${storeUrl}/products/${item.slug}`
-                            : storeUrl
-                        }
-                        style={itemName}
-                      >
-                        {item.name}
-                      </Link>
+                      {storeUrl ? (
+                        <Link
+                          href={
+                            item.slug
+                              ? `${storeUrl}/products/${item.slug}`
+                              : storeUrl
+                          }
+                          style={itemName}
+                        >
+                          {item.name}
+                        </Link>
+                      ) : (
+                        <Text style={itemName}>{item.name}</Text>
+                      )}
                       {item.options_text && (
                         <Text style={itemOptions}>{item.options_text}</Text>
                       )}
@@ -134,10 +138,15 @@ export function ShipmentShippedEmail({
           <Hr style={hr} />
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>
