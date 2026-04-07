@@ -1,7 +1,7 @@
 import type { Locale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 
-const supportedLocales: Locale[] = ["en", "de", "pl"];
+const supportedLocales: Locale[] = ["en", "de", "pl", "es", "fr"];
 
 function isValidLocale(value: string | undefined): value is Locale {
   return !!value && supportedLocales.includes(value as Locale);

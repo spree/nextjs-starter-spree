@@ -9,6 +9,8 @@ import { generateStoreMetadata } from "@/lib/metadata/store";
 import { buildOrganizationJsonLd } from "@/lib/seo";
 import deMessages from "../../../../messages/de.json";
 import enMessages from "../../../../messages/en.json";
+import esMessages from "../../../../messages/es.json";
+import frMessages from "../../../../messages/fr.json";
 import plMessages from "../../../../messages/pl.json";
 
 const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us";
@@ -17,6 +19,8 @@ const DEFAULT_LOCALE = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en";
 const messagesMap: Record<string, IntlMessages> = {
   en: enMessages,
   de: deMessages,
+  es: esMessages,
+  fr: frMessages,
   pl: plMessages,
 };
 
