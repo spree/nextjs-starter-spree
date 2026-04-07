@@ -82,3 +82,11 @@ export function getStoreMetaDescription(): string {
 export function getStoreEmailFrom(): string {
   return process.env.EMAIL_FROM || "orders@example.com";
 }
+
+/**
+ * Returns true when EMAIL_FROM is not set and getStoreEmailFrom() will
+ * return the fallback address.
+ */
+export function isStoreEmailFromFallback(): boolean {
+  return !process.env.EMAIL_FROM;
+}
