@@ -5,7 +5,7 @@ import { CircleAlert, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
 import { CouponCode } from "@/components/checkout/CouponCode";
 import { DeliveryMethodSection } from "@/components/checkout/DeliveryMethodSection";
@@ -80,7 +80,7 @@ function CheckoutSidebar({
   );
 }
 
-export default function CheckoutPage({ params }: CheckoutPageProps) {
+function CheckoutPageContent({ params }: CheckoutPageProps) {
   const { id: cartId, country: urlCountry } = use(params);
   const router = useRouter();
   const pathname = usePathname();
@@ -684,5 +684,19 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         )}
       </button>
     </div>
+  );
+}
+
+export default function CheckoutPage({ params }: CheckoutPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="animate-spin h-8 w-8 text-gray-400" />
+        </div>
+      }
+    >
+      <CheckoutPageContent params={params} />
+    </Suspense>
   );
 }
