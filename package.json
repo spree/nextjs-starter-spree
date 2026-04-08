@@ -21,6 +21,7 @@
     "@spree/sdk": "^0.20.2",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
+    "@swc/helpers": "^0.5.21",
     "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -57,8 +58,8 @@
     "lefthook": "^2.1.2",
     "react-email": "^5.2.10",
     "tailwindcss": "^4",
-    "typescript": "^5",
     "tsx": "^4.19.0",
+    "typescript": "^5",
     "vitest": "^4.0.18"
   }
 }
