@@ -338,6 +338,11 @@ function ExpressCheckoutInner({
               "Express checkout finalization failed (payment confirmed, backend will reconcile):",
               finalizeResult.error,
             );
+          } else if (finalizeResult.order) {
+            const { cacheCompletedOrder } = await import(
+              "@/lib/utils/completed-order-cache"
+            );
+            cacheCompletedOrder(orderId, finalizeResult.order);
           }
         } catch (_completeErr) {
           /* non-blocking — backend will reconcile */

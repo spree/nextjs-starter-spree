@@ -53,6 +53,7 @@ export function CartDrawer() {
     if (prevPathnameRef.current !== pathname) {
       prevPathnameRef.current = pathname;
       closeCart();
+      setExpressProcessing(false);
     }
   }, [pathname, closeCart]);
 
@@ -79,7 +80,10 @@ export function CartDrawer() {
     <Sheet
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) closeCart();
+        if (!open) {
+          closeCart();
+          setExpressProcessing(false);
+        }
       }}
     >
       <SheetContent

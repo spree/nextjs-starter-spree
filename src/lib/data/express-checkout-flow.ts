@@ -128,7 +128,9 @@ export async function expressCheckoutCreateSession(
 export async function expressCheckoutFinalize(
   cartId: string,
   sessionId: string,
-): Promise<{ success: true } | { success: false; error: string }> {
+): Promise<
+  { success: true; order: unknown } | { success: false; error: string }
+> {
   return actionResult(async () => {
     const sessionResult = await completeCheckoutPaymentSession(
       cartId,
@@ -143,6 +145,6 @@ export async function expressCheckoutFinalize(
       throw new Error(orderResult.error);
     }
 
-    return {};
+    return { order: orderResult.order };
   }, "Failed to finalize order");
 }
