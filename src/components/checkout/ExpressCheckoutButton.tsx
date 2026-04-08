@@ -37,6 +37,7 @@ export interface ExpressCheckoutButtonProps {
   basePath: string;
   onComplete: () => void | Promise<void>;
   onProcessingChange?: (processing: boolean) => void;
+  onAvailabilityChange?: (available: boolean) => void;
   maxColumns?: number;
   showDivider?: boolean;
 }
@@ -46,6 +47,7 @@ function ExpressCheckoutInner({
   basePath,
   onComplete,
   onProcessingChange,
+  onAvailabilityChange,
   maxColumns = 1,
   showDivider = true,
 }: ExpressCheckoutButtonProps) {
@@ -62,6 +64,8 @@ function ExpressCheckoutInner({
   );
   const onProcessingChangeRef = useRef(onProcessingChange);
   onProcessingChangeRef.current = onProcessingChange;
+  const onAvailabilityChangeRef = useRef(onAvailabilityChange);
+  onAvailabilityChangeRef.current = onAvailabilityChange;
 
   const updateProcessing = useCallback((value: boolean) => {
     setProcessing(value);
@@ -82,10 +86,12 @@ function ExpressCheckoutInner({
   const handleReady = useCallback(
     (event: StripeExpressCheckoutElementReadyEvent) => {
       const methods = event.availablePaymentMethods;
-      setAvailable(
+      console.log("[ExpressCheckout] availablePaymentMethods:", methods);
+      const isAvailable =
         methods !== undefined &&
-          (methods.applePay || methods.googlePay || methods.link),
-      );
+        (methods.applePay || methods.googlePay || methods.link);
+      setAvailable(isAvailable);
+      onAvailabilityChangeRef.current?.(isAvailable);
     },
     [],
   );
@@ -469,6 +475,7 @@ export function ExpressCheckoutButton({
   basePath,
   onComplete,
   onProcessingChange,
+  onAvailabilityChange,
   maxColumns,
   showDivider,
 }: ExpressCheckoutButtonProps) {
@@ -497,6 +504,7 @@ export function ExpressCheckoutButton({
         basePath={basePath}
         onComplete={onComplete}
         onProcessingChange={onProcessingChange}
+        onAvailabilityChange={onAvailabilityChange}
         maxColumns={maxColumns}
         showDivider={showDivider}
       />

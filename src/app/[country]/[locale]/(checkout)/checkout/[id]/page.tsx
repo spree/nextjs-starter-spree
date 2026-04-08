@@ -117,6 +117,7 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(paymentError);
   const [processing, setProcessing] = useState(false);
+  const [expressAvailable, setExpressAvailable] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sectionErrors, setSectionErrors] = useState<Record<string, string[]>>(
     {},
@@ -624,10 +625,12 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
 
       {/* Express checkout for guests */}
       {!isAuthenticated && parseFloat(cart.total) > 0 && (
-        <div className="mb-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">
-            Express checkout
-          </h2>
+        <div className={expressAvailable ? "mb-4" : ""}>
+          {expressAvailable && (
+            <h2 className="text-lg font-bold text-gray-900 mb-3">
+              Express checkout
+            </h2>
+          )}
           <ExpressCheckoutButton
             cart={cart}
             basePath={basePath}
@@ -635,6 +638,7 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
               await loadOrder();
             }}
             onProcessingChange={setProcessing}
+            onAvailabilityChange={setExpressAvailable}
             maxColumns={2}
             showDivider
           />
