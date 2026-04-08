@@ -2,6 +2,7 @@
 
 import type { Address, AddressParams, Country } from "@spree/sdk";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { AddressEditModal } from "@/components/checkout/AddressEditModal";
 import {
@@ -31,6 +32,7 @@ interface AddressCardProps {
 }
 
 function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
+  const t = useTranslations("address");
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -58,26 +60,25 @@ function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
         </div>
         <div className="flex gap-2">
           <Button variant="link" size="sm" onClick={onEdit}>
-            Edit
+            {t("edit")}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" disabled={deleting}>
-                {deleting ? "Deleting..." : "Delete"}
+                {deleting ? t("deleting") : t("delete")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete address?</AlertDialogTitle>
+                <AlertDialogTitle>{t("deleteAddressTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete this address. This action cannot
-                  be undone.
+                  {t("deleteAddressConfirmation")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                  Delete
+                  {t("delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -103,6 +104,7 @@ export function AddressManagement({
   emptyState,
   user,
 }: AddressManagementProps) {
+  const t = useTranslations("address");
   const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
@@ -155,14 +157,14 @@ export function AddressManagement({
     if (result.success) {
       setAddresses((prev) => prev.filter((addr) => addr.id !== id));
     } else {
-      alert(`Failed to delete address: ${result.error}`);
+      alert(t("failedToDeleteAddress"));
     }
   };
 
   if (emptyState && addresses.length === 0) {
     return (
       <>
-        <Button onClick={handleAdd}>Add Your First Address</Button>
+        <Button onClick={handleAdd}>{t("addFirstAddress")}</Button>
         {modalOpen && (
           <AddressEditModal
             address={editingAddress}
@@ -183,7 +185,7 @@ export function AddressManagement({
         <div className="mb-6">
           <Button onClick={handleAdd}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Address
+            {t("addAddress")}
           </Button>
         </div>
       )}

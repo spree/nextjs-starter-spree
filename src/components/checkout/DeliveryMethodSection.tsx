@@ -1,6 +1,7 @@
 "use client";
 
 import type { Fulfillment } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface DeliveryMethodSectionProps {
@@ -19,9 +20,13 @@ export function DeliveryMethodSection({
   processing,
   errors,
 }: DeliveryMethodSectionProps) {
+  const t = useTranslations("checkout");
+
   return (
     <div>
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping method</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-3">
+        {t("shippingMethod")}
+      </h2>
 
       {errors && errors.length > 0 && (
         <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-3">
@@ -35,7 +40,7 @@ export function DeliveryMethodSection({
 
       {fulfillments.length === 0 ? (
         <div className="rounded-sm bg-gray-100 px-4 py-3.5 text-sm text-gray-500">
-          Enter your shipping address to view available shipping methods.
+          {t("enterShippingAddressForMethods")}
         </div>
       ) : (
         <div className="space-y-2">
@@ -47,11 +52,17 @@ export function DeliveryMethodSection({
               <div key={fulfillment.id}>
                 {fulfillments.length > 1 && (
                   <p className="text-xs font-medium text-gray-500 mb-2">
-                    Package {index + 1} of {fulfillments.length}
+                    {t("shipmentOf", {
+                      current: index + 1,
+                      total: fulfillments.length,
+                    })}
                     {fulfillment.stock_location?.name && (
                       <span className="font-normal">
                         {" "}
-                        &mdash; Fulfilled from {fulfillment.stock_location.name}
+                        &mdash;{" "}
+                        {t("shipsFrom", {
+                          location: fulfillment.stock_location.name,
+                        })}
                       </span>
                     )}
                   </p>

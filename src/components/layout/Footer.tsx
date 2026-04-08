@@ -1,5 +1,6 @@
 import type { Category } from "@spree/sdk";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 
@@ -9,9 +10,17 @@ const storeDescription = getStoreDescription();
 interface FooterProps {
   rootCategories: Category[];
   basePath: string;
+  locale: Locale;
 }
 
-export function Footer({ rootCategories, basePath }: FooterProps) {
+export async function Footer({
+  rootCategories,
+  basePath,
+  locale,
+}: FooterProps) {
+  const t = await getTranslations({ locale, namespace: "footer" });
+  const tp = await getTranslations({ locale, namespace: "policies" });
+
   return (
     <footer className="bg-primary text-gray-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -19,19 +28,23 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <span className="text-xl font-bold text-white">{storeName}</span>
-            <p className="mt-4 text-sm text-neutral-400">{storeDescription}</p>
+            <p className="mt-4 text-sm text-neutral-400">
+              {t("description") || storeDescription}
+            </p>
           </div>
 
           {/* Links */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-300">Shop</h3>
+            <h3 className="text-sm font-medium text-neutral-300">
+              {t("shop")}
+            </h3>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link
                   href={`${basePath}/products`}
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  All Products
+                  {t("allProducts")}
                 </Link>
               </li>
               {rootCategories.map((category) => (
@@ -49,14 +62,16 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
 
           {/* Account */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-300">Account</h3>
+            <h3 className="text-sm font-medium text-neutral-300">
+              {t("account")}
+            </h3>
             <ul className="mt-4 space-y-3">
               <li>
                 <Link
                   href={`${basePath}/account`}
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  My Account
+                  {t("myAccount")}
                 </Link>
               </li>
               <li>
@@ -64,7 +79,7 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
                   href={`${basePath}/account/orders`}
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  Order History
+                  {t("orderHistory")}
                 </Link>
               </li>
               <li>
@@ -72,7 +87,7 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
                   href={`${basePath}/cart`}
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
-                  Cart
+                  {t("cart")}
                 </Link>
               </li>
             </ul>
@@ -80,7 +95,9 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
 
           {/* Policies */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-300">Policies</h3>
+            <h3 className="text-sm font-medium text-neutral-300">
+              {t("policies")}
+            </h3>
             <ul className="mt-4 space-y-3">
               {POLICY_LINKS.map((policy) => (
                 <li key={policy.slug}>
@@ -88,7 +105,7 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
                     href={`${basePath}/policies/${policy.slug}`}
                     className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                   >
-                    {policy.name}
+                    {tp(policy.nameKey)}
                   </Link>
                 </li>
               ))}
@@ -98,7 +115,7 @@ export function Footer({ rootCategories, basePath }: FooterProps) {
 
         <div className="mt-8 pt-8 border-t border-neutral-800 text-xs text-neutral-500 text-center">
           <p>
-            &copy; {new Date().getFullYear()} {storeName}. Powered by
+            &copy; {new Date().getFullYear()} {storeName}. {t("poweredBy")}{" "}
             <Link
               href="https://spreecommerce.org"
               target="_blank"

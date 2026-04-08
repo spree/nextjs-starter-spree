@@ -3,6 +3,7 @@
 import type { Category } from "@spree/sdk";
 import { ArrowLeft, Check, ChevronRight, User, X } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
+  const t = useTranslations("header");
   const [open, setOpen] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [panelStack, setPanelStack] = useState<PanelType[]>([{ kind: "main" }]);
@@ -114,7 +116,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
           if (!hasInteracted) setHasInteracted(true);
           setOpen(!open);
         }}
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? t("closeMenu") : t("openMenu")}
         className="relative z-[60] cursor-pointer"
       >
         <div className="relative w-5 h-5">
@@ -162,7 +164,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
         showCloseButton={false}
         overlayClassName="max-md:!top-16 max-md:!bg-transparent"
       >
-        <SheetTitle className="sr-only">Menu</SheetTitle>
+        <SheetTitle className="sr-only">{t("menu")}</SheetTitle>
         {/* Menu header — changes based on active panel */}
         <div className="hidden md:flex items-center justify-between px-4 h-16 border-b border-gray-200 relative overflow-hidden">
           {/* "Menu" title — visible when on main panel */}
@@ -173,7 +175,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                 : "-translate-x-8 opacity-0 pointer-events-none"
             }`}
           >
-            Menu
+            {t("menu")}
           </span>
           {/* Back button + category name — visible on sub-panels */}
           <button
@@ -190,7 +192,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
               {currentPanel.kind === "category"
                 ? currentPanel.category.name
                 : currentPanel.kind === "country"
-                  ? "Select Country"
+                  ? t("selectCountry")
                   : ""}
             </span>
           </button>
@@ -220,14 +222,14 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                 onClick={() => setOpen(false)}
                 className={linkClass}
               >
-                Home
+                {t("home")}
               </Link>
               <Link
                 href={`${basePath}/products`}
                 onClick={() => setOpen(false)}
                 className={linkClass}
               >
-                All Products
+                {t("allProducts")}
               </Link>
               {rootCategories.map((category) =>
                 category.children && category.children.length > 0 ? (
@@ -256,7 +258,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                 onClick={() => setOpen(false)}
                 className={linkClass}
               >
-                Contact
+                {t("contact")}
               </Link>
             </nav>
 
@@ -282,7 +284,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                   className="flex items-center justify-center gap-2 mx-4 mb-2 px-4 py-3 bg-black text-white rounded-lg text-base font-medium hover:bg-gray-800 transition-colors"
                 >
                   <User className="size-5" />
-                  <span>My Account</span>
+                  <span>{t("myAccount")}</span>
                 </Link>
               </SheetClose>
             </SheetFooter>
@@ -349,7 +351,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                     onClick={() => handleOpenChange(false)}
                     className="block w-full text-center text-sm text-gray-500 hover:text-gray-900 py-2 transition-colors"
                   >
-                    View all {panel.category.name}
+                    {t("viewAllCategory", { category: panel.category.name })}
                   </Link>
                 </div>
               </div>
@@ -372,7 +374,7 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
                 className="flex items-center gap-2 text-gray-700 hover:text-gray-900 py-2 text-base font-medium"
               >
                 <ArrowLeft className="w-5 h-5" />
-                <span>Select Country</span>
+                <span>{t("selectCountry")}</span>
               </button>
             </div>
 

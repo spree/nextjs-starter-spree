@@ -2,7 +2,7 @@
 
 import type { Country, Market } from "@spree/sdk";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
-import { getStoreDescription, getStoreName } from "@/lib/store";
+import { getStoreName } from "@/lib/store";
 
 /** Country enriched with market info (currency, locale, etc.) */
 export interface CountryWithMarket extends Country {
@@ -12,11 +12,9 @@ export interface CountryWithMarket extends Country {
 }
 
 const storeName = getStoreName();
-const storeDescription = getStoreDescription();
 
 interface StoreContextValue {
   storeName: string;
-  storeDescription: string;
   country: string;
   locale: string;
   currency: string;
@@ -92,7 +90,6 @@ export function StoreProvider({
   const value = useMemo<StoreContextValue>(
     () => ({
       storeName,
-      storeDescription,
       country,
       locale,
       currency,

@@ -2,6 +2,7 @@
 
 import type { Product, ProductFiltersResponse } from "@spree/sdk";
 import { Loader2, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import type { RefObject } from "react";
 import { FilterBar } from "@/components/products/filters";
@@ -40,10 +41,11 @@ export function ProductListingLayout({
   activeFilters,
   onFilterChange,
   loadMoreRef,
-  emptyMessage = "Try adjusting your filters",
+  emptyMessage,
   listId,
   listName,
 }: ProductListingLayoutProps): React.ReactElement {
+  const t = useTranslations("products");
   return (
     <div>
       <FilterBar
@@ -63,9 +65,11 @@ export function ProductListingLayout({
             strokeWidth={1.5}
           />
           <h3 className="mt-4 text-lg font-medium text-gray-900">
-            No products found
+            {t("noProductsFound")}
           </h3>
-          <p className="mt-2 text-gray-500">{emptyMessage}</p>
+          <p className="mt-2 text-gray-500">
+            {emptyMessage ?? t("tryAdjustingFilters")}
+          </p>
         </div>
       ) : (
         <>
@@ -84,11 +88,11 @@ export function ProductListingLayout({
             {loadingMore && (
               <div className="flex items-center gap-2 text-gray-500">
                 <Loader2 className="animate-spin h-5 w-5" />
-                Loading more...
+                {t("loadingMore")}
               </div>
             )}
             {!hasMore && products.length > 0 && (
-              <p className="text-gray-500 text-sm">No more products to load</p>
+              <p className="text-gray-500 text-sm">{t("noMoreProducts")}</p>
             )}
           </div>
         </>

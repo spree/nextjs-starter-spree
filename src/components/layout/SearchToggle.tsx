@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useCallback, useRef, useState } from "react";
 import { SearchBar } from "@/components/search/SearchBar";
@@ -25,6 +26,7 @@ export function SearchToggle({
   rightStart,
   rightEnd,
 }: SearchToggleProps) {
+  const t = useTranslations("header");
   const [searchOpen, setSearchOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
 
@@ -61,7 +63,7 @@ export function SearchToggle({
                 variant="ghost"
                 size="icon-lg"
                 onClick={() => setSearchOpen(true)}
-                aria-label="Open search"
+                aria-label={t("openSearch")}
                 aria-expanded={searchOpen}
                 aria-controls="search-overlay"
               >
@@ -109,7 +111,7 @@ export function SearchToggle({
             variant="ghost"
             size="icon-lg"
             onClick={closeSearch}
-            aria-label="Close search"
+            aria-label={t("closeSearch")}
           >
             <X className="size-5" />
           </Button>

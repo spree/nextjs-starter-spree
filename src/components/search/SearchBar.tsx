@@ -3,6 +3,7 @@
 import type { Product } from "@spree/sdk";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import {
   InputGroup,
@@ -23,6 +24,7 @@ interface SearchBarProps {
 export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
   const router = useRouter();
   const { currency } = useStore();
+  const t = useTranslations("products");
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -165,7 +167,7 @@ export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
             onFocus={() => setIsOpen(true)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            placeholder="Search..."
+            placeholder={t("search")}
             autoFocus={autoFocus}
             role="combobox"
             aria-expanded={showSuggestions}
@@ -174,7 +176,7 @@ export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
               selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined
             }
             aria-autocomplete="list"
-            aria-label="Search"
+            aria-label={t("search")}
           />
           <InputGroupAddon>
             <Search />
@@ -191,7 +193,7 @@ export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {loading ? (
               <div className="p-4 text-center text-gray-500 text-sm">
-                Searching...
+                {t("searching")}
               </div>
             ) : suggestions.length > 0 ? (
               <ul id="search-suggestions" role="listbox">
@@ -249,14 +251,14 @@ export function SearchBar({ basePath, autoFocus, onNavigate }: SearchBarProps) {
                       }}
                       className="w-full p-3 text-sm text-primary hover:bg-gray-50 text-center font-medium"
                     >
-                      View all results for &ldquo;{query}&rdquo;
+                      {t("viewAllResultsFor", { query: query.trim() })}
                     </button>
                   </li>
                 )}
               </ul>
             ) : query.length >= 2 ? (
               <div className="p-4 text-center text-gray-500 text-sm">
-                No products found
+                {t("noProductsFound")}
               </div>
             ) : null}
           </div>

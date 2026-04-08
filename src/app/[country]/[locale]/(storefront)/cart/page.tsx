@@ -4,6 +4,7 @@ import type { LineItem } from "@spree/sdk";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
@@ -17,6 +18,8 @@ export default function CartPage() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const viewCartFiredRef = useRef(false);
+  const t = useTranslations("cart");
+  const tc = useTranslations("common");
 
   // Track view_cart when cart loads with items
   useEffect(() => {
@@ -62,14 +65,14 @@ export default function CartPage() {
             strokeWidth={1}
           />
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
-            Your cart is empty
+            {t("emptyCart")}
           </h1>
-          <p className="mt-2 text-gray-500">
-            Looks like you haven&apos;t added anything to your cart yet.
-          </p>
+          <p className="mt-2 text-gray-500">{t("emptyCartDescription")}</p>
           <div className="mt-6">
             <Button size="lg" asChild>
-              <Link href={`${basePath}/products`}>Continue Shopping</Link>
+              <Link href={`${basePath}/products`}>
+                {tc("continueShopping")}
+              </Link>
             </Button>
           </div>
         </div>
@@ -79,7 +82,9 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        {t("shoppingCart")}
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
@@ -125,10 +130,10 @@ export default function CartPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    aria-label={`Remove ${item.name}`}
+                    aria-label={t("removeItemLabel", { name: item.name })}
                     onClick={() => handleRemove(item)}
                   >
-                    Remove
+                    {tc("remove")}
                   </Button>
                 </div>
               </div>
@@ -139,22 +144,24 @@ export default function CartPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
-            <h2 className="text-lg font-medium text-gray-900">Order Summary</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              {tc("orderSummary")}
+            </h2>
 
             <dl className="mt-6 space-y-4">
               <div className="flex justify-between">
-                <dt className="text-gray-500">Subtotal</dt>
+                <dt className="text-gray-500">{tc("subtotal")}</dt>
                 <dd className="text-gray-900">{cart.display_item_total}</dd>
               </div>
               {cart.discount_total && parseFloat(cart.discount_total) < 0 && (
                 <div className="flex justify-between text-green-600">
-                  <dt>Discount</dt>
+                  <dt>{tc("discount")}</dt>
                   <dd>{cart.display_discount_total}</dd>
                 </div>
               )}
               {cart.delivery_total && parseFloat(cart.delivery_total) > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Shipping</dt>
+                  <dt className="text-gray-500">{tc("shipping")}</dt>
                   <dd className="text-gray-900">
                     {cart.display_delivery_total}
                   </dd>
@@ -162,12 +169,14 @@ export default function CartPage() {
               )}
               {cart.tax_total && parseFloat(cart.tax_total) > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Tax</dt>
+                  <dt className="text-gray-500">{tc("tax")}</dt>
                   <dd className="text-gray-900">{cart.display_tax_total}</dd>
                 </div>
               )}
               <div className="border-t pt-4 flex justify-between">
-                <dt className="text-lg font-medium text-gray-900">Total</dt>
+                <dt className="text-lg font-medium text-gray-900">
+                  {tc("total")}
+                </dt>
                 <dd className="text-lg font-bold text-gray-900">
                   {cart.display_total}
                 </dd>
@@ -175,13 +184,13 @@ export default function CartPage() {
 
               {cart.gift_card && parseFloat(cart.gift_card_total) > 0 ? (
                 <div className="flex justify-between text-green-600">
-                  <dt>Gift card</dt>
+                  <dt>{t("giftCard")}</dt>
                   <dd>-{cart.display_gift_card_total}</dd>
                 </div>
               ) : cart.store_credit_total &&
                 parseFloat(cart.store_credit_total) > 0 ? (
                 <div className="flex justify-between text-green-600">
-                  <dt>Store credit</dt>
+                  <dt>{t("storeCredit")}</dt>
                   <dd>-{cart.display_store_credit_total}</dd>
                 </div>
               ) : null}
@@ -191,7 +200,7 @@ export default function CartPage() {
                 parseFloat(cart.amount_due) > 0 && (
                   <div className="border-t pt-4 flex justify-between">
                     <dt className="text-lg font-medium text-gray-900">
-                      Amount due
+                      {t("amountDue")}
                     </dt>
                     <dd className="text-lg font-bold text-gray-900">
                       {cart.display_amount_due}
@@ -203,11 +212,13 @@ export default function CartPage() {
             <div className="mt-6 space-y-3">
               <Button size="lg" asChild className="w-full">
                 <Link href={`${basePath}/checkout/${cart.id}`}>
-                  Proceed to Checkout
+                  {t("proceedToCheckout")}
                 </Link>
               </Button>
               <Button variant="link" asChild className="w-full">
-                <Link href={`${basePath}/products`}>Continue Shopping</Link>
+                <Link href={`${basePath}/products`}>
+                  {tc("continueShopping")}
+                </Link>
               </Button>
             </div>
           </div>

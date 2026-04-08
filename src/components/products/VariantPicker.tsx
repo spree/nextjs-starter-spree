@@ -1,6 +1,7 @@
 "use client";
 
 import type { OptionType, Variant } from "@spree/sdk";
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +18,7 @@ export function VariantPicker({
   selectedVariant,
   onVariantChange,
 }: VariantPickerProps) {
+  const t = useTranslations("products");
   const optionValuesMap = useMemo(() => {
     const map: Record<string, Set<string>> = {};
 
@@ -222,7 +224,7 @@ export function VariantPicker({
                       {optionValue?.label || value}
                       {!isPurchasable && isAvailable && (
                         <span className="ml-1 text-xs text-gray-400">
-                          (Out of stock)
+                          {t("outOfStockVariant")}
                         </span>
                       )}
                     </Button>

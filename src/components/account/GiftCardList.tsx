@@ -2,6 +2,7 @@
 
 import type { GiftCard } from "@spree/sdk";
 import { Check, ClipboardCopy } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils/format";
@@ -22,24 +23,28 @@ function getStateColor(state: string, expired: boolean): string {
   }
 }
 
-function getStateLabel(state: string): string {
+function getStateLabel(
+  state: string,
+  t: ReturnType<typeof useTranslations<"giftCards">>,
+): string {
   switch (state) {
     case "active":
-      return "Active";
+      return t("active");
     case "partially_redeemed":
-      return "Partially Used";
+      return t("partiallyUsed");
     case "redeemed":
-      return "Fully Redeemed";
+      return t("fullyRedeemed");
     case "canceled":
-      return "Canceled";
+      return t("canceled");
     case "expired":
-      return "Expired";
+      return t("expired");
     default:
       return state;
   }
 }
 
 function CopyButton({ code }: { code: string }) {
+  const t = useTranslations("giftCards");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -67,17 +72,17 @@ function CopyButton({ code }: { code: string }) {
       variant="ghost"
       size="sm"
       onClick={handleCopy}
-      title="Copy code to clipboard"
+      title={t("copyCodeToClipboard")}
     >
       {copied ? (
         <>
           <Check className="w-4 h-4 text-green-600" />
-          <span className="text-green-600">Copied!</span>
+          <span className="text-green-600">{t("copied")}</span>
         </>
       ) : (
         <>
           <ClipboardCopy className="w-4 h-4" />
-          <span>Copy</span>
+          <span>{t("copy")}</span>
         </>
       )}
     </Button>
@@ -85,6 +90,8 @@ function CopyButton({ code }: { code: string }) {
 }
 
 function GiftCardItem({ card }: { card: GiftCard }) {
+  const t = useTranslations("giftCards");
+  const locale = useLocale();
   const usagePercentage =
     Number(card.amount) > 0
       ? Math.round((Number(card.amount_used) / Number(card.amount)) * 100)
@@ -102,20 +109,22 @@ function GiftCardItem({ card }: { card: GiftCard }) {
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium ${getStateColor(card.status, card.expired)}`}
             >
-              {getStateLabel(card.status)}
+              {getStateLabel(card.status, t)}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
             {card.expires_at
-              ? `Expires ${formatDate(card.expires_at)}`
-              : "No expiration date"}
+              ? t("expiresOn", {
+                  date: formatDate(card.expires_at, "-", locale),
+                })
+              : t("noExpiration")}
           </p>
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-gray-900">
             {card.display_amount_remaining}
           </p>
-          <p className="text-sm text-gray-500">remaining</p>
+          <p className="text-sm text-gray-500">{t("remaining")}</p>
         </div>
       </div>
 
@@ -123,9 +132,11 @@ function GiftCardItem({ card }: { card: GiftCard }) {
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
           <span className="text-gray-600">
-            Used: {card.display_amount_used}
+            {t("usedAmount", { amount: card.display_amount_used })}
           </span>
-          <span className="text-gray-600">Total: {card.display_amount}</span>
+          <span className="text-gray-600">
+            {t("totalAmountWithValue", { amount: card.display_amount })}
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-lg h-2">
           <div
@@ -135,14 +146,18 @@ function GiftCardItem({ card }: { card: GiftCard }) {
             style={{ width: `${Math.min(usagePercentage, 100)}%` }}
           />
         </div>
-        <p className="text-xs text-gray-500 mt-1">{usagePercentage}% used</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {t("percentUsed", { percent: usagePercentage })}
+        </p>
       </div>
 
       {/* Additional info */}
       {card.redeemed_at && (
         <div className="pt-4 border-t border-gray-100">
           <p className="text-sm text-gray-500">
-            Fully redeemed on {formatDate(card.redeemed_at)}
+            {t("fullyRedeemedOnDate", {
+              date: formatDate(card.redeemed_at, "-", locale),
+            })}
           </p>
         </div>
       )}
@@ -155,6 +170,7 @@ interface GiftCardListProps {
 }
 
 export function GiftCardList({ cards }: GiftCardListProps) {
+  const t = useTranslations("giftCards");
   const activeCards = cards.filter((c) => c.active && !c.expired);
   const inactiveCards = cards.filter((c) => !c.active || c.expired);
 
@@ -164,7 +180,7 @@ export function GiftCardList({ cards }: GiftCardListProps) {
       {activeCards.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Active Gift Cards ({activeCards.length})
+            {t("activeGiftCardsCount", { count: activeCards.length })}
           </h2>
           <div className="space-y-4">
             {activeCards.map((card) => (
@@ -178,7 +194,7 @@ export function GiftCardList({ cards }: GiftCardListProps) {
       {inactiveCards.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-500 mb-4">
-            Expired / Redeemed ({inactiveCards.length})
+            {t("expiredRedeemedCount", { count: inactiveCards.length })}
           </h2>
           <div className="space-y-4 opacity-75">
             {inactiveCards.map((card) => (

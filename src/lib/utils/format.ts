@@ -1,15 +1,22 @@
-export function formatDate(dateString: string | null, fallback = "-"): string {
+export function formatDate(
+  dateString: string | null,
+  fallback = "-",
+  locale = "en-US",
+): string {
   if (!dateString) return fallback;
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 }
 
-export function formatDateTime(dateString: string | null): string {
+export function formatDateTime(
+  dateString: string | null,
+  locale = "en-US",
+): string {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleString("en-US", {
+  return new Date(dateString).toLocaleString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",

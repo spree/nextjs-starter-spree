@@ -3,6 +3,7 @@
 import { CircleAlert, CircleCheck, Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { requestPasswordReset } from "@/lib/data/customer";
 import { extractBasePath } from "@/lib/utils/path";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("forgotPassword");
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
 
@@ -40,10 +42,10 @@ export default function ForgotPasswordPage() {
       if (result?.message) {
         setSubmitted(true);
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(t("genericError"));
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -57,20 +59,19 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
               <CircleCheck className="w-6 h-6 text-green-600" />
             </div>
-            <CardTitle>Check your email</CardTitle>
+            <CardTitle>{t("checkYourEmail")}</CardTitle>
             <CardDescription>
-              If an account exists for <strong>{email}</strong>, we&apos;ve sent
-              password reset instructions.
+              {t.rich("resetEmailSent", {
+                email,
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3 text-sm text-gray-600">
               <Mail className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-400" />
-              <p>
-                The link in the email will expire in 15 minutes. Check your spam
-                folder if you don&apos;t see it.
-              </p>
+              <p>{t("linkExpiry")}</p>
             </div>
 
             <Button
@@ -81,7 +82,7 @@ export default function ForgotPasswordPage() {
                 setEmail("");
               }}
             >
-              Try a different email
+              {t("tryDifferentEmail")}
             </Button>
           </CardContent>
 
@@ -90,7 +91,7 @@ export default function ForgotPasswordPage() {
               href={`${basePath}/account`}
               className="text-sm text-primary hover:text-primary/70 font-medium"
             >
-              Back to sign in
+              {t("backToSignIn")}
             </Link>
           </CardFooter>
         </Card>
@@ -102,11 +103,8 @@ export default function ForgotPasswordPage() {
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>Reset your password</CardTitle>
-          <CardDescription>
-            Enter your email and we&apos;ll send you a link to reset your
-            password.
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -119,7 +117,7 @@ export default function ForgotPasswordPage() {
             )}
 
             <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
               <Input
                 type="email"
                 id="email"
@@ -139,7 +137,7 @@ export default function ForgotPasswordPage() {
                 size="lg"
                 className="w-full"
               >
-                {submitting ? "Sending..." : "Send reset link"}
+                {submitting ? t("sending") : t("sendResetLink")}
               </Button>
             </div>
           </form>
@@ -150,7 +148,7 @@ export default function ForgotPasswordPage() {
             href={`${basePath}/account`}
             className="text-sm text-primary hover:text-primary/70 font-medium"
           >
-            Back to sign in
+            {t("backToSignIn")}
           </Link>
         </CardFooter>
       </Card>

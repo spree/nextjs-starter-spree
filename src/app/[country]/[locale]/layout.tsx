@@ -1,12 +1,28 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { NextIntlClientProvider } from "next-intl";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { StoreProvider } from "@/contexts/StoreContext";
 import { getMarkets } from "@/lib/data/markets";
 import { generateStoreMetadata } from "@/lib/metadata/store";
 import { buildOrganizationJsonLd } from "@/lib/seo";
 import { getDefaultCountry, getDefaultLocale } from "@/lib/store";
+import deMessages from "../../../../messages/de.json";
+import enMessages from "../../../../messages/en.json";
+import esMessages from "../../../../messages/es.json";
+import frMessages from "../../../../messages/fr.json";
+import plMessages from "../../../../messages/pl.json";
+
+const messagesMap: Record<string, IntlMessages> = {
+  en: enMessages,
+  de: deMessages,
+  es: esMessages,
+  fr: frMessages,
+  pl: plMessages,
+};
 
 interface CountryLocaleLayoutProps {
   children: React.ReactNode;
@@ -50,16 +66,26 @@ export default async function CountryLocaleLayout({
     redirect(`/${fallbackCountry}/${fallbackLocale}`);
   }
 
+  // Load messages statically (no runtime data access) to avoid blocking prerender
+  const messages = messagesMap[locale] || messagesMap.en;
+
   return (
-    <StoreProvider
-      initialCountry={country}
-      initialLocale={locale}
-      initialMarkets={markets}
+    <NextIntlClientProvider
+      messages={messages}
+      locale={locale as "en" | "de" | "pl"}
     >
-      <AuthProvider>
-        <JsonLd data={buildOrganizationJsonLd()} />
-        {children}
-      </AuthProvider>
-    </StoreProvider>
+      <StoreProvider
+        initialCountry={country}
+        initialLocale={locale}
+        initialMarkets={markets}
+      >
+        <AuthProvider>
+          <JsonLd data={buildOrganizationJsonLd()} />
+          {children}
+          <CartDrawer />
+          <Toaster />
+        </AuthProvider>
+      </StoreProvider>
+    </NextIntlClientProvider>
   );
 }

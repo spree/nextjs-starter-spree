@@ -1,20 +1,27 @@
 import type { Category } from "@spree/sdk";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 interface BreadcrumbsProps {
   category: Category;
   basePath: string;
   productName?: string;
+  locale: string;
 }
 
-export function Breadcrumbs({
+export async function Breadcrumbs({
   category,
   basePath,
   productName,
+  locale,
 }: BreadcrumbsProps) {
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "navigation",
+  });
   // Build breadcrumb items from ancestors + current category
-  const items = [{ name: "Home", href: basePath }];
+  const items = [{ name: t("home"), href: basePath }];
 
   // Add ancestors (they come from the API in order from root to parent)
   if (category.ancestors && category.ancestors.length > 0) {
@@ -39,7 +46,7 @@ export function Breadcrumbs({
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
+    <nav aria-label={t("breadcrumb")} className="mb-6">
       <ol className="flex items-center space-x-2 text-sm">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;

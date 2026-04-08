@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ function countryToFlag(countryCode: string): string {
 
 export function CountrySwitcher() {
   const { country, currency, countries, loading } = useStore();
+  const tc = useTranslations("common");
   const { isCountryNavigating, handleCountrySelect } = useCountrySwitch({
     currentCountry: country,
   });
@@ -51,7 +53,7 @@ export function CountrySwitcher() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel>Select Country</DropdownMenuLabel>
+        <DropdownMenuLabel>{tc("selectCountry")}</DropdownMenuLabel>
         {countries.map((c) => {
           const isSelected = c.iso.toLowerCase() === country.toLowerCase();
           return (

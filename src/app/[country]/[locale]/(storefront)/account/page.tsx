@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export default function AccountPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
+  const t = useTranslations("account");
   const { login, isAuthenticated, loading: authLoading } = useAuth();
 
   // Get redirect URL from query params (e.g., from checkout)
@@ -55,7 +57,7 @@ export default function AccountPage() {
         router.push(redirectUrl);
       }
     } else {
-      setError(result.error || "Invalid email or password");
+      setError(result.error || t("invalidCredentials"));
     }
     setLoading(false);
   };
@@ -79,10 +81,8 @@ export default function AccountPage() {
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>My Account</CardTitle>
-            <CardDescription>
-              Sign in to access your account and order history.
-            </CardDescription>
+            <CardTitle>{t("myAccount")}</CardTitle>
+            <CardDescription>{t("signInDescription")}</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -95,7 +95,7 @@ export default function AccountPage() {
               )}
 
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
                 <Input
                   type="email"
                   id="email"
@@ -109,7 +109,7 @@ export default function AccountPage() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <FieldLabel htmlFor="password">{t("password")}</FieldLabel>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
@@ -129,7 +129,7 @@ export default function AccountPage() {
                       size="icon-sm"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={
-                        showPassword ? "Hide password" : "Show password"
+                        showPassword ? t("hidePassword") : t("showPassword")
                       }
                     >
                       {showPassword ? (
@@ -147,7 +147,7 @@ export default function AccountPage() {
                   href={`${basePath}/account/forgot-password`}
                   className="text-sm text-primary hover:text-primary/70 font-medium"
                 >
-                  Forgot password?
+                  {t("forgotPassword")}
                 </Link>
               </div>
 
@@ -158,7 +158,7 @@ export default function AccountPage() {
                   size="lg"
                   className="w-full"
                 >
-                  {loading ? "Signing in..." : "Sign In"}
+                  {loading ? t("signingIn") : t("signIn")}
                 </Button>
               </div>
             </form>
@@ -166,12 +166,12 @@ export default function AccountPage() {
 
           <CardFooter className="justify-center">
             <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              {t("dontHaveAccount")}{" "}
               <Link
                 href={`${basePath}/account/register`}
                 className="text-primary hover:text-primary/70 font-medium"
               >
-                Sign up
+                {t("signUp")}
               </Link>
             </p>
           </CardFooter>
@@ -184,7 +184,7 @@ export default function AccountPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Account Overview
+        {t("accountOverview")}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -196,10 +196,10 @@ export default function AccountPage() {
               </div>
               <div>
                 <h2 className="text-lg font-medium text-gray-900">
-                  Order History
+                  {t("orderHistory")}
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  View your past orders and track deliveries
+                  {t("orderHistoryDescription")}
                 </p>
               </div>
             </CardContent>
@@ -213,9 +213,11 @@ export default function AccountPage() {
                 <MapPin className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-medium text-gray-900">Addresses</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  {t("addresses")}
+                </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  Manage your shipping and billing addresses
+                  {t("addressesDescription")}
                 </p>
               </div>
             </CardContent>
@@ -230,10 +232,10 @@ export default function AccountPage() {
               </div>
               <div>
                 <h2 className="text-lg font-medium text-gray-900">
-                  Payment Methods
+                  {t("paymentMethods")}
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  Manage your saved credit cards
+                  {t("paymentMethodsDescription")}
                 </p>
               </div>
             </CardContent>
@@ -247,9 +249,11 @@ export default function AccountPage() {
                 <User className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-medium text-gray-900">Profile</h2>
+                <h2 className="text-lg font-medium text-gray-900">
+                  {t("profile")}
+                </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  Update your personal information
+                  {t("profileDescription")}
                 </p>
               </div>
             </CardContent>

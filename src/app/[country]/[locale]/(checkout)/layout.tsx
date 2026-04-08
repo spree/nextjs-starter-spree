@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronDown, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { POLICY_LINKS } from "@/lib/constants/policies";
@@ -15,6 +16,7 @@ const storeName = getStoreName();
 function CheckoutHeader() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const t = useTranslations("checkoutLayout");
 
   return (
     <header className="flex items-center justify-between">
@@ -30,10 +32,10 @@ function CheckoutHeader() {
       <Link
         href={basePath || "/"}
         className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-        aria-label="Back to store"
+        aria-label={t("backToStore")}
       >
         <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-        <span className="hidden sm:inline">Back to store</span>
+        <span className="hidden sm:inline">{t("backToStore")}</span>
       </Link>
     </header>
   );
@@ -42,12 +44,13 @@ function CheckoutHeader() {
 function CheckoutFooter() {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
-  const currentYear = new Date().getFullYear();
+  const t = useTranslations("checkoutLayout");
+  const tp = useTranslations("policies");
 
   return (
     <footer className="py-4 text-xs text-gray-500 border-t border-gray-200 mt-auto flex flex-wrap items-center gap-x-3 gap-y-1">
       <p>
-        &copy; {currentYear} {storeName}. All rights reserved.
+        {t("allRightsReserved", { year: new Date().getFullYear(), storeName })}
       </p>
       {POLICY_LINKS.map((policy) => (
         <Link
@@ -56,7 +59,7 @@ function CheckoutFooter() {
           target="_blank"
           className="text-gray-500 underline hover:text-gray-700"
         >
-          {policy.name}
+          {tp(policy.nameKey)}
         </Link>
       ))}
     </footer>
@@ -65,6 +68,7 @@ function CheckoutFooter() {
 
 function MobileSummaryToggle() {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations("checkoutLayout");
 
   return (
     <div className="lg:hidden border-b border-gray-200 bg-gray-50">
@@ -72,17 +76,19 @@ function MobileSummaryToggle() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center justify-between text-left"
+        aria-expanded={isOpen}
+        aria-controls="checkout-summary-panel"
       >
         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
           <ShoppingBag className="w-5 h-5 text-gray-600" />
-          {isOpen ? "Hide order summary" : "Show order summary"}
+          {isOpen ? t("hideOrderSummary") : t("showOrderSummary")}
         </span>
         <ChevronDown
           className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
       {isOpen && (
-        <div className="px-5 pb-4">
+        <div id="checkout-summary-panel" className="px-5 pb-4">
           <CheckoutSummary />
         </div>
       )}

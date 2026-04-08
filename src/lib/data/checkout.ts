@@ -51,7 +51,7 @@ export async function updateOrderAddresses(
   }, "Failed to update addresses");
 }
 
-export async function updateOrderMarket(
+export async function updateCartMarket(
   cartId: string,
   params: { currency: string; locale: string },
 ) {

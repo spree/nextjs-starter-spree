@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getPolicy } from "@/lib/data/policies";
 import { getStoreName } from "@/lib/store";
 
@@ -14,23 +15,40 @@ interface PolicyPageProps {
 export async function generateMetadata({
   params,
 }: PolicyPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const policy = await getPolicy(slug);
-
-  if (!policy) {
-    return { title: "Policy Not Found" };
-  }
 
   const storeName = getStoreName();
 
+  if (!policy) {
+    const t = await getTranslations({
+      locale: locale as Locale,
+      namespace: "policies",
+    });
+    return {
+      title: t("policyNotFound"),
+      description: t("noContent"),
+    };
+  }
+
   return {
     title: storeName ? `${policy.name} | ${storeName}` : policy.name,
+    description: `${policy.name} — ${storeName}`,
+    openGraph: {
+      title: policy.name,
+      description: `${policy.name} — ${storeName}`,
+    },
   };
 }
 
-export default async function PolicyPage({ params }: PolicyPageProps) {
-  const { slug } = await params;
-  const policy = await getPolicy(slug);
+export default async function PolicyPage({
+  params,
+}: PolicyPageProps): Promise<React.JSX.Element> {
+  const { slug, locale } = await params;
+  const [policy, t] = await Promise.all([
+    getPolicy(slug),
+    getTranslations({ locale: locale as Locale, namespace: "policies" }),
+  ]);
 
   if (!policy) {
     notFound();
@@ -49,7 +67,7 @@ export default async function PolicyPage({ params }: PolicyPageProps) {
           {policy.body}
         </div>
       ) : (
-        <p className="text-gray-500">No content available for this policy.</p>
+        <p className="text-gray-500">{t("noContent")}</p>
       )}
     </div>
   );

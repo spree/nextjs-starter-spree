@@ -2,6 +2,7 @@ import type { Category } from "@spree/sdk";
 import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { CartButton } from "@/components/layout/CartButton";
 import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
 import { MobileMenu } from "@/components/layout/MobileMenu";
@@ -14,9 +15,16 @@ const storeName = getStoreName();
 interface HeaderProps {
   rootCategories: Category[];
   basePath: string;
+  locale: Locale;
 }
 
-export function Header({ rootCategories, basePath }: HeaderProps) {
+export async function Header({
+  rootCategories,
+  basePath,
+  locale,
+}: HeaderProps) {
+  const t = await getTranslations({ locale, namespace: "header" });
+
   return (
     <SearchToggle
       basePath={basePath}
@@ -43,7 +51,7 @@ export function Header({ rootCategories, basePath }: HeaderProps) {
           {/* Account - desktop only */}
           <div className="hidden md:block">
             <Button variant="ghost" size="icon-lg" asChild>
-              <Link href={`${basePath}/account`} aria-label="Account">
+              <Link href={`${basePath}/account`} aria-label={t("account")}>
                 <User className="size-5" />
               </Link>
             </Button>

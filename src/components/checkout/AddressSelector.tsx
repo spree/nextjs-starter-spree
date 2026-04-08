@@ -2,6 +2,7 @@
 
 import type { Address, Country, State } from "@spree/sdk";
 import { MapPin } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -35,6 +36,8 @@ export function AddressSelector({
   idPrefix,
   user,
 }: AddressSelectorProps) {
+  const t = useTranslations("address");
+  const tc = useTranslations("common");
   // Derive selected address from current form data — no useEffect needed
   const selectedAddressId = useMemo((): string => {
     if (savedAddresses.length === 0) return "new";
@@ -132,7 +135,7 @@ export function AddressSelector({
                   }}
                   className="text-xs text-gray-500 underline underline-offset-2 hover:text-gray-900 flex-shrink-0"
                 >
-                  Edit
+                  {tc("edit")}
                 </button>
               )}
             </label>
@@ -149,7 +152,7 @@ export function AddressSelector({
             <RadioGroupItem value="new" />
             <MapPin className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
             <span className="text-sm text-gray-900">
-              Use a different address
+              {t("useDifferentAddress")}
             </span>
           </label>
         </RadioGroup>

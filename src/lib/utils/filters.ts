@@ -21,19 +21,20 @@ export function getActiveFilterCount(filters: ActiveFilters): number {
   );
 }
 
-const SORT_LABELS_CANONICAL: Record<string, string> = {
-  manual: "Relevance",
-  best_selling: "Best Selling",
-  price: "Price: Low to High",
-  "-price": "Price: High to Low",
-  "-available_on": "Newest",
-  available_on: "Oldest",
-  name: "Name (A-Z)",
-  "-name": "Name (Z-A)",
+/** Maps sort API keys to translation message keys in the "products" namespace. */
+const SORT_KEY_TO_MESSAGE: Record<string, string> = {
+  manual: "manual",
+  best_selling: "bestSelling",
+  price: "priceLowHigh",
+  "-price": "priceHighLow",
+  "-available_on": "newest",
+  available_on: "oldest",
+  name: "nameAZ",
+  "-name": "nameZA",
 };
 
 export function normalizeSortKey(key: string): string {
-  if (key in SORT_LABELS_CANONICAL) return key;
+  if (key in SORT_KEY_TO_MESSAGE) return key;
   const match = key.match(/^(\w+)\s+(asc|desc)$/);
   if (!match) return key;
   const [, field, direction] = match;
@@ -43,11 +44,49 @@ export function normalizeSortKey(key: string): string {
   return needsNegation ? `-${field}` : field;
 }
 
-export function getSortLabel(key: string): string {
-  return SORT_LABELS_CANONICAL[normalizeSortKey(key)] || key;
+/**
+ * Get a translated sort label.
+ * Pass a `t` function from `useTranslations("products")`.
+ * Falls back to the raw key if no translator is provided.
+ */
+const SORT_FALLBACK: Record<string, string> = {
+  manual: "Manual",
+  best_selling: "Best Selling",
+  price: "Price (low-high)",
+  "-price": "Price (high-low)",
+  "-available_on": "Newest",
+  available_on: "Oldest",
+  name: "Name (A-Z)",
+  "-name": "Name (Z-A)",
+};
+
+export function getSortLabel(key: string, t?: (key: string) => string): string {
+  const normalized = normalizeSortKey(key);
+  const messageKey = SORT_KEY_TO_MESSAGE[normalized];
+  if (messageKey && t) return t(messageKey);
+  return SORT_FALLBACK[normalized] || key;
 }
 
-export const AVAILABILITY_LABELS: Record<string, string> = {
+/** Maps availability API values to translation message keys in the "products" namespace. */
+const AVAILABILITY_KEY_TO_MESSAGE: Record<string, string> = {
+  in_stock: "inStock",
+  out_of_stock: "outOfStock",
+};
+
+/**
+ * Get a translated availability label.
+ * Pass a `t` function from `useTranslations("products")`.
+ */
+const AVAILABILITY_FALLBACK: Record<string, string> = {
   in_stock: "In Stock",
   out_of_stock: "Out of Stock",
 };
+
+export function getAvailabilityLabel(
+  id: string,
+  t?: (key: string) => string,
+): string {
+  const messageKey = AVAILABILITY_KEY_TO_MESSAGE[id];
+  if (messageKey && t) return t(messageKey);
+  return AVAILABILITY_FALLBACK[id] || id;
+}

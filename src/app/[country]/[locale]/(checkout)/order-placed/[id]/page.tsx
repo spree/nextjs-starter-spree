@@ -4,6 +4,7 @@ import type { Cart } from "@spree/sdk";
 import { CircleCheckBig, Package } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { use, useEffect, useRef, useState } from "react";
 import { AddressBlock } from "@/components/order/AddressBlock";
 import { OrderTotals } from "@/components/order/OrderTotals";
@@ -29,10 +30,14 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
   const { setSummaryContent } = useCheckout();
+  const t = useTranslations("orderPlaced");
+  const tc = useTranslations("common");
 
   const [order, setOrder] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"orderNotFound" | "failedToLoad" | null>(
+    null,
+  );
 
   // Clear sidebar summary
   useEffect(() => {
@@ -65,13 +70,13 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
             // Analytics failure must not break the order confirmation UX
           }
         } else {
-          setError("Order not found.");
+          setError("orderNotFound");
         }
         setLoading(false);
       } catch {
         if (!cancelled) {
           loadedRef.current = true;
-          setError("Failed to load order details.");
+          setError("failedToLoad");
           setLoading(false);
         }
       }
@@ -99,10 +104,10 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          {error || "Order not found"}
+          {t(error || "orderNotFound")}
         </h1>
         <Button asChild>
-          <Link href={`${basePath}/`}>Continue Shopping</Link>
+          <Link href={`${basePath}/`}>{tc("continueShopping")}</Link>
         </Button>
       </div>
     );
@@ -117,19 +122,22 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       <div className="text-center mb-10">
         <CircleCheckBig className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Thanks for your order
-          {customerName ? `, ${customerName.split(" ")[0]}` : ""}!
+          {customerName
+            ? t("thanksForOrder", { name: customerName.split(" ")[0] })
+            : t("thanksForOrderAnonymous")}
         </h1>
-        <p className="text-gray-500">Order #{order.number}</p>
-        <p className="text-sm text-gray-400 mt-2">
-          You will receive an email confirmation shortly.
+        <p className="text-gray-500">
+          {t("orderNumber", { number: order.number })}
         </p>
+        <p className="text-sm text-gray-400 mt-2">{t("emailConfirmation")}</p>
       </div>
 
       {/* Order Items */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Order Items</h2>
+          <h2 className="text-lg font-medium text-gray-900">
+            {t("orderItems")}
+          </h2>
         </div>
         <ul className="divide-y divide-gray-200">
           {order.items?.map((item) => (
@@ -150,7 +158,9 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
                 {item.options_text && (
                   <p className="text-sm text-gray-500">{item.options_text}</p>
                 )}
-                <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                <p className="text-sm text-gray-500">
+                  {t("qty", { quantity: item.quantity })}
+                </p>
               </div>
               <div className="text-sm font-medium text-gray-900">
                 {item.display_total}
@@ -172,7 +182,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           {order.fulfillments && order.fulfillments.length > 0 && (
             <div className="px-6 py-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                Shipping Method
+                {t("shippingMethod")}
               </h3>
               {order.fulfillments.map((fulfillment) => (
                 <div
@@ -182,7 +192,8 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
                   <Package className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {fulfillment.delivery_method?.name || "Standard Shipping"}
+                      {fulfillment.delivery_method?.name ||
+                        t("standardShipping")}
                     </p>
                     <p className="text-xs text-gray-500">
                       {fulfillment.display_cost}
@@ -197,7 +208,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           {order.payments && order.payments.length > 0 && (
             <div className="px-6 py-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                Payment
+                {t("payment")}
               </h3>
               {order.payments
                 .filter((p) => p.status !== "void" && p.status !== "invalid")
@@ -206,7 +217,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
                     <PaymentInfo
                       payment={payment}
                       storeCreditLabel={
-                        order.gift_card ? "Gift Card" : undefined
+                        order.gift_card ? t("giftCard") : undefined
                       }
                     />
                   </div>
@@ -222,7 +233,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           {order.shipping_address && (
             <div className="px-6 py-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                Shipping Address
+                {t("shippingAddress")}
               </h3>
               <AddressBlock address={order.shipping_address} />
             </div>
@@ -231,7 +242,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
           {order.billing_address && (
             <div className="px-6 py-4">
               <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                Billing Address
+                {t("billingAddress")}
               </h3>
               <AddressBlock address={order.billing_address} />
             </div>
@@ -241,7 +252,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
         {order.email && (
           <div className="px-6 py-3 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Confirmation sent to{" "}
+              {t("confirmationSentTo")}{" "}
               <span className="font-medium text-gray-700">{order.email}</span>
             </p>
           </div>
@@ -251,7 +262,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
       {/* Actions */}
       <div className="text-center">
         <Button size="lg" asChild>
-          <Link href={`${basePath}/`}>Continue Shopping</Link>
+          <Link href={`${basePath}/`}>{tc("continueShopping")}</Link>
         </Button>
       </div>
     </div>

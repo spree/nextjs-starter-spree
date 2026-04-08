@@ -45,14 +45,22 @@ export default async function StorefrontLayout({
 
   return (
     <>
-      <Header rootCategories={rootCategories} basePath={basePath} />
+      <Header
+        rootCategories={rootCategories}
+        basePath={basePath}
+        locale={locale as Locale}
+      />
       {rootCategories.length > 0 && (
         <nav aria-label="Category navigation" className="sr-only">
           <CategoryLinks categories={rootCategories} basePath={basePath} />
         </nav>
       )}
       <main className="flex-1">{children}</main>
-      <Footer rootCategories={rootCategories} basePath={basePath} />
+      <Footer
+        rootCategories={rootCategories}
+        basePath={basePath}
+        locale={locale as Locale}
+      />
     </>
   );
 }

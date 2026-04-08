@@ -56,7 +56,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         style={{ backgroundImage: `url(${category.image_url})` }}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs category={category} basePath={basePath} />
+          <Breadcrumbs
+            category={category}
+            basePath={basePath}
+            locale={locale}
+          />
 
           <div className="mb-4">
             <h1 className="text-4xl font-bold text-gray-900">

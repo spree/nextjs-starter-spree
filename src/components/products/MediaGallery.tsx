@@ -3,6 +3,7 @@
 import type { Media } from "@spree/sdk";
 import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { ProductImage } from "@/components/ui/product-image";
 
@@ -21,6 +22,7 @@ export function MediaGallery({
   productName,
   activeIndex,
 }: MediaGalleryProps) {
+  const t = useTranslations("products");
   const [selectedIndex, setSelectedIndex] = useState(activeIndex ?? 0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mainImageErrorUrl, setMainImageErrorUrl] = useState<string | null>(
@@ -64,7 +66,7 @@ export function MediaGallery({
         type="button"
         className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-zoom-in w-full"
         onClick={() => showMainImage && setIsZoomed(true)}
-        aria-label="Open image zoom"
+        aria-label={t("openImageZoom")}
         disabled={!showMainImage}
       >
         <ProductImage
@@ -85,7 +87,7 @@ export function MediaGallery({
         {showMainImage && (
           <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg text-sm text-gray-600 flex items-center gap-1.5">
             <ZoomIn className="w-4 h-4" />
-            Click to zoom
+            {t("clickToZoom")}
           </div>
         )}
       </button>
@@ -129,7 +131,7 @@ export function MediaGallery({
             type="button"
             className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
             onClick={() => setIsZoomed(false)}
-            aria-label="Close lightbox"
+            aria-label={t("lightboxClose")}
           >
             <X className="w-8 h-8" />
           </button>
@@ -146,7 +148,7 @@ export function MediaGallery({
                     prev === 0 ? images.length - 1 : prev - 1,
                   );
                 }}
-                aria-label="Previous image"
+                aria-label={t("lightboxPrev")}
               >
                 <ChevronLeft className="w-8 h-8" />
               </button>
@@ -159,7 +161,7 @@ export function MediaGallery({
                     prev === images.length - 1 ? 0 : prev + 1,
                   );
                 }}
-                aria-label="Next image"
+                aria-label={t("lightboxNext")}
               >
                 <ChevronRight className="w-8 h-8" />
               </button>

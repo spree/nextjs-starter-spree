@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import type { CountryWithMarket } from "@/contexts/StoreContext";
-import { updateOrderMarket } from "@/lib/data/checkout";
+import { updateCartMarket } from "@/lib/data/checkout";
 import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
 
@@ -43,7 +43,7 @@ export function useCountrySwitch({
     const newPath = `/${nextCountry}/${newLocale}${pathRest}`;
 
     if (cart && (cart.currency !== newCurrency || cart.locale !== newLocale)) {
-      const result = await updateOrderMarket(cart.id, {
+      const result = await updateCartMarket(cart.id, {
         currency: newCurrency,
         locale: newLocale,
       });

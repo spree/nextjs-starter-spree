@@ -3,6 +3,7 @@
 import { CircleAlert, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { PolicyConsent } from "@/components/policy/PolicyConsent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,6 +25,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const t = useTranslations("register");
+  const ta = useTranslations("account");
   const { register, isAuthenticated, loading: authLoading } = useAuth();
 
   const [firstName, setFirstName] = useState("");
@@ -55,18 +58,18 @@ export default function RegisterPage() {
     setError(null);
 
     if (password !== passwordConfirmation) {
-      setError("Passwords do not match");
+      setError(t("passwordsDontMatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t("passwordTooShort"));
       return;
     }
 
     if (!policyConsent) {
       setPolicyError(true);
-      setError("You must agree to the store policies to create an account");
+      setError(ta("policyConsentRequired"));
       document
         .getElementById("policy-consent")
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -87,10 +90,10 @@ export default function RegisterPage() {
       if (result.success) {
         router.push(`${basePath}/account`);
       } else {
-        setError(result.error || "Registration failed. Please try again.");
+        setError(result.error || t("registrationFailed"));
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(t("unexpectedError"));
     } finally {
       setSubmitting(false);
     }
@@ -100,8 +103,8 @@ export default function RegisterPage() {
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>Create Account</CardTitle>
-          <CardDescription>Sign up to start shopping with us.</CardDescription>
+          <CardTitle>{t("createAccount")}</CardTitle>
+          <CardDescription>{t("signUpDescription")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -115,44 +118,44 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <Field>
-                <FieldLabel htmlFor="firstName">First name</FieldLabel>
+                <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
                 <Input
                   type="text"
                   id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  placeholder="John"
+                  placeholder={t("firstNamePlaceholder")}
                 />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="lastName">Last name</FieldLabel>
+                <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
                 <Input
                   type="text"
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  placeholder="Doe"
+                  placeholder={t("lastNamePlaceholder")}
                 />
               </Field>
             </div>
 
             <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <FieldLabel htmlFor="email">{ta("email")}</FieldLabel>
               <Input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
               />
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <FieldLabel htmlFor="password">{ta("password")}</FieldLabel>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
@@ -171,7 +174,7 @@ export default function RegisterPage() {
                     size="icon-sm"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
-                      showPassword ? "Hide password" : "Show password"
+                      showPassword ? ta("hidePassword") : ta("showPassword")
                     }
                   >
                     {showPassword ? (
@@ -186,7 +189,7 @@ export default function RegisterPage() {
 
             <Field>
               <FieldLabel htmlFor="passwordConfirmation">
-                Confirm Password
+                {t("confirmPassword")}
               </FieldLabel>
               <div className="relative">
                 <Input
@@ -209,8 +212,8 @@ export default function RegisterPage() {
                     }
                     aria-label={
                       showPasswordConfirmation
-                        ? "Hide password"
-                        : "Show password"
+                        ? ta("hidePassword")
+                        : ta("showPassword")
                     }
                   >
                     {showPasswordConfirmation ? (
@@ -239,7 +242,7 @@ export default function RegisterPage() {
                 size="lg"
                 className="w-full"
               >
-                {submitting ? "Creating account..." : "Create Account"}
+                {submitting ? t("creatingAccount") : t("createAccount")}
               </Button>
             </div>
           </form>
@@ -247,12 +250,12 @@ export default function RegisterPage() {
 
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
+            {t("alreadyHaveAccount")}{" "}
             <Link
               href={`${basePath}/account`}
               className="text-primary hover:text-primary/70 font-medium"
             >
-              Sign in
+              {t("signIn")}
             </Link>
           </p>
         </CardFooter>
