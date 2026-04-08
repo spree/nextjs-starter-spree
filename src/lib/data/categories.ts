@@ -8,7 +8,7 @@ async function cachedListCategories(
   params: CategoryListParams | undefined,
   options: { locale?: string; country?: string },
 ) {
-  "use cache";
+  "use cache: remote";
   cacheLife("hours");
   cacheTag("categories");
   return getClient().categories.list(params, options);
