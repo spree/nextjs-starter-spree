@@ -56,7 +56,7 @@ export function ProductCustomFields({
           return (
             <div key={field.id} className="flex">
               <dt className="w-32 shrink-0 text-gray-500 text-sm">
-                {field.name}
+                {field.label}
               </dt>
               <dd className="text-gray-900 text-sm min-w-0">
                 {renderValue(field, type, t)}
