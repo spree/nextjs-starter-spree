@@ -28,7 +28,8 @@ vi.mock("next/headers", () => ({
 // Mock next/image → plain <img>
 vi.mock("next/image", () => ({
   default: (props: Record<string, unknown>) => {
-    const { fill, priority, blurDataURL, placeholder, ...rest } = props;
+    const { fill, priority, fetchPriority, blurDataURL, placeholder, ...rest } =
+      props;
     // biome-ignore lint/performance/noImgElement: test mock for next/image
     // biome-ignore lint/a11y/useAltText: test mock passes through all props including alt
     return <img {...rest} />;

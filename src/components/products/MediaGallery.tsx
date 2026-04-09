@@ -75,7 +75,8 @@ export function MediaGallery({
           alt={selectedImage?.alt || productName}
           fill
           className="object-cover"
-          priority
+          fetchPriority="high"
+          loading="eager"
           quality={85}
           sizes="(max-width: 768px) 100vw, 50vw"
           placeholder="blur"

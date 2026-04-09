@@ -39,7 +39,7 @@ export function ProductGrid({
           index={index}
           listId={listId}
           listName={listName}
-          priority={index < priorityCount}
+          fetchPriority={index < priorityCount ? "high" : undefined}
         />
       ))}
     </div>

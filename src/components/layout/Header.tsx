@@ -37,7 +37,8 @@ export async function Header({
             width={90}
             height={32}
             className="h-8 w-auto max-w-full object-contain"
-            priority
+            fetchPriority="high"
+            loading="eager"
           />
         </Link>
       }
