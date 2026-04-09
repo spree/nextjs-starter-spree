@@ -68,10 +68,7 @@ export default async function HomePage({ params }: HomePageProps) {
       </section>
 
       {/* Featured Products */}
-      <section
-        className="container mx-auto px-4 sm:px-6 lg:px-8 py-16"
-        style={{ contentVisibility: "auto", containIntrinsicSize: "0 500px" }}
-      >
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 featured-products">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900">
             {t("featuredProducts")}

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { CartButton } from "@/components/layout/CartButton";
-import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
+import { LazyCountrySwitcher } from "@/components/layout/LazyCountrySwitcher";
 import { LazyMobileMenu } from "@/components/layout/LazyMobileMenu";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export async function Header({
       }
       rightStart={
         <div className="hidden lg:block">
-          <CountrySwitcher />
+          <LazyCountrySwitcher />
         </div>
       }
       rightEnd={
