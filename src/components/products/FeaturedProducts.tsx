@@ -1,12 +1,21 @@
 import { LazyProductCarousel } from "@/components/products/LazyProductCarousel";
-import { getProducts } from "@/lib/data/products";
+import { cachedListProducts } from "@/lib/data/products";
 
 interface FeaturedProductsProps {
   basePath: string;
+  locale: string;
+  country: string;
 }
 
-export async function FeaturedProducts({ basePath }: FeaturedProductsProps) {
-  const productsResponse = await getProducts({ limit: 8 });
+export async function FeaturedProducts({
+  basePath,
+  locale,
+  country,
+}: FeaturedProductsProps) {
+  const productsResponse = await cachedListProducts(
+    { limit: 8 },
+    { locale, country },
+  );
 
   return (
     <LazyProductCarousel products={productsResponse.data} basePath={basePath} />

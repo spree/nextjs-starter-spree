@@ -4,7 +4,7 @@ import type { ProductListParams } from "@spree/sdk";
 import { cacheLife, cacheTag } from "next/cache";
 import { getClient, getLocaleOptions } from "@/lib/spree";
 
-async function cachedListProducts(
+export async function cachedListProducts(
   params: ProductListParams | undefined,
   options: { locale?: string; country?: string },
 ) {
