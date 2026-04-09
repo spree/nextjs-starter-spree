@@ -1,14 +1,39 @@
 import type { Category } from "@spree/sdk";
 import { User } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { CartButton } from "@/components/layout/CartButton";
-import { LazyCountrySwitcher } from "@/components/layout/LazyCountrySwitcher";
-import { LazyMobileMenu } from "@/components/layout/LazyMobileMenu";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
 import { getStoreName } from "@/lib/store";
+
+const LazyMobileMenu = dynamic(
+  () =>
+    import("@/components/layout/MobileMenu").then((mod) => ({
+      default: mod.MobileMenu,
+    })),
+  {
+    loading: () => (
+      <div className="inline-flex items-center justify-center h-10 w-10" />
+    ),
+  },
+);
+
+const LazyCountrySwitcher = dynamic(
+  () =>
+    import("@/components/layout/CountrySwitcher").then((mod) => ({
+      default: mod.CountrySwitcher,
+    })),
+  {
+    loading: () => (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400">
+        <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
 
 const storeName = getStoreName();
 

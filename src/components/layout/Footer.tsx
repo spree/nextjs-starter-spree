@@ -120,7 +120,6 @@ export async function Footer({
               href="https://spreecommerce.org"
               target="_blank"
               className="text-neutral-400 hover:text-neutral-200 underline transition-colors"
-              rel="noopener noreferrer"
             >
               Spree Commerce
             </Link>{" "}
