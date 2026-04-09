@@ -40,7 +40,11 @@
     "myAccount": "Mein Konto"
   },
   "footer": {
-    "description": "Ein moderner E-Commerce-Shop, betrieben von Spree Commerce und Next.js.",
+    "description": "Open-Source-E-Commerce basierend auf Spree REST API, TypeScript SDK und Next.js. Selbst hosten. Eigene Daten. Keine Plattformgebühren.",
+    "testCardNote": "Testen Sie den Checkout mit der Karte {testCard} (beliebiges Ablaufdatum, beliebiger CVC).",
+    "forkOnGithub": "Diesen Storefront auf GitHub forken",
+    "quickstartGuide": "Schnellstartanleitung",
+    "learnMore": "Mehr über Spree Commerce erfahren",
     "shop": "Shop",
     "allProducts": "Alle Produkte",
     "categories": "Kategorien",
@@ -53,10 +57,12 @@
     "copyright": "© {year} {storeName}. Unterstützt durch Spree Commerce."
   },
   "home": {
-    "welcome": "Willkommen bei {storeName}",
-    "heroDescription": "Entdecken Sie großartige Produkte mit unserem modernen E-Commerce-Erlebnis, betrieben von Spree Commerce.",
-    "shopNow": "Jetzt einkaufen",
-    "browseCategories": "Kategorien durchsuchen",
+    "welcome": "{storeName} Next.js Storefront",
+    "heroDescription": "Ein produktionsreifer, quelloffener Storefront mit Next.js, React und dem Spree TypeScript SDK. Selbst hosten. Eigener Stack. Kein Vendor Lock-in. Keine Plattformgebühren.",
+    "heroDemoNote": "Dies ist eine Live-Demo. Produkte durchstöbern, in den Warenkorb legen und mit Testkarte {testCard} bezahlen (beliebiges Ablaufdatum, beliebiger CVC).",
+    "shopNow": "Demo erkunden",
+    "forkOnGithub": "Auf GitHub forken",
+    "quickstartGuide": "Schnellstartanleitung",
     "featuredProducts": "Ausgewählte Produkte",
     "viewAll": "Alle ansehen",
     "qualityProducts": "Qualitätsprodukte",

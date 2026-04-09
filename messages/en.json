@@ -40,7 +40,11 @@
     "myAccount": "My Account"
   },
   "footer": {
-    "description": "A modern e-commerce storefront powered by Spree Commerce and Next.js.",
+    "description": "Open-source ecommerce powered by Spree REST API, TypeScript SDK, and Next.js. Self-host it. Own your data. Zero platform fees.",
+    "testCardNote": "Test checkout with card {testCard} (any future expiry, any CVC).",
+    "forkOnGithub": "Fork this storefront on GitHub",
+    "quickstartGuide": "Quickstart guide",
+    "learnMore": "Learn more about Spree Commerce",
     "shop": "Shop",
     "allProducts": "All Products",
     "categories": "Categories",
@@ -53,10 +57,12 @@
     "copyright": "© {year} {storeName}. Powered by Spree Commerce."
   },
   "home": {
-    "welcome": "Welcome to {storeName}",
-    "heroDescription": "Discover amazing products with our modern e-commerce experience powered by Spree Commerce.",
-    "shopNow": "Shop Now",
-    "browseCategories": "Browse Categories",
+    "welcome": "{storeName} Next.js Storefront",
+    "heroDescription": "A production-ready, open-source storefront built with Next.js, React, and the Spree TypeScript SDK. Self-host it. Own your stack. No vendor lock-in. Zero platform fees.",
+    "heroDemoNote": "This is a live demo. Browse products, add to cart, and check out with test card {testCard} (any future expiry, any CVC).",
+    "shopNow": "Shop the Demo",
+    "forkOnGithub": "Fork on GitHub",
+    "quickstartGuide": "Quickstart Guide",
     "featuredProducts": "Featured Products",
     "viewAll": "View all",
     "qualityProducts": "Quality Products",

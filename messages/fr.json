@@ -40,7 +40,11 @@
     "myAccount": "Mon compte"
   },
   "footer": {
-    "description": "Une boutique en ligne moderne propulsee par Spree Commerce et Next.js.",
+    "description": "E-commerce open source basé sur Spree REST API, TypeScript SDK et Next.js. Auto-hébergé. Vos données. Zéro frais de plateforme.",
+    "testCardNote": "Testez le paiement avec la carte {testCard} (n'importe quelle date d'expiration future, n'importe quel CVC).",
+    "forkOnGithub": "Forker cette boutique sur GitHub",
+    "quickstartGuide": "Guide de démarrage rapide",
+    "learnMore": "En savoir plus sur Spree Commerce",
     "shop": "Boutique",
     "allProducts": "Tous les produits",
     "categories": "Categories",
@@ -53,10 +57,12 @@
     "copyright": "\u00a9 {year} {storeName}. Propulse par Spree Commerce."
   },
   "home": {
-    "welcome": "Bienvenue chez {storeName}",
-    "heroDescription": "Decouvrez des produits exceptionnels avec notre experience e-commerce moderne propulsee par Spree Commerce.",
-    "shopNow": "Acheter maintenant",
-    "browseCategories": "Parcourir les categories",
+    "welcome": "{storeName} Next.js Storefront",
+    "heroDescription": "Un storefront open source prêt pour la production, construit avec Next.js, React et le SDK TypeScript Spree. Auto-hébergé. Votre stack. Pas de dépendance fournisseur. Zéro frais de plateforme.",
+    "heroDemoNote": "Ceci est une démo en direct. Parcourez les produits, ajoutez au panier et payez avec la carte de test {testCard} (n'importe quelle date d'expiration future, n'importe quel CVC).",
+    "shopNow": "Explorer la démo",
+    "forkOnGithub": "Forker sur GitHub",
+    "quickstartGuide": "Guide de démarrage rapide",
     "featuredProducts": "Produits en vedette",
     "viewAll": "Voir tout",
     "qualityProducts": "Produits de qualite",

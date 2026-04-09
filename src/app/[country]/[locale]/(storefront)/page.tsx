@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
 import { Button } from "@/components/ui/button";
 import { generateHomeMetadata } from "@/lib/metadata/home";
-import { getStoreName } from "@/lib/store";
+import { getSpreeDemoData, getStoreName } from "@/lib/store";
 
 interface HomePageProps {
   params: Promise<{
@@ -29,25 +29,47 @@ export default async function HomePage({ params }: HomePageProps) {
   });
   const storeName = getStoreName();
 
+  /* Demo-only: Remove this entire block for production. */
+  const { githubUrl, quickstartUrl } = getSpreeDemoData();
   return (
     <div>
       {/* Hero Section */}
       <section className="border-b border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
               {t("welcome", { storeName })}
             </h1>
-            <p className="mt-4 text-xl text-gray-500 max-w-2xl mx-auto">
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
               {t("heroDescription")}
             </p>
-            <div className="mt-8 flex justify-center gap-4">
+            {/* Demo-only: Remove for production. */}
+            <p className="mt-3 text-sm text-gray-400 max-w-xl mx-auto">
+              {t("heroDemoNote", {
+                testCard: "4242 4242 4242 4242",
+              })}
+            </p>
+            <div className="mt-8 flex justify-center gap-4 flex-wrap">
               <Button size="lg" asChild>
                 <Link href={`${basePath}/products`}>{t("shopNow")}</Link>
               </Button>
+              {/* Demo-only: Remove for production. */}
               <Button variant="outline" size="lg" asChild>
-                <Link href={`${basePath}/products`}>
-                  {t("browseCategories")}
+                <Link
+                  href={githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("forkOnGithub")}
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link
+                  href={quickstartUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("quickstartGuide")} &rarr;
                 </Link>
               </Button>
             </div>
