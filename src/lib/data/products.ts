@@ -1,11 +1,22 @@
 "use server";
 
 import type { ProductListParams } from "@spree/sdk";
+import { cacheLife, cacheTag } from "next/cache";
 import { getClient, getLocaleOptions } from "@/lib/spree";
+
+async function cachedListProducts(
+  params: ProductListParams | undefined,
+  options: { locale?: string; country?: string },
+) {
+  "use cache: remote";
+  cacheLife("minutes");
+  cacheTag("products");
+  return getClient().products.list(params, options);
+}
 
 export async function getProducts(params?: ProductListParams) {
   const options = await getLocaleOptions();
-  return getClient().products.list(params, options);
+  return cachedListProducts(params, options);
 }
 
 export async function getProduct(
