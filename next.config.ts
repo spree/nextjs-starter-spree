@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   transpilePackages: ["@spree/sdk"],
   experimental: {
+    inlineCss: true,
     optimizePackageImports: [
       "lucide-react",
       "@radix-ui/react-dropdown-menu",
