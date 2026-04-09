@@ -1,16 +1,19 @@
-"use client";
-
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
+import { getStoreName } from "@/lib/store";
 
-const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+interface HeroSectionProps {
+  basePath: string;
+  locale: string;
+}
 
-export function HeroSection() {
-  const t = useTranslations("home");
-  const params = useParams<{ country: string; locale: string }>();
-  const basePath = `/${params.country}/${params.locale}`;
+export async function HeroSection({ basePath, locale }: HeroSectionProps) {
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "home",
+  });
+  const storeName = getStoreName();
 
   return (
     <section className="border-b border-gray-200 min-h-[823px] md:min-h-0 flex items-center">

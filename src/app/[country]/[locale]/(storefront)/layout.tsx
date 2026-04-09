@@ -32,6 +32,7 @@ export default async function StorefrontLayout({
         />
       </Suspense>
       <main className="flex-1">{children}</main>
+      {/* No fallback needed — footer is below the fold */}
       <Suspense>
         <StorefrontFooter
           basePath={basePath}

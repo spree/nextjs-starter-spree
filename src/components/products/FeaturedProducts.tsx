@@ -18,6 +18,9 @@ export async function FeaturedProducts({
   );
 
   return (
-    <LazyProductCarousel products={productsResponse.data} basePath={basePath} />
+    <LazyProductCarousel
+      products={productsResponse.data ?? []}
+      basePath={basePath}
+    />
   );
 }
