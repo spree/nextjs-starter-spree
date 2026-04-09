@@ -37,7 +37,7 @@ export function ProductImage({
         onError?.(e);
       }}
       fetchPriority={fetchPriority}
-      loading={fetchPriority === "high" ? "eager" : "lazy"}
+      loading={fetchPriority === "high" ? "eager" : undefined}
       {...rest}
     />
   );
