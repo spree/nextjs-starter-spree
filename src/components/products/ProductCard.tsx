@@ -15,6 +15,7 @@ interface ProductCardProps {
   index?: number;
   listId?: string;
   listName?: string;
+  priority?: boolean;
 }
 
 export const ProductCard = memo(function ProductCard({
@@ -24,6 +25,7 @@ export const ProductCard = memo(function ProductCard({
   index,
   listId,
   listName,
+  priority,
 }: ProductCardProps) {
   const { currency } = useStore();
   const t = useTranslations("products");
@@ -71,6 +73,7 @@ export const ProductCard = memo(function ProductCard({
           className="object-cover group-hover:scale-105 transition-transform duration-300"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 300px"
           iconClassName="w-16 h-16"
+          priority={priority}
         />
         {onSale && (
           <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">

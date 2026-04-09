@@ -79,6 +79,7 @@ export function ProductListingLayout({
             categoryId={categoryId}
             listId={listId}
             listName={listName}
+            priorityCount={3}
           />
 
           <div

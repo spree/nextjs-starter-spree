@@ -62,5 +62,13 @@
     "tsx": "^4.19.0",
     "typescript": "^5",
     "vitest": "^4.0.18"
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "not dead",
+    "not op_mini all"
+  ]
 }

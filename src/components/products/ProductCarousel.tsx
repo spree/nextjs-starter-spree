@@ -116,9 +116,13 @@ export function ProductCarousel({
         }}
         className="product-carousel"
       >
-        {products.map((product) => (
+        {products.map((product, index) => (
           <SwiperSlide key={product.id} className="p-1">
-            <ProductCard product={product} basePath={basePath} />
+            <ProductCard
+              product={product}
+              basePath={basePath}
+              priority={index < 4}
+            />
           </SwiperSlide>
         ))}
       </SwiperComponent>

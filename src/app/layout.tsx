@@ -13,6 +13,7 @@ const gtmId = process.env.GTM_ID;
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const rootStoreName = getStoreName();
@@ -32,6 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://cdn.vendo.dev" />
+        <link rel="dns-prefetch" href="https://cdn.vendo.dev" />
+      </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}

@@ -8,6 +8,7 @@ interface ProductGridProps {
   listId?: string;
   listName?: string;
   emptyMessage?: string;
+  priorityCount?: number;
 }
 
 export function ProductGrid({
@@ -17,6 +18,7 @@ export function ProductGrid({
   listId,
   listName,
   emptyMessage,
+  priorityCount = 0,
 }: ProductGridProps) {
   if (products.length === 0 && emptyMessage) {
     return (
@@ -37,6 +39,7 @@ export function ProductGrid({
           index={index}
           listId={listId}
           listName={listName}
+          priority={index < priorityCount}
         />
       ))}
     </div>
