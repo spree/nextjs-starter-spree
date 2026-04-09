@@ -1,5 +1,6 @@
 "use client";
 
+import type { Product } from "@spree/sdk";
 import type { ReactElement } from "react";
 import { useCallback, useRef, useState } from "react";
 import type Swiper from "swiper";
@@ -10,12 +11,9 @@ import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ProductCard } from "@/components/products/ProductCard";
-import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
-import { useCarouselProducts } from "@/hooks/useCarouselProducts";
 
 interface ProductCarouselProps {
-  categoryId?: string;
-  limit?: number;
+  products: Product[];
   basePath: string;
 }
 
@@ -23,15 +21,10 @@ const NAV_BUTTON_BASE =
   "absolute top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center cursor-pointer rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors";
 
 export function ProductCarousel({
-  categoryId,
-  limit = 8,
+  products,
   basePath,
 }: ProductCarouselProps): ReactElement {
   const t = useTranslations("products");
-  const { products, loading, error } = useCarouselProducts({
-    categoryId,
-    limit,
-  });
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
 
@@ -49,24 +42,6 @@ export function ProductCarousel({
     setIsBeginning(swiper.isBeginning);
     setIsEnd(swiper.isEnd);
   }, []);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <ProductCardSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
 
   if (products.length === 0) {
     return (

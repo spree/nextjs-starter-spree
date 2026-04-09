@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
 import { Button } from "@/components/ui/button";
+import { getProducts } from "@/lib/data/products";
 import { generateHomeMetadata } from "@/lib/metadata/home";
 import { getStoreName } from "@/lib/store";
 
@@ -23,11 +24,14 @@ export async function generateMetadata({
 export default async function HomePage({ params }: HomePageProps) {
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
-  const t = await getTranslations({
-    locale: locale as Locale,
-    namespace: "home",
-  });
-  const storeName = getStoreName();
+  const [t, storeName, productsResponse] = await Promise.all([
+    getTranslations({
+      locale: locale as Locale,
+      namespace: "home",
+    }),
+    Promise.resolve(getStoreName()),
+    getProducts({ limit: 8 }),
+  ]);
 
   return (
     <div>
@@ -65,7 +69,7 @@ export default async function HomePage({ params }: HomePageProps) {
             <Link href={`${basePath}/products`}>{t("viewAll")} &rarr;</Link>
           </Button>
         </div>
-        <ProductCarousel basePath={basePath} />
+        <ProductCarousel products={productsResponse.data} basePath={basePath} />
       </section>
     </div>
   );
