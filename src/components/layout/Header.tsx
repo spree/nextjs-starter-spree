@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { CartButton } from "@/components/layout/CartButton";
 import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
-import { MobileMenu } from "@/components/layout/MobileMenu";
+import { LazyMobileMenu } from "@/components/layout/LazyMobileMenu";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
 import { getStoreName } from "@/lib/store";
@@ -28,7 +28,9 @@ export async function Header({
   return (
     <SearchToggle
       basePath={basePath}
-      left={<MobileMenu rootCategories={rootCategories} basePath={basePath} />}
+      left={
+        <LazyMobileMenu rootCategories={rootCategories} basePath={basePath} />
+      }
       center={
         <Link href={basePath || "/"} className="flex items-center min-w-0">
           <Image
