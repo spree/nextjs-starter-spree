@@ -9,6 +9,13 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
   },
   transpilePackages: ["@spree/sdk"],
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-dialog",
+    ],
+  },
   turbopack: {
     root: __dirname,
   },
