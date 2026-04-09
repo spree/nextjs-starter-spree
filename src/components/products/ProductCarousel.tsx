@@ -96,7 +96,7 @@ export function ProductCarousel({
             <ProductCard
               product={product}
               basePath={basePath}
-              fetchPriority={index < 4 ? "high" : undefined}
+              fetchPriority={index === 0 ? "high" : undefined}
             />
           </SwiperSlide>
         ))}
