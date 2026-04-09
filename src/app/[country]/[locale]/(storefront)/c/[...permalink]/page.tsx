@@ -5,7 +5,8 @@ import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategory } from "@/lib/data/categories";
 import { generateCategoryMetadata } from "@/lib/metadata/category";
-import { buildBreadcrumbJsonLd, getStoreUrl } from "@/lib/seo";
+import { buildBreadcrumbJsonLd } from "@/lib/seo";
+import { getStoreUrl } from "@/lib/store";
 import { CategoryProductsContent } from "./CategoryProductsContent";
 
 interface CategoryPageProps {

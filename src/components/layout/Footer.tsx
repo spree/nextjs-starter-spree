@@ -2,9 +2,10 @@ import type { Category } from "@spree/sdk";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { POLICY_LINKS } from "@/lib/constants/policies";
+import { getStoreDescription, getStoreName } from "@/lib/store";
 
-const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
-const envStoreDescription = process.env.NEXT_PUBLIC_STORE_DESCRIPTION;
+const storeName = getStoreName();
+const storeDescription = getStoreDescription();
 
 interface FooterProps {
   rootCategories: Category[];
@@ -28,7 +29,7 @@ export async function Footer({
           <div className="col-span-1 md:col-span-2">
             <span className="text-xl font-bold text-white">{storeName}</span>
             <p className="mt-4 text-sm text-neutral-400">
-              {t("description") || envStoreDescription}
+              {t("description") || storeDescription}
             </p>
           </div>
 

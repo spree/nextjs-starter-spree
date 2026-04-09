@@ -2,7 +2,7 @@
 
 import type { Country, Market } from "@spree/sdk";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
-import { getStoreName } from "@/lib/seo";
+import { getStoreName } from "@/lib/store";
 
 /** Country enriched with market info (currency, locale, etc.) */
 export interface CountryWithMarket extends Country {

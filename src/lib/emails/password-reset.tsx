@@ -11,17 +11,18 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface PasswordResetEmailProps {
   resetUrl: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
 }
 
 export function PasswordResetEmail({
   resetUrl,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl(),
 }: PasswordResetEmailProps) {
   return (
     <Html>
@@ -55,10 +56,15 @@ export function PasswordResetEmail({
           </Text>
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>

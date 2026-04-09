@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getCachedProduct, PRODUCT_PAGE_EXPAND } from "@/lib/data/cached";
-import { buildCanonicalUrl, getStoreUrl, stripHtml } from "@/lib/seo";
+import { buildCanonicalUrl, stripHtml } from "@/lib/seo";
+import { getStoreUrl } from "@/lib/store";
 
 interface ProductMetadataParams {
   country: string;

@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import { CartProvider } from "@/contexts/CartContext";
+import { getStoreDescription, getStoreName } from "@/lib/store";
 
 const gtmId = process.env.GTM_ID;
 
@@ -14,16 +15,14 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-const rootStoreName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+const rootStoreName = getStoreName();
 
 export const metadata: Metadata = {
   title: {
     template: `%s | ${rootStoreName}`,
     default: rootStoreName,
   },
-  description:
-    process.env.NEXT_PUBLIC_STORE_DESCRIPTION ||
-    "A modern e-commerce storefront powered by Spree Commerce and Next.js.",
+  description: getStoreDescription(),
 };
 
 export default function RootLayout({

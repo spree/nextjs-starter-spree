@@ -8,8 +8,9 @@ import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
+import { getStoreName } from "@/lib/store";
 
-const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "Spree Store";
+const storeName = getStoreName();
 
 interface HeaderProps {
   rootCategories: Category[];

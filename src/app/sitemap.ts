@@ -1,6 +1,6 @@
 import type { Category, Media, Product } from "@spree/sdk";
-import { ensureProtocol, getStoreUrl } from "@/lib/seo";
 import { getClient } from "@/lib/spree";
+import { getDefaultCountry, getDefaultLocale, getStoreUrl } from "@/lib/store";
 
 type ProductWithMedia = Product & {
   media?: Media[];
@@ -40,8 +40,8 @@ const MAX_FETCHABLE_ITEMS = ITEMS_PER_PAGE * MAX_PAGES;
  */
 function getDefaultLocaleOptions(): LocaleOptions {
   return {
-    locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en",
-    country: process.env.NEXT_PUBLIC_DEFAULT_COUNTRY || "us",
+    locale: getDefaultLocale(),
+    country: getDefaultCountry(),
   };
 }
 
@@ -145,7 +145,7 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
 
-  const candidate = ensureProtocol(getStoreUrl() || "").replace(/\/$/, "");
+  const candidate = (getStoreUrl() || "").replace(/\/$/, "");
 
   let baseUrl: string;
   try {

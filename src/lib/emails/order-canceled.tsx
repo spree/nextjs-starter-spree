@@ -13,6 +13,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface LineItem {
   name: string;
@@ -26,8 +27,8 @@ interface LineItem {
 interface OrderCanceledEmailProps {
   orderNumber: string;
   customerName: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
   items: LineItem[];
   displayTotal: string;
 }
@@ -35,8 +36,8 @@ interface OrderCanceledEmailProps {
 export function OrderCanceledEmail({
   orderNumber,
   customerName,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl(),
   items,
   displayTotal,
 }: OrderCanceledEmailProps) {
@@ -109,10 +110,15 @@ export function OrderCanceledEmail({
           </Text>
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>

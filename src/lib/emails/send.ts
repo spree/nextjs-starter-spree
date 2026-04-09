@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { render } from "@react-email/render";
 import type { ReactElement } from "react";
+import { getStoreEmailFrom, isStoreEmailFromFallback } from "@/lib/store";
 
 interface SendEmailOptions {
   to: string;
@@ -59,7 +60,13 @@ async function sendEmailDev({ to, subject, react }: SendEmailOptions) {
 async function sendEmailResend({ to, subject, react, from }: SendEmailOptions) {
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const fromAddress = from || process.env.EMAIL_FROM || "orders@example.com";
+  const fromAddress = from || getStoreEmailFrom();
+
+  if (!from && isStoreEmailFromFallback()) {
+    console.warn(
+      "[email] EMAIL_FROM is not set — using fallback 'orders@example.com' which will likely be rejected by Resend",
+    );
+  }
 
   const { error } = await resend.emails.send({
     from: fromAddress,

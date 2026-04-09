@@ -14,6 +14,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface ShippedItem {
   name: string;
@@ -35,16 +36,16 @@ interface Shipment {
 interface ShipmentShippedEmailProps {
   orderNumber: string;
   customerName: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
   shipments: Shipment[];
 }
 
 export function ShipmentShippedEmail({
   orderNumber,
   customerName,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl(),
   shipments,
 }: ShipmentShippedEmailProps) {
   const firstName = customerName.split(" ")[0] || "there";
@@ -109,16 +110,20 @@ export function ShipmentShippedEmail({
                       )}
                     </Column>
                     <Column style={itemDetailsCol}>
-                      <Link
-                        href={
-                          item.slug
-                            ? `${storeUrl}/products/${item.slug}`
-                            : storeUrl
-                        }
-                        style={itemName}
-                      >
-                        {item.name}
-                      </Link>
+                      {storeUrl ? (
+                        <Link
+                          href={
+                            item.slug
+                              ? `${storeUrl}/products/${item.slug}`
+                              : storeUrl
+                          }
+                          style={itemName}
+                        >
+                          {item.name}
+                        </Link>
+                      ) : (
+                        <Text style={itemName}>{item.name}</Text>
+                      )}
                       {item.options_text && (
                         <Text style={itemOptions}>{item.options_text}</Text>
                       )}
@@ -133,10 +138,15 @@ export function ShipmentShippedEmail({
           <Hr style={hr} />
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>

@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
 import { Button } from "@/components/ui/button";
 import { generateHomeMetadata } from "@/lib/metadata/home";
-import { getStoreName } from "@/lib/seo";
+import { getStoreName } from "@/lib/store";
 
 interface HomePageProps {
   params: Promise<{

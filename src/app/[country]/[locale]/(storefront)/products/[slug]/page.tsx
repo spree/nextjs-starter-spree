@@ -9,8 +9,8 @@ import {
   buildBreadcrumbJsonLd,
   buildCanonicalUrl,
   buildProductJsonLd,
-  getStoreUrl,
 } from "@/lib/seo";
+import { getStoreUrl } from "@/lib/store";
 import { ProductDetails } from "./ProductDetails";
 
 interface ProductPageProps {

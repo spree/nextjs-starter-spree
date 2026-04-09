@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { CheckoutProvider, CheckoutSummary } from "@/contexts/CheckoutContext";
 import { POLICY_LINKS } from "@/lib/constants/policies";
-import { getStoreName } from "@/lib/seo";
+import { getStoreName } from "@/lib/store";
 import { extractBasePath } from "@/lib/utils/path";
 
 const storeName = getStoreName();

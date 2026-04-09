@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import { SOCIAL_IMAGE_PATH } from "@/lib/seo";
 import {
-  ensureProtocol,
-  getStoreDescription,
+  getStoreMetaDescription,
   getStoreName,
+  getStoreSeoTitle,
   getStoreUrl,
-  SOCIAL_IMAGE_PATH,
-} from "@/lib/seo";
+} from "@/lib/store";
 
 function normalizeOpenGraphLocale(locale: string): string {
   const parts = locale.split(/[-_]/);
@@ -20,17 +20,16 @@ interface StoreMetadataParams {
 export async function generateStoreMetadata({
   locale,
 }: StoreMetadataParams): Promise<Metadata> {
-  const storeName = process.env.STORE_SEO_TITLE || getStoreName();
+  const storeName = getStoreSeoTitle();
   const storeUrl = getStoreUrl();
-  const metaDescription =
-    process.env.STORE_META_DESCRIPTION || getStoreDescription();
+  const metaDescription = getStoreMetaDescription();
   const metaKeywords = process.env.STORE_META_KEYWORDS;
   const twitter = process.env.STORE_TWITTER;
 
   let metadataBaseSpread: Partial<{ metadataBase: URL }> = {};
   if (storeUrl) {
     try {
-      metadataBaseSpread = { metadataBase: new URL(ensureProtocol(storeUrl)) };
+      metadataBaseSpread = { metadataBase: new URL(storeUrl) };
     } catch {
       metadataBaseSpread = {};
     }

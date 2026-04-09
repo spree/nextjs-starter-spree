@@ -6,12 +6,16 @@ import { OrderConfirmationEmail } from "@/lib/emails/order-confirmation";
 import { PasswordResetEmail } from "@/lib/emails/password-reset";
 import { sendEmail } from "@/lib/emails/send";
 import { ShipmentShippedEmail } from "@/lib/emails/shipment-shipped";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
-const STORE_NAME = process.env.NEXT_PUBLIC_STORE_NAME || "Store";
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ||
-  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
+const STORE_NAME = getStoreName();
+const SITE_URL = getStoreUrl();
+
+if (!SITE_URL && process.env.NODE_ENV === "production") {
+  console.warn(
+    "[webhooks] NEXT_PUBLIC_SITE_URL is not set — email links will be broken",
+  );
+}
 
 /**
  * Idempotency guard — prevents duplicate email sends when Spree retries
@@ -63,8 +67,6 @@ export async function handleOrderCompleted(event: WebhookEvent<Order>) {
     react: createElement(OrderConfirmationEmail, {
       orderNumber: order.number,
       customerName,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
       items: (order.items || []).map((item) => ({
         name: item.name,
         slug: item.slug,
@@ -105,8 +107,6 @@ export async function handleOrderCanceled(event: WebhookEvent<Order>) {
     react: createElement(OrderCanceledEmail, {
       orderNumber: order.number,
       customerName,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
       items: (order.items || []).map((item) => ({
         name: item.name,
         slug: item.slug,
@@ -173,8 +173,6 @@ export async function handleOrderShipped(event: WebhookEvent<Order>) {
     react: createElement(ShipmentShippedEmail, {
       orderNumber: order.number,
       customerName,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
       shipments,
     }),
   });
@@ -219,8 +217,6 @@ export async function handlePasswordReset(
     subject: `${STORE_NAME} Password Reset`,
     react: createElement(PasswordResetEmail, {
       resetUrl,
-      storeName: STORE_NAME,
-      storeUrl: SITE_URL,
     }),
   });
 

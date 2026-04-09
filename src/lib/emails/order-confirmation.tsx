@@ -13,6 +13,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getStoreName, getStoreUrl } from "@/lib/store";
 
 interface LineItem {
   name: string;
@@ -40,8 +41,8 @@ interface Address {
 interface OrderConfirmationEmailProps {
   orderNumber: string;
   customerName: string;
-  storeName: string;
-  storeUrl: string;
+  storeName?: string;
+  storeUrl?: string;
   items: LineItem[];
   displayItemTotal: string;
   displayDeliveryTotal: string;
@@ -56,8 +57,8 @@ interface OrderConfirmationEmailProps {
 export function OrderConfirmationEmail({
   orderNumber,
   customerName,
-  storeName,
-  storeUrl,
+  storeName = getStoreName(),
+  storeUrl = getStoreUrl(),
   items,
   displayItemTotal,
   displayDeliveryTotal,
@@ -110,14 +111,20 @@ export function OrderConfirmationEmail({
                   )}
                 </Column>
                 <Column style={itemDetailsCol}>
-                  <Link
-                    href={
-                      item.slug ? `${storeUrl}/products/${item.slug}` : storeUrl
-                    }
-                    style={itemName}
-                  >
-                    {item.name}
-                  </Link>
+                  {storeUrl ? (
+                    <Link
+                      href={
+                        item.slug
+                          ? `${storeUrl}/products/${item.slug}`
+                          : storeUrl
+                      }
+                      style={itemName}
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <Text style={itemName}>{item.name}</Text>
+                  )}
                   {item.options_text && (
                     <Text style={itemOptions}>{item.options_text}</Text>
                   )}
@@ -196,10 +203,15 @@ export function OrderConfirmationEmail({
           <Hr style={hr} />
 
           <Text style={footer}>
-            {storeName} -{" "}
-            <Link href={storeUrl} style={footerLink}>
-              {storeUrl.replace(/^https?:\/\//, "")}
-            </Link>
+            {storeName}
+            {storeUrl && (
+              <>
+                {" - "}
+                <Link href={storeUrl} style={footerLink}>
+                  {storeUrl.replace(/^https?:\/\//, "")}
+                </Link>
+              </>
+            )}
           </Text>
         </Container>
       </Body>
