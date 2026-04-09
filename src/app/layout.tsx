@@ -9,6 +9,15 @@ import { CartProvider } from "@/contexts/CartContext";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 
 const gtmId = process.env.GTM_ID;
+const spreeApiOrigin = (() => {
+  try {
+    return process.env.SPREE_API_URL
+      ? new URL(process.env.SPREE_API_URL).origin
+      : undefined;
+  } catch {
+    return undefined;
+  }
+})();
 
 const geist = Geist({
   variable: "--font-geist",
@@ -34,8 +43,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://cdn.vendo.dev" />
-        <link rel="dns-prefetch" href="https://cdn.vendo.dev" />
+        {spreeApiOrigin && (
+          <>
+            <link rel="preconnect" href={spreeApiOrigin} />
+            <link rel="dns-prefetch" href={spreeApiOrigin} />
+          </>
+        )}
       </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body
