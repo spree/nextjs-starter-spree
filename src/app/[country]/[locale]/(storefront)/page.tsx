@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { ProductCarousel } from "@/components/products/ProductCarousel";
+import { Suspense } from "react";
+import { FeaturedProducts } from "@/components/products/FeaturedProducts";
+import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
 import { Button } from "@/components/ui/button";
-import { getProducts } from "@/lib/data/products";
 import { generateHomeMetadata } from "@/lib/metadata/home";
 import { getStoreName } from "@/lib/store";
 
@@ -21,17 +22,24 @@ export async function generateMetadata({
   return generateHomeMetadata({ country, locale });
 }
 
+function CarouselSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
 export default async function HomePage({ params }: HomePageProps) {
   const { country, locale } = await params;
   const basePath = `/${country}/${locale}`;
-  const [t, storeName, productsResponse] = await Promise.all([
-    getTranslations({
-      locale: locale as Locale,
-      namespace: "home",
-    }),
-    Promise.resolve(getStoreName()),
-    getProducts({ limit: 8 }),
-  ]);
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "home",
+  });
+  const storeName = getStoreName();
 
   return (
     <div>
@@ -69,7 +77,9 @@ export default async function HomePage({ params }: HomePageProps) {
             <Link href={`${basePath}/products`}>{t("viewAll")} &rarr;</Link>
           </Button>
         </div>
-        <ProductCarousel products={productsResponse.data} basePath={basePath} />
+        <Suspense fallback={<CarouselSkeleton />}>
+          <FeaturedProducts basePath={basePath} />
+        </Suspense>
       </section>
     </div>
   );
