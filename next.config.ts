@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
   },
   transpilePackages: ["@spree/sdk"],
+  reactCompiler: true,
   experimental: {
     optimizePackageImports: [
       "lucide-react",
