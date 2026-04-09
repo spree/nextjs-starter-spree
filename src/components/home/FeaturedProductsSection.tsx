@@ -1,8 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { FeaturedProducts } from "@/components/products/FeaturedProducts";
 import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
@@ -18,10 +15,21 @@ function CarouselSkeleton() {
   );
 }
 
-export function FeaturedProductsSection() {
-  const t = useTranslations("home");
-  const params = useParams<{ country: string; locale: string }>();
-  const basePath = `/${params.country}/${params.locale}`;
+interface FeaturedProductsSectionProps {
+  basePath: string;
+  locale: string;
+  country: string;
+}
+
+export async function FeaturedProductsSection({
+  basePath,
+  locale,
+  country,
+}: FeaturedProductsSectionProps) {
+  const t = await getTranslations({
+    locale: locale as Locale,
+    namespace: "home",
+  });
 
   return (
     <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 featured-products">
@@ -36,8 +44,8 @@ export function FeaturedProductsSection() {
       <Suspense fallback={<CarouselSkeleton />}>
         <FeaturedProducts
           basePath={basePath}
-          locale={params.locale}
-          country={params.country}
+          locale={locale}
+          country={country}
         />
       </Suspense>
     </section>
