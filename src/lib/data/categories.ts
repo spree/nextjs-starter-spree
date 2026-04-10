@@ -19,12 +19,23 @@ export async function getCategories(params?: CategoryListParams) {
   return cachedListCategories(params, options);
 }
 
+async function cachedGetCategory(
+  idOrPermalink: string,
+  params: { expand?: string[] } | undefined,
+  options: { locale?: string; country?: string },
+) {
+  "use cache: remote";
+  cacheLife("hours");
+  cacheTag("category");
+  return getClient().categories.get(idOrPermalink, params, options);
+}
+
 export async function getCategory(
   idOrPermalink: string,
-  params?: CategoryListParams,
+  params?: { expand?: string[] },
 ) {
   const options = await getLocaleOptions();
-  return getClient().categories.get(idOrPermalink, params, options);
+  return cachedGetCategory(idOrPermalink, params, options);
 }
 
 export async function getCategoryProducts(
