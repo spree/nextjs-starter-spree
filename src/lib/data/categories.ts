@@ -25,7 +25,7 @@ async function cachedGetCategory(
   options: { locale?: string; country?: string },
 ) {
   "use cache: remote";
-  cacheLife("hours");
+  cacheLife("minutes");
   cacheTag("category");
   return getClient().categories.get(idOrPermalink, params, options);
 }

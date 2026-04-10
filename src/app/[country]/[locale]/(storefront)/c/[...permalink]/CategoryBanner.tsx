@@ -15,7 +15,7 @@ export async function CategoryBanner({
   locale,
 }: CategoryBannerProps) {
   "use cache: remote";
-  cacheLife("hours");
+  cacheLife("minutes");
   cacheTag("category-banner");
 
   return (
