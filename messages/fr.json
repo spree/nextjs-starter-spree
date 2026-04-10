@@ -58,7 +58,7 @@
   "home": {
     "welcome": "{storeName} Next.js Storefront",
     "heroDescription": "Un storefront open source prêt pour la production, construit avec Next.js, React et le SDK TypeScript Spree. Auto-hébergé. Votre stack. Pas de dépendance fournisseur. Zéro frais de plateforme.",
-    "shopNow": "Explorer la démo",
+    "shopNow": "Tout parcourir",
     "forkOnGithub": "Forker sur GitHub",
     "quickstartGuide": "Guide de démarrage rapide",
     "featuredProducts": "Produits en vedette",

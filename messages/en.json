@@ -58,7 +58,7 @@
   "home": {
     "welcome": "{storeName} Next.js Storefront",
     "heroDescription": "A production-ready, open-source storefront built with Next.js, React, and the Spree TypeScript SDK. Self-host it. Own your stack. No vendor lock-in. Zero platform fees.",
-    "shopNow": "Shop the Demo",
+    "shopNow": "Shop All",
     "forkOnGithub": "Fork on GitHub",
     "quickstartGuide": "Quickstart Guide",
     "featuredProducts": "Featured Products",
