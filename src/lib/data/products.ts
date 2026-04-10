@@ -2,7 +2,7 @@
 
 import type { ProductListParams } from "@spree/sdk";
 import { cacheLife, cacheTag } from "next/cache";
-import { getAccessToken, getClient, getLocaleOptions } from "@/lib/spree";
+import { getClient, getLocaleOptions } from "@/lib/spree";
 
 /**
  * Cached product list fetch. Cache key is derived from all function
@@ -27,8 +27,7 @@ export async function cachedListProducts(
 
 export async function getProducts(params?: ProductListParams) {
   const options = await getLocaleOptions();
-  const userToken = await getAccessToken();
-  return cachedListProducts(params, options, userToken);
+  return getClient().products.list(params, options);
 }
 
 export async function getProduct(

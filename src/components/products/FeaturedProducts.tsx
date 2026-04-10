@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
 import { cachedListProducts } from "@/lib/data/products";
+import { getAccessToken } from "@/lib/spree";
 
 const LazyProductCarousel = dynamic(
   () =>
@@ -29,9 +30,11 @@ export async function FeaturedProducts({
   locale,
   country,
 }: FeaturedProductsProps) {
+  const userToken = await getAccessToken();
   const productsResponse = await cachedListProducts(
     { limit: 8 },
     { locale, country },
+    userToken,
   );
 
   return (
