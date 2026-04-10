@@ -94,14 +94,16 @@ async function ProductListingInner({
   // Base SDK list params for the current filter/sort/query state.
   // The client island reuses this when fetching subsequent pages.
   //
-  // `fields` restricts the payload to what <ProductCard> actually reads
-  // (see PRODUCT_CARD_FIELDS). Dropping the unused fields shrinks the
-  // cached entry, the RSC→client serialization, and the streaming HTML.
+  // `fields` is applied LAST so neither `queryParams` nor `baseParams`
+  // can accidentally override the narrowed card-fields set. This
+  // restricts the payload to what <ProductCard> and listing analytics
+  // actually read — shrinking the cached entry, the RSC→client
+  // serialization, and the streaming HTML.
   const listParams: ProductListParams = {
     limit: PAGE_SIZE,
-    fields: PRODUCT_CARD_FIELDS,
     ...queryParams,
     ...baseParams,
+    fields: PRODUCT_CARD_FIELDS,
   };
 
   // Filters fetch: Ransack-wrapped with the same active filter context,

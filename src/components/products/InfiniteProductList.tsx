@@ -63,7 +63,10 @@ export function InfiniteProductList({
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const hasMore = !hasError && currentPage < knownPages;
+  // Pure pagination state — "are there more pages the server told us
+  // about". Error state is tracked separately so a fetch failure
+  // doesn't get misinterpreted as "exhausted".
+  const hasMore = currentPage < knownPages;
 
   // Refs mirror the values loadNextPage needs to read without forcing the
   // IntersectionObserver effect to re-subscribe on every state change.
@@ -92,11 +95,11 @@ export function InfiniteProductList({
         setCurrentPage(nextPage);
         setKnownPages(response.meta.pages);
       } catch (error) {
-        // Flip the error flag so hasMore becomes false and the
-        // IntersectionObserver stops re-triggering loadNextPage in a
-        // hot loop while the sentinel stays in view. The user can
-        // change filters (which remounts this island) or refresh to
-        // try again.
+        // Flip the error flag so the IntersectionObserver gate
+        // (hasErrorRef) stops re-triggering loadNextPage in a hot
+        // loop while the sentinel stays in view, and the render hides
+        // the "no more products" message. The user can change filters
+        // (which remounts this island) or refresh to try again.
         console.error("InfiniteProductList: failed to load next page", error);
         setHasError(true);
       } finally {
@@ -150,7 +153,7 @@ export function InfiniteProductList({
             {t("loadingMore")}
           </div>
         )}
-        {!hasMore && products.length > 0 && (
+        {!hasError && !hasMore && products.length > 0 && (
           <p className="text-gray-500 text-sm">{t("noMoreProducts")}</p>
         )}
       </div>

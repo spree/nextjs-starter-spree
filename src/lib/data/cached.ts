@@ -19,6 +19,9 @@ export const PRODUCT_METADATA_EXPAND = ["primary_media"];
  * fire listing analytics. Passed via the SDK's `fields` param on listing
  * fetches so Spree returns a narrowed payload — this shrinks the cached
  * entry, the RSC→client serialization, and the streaming HTML size.
+ *
+ * `categories` is included so `mapProductToGA4Item` can populate the
+ * GA4 `item_category` attribute on view_item_list / select_item events.
  */
 export const PRODUCT_CARD_FIELDS = [
   "id",
@@ -29,6 +32,7 @@ export const PRODUCT_CARD_FIELDS = [
   "default_variant_id",
   "price",
   "original_price",
+  "categories",
 ];
 
 export const getCachedProduct = cache((slugOrId: string, expand: string[]) =>
