@@ -40,7 +40,10 @@
     "myAccount": "Mon compte"
   },
   "footer": {
-    "description": "Une boutique en ligne moderne propulsee par Spree Commerce et Next.js.",
+    "description": "E-commerce open source basé sur Spree REST API, TypeScript SDK et Next.js. Auto-hébergé. Vos données. Zéro frais de plateforme.",
+    "forkOnGithub": "Forker cette boutique sur GitHub",
+    "quickstartGuide": "Guide de démarrage rapide",
+    "learnMore": "En savoir plus sur Spree Commerce",
     "shop": "Boutique",
     "allProducts": "Tous les produits",
     "categories": "Categories",
@@ -53,10 +56,11 @@
     "copyright": "\u00a9 {year} {storeName}. Propulse par Spree Commerce."
   },
   "home": {
-    "welcome": "Bienvenue chez {storeName}",
-    "heroDescription": "Decouvrez des produits exceptionnels avec notre experience e-commerce moderne propulsee par Spree Commerce.",
-    "shopNow": "Acheter maintenant",
-    "browseCategories": "Parcourir les categories",
+    "welcome": "{storeName} Storefront",
+    "heroDescription": "Un storefront open source prêt pour la production, construit avec Next.js, React et le SDK TypeScript Spree. Auto-hébergé. Votre stack. Pas de dépendance fournisseur. Zéro frais de plateforme.",
+    "shopNow": "Tout parcourir",
+    "forkOnGithub": "Forker sur GitHub",
+    "quickstartGuide": "Guide de démarrage rapide",
     "featuredProducts": "Produits en vedette",
     "viewAll": "Voir tout",
     "qualityProducts": "Produits de qualite",
@@ -204,6 +208,7 @@
     "default": "Par defaut",
     "noPaymentMethods": "Aucun mode de paiement disponible pour cette commande.",
     "secureTransactions": "Toutes les transactions sont securisees et chiffrees.",
+    "testCardNote": "Carte de test : {testCard} (n'importe quelle date d'expiration future, n'importe quel CVC)",
     "creditCard": "Carte de credit",
     "enterShippingAddress": "Entrer l'adresse de livraison",
     "payNow": "Payer maintenant",
