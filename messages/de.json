@@ -41,7 +41,7 @@
   },
   "footer": {
     "description": "Open-Source-E-Commerce basierend auf Spree REST API, TypeScript SDK und Next.js. Selbst hosten. Eigene Daten. Keine Plattformgebühren.",
-    "forkOnGithub": "Diesen Storefront auf GitHub forken",
+    "forkOnGithub": "Diese Storefront auf GitHub forken",
     "quickstartGuide": "Schnellstartanleitung",
     "learnMore": "Mehr über Spree Commerce erfahren",
     "shop": "Shop",
@@ -57,7 +57,7 @@
   },
   "home": {
     "welcome": "{storeName} Next.js Storefront",
-    "heroDescription": "Ein produktionsreifer, quelloffener Storefront mit Next.js, React und dem Spree TypeScript SDK. Selbst hosten. Eigener Stack. Kein Vendor Lock-in. Keine Plattformgebühren.",
+    "heroDescription": "Eine produktionsreife, quelloffene Storefront mit Next.js, React und dem Spree TypeScript SDK. Selbst hosten. Eigener Stack. Kein Vendor Lock-in. Keine Plattformgebühren.",
     "shopNow": "Demo erkunden",
     "forkOnGithub": "Auf GitHub forken",
     "quickstartGuide": "Schnellstartanleitung",
