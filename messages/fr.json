@@ -56,7 +56,7 @@
     "copyright": "\u00a9 {year} {storeName}. Propulse par Spree Commerce."
   },
   "home": {
-    "welcome": "{storeName} Next.js Storefront",
+    "welcome": "Spree Storefront",
     "heroDescription": "Un storefront open source prêt pour la production, construit avec Next.js, React et le SDK TypeScript Spree. Auto-hébergé. Votre stack. Pas de dépendance fournisseur. Zéro frais de plateforme.",
     "shopNow": "Tout parcourir",
     "forkOnGithub": "Forker sur GitHub",
