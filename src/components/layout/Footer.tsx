@@ -2,17 +2,16 @@ import type { Category } from "@spree/sdk";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { POLICY_LINKS } from "@/lib/constants/policies";
-import {
-  getSpreeDemoData,
-  getStoreDescription,
-  getStoreName,
-} from "@/lib/store";
+import { getStoreDescription, getStoreName } from "@/lib/store";
 
 const storeName = getStoreName();
 const storeDescription = getStoreDescription();
 
 // Demo-only: Remove for production.
-const { githubUrl, quickstartUrl, learnMoreUrl } = getSpreeDemoData();
+const githubUrl = "https://github.com/spree/storefront";
+const quickstartUrl =
+  "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart";
+const learnMoreUrl = "https://spreecommerce.org";
 
 interface FooterProps {
   rootCategories: Category[];

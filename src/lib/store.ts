@@ -94,25 +94,3 @@ export function getStoreEmailFrom(): string {
 export function isStoreEmailFromFallback(): boolean {
   return !process.env.EMAIL_FROM;
 }
-
-// Demo-only: Remove for production.
-
-export interface SpreeDemoData {
-  githubUrl: string;
-  quickstartUrl: string;
-  learnMoreUrl: string;
-}
-
-/**
- * Demo-only: Remove for production.
- * Returns external URLs for demo CTAs and footer links.
- */
-export function getSpreeDemoData(): SpreeDemoData {
-  return {
-    githubUrl: ensureProtocol("https://github.com/spree/storefront"),
-    quickstartUrl: ensureProtocol(
-      "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart",
-    ),
-    learnMoreUrl: ensureProtocol("https://spreecommerce.org"),
-  };
-}

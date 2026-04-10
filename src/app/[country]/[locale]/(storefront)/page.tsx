@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { ProductCarousel } from "@/components/products/ProductCarousel";
 import { Button } from "@/components/ui/button";
 import { generateHomeMetadata } from "@/lib/metadata/home";
-import { getSpreeDemoData, getStoreName } from "@/lib/store";
+import { getStoreName } from "@/lib/store";
 
 interface HomePageProps {
   params: Promise<{
@@ -29,8 +29,10 @@ export default async function HomePage({ params }: HomePageProps) {
   });
   const storeName = getStoreName();
 
-  /* Demo-only: Remove this entire block for production. */
-  const { githubUrl, quickstartUrl } = getSpreeDemoData();
+  /* Demo-only: Remove for production. */
+  const githubUrl = "https://github.com/spree/storefront";
+  const quickstartUrl =
+    "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart";
   return (
     <div>
       {/* Hero Section */}
