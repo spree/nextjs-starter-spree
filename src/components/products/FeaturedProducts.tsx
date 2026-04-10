@@ -23,12 +23,14 @@ interface FeaturedProductsProps {
   basePath: string;
   locale: string;
   country: string;
+  currency?: string;
 }
 
 export async function FeaturedProducts({
   basePath,
   locale,
   country,
+  currency,
 }: FeaturedProductsProps) {
   const userToken = await getAccessToken();
   const productsResponse = await cachedListProducts(
@@ -41,6 +43,7 @@ export async function FeaturedProducts({
     <LazyProductCarousel
       products={productsResponse.data ?? []}
       basePath={basePath}
+      currency={currency}
     />
   );
 }

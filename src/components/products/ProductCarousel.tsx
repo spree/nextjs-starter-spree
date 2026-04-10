@@ -15,6 +15,8 @@ import { ProductCard } from "@/components/products/ProductCard";
 interface ProductCarouselProps {
   products: Product[];
   basePath: string;
+  /** Optional currency used for analytics in each ProductCard. */
+  currency?: string;
 }
 
 const NAV_BUTTON_BASE =
@@ -23,6 +25,7 @@ const NAV_BUTTON_BASE =
 export function ProductCarousel({
   products,
   basePath,
+  currency,
 }: ProductCarouselProps): ReactElement {
   const t = useTranslations("products");
   const [isBeginning, setIsBeginning] = useState(true);
@@ -91,9 +94,17 @@ export function ProductCarousel({
         }}
         className="product-carousel"
       >
-        {products.map((product) => (
+        {products.map((product, index) => (
           <SwiperSlide key={product.id} className="p-1">
-            <ProductCard product={product} basePath={basePath} />
+            <ProductCard
+              product={product}
+              basePath={basePath}
+              index={index}
+              listId="featured-products"
+              listName="Featured Products"
+              currency={currency}
+              fetchPriority={index === 0 ? "high" : undefined}
+            />
           </SwiperSlide>
         ))}
       </SwiperComponent>

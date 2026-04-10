@@ -1,15 +1,31 @@
 "use client";
 
 import type { Media } from "@spree/sdk";
-import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
-import Image from "next/image";
+import { ZoomIn } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ProductImage } from "@/components/ui/product-image";
 
 /** Tiny 10×10 neutral gray PNG used as a blur placeholder while images load. */
 const BLUR_PLACEHOLDER =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIElEQVQYV2P4////MwwMDAxMDAwMDGQJMJCvkGwNZCsEAGebBwVss9lRAAAAAElFTkSuQmCC";
+
+/** Lazy-loaded lightbox — only pulled into the bundle when a user zooms. */
+const LazyMediaLightbox = dynamic(
+  () =>
+    import("@/components/products/MediaLightbox").then((mod) => ({
+      default: mod.MediaLightbox,
+    })),
+  {
+    ssr: false,
+    // Minimal fullscreen overlay so the zoom click gives immediate
+    // feedback on slow networks while the chunk downloads.
+    loading: () => (
+      <div className="fixed inset-0 z-50 bg-black/90" aria-hidden="true" />
+    ),
+  },
+);
 
 interface MediaGalleryProps {
   images: Media[];
@@ -17,7 +33,25 @@ interface MediaGalleryProps {
   activeIndex?: number | null;
 }
 
-export function MediaGallery({
+/** Prefer pre-sized Spree media URLs over the full-resolution original,
+ * so the Next.js image optimizer doesn't have to fetch the source file. */
+function getMainImageUrl(media: Media | undefined): string | null {
+  if (!media) return null;
+  return media.xlarge_url || media.large_url || media.original_url || null;
+}
+
+function getThumbImageUrl(media: Media | undefined): string | null {
+  if (!media) return null;
+  return media.small_url || media.mini_url || media.original_url || null;
+}
+
+export function MediaGallery(props: MediaGalleryProps) {
+  // Reset internal state when the parent changes activeIndex by rekeying.
+  // Avoids the useEffect-to-sync-prop antipattern.
+  return <MediaGalleryInner key={props.activeIndex ?? "default"} {...props} />;
+}
+
+function MediaGalleryInner({
   images,
   productName,
   activeIndex,
@@ -28,13 +62,6 @@ export function MediaGallery({
   const [mainImageErrorUrl, setMainImageErrorUrl] = useState<string | null>(
     null,
   );
-
-  useEffect(() => {
-    if (activeIndex != null) {
-      setSelectedIndex(activeIndex);
-      setMainImageErrorUrl(null);
-    }
-  }, [activeIndex]);
 
   if (images.length === 0) {
     return (
@@ -49,14 +76,14 @@ export function MediaGallery({
     );
   }
 
-  const selectImage = (index: number | ((prev: number) => number)) => {
+  const selectImage = (index: number) => {
     setSelectedIndex(index);
     setMainImageErrorUrl(null);
   };
 
   const safeIndex = Math.max(0, Math.min(selectedIndex, images.length - 1));
   const selectedImage = images[safeIndex];
-  const mainImageUrl = selectedImage?.original_url || null;
+  const mainImageUrl = getMainImageUrl(selectedImage);
   const showMainImage = mainImageUrl && mainImageErrorUrl !== mainImageUrl;
 
   return (
@@ -77,6 +104,7 @@ export function MediaGallery({
           className="object-cover"
           fetchPriority="high"
           loading="eager"
+          priority
           quality={85}
           sizes="(max-width: 768px) 100vw, 50vw"
           placeholder="blur"
@@ -97,7 +125,7 @@ export function MediaGallery({
       {images.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-2">
           {images.map((image, index) => {
-            const thumbUrl = image.original_url;
+            const thumbUrl = getThumbImageUrl(image);
             return (
               <button
                 type="button"
@@ -114,7 +142,7 @@ export function MediaGallery({
                   alt={image.alt || `${productName} ${index + 1}`}
                   fill
                   className="object-cover"
-                  sizes="96px"
+                  sizes="80px"
                 />
               </button>
             );
@@ -122,71 +150,15 @@ export function MediaGallery({
         </div>
       )}
 
-      {/* Lightbox */}
+      {/* Lightbox (lazy) */}
       {isZoomed && showMainImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-          onClick={() => setIsZoomed(false)}
-        >
-          <button
-            type="button"
-            className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-            onClick={() => setIsZoomed(false)}
-            aria-label={t("lightboxClose")}
-          >
-            <X className="w-8 h-8" />
-          </button>
-
-          {/* Navigation arrows */}
-          {images.length > 1 && (
-            <>
-              <button
-                type="button"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  selectImage((prev) =>
-                    prev === 0 ? images.length - 1 : prev - 1,
-                  );
-                }}
-                aria-label={t("lightboxPrev")}
-              >
-                <ChevronLeft className="w-8 h-8" />
-              </button>
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  selectImage((prev) =>
-                    prev === images.length - 1 ? 0 : prev + 1,
-                  );
-                }}
-                aria-label={t("lightboxNext")}
-              >
-                <ChevronRight className="w-8 h-8" />
-              </button>
-            </>
-          )}
-
-          <div className="relative max-w-4xl max-h-[90vh] w-full h-full m-4">
-            <Image
-              src={selectedImage?.original_url || mainImageUrl!}
-              alt={selectedImage?.alt || productName}
-              fill
-              className="object-contain"
-              sizes="100vw"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-
-          {/* Image counter */}
-          {images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-3 py-1 rounded-lg text-sm">
-              {safeIndex + 1} / {images.length}
-            </div>
-          )}
-        </div>
+        <LazyMediaLightbox
+          images={images}
+          activeIndex={safeIndex}
+          productName={productName}
+          onClose={() => setIsZoomed(false)}
+          onNavigate={selectImage}
+        />
       )}
     </div>
   );
