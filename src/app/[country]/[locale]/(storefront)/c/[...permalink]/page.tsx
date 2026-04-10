@@ -53,7 +53,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       <div
         className="flex flex-col justify-end min-h-[350px] bg-gray-50 bg-cover bg-center"
-        style={{ backgroundImage: `url(${category.image_url})` }}
+        style={
+          category.image_url
+            ? { backgroundImage: `url(${category.image_url})` }
+            : undefined
+        }
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs
