@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton";
+import { PRODUCT_CARD_FIELDS } from "@/lib/data/cached";
 import { cachedListProducts } from "@/lib/data/products";
 import { getAccessToken } from "@/lib/spree";
 
@@ -34,7 +35,7 @@ export async function FeaturedProducts({
 }: FeaturedProductsProps) {
   const userToken = await getAccessToken();
   const productsResponse = await cachedListProducts(
-    { limit: 8 },
+    { limit: 8, fields: PRODUCT_CARD_FIELDS },
     { locale, country },
     userToken,
   );

@@ -11,6 +11,7 @@ import { InfiniteProductList } from "@/components/products/InfiniteProductList";
 import { ListingAnalytics } from "@/components/products/ListingAnalytics";
 import { ListingFilterBar } from "@/components/products/ListingFilterBar";
 import { ProductListingSkeleton } from "@/components/products/ProductListingSkeleton";
+import { PRODUCT_CARD_FIELDS } from "@/lib/data/cached";
 import {
   type ListingSearchParams,
   listingKey,
@@ -92,8 +93,13 @@ async function ProductListingInner({
 
   // Base SDK list params for the current filter/sort/query state.
   // The client island reuses this when fetching subsequent pages.
+  //
+  // `fields` restricts the payload to what <ProductCard> actually reads
+  // (see PRODUCT_CARD_FIELDS). Dropping the unused fields shrinks the
+  // cached entry, the RSC→client serialization, and the streaming HTML.
   const listParams: ProductListParams = {
     limit: PAGE_SIZE,
+    fields: PRODUCT_CARD_FIELDS,
     ...queryParams,
     ...baseParams,
   };

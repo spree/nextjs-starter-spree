@@ -3,14 +3,7 @@
 import type { PaginatedResponse, Product, ProductListParams } from "@spree/sdk";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { ProductCard } from "@/components/products/ProductCard";
 
 interface InfiniteProductListProps {
@@ -60,21 +53,32 @@ export function InfiniteProductList({
   const t = useTranslations("products");
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [hasMore, setHasMore] = useState(initialPage < totalPages);
+  // knownPages = the total page count observed from the most recent fetch.
+  // hasMore / exhausted state is derived from currentPage < knownPages rather
+  // than being mirrored in its own useState, per the "derive during render"
+  // rule. Combined with hasError below, this cleanly separates "nothing
+  // left to load" from "a load attempt failed".
+  const [knownPages, setKnownPages] = useState(totalPages);
+  const [hasError, setHasError] = useState(false);
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Refs for the load-more callback so the IntersectionObserver effect
-  // doesn't need to re-subscribe on every state change.
+  const hasMore = !hasError && currentPage < knownPages;
+
+  // Refs mirror the values loadNextPage needs to read without forcing the
+  // IntersectionObserver effect to re-subscribe on every state change.
   const currentPageRef = useRef(currentPage);
   currentPageRef.current = currentPage;
-  const hasMoreRef = useRef(hasMore);
-  hasMoreRef.current = hasMore;
+  const knownPagesRef = useRef(knownPages);
+  knownPagesRef.current = knownPages;
+  const hasErrorRef = useRef(hasError);
+  hasErrorRef.current = hasError;
   const isLoadingRef = useRef(false);
 
   const loadNextPage = useCallback(() => {
-    if (isLoadingRef.current || !hasMoreRef.current) return;
+    if (isLoadingRef.current || hasErrorRef.current) return;
     const nextPage = currentPageRef.current + 1;
+    if (nextPage > knownPagesRef.current) return;
     isLoadingRef.current = true;
 
     startTransition(async () => {
@@ -86,14 +90,15 @@ export function InfiniteProductList({
           return [...prev, ...appended];
         });
         setCurrentPage(nextPage);
-        setHasMore(nextPage < response.meta.pages);
+        setKnownPages(response.meta.pages);
       } catch (error) {
-        // Stop scrolling attempts so the IntersectionObserver doesn't
-        // retry in a hot loop while the sentinel stays in view. The
-        // user can change filters (which remounts this island) or
-        // refresh to try again.
+        // Flip the error flag so hasMore becomes false and the
+        // IntersectionObserver stops re-triggering loadNextPage in a
+        // hot loop while the sentinel stays in view. The user can
+        // change filters (which remounts this island) or refresh to
+        // try again.
         console.error("InfiniteProductList: failed to load next page", error);
-        setHasMore(false);
+        setHasError(true);
       } finally {
         isLoadingRef.current = false;
       }
@@ -117,8 +122,8 @@ export function InfiniteProductList({
     return () => observer.disconnect();
   }, [loadNextPage]);
 
-  const grid = useMemo(
-    () => (
+  return (
+    <>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product, index) => (
           <ProductCard
@@ -134,13 +139,6 @@ export function InfiniteProductList({
           />
         ))}
       </div>
-    ),
-    [products, basePath, categoryId, listId, listName, currency],
-  );
-
-  return (
-    <>
-      {grid}
 
       <div
         ref={sentinelRef}

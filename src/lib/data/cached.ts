@@ -14,6 +14,23 @@ export const PRODUCT_PAGE_EXPAND = [
 /** Slim expand used by generateProductMetadata (needs only the primary image for og:image). */
 export const PRODUCT_METADATA_EXPAND = ["primary_media"];
 
+/**
+ * Minimal set of Product fields required to render a <ProductCard> and
+ * fire listing analytics. Passed via the SDK's `fields` param on listing
+ * fetches so Spree returns a narrowed payload — this shrinks the cached
+ * entry, the RSC→client serialization, and the streaming HTML size.
+ */
+export const PRODUCT_CARD_FIELDS = [
+  "id",
+  "name",
+  "slug",
+  "thumbnail_url",
+  "purchasable",
+  "default_variant_id",
+  "price",
+  "original_price",
+];
+
 export const getCachedProduct = cache((slugOrId: string, expand: string[]) =>
   getProduct(slugOrId, { expand }),
 );
