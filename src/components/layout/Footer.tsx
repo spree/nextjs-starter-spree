@@ -10,7 +10,7 @@ const storeDescription = getStoreDescription();
 // Demo-only: Remove for production.
 const githubUrl = "https://github.com/spree/storefront";
 const quickstartUrl =
-  "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart";
+  "https://spreecommerce.org/docs/developer/getting-started/quickstart";
 const learnMoreUrl = "https://spreecommerce.org";
 
 interface FooterProps {
@@ -37,12 +37,6 @@ export async function Footer({
             <span className="text-xl font-bold text-white">{storeName}</span>
             <p className="mt-4 text-sm text-neutral-400">
               {t("description") || storeDescription}
-            </p>
-            {/* Demo-only: Remove for production. */}
-            <p className="mt-2 text-xs text-neutral-500">
-              {t("testCardNote", {
-                testCard: "4242 4242 4242 4242",
-              })}
             </p>
             {/* Demo-only: Remove for production. */}
             <div className="mt-4 flex flex-col gap-2">

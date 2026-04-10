@@ -337,8 +337,10 @@ export const PaymentSection = forwardRef<
     <div>
       {/* Section Header */}
       <h2 className="text-lg font-bold text-gray-900">{t("paymentMethod")}</h2>
-      <p className="text-sm text-gray-500 mt-0.5 mb-3">
-        {t("secureTransactions")}
+      <p className="text-sm text-gray-500 mt-0.5">{t("secureTransactions")}</p>
+      {/* Demo-only: Remove for production. */}
+      <p className="text-xs text-gray-400 mb-3">
+        {t("testCardNote", { testCard: "4242 4242 4242 4242" })}
       </p>
 
       {/* Inline requirement errors from parent */}

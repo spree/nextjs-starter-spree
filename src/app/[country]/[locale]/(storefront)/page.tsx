@@ -32,7 +32,7 @@ export default async function HomePage({ params }: HomePageProps) {
   /* Demo-only: Remove for production. */
   const githubUrl = "https://github.com/spree/storefront";
   const quickstartUrl =
-    "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart";
+    "https://spreecommerce.org/docs/developer/getting-started/quickstart";
   return (
     <div>
       {/* Hero Section */}
@@ -44,12 +44,6 @@ export default async function HomePage({ params }: HomePageProps) {
             </h1>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
               {t("heroDescription")}
-            </p>
-            {/* Demo-only: Remove for production. */}
-            <p className="mt-3 text-sm text-gray-400 max-w-xl mx-auto">
-              {t("heroDemoNote", {
-                testCard: "4242 4242 4242 4242",
-              })}
             </p>
             <div className="mt-8 flex justify-center gap-4 flex-wrap">
               <Button size="lg" asChild>

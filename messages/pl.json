@@ -41,7 +41,6 @@
   },
   "footer": {
     "description": "Sklep e-commerce open source oparty na Spree REST API, TypeScript SDK i Next.js. Hostuj samodzielnie. Twoje dane. Zero opłat platformowych.",
-    "testCardNote": "Przetestuj checkout kartą {testCard} (dowolna przyszła data ważności, dowolny CVC).",
     "forkOnGithub": "Forkuj ten sklep na GitHubie",
     "quickstartGuide": "Przewodnik szybkiego startu",
     "learnMore": "Dowiedz się więcej o Spree Commerce",
@@ -59,7 +58,6 @@
   "home": {
     "welcome": "{storeName} Next.js Storefront",
     "heroDescription": "Gotowy do produkcji, otwartoźródłowy storefront zbudowany z Next.js, React i Spree TypeScript SDK. Hostuj samodzielnie. Twój stack. Brak vendor lock-in. Zero opłat platformowych.",
-    "heroDemoNote": "To jest demo na żywo. Przeglądaj produkty, dodawaj do koszyka i płać kartą testową {testCard} (dowolna przyszła data ważności, dowolny CVC).",
     "shopNow": "Poznaj demo",
     "forkOnGithub": "Forkuj na GitHubie",
     "quickstartGuide": "Przewodnik szybkiego startu",
@@ -210,6 +208,7 @@
     "default": "Domyślna",
     "noPaymentMethods": "Brak dostępnych metod płatności dla tego zamówienia.",
     "secureTransactions": "Wszystkie transakcje są bezpieczne i szyfrowane.",
+    "testCardNote": "Karta testowa: {testCard} (dowolna przyszła data ważności, dowolny CVC)",
     "creditCard": "Karta kredytowa",
     "enterShippingAddress": "Podaj adres wysyłki",
     "payNow": "Zapłać teraz",
