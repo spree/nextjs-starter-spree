@@ -109,16 +109,10 @@ export interface SpreeDemoData {
  */
 export function getSpreeDemoData(): SpreeDemoData {
   return {
-    githubUrl: ensureProtocol(
-      process.env.NEXT_PUBLIC_GITHUB_URL ||
-        "https://github.com/spree/storefront",
-    ),
+    githubUrl: ensureProtocol("https://github.com/spree/storefront"),
     quickstartUrl: ensureProtocol(
-      process.env.NEXT_PUBLIC_QUICKSTART_URL ||
-        "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart",
+      "https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart",
     ),
-    learnMoreUrl: ensureProtocol(
-      process.env.NEXT_PUBLIC_LEARN_MORE_URL || "https://spreecommerce.org",
-    ),
+    learnMoreUrl: ensureProtocol("https://spreecommerce.org"),
   };
 }
