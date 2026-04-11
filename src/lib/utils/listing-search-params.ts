@@ -142,13 +142,15 @@ export function buildListingSearchParams(
 }
 
 /**
- * Serialize listing params into a stable key string. Used for analytics
- * dedup and as the Suspense boundary key — not for the Next cache, which
- * keys on function arguments automatically.
+ * Serialize the full listing state into a stable key string. Used as
+ * the React key on InfiniteProductList (so every filter / sort / query
+ * change remounts the island with fresh server-provided page 1 data)
+ * and as the stateKey on ListingAnalytics (so each distinct listing
+ * state fires a view_item_list event exactly once).
  *
- * Uses JSON.stringify rather than a delimiter-joined string so that
- * values containing special characters (e.g. a search query with a
- * pipe) can't produce colliding keys for different filter states.
+ * Uses JSON.stringify rather than a delimiter-joined string so values
+ * containing special characters (e.g. a search query with a pipe)
+ * can't produce colliding keys for different states.
  */
 export function listingKey(state: ListingSearchParams): string {
   return JSON.stringify({
