@@ -142,18 +142,35 @@ export function buildListingSearchParams(
 }
 
 /**
- * Serialize listing params into a stable key string. Used for analytics
- * dedup and as the Suspense boundary key — not for the Next cache, which
- * keys on function arguments automatically.
+ * Serialize full listing state into a stable key string, INCLUDING
+ * sortBy. Used for analytics dedup where "same filters, different
+ * sort" counts as a distinct list view.
  *
  * Uses JSON.stringify rather than a delimiter-joined string so that
  * values containing special characters (e.g. a search query with a
- * pipe) can't produce colliding keys for different filter states.
+ * pipe) can't produce colliding keys for different states.
  */
 export function listingKey(state: ListingSearchParams): string {
   return JSON.stringify({
     q: state.query ?? "",
     s: state.filters.sortBy ?? "",
+    pMin: state.filters.priceMin ?? "",
+    pMax: state.filters.priceMax ?? "",
+    a: state.filters.availability ?? "",
+    o: [...state.filters.optionValues].sort(),
+  });
+}
+
+/**
+ * Serialize listing state EXCLUDING sortBy. Used as the Suspense
+ * boundary key on PLPs so sort changes don't unmount the filter bar
+ * and flash the skeleton — only filter / query changes do. Facet
+ * counts are independent of sort order, so the filter bar can keep
+ * rendering its previous data while the grid re-fetches in-place.
+ */
+export function listingStructureKey(state: ListingSearchParams): string {
+  return JSON.stringify({
+    q: state.query ?? "",
     pMin: state.filters.priceMin ?? "",
     pMax: state.filters.priceMax ?? "",
     a: state.filters.availability ?? "",

@@ -15,6 +15,7 @@ import { PRODUCT_CARD_FIELDS } from "@/lib/data/cached";
 import {
   type ListingSearchParams,
   listingKey,
+  listingStructureKey,
 } from "@/lib/utils/listing-search-params";
 import {
   buildProductQueryParams,
@@ -64,9 +65,14 @@ interface ProductListingProps {
  * the Suspense boundary key) so accumulated state resets cleanly.
  */
 export function ProductListing(props: ProductListingProps): ReactElement {
+  // Key on listingStructureKey — NOT listingKey — so sort changes
+  // don't remount the filter bar and flash the skeleton. Sort-only
+  // changes re-run the server component in place, and the filter bar
+  // keeps rendering its previous facet data until the re-render
+  // resolves (the grid swaps in via the transition pending state).
   return (
     <Suspense
-      key={listingKey(props.state)}
+      key={listingStructureKey(props.state)}
       fallback={<ProductListingSkeleton />}
     >
       <ProductListingInner {...props} />
@@ -106,10 +112,14 @@ async function ProductListingInner({
     fields: PRODUCT_CARD_FIELDS,
   };
 
-  // Filters fetch: Ransack-wrapped with the same active filter context,
-  // so facet counts reflect the user's current selection.
+  // Filters fetch: Ransack-wrapped with the same active filter
+  // context, so facet counts reflect the user's current selection.
+  // Sort is stripped because facet counts are independent of sort
+  // order — keeping it in the args would bust the cache on every
+  // sort change for no functional reason.
+  const { sort: _sort, ...filterQueryParams } = queryParams;
   const filterFetchParams = wrapInRansackParams({
-    ...queryParams,
+    ...filterQueryParams,
     ...baseParams,
   });
 
