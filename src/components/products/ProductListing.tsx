@@ -15,7 +15,6 @@ import { PRODUCT_CARD_FIELDS } from "@/lib/data/cached";
 import {
   type ListingSearchParams,
   listingKey,
-  listingStructureKey,
 } from "@/lib/utils/listing-search-params";
 import {
   buildProductQueryParams,
@@ -56,25 +55,26 @@ interface ProductListingProps {
  * breadcrumbs, banner) can stream immediately.
  *
  * Filter / sort / query state lives in the URL via ListingSearchParams.
- * Click handlers in the filter bar write to the URL with router.push,
- * which triggers a soft navigation and re-runs this server component.
+ * Click handlers in the filter bar write to the URL with router.push
+ * inside a startTransition, which triggers a soft navigation and
+ * re-runs this server component.
  *
- * Pagination uses infinite scroll: the server renders page 1, and the
- * client InfiniteProductList island fetches subsequent pages via the
- * same server action on scroll. Filter changes unmount the island (via
- * the Suspense boundary key) so accumulated state resets cleanly.
+ * The Suspense boundary is intentionally NOT keyed on listing state.
+ * On first load the fallback shows the skeleton, but on subsequent
+ * filter / sort / query changes useTransition keeps the previous tree
+ * visible while the new server render resolves — the filter bar and
+ * grid then swap atomically, without flashing a skeleton in between.
+ *
+ * Pagination uses infinite scroll: the server renders page 1, and
+ * the client InfiniteProductList island fetches subsequent pages via
+ * the same server action on scroll. The island is keyed on the full
+ * listing state so every filter / sort / query change remounts it
+ * with the new server-provided page 1, atomically replacing the old
+ * grid without any loading fallback being shown.
  */
 export function ProductListing(props: ProductListingProps): ReactElement {
-  // Key on listingStructureKey — NOT listingKey — so sort changes
-  // don't remount the filter bar and flash the skeleton. Sort-only
-  // changes re-run the server component in place, and the filter bar
-  // keeps rendering its previous facet data until the re-render
-  // resolves (the grid swaps in via the transition pending state).
   return (
-    <Suspense
-      key={listingStructureKey(props.state)}
-      fallback={<ProductListingSkeleton />}
-    >
+    <Suspense fallback={<ProductListingSkeleton />}>
       <ProductListingInner {...props} />
     </Suspense>
   );
@@ -153,6 +153,14 @@ async function ProductListingInner({
       {hasResults ? (
         <>
           <InfiniteProductList
+            // Remount on any filter / sort / query change so the
+            // island picks up the new initialProducts and resets its
+            // accumulated scroll state. The swap is atomic — because
+            // the surrounding Suspense boundary isn't keyed and the
+            // new instance mounts with products already populated,
+            // the user sees the grid update in place with no loading
+            // fallback shown.
+            key={listingKey(state)}
             initialProducts={products}
             initialPage={1}
             totalPages={totalPages}
