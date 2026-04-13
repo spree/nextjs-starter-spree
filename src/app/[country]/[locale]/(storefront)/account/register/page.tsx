@@ -252,7 +252,7 @@ export default function RegisterPage() {
           <p className="text-sm text-muted-foreground">
             {t("alreadyHaveAccount")}{" "}
             <Link
-              href={`${basePath}/account`}
+              href={`${basePath}/account/login`}
               className="text-primary hover:text-primary/70 font-medium"
             >
               {t("signIn")}

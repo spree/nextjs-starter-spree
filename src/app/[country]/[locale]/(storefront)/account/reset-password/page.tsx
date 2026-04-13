@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
             <Button
               size="lg"
               className="w-full"
-              onClick={() => router.push(`${basePath}/account`)}
+              onClick={() => router.push(`${basePath}/account/login`)}
             >
               {t("signIn")}
             </Button>
@@ -223,7 +223,7 @@ export default function ResetPasswordPage() {
 
         <CardFooter className="justify-center">
           <Link
-            href={`${basePath}/account`}
+            href={`${basePath}/account/login`}
             className="text-sm text-primary hover:text-primary/70 font-medium"
           >
             {t("backToSignIn")}

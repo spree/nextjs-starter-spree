@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
+import { CartSkeleton } from "@/components/cart/CartSkeleton";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityPicker } from "@/components/ui/quantity-picker";
@@ -42,18 +43,7 @@ export default function CartPage() {
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8  py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-32 mb-8"></div>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <CartSkeleton />;
   }
 
   if (!cart || !cart.items || cart.items.length === 0) {
