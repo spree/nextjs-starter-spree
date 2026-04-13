@@ -148,13 +148,13 @@ export async function Footer({
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-neutral-800 text-xs text-neutral-500 text-center">
+        <div className="mt-8 pt-8 border-t border-neutral-800 text-xs text-neutral-400 text-center">
           <p>
             &copy; {new Date().getFullYear()} {storeName}. {t("poweredBy")}{" "}
             <Link
               href="https://spreecommerce.org"
               target="_blank"
-              className="text-neutral-400 hover:text-neutral-200 transition-colors"
+              className="text-neutral-400 hover:text-neutral-200 underline transition-colors"
             >
               Spree Commerce
             </Link>{" "}

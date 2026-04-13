@@ -9,10 +9,20 @@ import { CartProvider } from "@/contexts/CartContext";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 
 const gtmId = process.env.GTM_ID;
+const spreeApiOrigin = (() => {
+  try {
+    return process.env.SPREE_API_URL
+      ? new URL(process.env.SPREE_API_URL).origin
+      : undefined;
+  } catch {
+    return undefined;
+  }
+})();
 
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const rootStoreName = getStoreName();
@@ -32,6 +42,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {spreeApiOrigin && (
+          <>
+            <link rel="preconnect" href={spreeApiOrigin} />
+            <link rel="dns-prefetch" href={spreeApiOrigin} />
+          </>
+        )}
+      </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body
         className={`${geist.variable} antialiased min-h-screen flex flex-col`}

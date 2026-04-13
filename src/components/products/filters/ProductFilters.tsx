@@ -137,9 +137,7 @@ export const FilterBar = memo(function FilterBar({
   const activeSortBy = activeFilters.sortBy || filtersData?.default_sort;
 
   if (!filtersData) {
-    if (filtersLoading) {
-      return <FilterBarSkeleton />;
-    }
+    if (filtersLoading) return <FilterBarSkeleton />;
     return null;
   }
 

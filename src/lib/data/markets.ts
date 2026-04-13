@@ -51,3 +51,20 @@ export async function getMarketCountries(marketId: string) {
   const options = await getLocaleOptions();
   return cachedListMarketCountries(marketId, options);
 }
+
+/**
+ * Resolve the currency for a given country on the server side, using the
+ * cached markets list. Returns undefined if the country is not served by
+ * any market.
+ */
+export async function resolveCurrency(
+  country: string,
+): Promise<string | undefined> {
+  const { data: markets } = await getMarkets();
+  const iso = country.toLowerCase();
+  for (const market of markets) {
+    const match = market.countries?.some((c) => c.iso.toLowerCase() === iso);
+    if (match) return market.currency;
+  }
+  return undefined;
+}

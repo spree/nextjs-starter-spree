@@ -16,6 +16,7 @@ export function ProductImage({
   iconClassName = "w-8 h-8",
   icon: Icon = ImageIcon,
   onError,
+  fetchPriority,
   ...rest
 }: ProductImageProps): React.JSX.Element {
   const [hasError, setHasError] = useState(false);
@@ -35,6 +36,8 @@ export function ProductImage({
         setHasError(true);
         onError?.(e);
       }}
+      fetchPriority={fetchPriority}
+      loading={fetchPriority === "high" ? "eager" : undefined}
       {...rest}
     />
   );

@@ -8,6 +8,9 @@ interface ProductGridProps {
   listId?: string;
   listName?: string;
   emptyMessage?: string;
+  priorityCount?: number;
+  /** Optional currency used for analytics in each ProductCard. */
+  currency?: string;
 }
 
 export function ProductGrid({
@@ -17,6 +20,8 @@ export function ProductGrid({
   listId,
   listName,
   emptyMessage,
+  priorityCount = 0,
+  currency,
 }: ProductGridProps) {
   if (products.length === 0 && emptyMessage) {
     return (
@@ -37,6 +42,8 @@ export function ProductGrid({
           index={index}
           listId={listId}
           listName={listName}
+          fetchPriority={index < priorityCount ? "high" : undefined}
+          currency={currency}
         />
       ))}
     </div>

@@ -1,11 +1,23 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useCallback, useRef, useState } from "react";
-import { SearchBar } from "@/components/search/SearchBar";
 import { Button } from "@/components/ui/button";
+
+const SearchBar = dynamic(
+  () =>
+    import("@/components/search/SearchBar").then((mod) => ({
+      default: mod.SearchBar,
+    })),
+  {
+    loading: () => (
+      <div className="h-10 w-full bg-gray-100 rounded-md animate-pulse" />
+    ),
+  },
+);
 
 interface SearchToggleProps {
   basePath: string;

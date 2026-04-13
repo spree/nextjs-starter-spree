@@ -1,15 +1,40 @@
 import type { Category } from "@spree/sdk";
 import { User } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AccountLink } from "@/components/layout/AccountLink";
 import { CartButton } from "@/components/layout/CartButton";
-import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
-import { MobileMenu } from "@/components/layout/MobileMenu";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { Button } from "@/components/ui/button";
 import { getStoreName } from "@/lib/store";
+
+const LazyMobileMenu = dynamic(
+  () =>
+    import("@/components/layout/MobileMenu").then((mod) => ({
+      default: mod.MobileMenu,
+    })),
+  {
+    loading: () => (
+      <div className="inline-flex items-center justify-center h-10 w-10" />
+    ),
+  },
+);
+
+const LazyCountrySwitcher = dynamic(
+  () =>
+    import("@/components/layout/CountrySwitcher").then((mod) => ({
+      default: mod.CountrySwitcher,
+    })),
+  {
+    loading: () => (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400">
+        <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
 
 const storeName = getStoreName();
 
@@ -29,7 +54,9 @@ export async function Header({
   return (
     <SearchToggle
       basePath={basePath}
-      left={<MobileMenu rootCategories={rootCategories} basePath={basePath} />}
+      left={
+        <LazyMobileMenu rootCategories={rootCategories} basePath={basePath} />
+      }
       center={
         <Link href={basePath || "/"} className="flex items-center min-w-0">
           <Image
@@ -37,14 +64,16 @@ export async function Header({
             alt={storeName}
             width={90}
             height={32}
-            className="h-8 w-auto max-w-full object-contain"
-            priority
+            className="max-w-full object-contain"
+            style={{ width: "auto", height: "auto" }}
+            fetchPriority="high"
+            loading="eager"
           />
         </Link>
       }
       rightStart={
         <div className="hidden lg:block">
-          <CountrySwitcher />
+          <LazyCountrySwitcher />
         </div>
       }
       rightEnd={

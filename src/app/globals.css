@@ -136,6 +136,46 @@ input[type="search"]::-webkit-search-cancel-button {
   display: none;
 }
 
+/*
+ * Skip rendering of featured products section on mobile where it's
+ * below the fold (hero min-h-[823px]). Frees main thread for hero LCP.
+ * Disabled on desktop (md+) where products are in viewport.
+ */
+@media (max-width: 767px) {
+  .featured-products {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+}
+
+/*
+ * Pre-hydration layout for Swiper carousel.
+ * Swiper SSR renders slides at 100% width with no spacing before JS initializes.
+ * These rules match the Swiper breakpoints (1/2/3/4 slides) and spaceBetween (24px)
+ * so the layout is stable from first paint, preventing CLS. Once Swiper hydrates
+ * it sets inline widths and margins that override these.
+ */
+.product-carousel .swiper-slide {
+  flex-shrink: 0;
+  width: 100%;
+  margin-right: 24px;
+}
+@media (min-width: 640px) {
+  .product-carousel .swiper-slide {
+    width: calc((100% - 24px) / 2);
+  }
+}
+@media (min-width: 768px) {
+  .product-carousel .swiper-slide {
+    width: calc((100% - 48px) / 3);
+  }
+}
+@media (min-width: 1024px) {
+  .product-carousel .swiper-slide {
+    width: calc((100% - 72px) / 4);
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

@@ -2,7 +2,7 @@
 
 import type { CategoryListParams, ProductListParams } from "@spree/sdk";
 import { cacheLife, cacheTag } from "next/cache";
-import { getClient, getLocaleOptions } from "@/lib/spree";
+import { getAccessToken, getClient, getLocaleOptions } from "@/lib/spree";
 
 async function cachedListCategories(
   params: CategoryListParams | undefined,
@@ -19,12 +19,43 @@ export async function getCategories(params?: CategoryListParams) {
   return cachedListCategories(params, options);
 }
 
+async function cachedGetCategory(
+  idOrPermalink: string,
+  params: { expand?: string[] } | undefined,
+  options: { locale?: string; country?: string },
+) {
+  "use cache: remote";
+  cacheLife("tenMinutes");
+  cacheTag("category");
+  return getClient().categories.get(idOrPermalink, params, options);
+}
+
 export async function getCategory(
   idOrPermalink: string,
-  params?: CategoryListParams,
+  params?: { expand?: string[] },
 ) {
   const options = await getLocaleOptions();
-  return getClient().categories.get(idOrPermalink, params, options);
+  return cachedGetCategory(idOrPermalink, params, options);
+}
+
+/**
+ * Persistent cached category products fetch. Cache key is derived from
+ * all function arguments (categoryId, params, locale, country, userToken).
+ * Guest users pass undefined so the cache entry is shared.
+ */
+async function cachedListCategoryProducts(
+  categoryId: string,
+  params: ProductListParams | undefined,
+  options: { locale?: string; country?: string },
+  _userToken?: string,
+) {
+  "use cache: remote";
+  cacheLife("tenMinutes");
+  cacheTag("products", `category-products:${categoryId}`);
+  return getClient().products.list(
+    { ...params, in_category: categoryId },
+    options,
+  );
 }
 
 export async function getCategoryProducts(
@@ -32,8 +63,6 @@ export async function getCategoryProducts(
   params?: ProductListParams,
 ) {
   const options = await getLocaleOptions();
-  return getClient().products.list(
-    { ...params, in_category: categoryId },
-    options,
-  );
+  const userToken = await getAccessToken();
+  return cachedListCategoryProducts(categoryId, params, options, userToken);
 }

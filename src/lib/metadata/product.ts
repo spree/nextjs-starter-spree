@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCachedProduct, PRODUCT_PAGE_EXPAND } from "@/lib/data/cached";
+import { getCachedProduct, PRODUCT_METADATA_EXPAND } from "@/lib/data/cached";
 import { buildCanonicalUrl, stripHtml } from "@/lib/seo";
 import { getStoreUrl } from "@/lib/store";
 
@@ -16,7 +16,7 @@ export async function generateProductMetadata({
 }: ProductMetadataParams): Promise<Metadata> {
   let product;
   try {
-    product = await getCachedProduct(slug, PRODUCT_PAGE_EXPAND);
+    product = await getCachedProduct(slug, PRODUCT_METADATA_EXPAND);
   } catch {
     return { title: "Product Not Found" };
   }
@@ -36,21 +36,21 @@ export async function generateProductMetadata({
       )
     : undefined;
 
-  const firstMedia = (product.media || [])[0];
+  const primaryMedia = product.primary_media;
   const ogSrc =
-    firstMedia?.og_image_url ||
-    firstMedia?.original_url ||
+    primaryMedia?.og_image_url ||
+    primaryMedia?.original_url ||
     product.thumbnail_url ||
     null;
   const ogImage =
     ogSrc && storeUrl
       ? {
           url: `${storeUrl}/_next/image?url=${encodeURIComponent(ogSrc)}&w=1200&q=75`,
-          ...(firstMedia?.og_image_url ? { width: 1200, height: 630 } : {}),
-          alt: firstMedia?.alt || product.name,
+          ...(primaryMedia?.og_image_url ? { width: 1200, height: 630 } : {}),
+          alt: primaryMedia?.alt || product.name,
         }
       : ogSrc
-        ? { url: ogSrc, alt: firstMedia?.alt || product.name }
+        ? { url: ogSrc, alt: primaryMedia?.alt || product.name }
         : null;
 
   return {

@@ -1,4 +1,5 @@
 import type { Category } from "@spree/sdk";
+import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { getCategories } from "@/lib/data/categories";
@@ -19,7 +20,9 @@ function CategoryLinks({
     <ul>
       {categories.map((category) => (
         <li key={category.id}>
-          <a href={`${basePath}/c/${category.permalink}`}>{category.name}</a>
+          <Link href={`${basePath}/c/${category.permalink}`}>
+            {category.name}
+          </Link>
           {category.children && category.children.length > 0 && (
             <CategoryLinks categories={category.children} basePath={basePath} />
           )}
@@ -41,7 +44,10 @@ export default async function StorefrontLayout({
     expand: ["children.children"],
   })
     .then((res) => res.data)
-    .catch(() => [] as Category[]);
+    .catch((error) => {
+      console.error("StorefrontLayout: failed to load categories", error);
+      return [] as Category[];
+    });
 
   return (
     <>

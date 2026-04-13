@@ -26,7 +26,8 @@ function CheckoutHeader() {
           alt={storeName}
           width={90}
           height={32}
-          priority
+          fetchPriority="high"
+          loading="eager"
         />
       </Link>
       <Link
