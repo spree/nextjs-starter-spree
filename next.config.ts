@@ -5,7 +5,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["shop.lvh.me"],
+  allowedDevOrigins: ["shop.lvh.me", "*.trycloudflare.com"],
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.SENTRY_DSN || "",
   },
@@ -48,6 +48,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "**.spree.sh",
+        pathname: "/rails/active_storage/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.trycloudflare.com",
         pathname: "/rails/active_storage/**",
       },
     ],
