@@ -11,7 +11,7 @@ import {
  * Content (space-y-4: email field, password field, forgot link, submit h-13) →
  * Footer (centered text-sm).
  */
-export function LoginFormSkeleton() {
+export function LoginFormSkeleton(): React.JSX.Element {
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <Card>

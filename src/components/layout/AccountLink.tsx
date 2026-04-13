@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ComponentProps } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface AccountLinkProps {
+type AccountLinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
   basePath: string;
-  className?: string;
-  "aria-label"?: string;
-  children: ReactNode;
-}
+};
 
 /**
  * Account link that routes directly to the correct page based on auth state:
@@ -17,15 +14,15 @@ interface AccountLinkProps {
  *  - unauthenticated → `/account/login` (skip the layout's redirect hop)
  *  - still loading → `/account` (safe default; layout handles the redirect)
  *
- * Used by Header / Footer / MobileMenu so anonymous users go straight to login
- * without a flash of the dashboard skeleton.
+ * Accepts all props a `next/link` `<Link>` accepts (except `href`) and forwards
+ * them onto the underlying Link so it composes correctly with Radix Slot
+ * consumers like `<Button asChild>` and `<SheetClose asChild>`, which inject
+ * className / onClick / data-state / ref onto their child.
  */
 export function AccountLink({
   basePath,
-  className,
-  "aria-label": ariaLabel,
-  children,
-}: AccountLinkProps) {
+  ...props
+}: AccountLinkProps): React.JSX.Element {
   const { isAuthenticated, loading } = useAuth();
 
   const href =
@@ -33,9 +30,5 @@ export function AccountLink({
       ? `${basePath}/account`
       : `${basePath}/account/login`;
 
-  return (
-    <Link href={href} className={className} aria-label={ariaLabel}>
-      {children}
-    </Link>
-  );
+  return <Link href={href} {...props} />;
 }

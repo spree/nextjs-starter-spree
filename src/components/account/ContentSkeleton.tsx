@@ -2,7 +2,7 @@
  * Generic fallback skeleton for protected account sub-pages that don't yet have
  * a dedicated skeleton (mirrors a simple header + two content blocks layout).
  */
-export function ContentSkeleton() {
+export function ContentSkeleton(): React.JSX.Element {
   return (
     <div className="animate-pulse space-y-4">
       <div className="h-8 bg-gray-200 rounded w-1/3" />

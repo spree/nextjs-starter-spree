@@ -19,6 +19,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
+import { safeRedirect } from "@/lib/utils/redirect";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,13 +38,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const destination = safeRedirect(redirectUrl, `${basePath}/account`);
+
   // Redirect if already authenticated
   // useEffect is needed here to prevent rendering issues.
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      router.push(redirectUrl ?? `${basePath}/account`);
+      router.push(destination);
     }
-  }, [authLoading, isAuthenticated, redirectUrl, router, basePath]);
+  }, [authLoading, isAuthenticated, destination, router]);
   if (authLoading || isAuthenticated) {
     return null;
   }
@@ -53,14 +56,18 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    const result = await login(email, password);
-    if (result.success) {
-      // Redirect to the specified URL or go to account dashboard
-      router.push(redirectUrl ?? `${basePath}/account`);
-    } else {
-      setError(result.error || t("invalidCredentials"));
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        router.push(destination);
+      } else {
+        setError(result.error || t("invalidCredentials"));
+      }
+    } catch {
+      setError(t("invalidCredentials"));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

@@ -161,12 +161,15 @@ export default function AccountLayout({
   ]);
   const isAuthPage = authPagePaths.has(pathname);
 
-  // Redirect to login if not authenticated and trying to access protected pages
+  // Redirect to login if not authenticated and trying to access protected pages.
+  // Preserve the originally requested path via `?redirect=` so LoginPage can
+  // send the user back after they sign in.
   useEffect(() => {
     if (!loading && !isAuthenticated && !isAuthPage) {
-      router.replace(`${basePath}/account/login`);
+      const redirect = encodeURIComponent(pathname);
+      router.replace(`${basePath}/account/login?redirect=${redirect}`);
     }
-  }, [loading, isAuthenticated, isAuthPage, basePath, router]);
+  }, [loading, isAuthenticated, isAuthPage, basePath, pathname, router]);
 
   // Show loading or redirect-in-progress skeleton
   if (loading || (!isAuthenticated && !isAuthPage)) {

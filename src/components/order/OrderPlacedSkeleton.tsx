@@ -8,7 +8,7 @@
  *  - Contact & addresses card: 2-col grid + email footer
  *  - Continue shopping Button (size="lg" h-13)
  */
-export function OrderPlacedSkeleton() {
+export function OrderPlacedSkeleton(): React.JSX.Element {
   return (
     <div className="py-8 max-w-2xl mx-auto">
       {/* Success header */}

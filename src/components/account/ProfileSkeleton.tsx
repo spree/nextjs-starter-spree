@@ -4,7 +4,7 @@
  *  - Form card: p-6 space-y-6 (first/last grid + email field), footer with save button
  *  - Account info card: header (text-lg = 28px) + 2-col grid of label/value pairs
  */
-export function ProfileSkeleton() {
+export function ProfileSkeleton(): React.JSX.Element {
   return (
     <div>
       {/* h1 Profile */}
