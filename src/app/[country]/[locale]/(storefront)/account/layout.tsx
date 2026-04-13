@@ -19,11 +19,13 @@ import { AddressesSkeleton } from "@/components/account/AddressesSkeleton";
 import { AuthFallbackSkeleton } from "@/components/account/AuthFallbackSkeleton";
 import { ContentSkeleton } from "@/components/account/ContentSkeleton";
 import { CreditCardsSkeleton } from "@/components/account/CreditCardsSkeleton";
+import { ForgotPasswordFormSkeleton } from "@/components/account/ForgotPasswordFormSkeleton";
 import { GiftCardsSkeleton } from "@/components/account/GiftCardsSkeleton";
 import { LoginFormSkeleton } from "@/components/account/LoginFormSkeleton";
 import { OrdersListSkeleton } from "@/components/account/OrdersListSkeleton";
 import { ProfileSkeleton } from "@/components/account/ProfileSkeleton";
 import { RegisterFormSkeleton } from "@/components/account/RegisterFormSkeleton";
+import { ResetPasswordFormSkeleton } from "@/components/account/ResetPasswordFormSkeleton";
 import { SidebarUserInfoSkeleton } from "@/components/account/SidebarUserInfoSkeleton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -174,8 +176,14 @@ export default function AccountLayout({
     if (pathname === `${basePath}/account/register`) {
       return <RegisterFormSkeleton />;
     }
+    if (pathname === `${basePath}/account/forgot-password`) {
+      return <ForgotPasswordFormSkeleton />;
+    }
+    if (pathname === `${basePath}/account/reset-password`) {
+      return <ResetPasswordFormSkeleton />;
+    }
     if (isAuthPage) {
-      // forgot-password / reset-password — generic fallback
+      // generic fallback for any future auth page
       return <AuthFallbackSkeleton />;
     }
     const isDashboardPage = pathname === `${basePath}/account`;
