@@ -1,6 +1,7 @@
 import type { Category } from "@spree/sdk";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { AccountLink } from "@/components/layout/AccountLink";
 import { POLICY_LINKS } from "@/lib/constants/policies";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 
@@ -101,12 +102,12 @@ export async function Footer({
             </h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link
-                  href={`${basePath}/account`}
+                <AccountLink
+                  basePath={basePath}
                   className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
                 >
                   {t("myAccount")}
-                </Link>
+                </AccountLink>
               </li>
               <li>
                 <Link

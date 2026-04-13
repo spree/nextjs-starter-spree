@@ -14,6 +14,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
+import { AccountDashboardSkeleton } from "@/components/account/AccountDashboardSkeleton";
+import { AddressesSkeleton } from "@/components/account/AddressesSkeleton";
+import { AuthFallbackSkeleton } from "@/components/account/AuthFallbackSkeleton";
+import { ContentSkeleton } from "@/components/account/ContentSkeleton";
+import { CreditCardsSkeleton } from "@/components/account/CreditCardsSkeleton";
+import { GiftCardsSkeleton } from "@/components/account/GiftCardsSkeleton";
+import { LoginFormSkeleton } from "@/components/account/LoginFormSkeleton";
+import { OrdersListSkeleton } from "@/components/account/OrdersListSkeleton";
+import { ProfileSkeleton } from "@/components/account/ProfileSkeleton";
+import { RegisterFormSkeleton } from "@/components/account/RegisterFormSkeleton";
+import { SidebarUserInfoSkeleton } from "@/components/account/SidebarUserInfoSkeleton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
@@ -35,17 +46,6 @@ function getNavItems(t: ReturnType<typeof useTranslations<"account">>): {
     { href: "/account/gift-cards", label: t("giftCards"), icon: Gift },
     { href: "/account/profile", label: t("profile"), icon: User },
   ];
-}
-
-function ContentSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-8 bg-gray-200 rounded w-1/3" />
-      <div className="h-4 bg-gray-200 rounded w-2/3" />
-      <div className="h-32 bg-gray-200 rounded" />
-      <div className="h-32 bg-gray-200 rounded" />
-    </div>
-  );
 }
 
 interface AccountShellProps {
@@ -80,10 +80,7 @@ function AccountShell({
             {/* User Info */}
             <div className="p-4 border-b border-gray-200">
               {isLoading ? (
-                <div className="animate-pulse space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24" />
-                  <div className="h-3 bg-gray-200 rounded w-32" />
-                </div>
+                <SidebarUserInfoSkeleton />
               ) : (
                 <>
                   <p className="font-medium text-gray-900">
@@ -155,49 +152,54 @@ export default function AccountLayout({
 
   // Pages that don't require authentication
   const authPagePaths = new Set([
+    `${basePath}/account/login`,
     `${basePath}/account/register`,
     `${basePath}/account/forgot-password`,
     `${basePath}/account/reset-password`,
   ]);
   const isAuthPage = authPagePaths.has(pathname);
-  const isMainAccountPage = pathname === `${basePath}/account`;
 
-  // Redirect to login if not authenticated and trying to access protected sub-pages
+  // Redirect to login if not authenticated and trying to access protected pages
   useEffect(() => {
-    if (!loading && !isAuthenticated && !isAuthPage && !isMainAccountPage) {
-      router.replace(`${basePath}/account`);
+    if (!loading && !isAuthenticated && !isAuthPage) {
+      router.replace(`${basePath}/account/login`);
     }
-  }, [
-    loading,
-    isAuthenticated,
-    isAuthPage,
-    isMainAccountPage,
-    basePath,
-    router,
-  ]);
+  }, [loading, isAuthenticated, isAuthPage, basePath, router]);
 
   // Show loading or redirect-in-progress skeleton
-  if (loading || (!isAuthenticated && !isAuthPage && !isMainAccountPage)) {
-    if (isAuthPage || isMainAccountPage) {
-      return (
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto" />
-            <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto" />
-            <div className="h-48 bg-gray-200 rounded" />
-          </div>
-        </div>
-      );
+  if (loading || (!isAuthenticated && !isAuthPage)) {
+    if (pathname === `${basePath}/account/login`) {
+      return <LoginFormSkeleton />;
     }
+    if (pathname === `${basePath}/account/register`) {
+      return <RegisterFormSkeleton />;
+    }
+    if (isAuthPage) {
+      // forgot-password / reset-password — generic fallback
+      return <AuthFallbackSkeleton />;
+    }
+    const isDashboardPage = pathname === `${basePath}/account`;
+    const isProfilePage = pathname === `${basePath}/account/profile`;
+    const isOrdersPage = pathname === `${basePath}/account/orders`;
+    const isGiftCardsPage = pathname === `${basePath}/account/gift-cards`;
+    const isCreditCardsPage = pathname === `${basePath}/account/credit-cards`;
+    const isAddressesPage = pathname === `${basePath}/account/addresses`;
+    let content: React.ReactNode = <ContentSkeleton />;
+    if (isDashboardPage) content = <AccountDashboardSkeleton />;
+    else if (isProfilePage) content = <ProfileSkeleton />;
+    else if (isOrdersPage) content = <OrdersListSkeleton />;
+    else if (isGiftCardsPage) content = <GiftCardsSkeleton />;
+    else if (isCreditCardsPage) content = <CreditCardsSkeleton />;
+    else if (isAddressesPage) content = <AddressesSkeleton />;
     return (
       <AccountShell basePath={basePath} pathname={pathname} isLoading={true}>
-        <ContentSkeleton />
+        {content}
       </AccountShell>
     );
   }
 
-  // Don't show nav for login/register pages
-  if (isAuthPage || !isAuthenticated) {
+  // Don't show nav for login/register/forgot/reset pages
+  if (isAuthPage) {
     return <>{children}</>;
   }
 

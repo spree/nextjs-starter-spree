@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
 
           <CardFooter className="justify-center">
             <Link
-              href={`${basePath}/account`}
+              href={`${basePath}/account/login`}
               className="text-sm text-primary hover:text-primary/70 font-medium"
             >
               {t("backToSignIn")}
@@ -145,7 +145,7 @@ export default function ForgotPasswordPage() {
 
         <CardFooter className="justify-center">
           <Link
-            href={`${basePath}/account`}
+            href={`${basePath}/account/login`}
             className="text-sm text-primary hover:text-primary/70 font-medium"
           >
             {t("backToSignIn")}

@@ -3,6 +3,7 @@ import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { AccountLink } from "@/components/layout/AccountLink";
 import { CartButton } from "@/components/layout/CartButton";
 import { CountrySwitcher } from "@/components/layout/CountrySwitcher";
 import { MobileMenu } from "@/components/layout/MobileMenu";
@@ -51,9 +52,9 @@ export async function Header({
           {/* Account - desktop only */}
           <div className="hidden md:block">
             <Button variant="ghost" size="icon-lg" asChild>
-              <Link href={`${basePath}/account`} aria-label={t("account")}>
+              <AccountLink basePath={basePath} aria-label={t("account")}>
                 <User className="size-5" />
-              </Link>
+              </AccountLink>
             </Button>
           </div>
 

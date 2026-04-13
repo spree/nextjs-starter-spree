@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Suspense, use, useCallback, useEffect, useRef, useState } from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
+import { CheckoutPageSkeleton } from "@/components/checkout/CheckoutPageSkeleton";
 import { CouponCode } from "@/components/checkout/CouponCode";
 import { DeliveryMethodSection } from "@/components/checkout/DeliveryMethodSection";
 import {
@@ -543,19 +544,8 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
     // PaymentSection handles setProcessing(false) on error internally
   };
 
-  // Loading state
   if (loading || authLoading) {
-    return (
-      <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-gray-200 rounded w-1/3" />
-        <div className="h-4 bg-gray-200 rounded w-1/4" />
-        <div className="space-y-4 mt-8">
-          <div className="h-12 bg-gray-200 rounded" />
-          <div className="h-12 bg-gray-200 rounded" />
-          <div className="h-12 bg-gray-200 rounded" />
-        </div>
-      </div>
-    );
+    return <CheckoutPageSkeleton />;
   }
 
   // Error state (no cart loaded)
@@ -613,7 +603,7 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
           countries={countries}
           savedAddresses={savedAddresses}
           isAuthenticated={isAuthenticated}
-          signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
+          signInUrl={`${basePath}/account/login?redirect=${encodeURIComponent(pathname)}`}
           fetchStates={fetchStates}
           onEmailBlur={handleEmailBlur}
           onAutoSave={handleAutoSave}

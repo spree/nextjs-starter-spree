@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { use, useEffect, useRef, useState } from "react";
 import { AddressBlock } from "@/components/order/AddressBlock";
+import { OrderPlacedSkeleton } from "@/components/order/OrderPlacedSkeleton";
 import { OrderTotals } from "@/components/order/OrderTotals";
 import { PaymentInfo } from "@/components/order/PaymentInfo";
 import { Button } from "@/components/ui/button";
@@ -90,14 +91,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   }, [cartId]);
 
   if (loading) {
-    return (
-      <div className="animate-pulse space-y-6 py-12">
-        <div className="h-12 w-12 bg-gray-200 rounded-lg mx-auto" />
-        <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto" />
-        <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto" />
-        <div className="h-64 bg-gray-200 rounded mt-8" />
-      </div>
-    );
+    return <OrderPlacedSkeleton />;
   }
 
   if (error || !order) {

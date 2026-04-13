@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { AccountLink } from "@/components/layout/AccountLink";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -279,13 +280,13 @@ export function MobileMenu({ rootCategories, basePath }: MobileMenuProps) {
               </button>
 
               <SheetClose asChild className="md:hidden">
-                <Link
-                  href={`${basePath}/account`}
+                <AccountLink
+                  basePath={basePath}
                   className="flex items-center justify-center gap-2 mx-4 mb-2 px-4 py-3 bg-black text-white rounded-lg text-base font-medium hover:bg-gray-800 transition-colors"
                 >
                   <User className="size-5" />
                   <span>{t("myAccount")}</span>
-                </Link>
+                </AccountLink>
               </SheetClose>
             </SheetFooter>
           </div>
