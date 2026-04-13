@@ -139,31 +139,35 @@ Open [http://localhost:3001](http://localhost:3001) in your browser.
 
 ### HTTPS Development (Apple Pay / Google Pay)
 
-Apple Pay and Google Pay require HTTPS on non-localhost domains. To test Express Checkout locally with these payment methods:
+Apple Pay and Google Pay require HTTPS **and a publicly-reachable URL** — Stripe verifies the payment method domain from the internet, so `localhost` and locally-trusted certificates (e.g. `mkcert` + `lvh.me`) won't pass domain verification. The simplest way to expose your local storefront with a valid public HTTPS URL is [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/):
 
-1. Install [mkcert](https://github.com/FiloSottile/mkcert):
-
-```bash
-brew install mkcert
-mkcert -install
-```
-
-2. Generate certificates:
+1. Install `cloudflared`:
 
 ```bash
-mkdir -p certificates
-mkcert -key-file certificates/key.pem -cert-file certificates/cert.pem shop.lvh.me localhost 127.0.0.1
+brew install cloudflared
 ```
 
-3. Start the HTTPS dev server:
+2. Start the dev server normally (HTTP on port 3001):
 
 ```bash
-npm run dev:https
+npm run dev
 ```
 
-4. Open [https://shop.lvh.me:3001](https://shop.lvh.me:3001) in your browser.
+3. In a second terminal, expose it through a quick tunnel:
 
-> **Note:** `shop.lvh.me` resolves to `127.0.0.1` and must be registered in your [Stripe Payment method domains](https://dashboard.stripe.com/settings/payment_methods/domains). The `*.pem` files are already in `.gitignore`.
+```bash
+cloudflared tunnel --url http://localhost:3001
+```
+
+The output will contain a URL like `https://<random-words>.trycloudflare.com`.
+
+4. Register that URL in your [Stripe Payment method domains](https://dashboard.stripe.com/settings/payment_methods/domains).
+
+5. Open the tunnel URL in your browser and test the Express Checkout buttons in the cart.
+
+> **`allowedDevOrigins`:** `next.config.ts` already allows `*.trycloudflare.com`, so quick tunnels work out of the box. Every time you restart `cloudflared tunnel --url ...` you get a new random subdomain — if you need a stable URL (to avoid re-registering in Stripe on each run), set up a [named tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/#using-named-tunnels) on your own domain.
+
+> **Spree backend must also be publicly reachable.** The storefront's server-side fetches go to `SPREE_API_URL`, but image URLs and a few other backend-served paths (e.g. the Apple Pay domain-verification file under `/.well-known/apple-developer-merchantid-domain-association`) are fetched by the browser directly and must resolve from the public internet. Point `SPREE_API_URL` at a hosted Spree (e.g. `*.spree.sh`, `*.vendo.dev`, your own staging) or expose your local Spree with another `cloudflared tunnel --url http://localhost:3000`. When tunneling a local Rails app, allow the tunnel host, e.g. `RAILS_DEVELOPMENT_HOSTS=.trycloudflare.com` in the backend's `.env`.
 
 ### Production Build
 
