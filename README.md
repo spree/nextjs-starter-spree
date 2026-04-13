@@ -1,37 +1,69 @@
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
+
 # Spree Storefront
 
-A modern, headless e-commerce storefront built with Next.js 16, React 19, and [Spree API v3](https://spreecommerce.org/docs/api-reference).
+A production-ready, headless ecommerce storefront for [Spree Commerce](https://spreecommerce.org), built with Next.js 16, React 19, and the [Spree REST API](https://spreecommerce.org/docs/api-reference). Open source (MIT) and free to fork and customize.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fspree%2Fstorefront&env=SPREE_API_URL&envDefaults=%7B%22SPREE_API_URL%22%3A%22SPREE_PUBLISHABLE_KEY%22%7D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/spree/storefront)
+
+[Live Demo](https://demo.spreecommerce.org) | [Quickstart Docs](https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart) | [TypeScript SDK](https://www.npmjs.com/package/@spree/sdk)
+
+## Why This Storefront
+
+**TypeScript SDK.** [@spree/sdk](https://www.npmjs.com/package/@spree/sdk) is an official typed client for every Store API endpoint (OpenAPI 3.0 documented). Autocomplete and type safety in your editor, no codegen step to maintain.
+
+**Multi-region out of the box.** Country, currency, and language switching via URL segments (`/us/en/`, `/de/de/`, `/uk/en/`), powered by Spree [Markets](https://spreecommerce.org/docs/developer/core-concepts/markets). Distinct selling regions bundling geography, currency, and locale in a single store.
+
+**One-page checkout.** Guest and authenticated users, multi-shipment, coupon codes, gift cards, and store credit. Stripe, PayPal, and Adyen via Payment Sessions. Card data never touches your server. [Swap providers](https://spreecommerce.org/docs/developer/core-concepts/payments) easily.
+
+**Transactional emails.** Order confirmation, shipping notification, password reset. Built with react-email, sent via Resend, triggered by Spree webhooks.
+
+**MIT licensed.** Open source and free to use.
+
+## Performance
+
+The live demo at [demo.spreecommerce.org](https://demo.spreecommerce.org) scores 98/100 on desktop and 88/100 on mobile for Performance on Google's Lighthouse audit, with five language versions served from the same deployment.
+
+| Lighthouse metric | Mobile | Desktop |
+|-------------------|--------|---------|
+| Performance | 88 | 98 |
+| Accessibility | 100 | 100 |
+| Best Practices | 100 | 100 |
+| SEO | 100 | 100 |
+
+No external performance plugins. No edge-side rendering hacks. The architecture is Next.js 16 App Router with React 19 Server Components, server-side data fetching via `@spree/sdk`, and Tailwind CSS 4.
+
+[Run the audit yourself on PageSpeed Insights](https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fdemo.spreecommerce.org)
 
 ## Features
 
-- **Product Catalog** - Browse, search, filter products by categories, and use faceted navigation. Search and facet filtering powered by [Meilisearch](https://spreecommerce.org/docs/integrations/search/meilisearch)
-- **Product Details** - View product information with variant selection and media
-- **Shopping Cart** - Add, update, and remove items with server-side state
-- **One-page Checkout** - Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit
-- **Stripe payments** - native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments, and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe)
-- **Customer Account** - Full account management:
-  - Profile management
-  - Order history with detailed order view
-  - Address book (create, edit, delete)
-  - Gift Cards and Store Credit
-  - Saved payment methods
-- **Multi-Region Support** - Country, currency, and language switching via URL segments, powered by [Spree Markets](https://spreecommerce.org/docs/developer/core-concepts/markets)
-- **Responsive Design** - Mobile-first Tailwind CSS styling
-- **Google Tag Mananager** and **Google Analytics 4 Ecommerce events** tracking supported natively
-- **Store Policies** - Policy pages fetched from Spree API, with consent checkboxes on registration and guest checkout
-- **SEO-ready** - meta tags, JSON-LD, OpenGraph - all built in!
-- **Error Tracking** - Sentry integration for both server-side and client-side error monitoring with source maps
+| Feature | Details |
+|---------|---------|
+| **Product Catalog** | Browse, search, filter products by categories, and use faceted navigation. Search and facet filtering powered by [Meilisearch](https://spreecommerce.org/docs/integrations/search/meilisearch) |
+| **Product Details** | View product information with variant selection and media |
+| **Shopping Cart** | Add, update, and remove items with server-side state |
+| **One-page Checkout** | Guest visitors and signed-in users supported, multi-shipments supported natively, Coupon Codes, Gift Cards, Store Credit |
+| **Stripe payments** | native Stripe payment support with Stripe SDKs, PCI-Compliant, 3DS-Secure, use Credit Cards, Apple Pay, Google Pay, Klarna, Affirm, SEPA payments, and all other payment methods provided by [Spree Stripe integration](https://github.com/spree/spree_stripe) |
+| **Customer Account** | Full account management: Profile management, Order history with detailed order view, Address book (create, edit, delete), Gift Cards and Store Credit, Saved payment methods |
+| **Multi-Region Support** | Country, currency, and language switching via URL segments, powered by [Spree Markets](https://spreecommerce.org/docs/developer/core-concepts/markets) |
+| **Responsive Design** | Mobile-first Tailwind CSS styling |
+| **Google Tag Manager** and **Google Analytics 4 Ecommerce events** | tracking supported natively |
+| **Store Policies** | Policy pages fetched from Spree API, with consent checkboxes on registration and guest checkout |
+| **SEO-ready** | meta tags, JSON-LD, OpenGraph — all built in |
+| **Error Tracking** | Sentry integration for both server-side and client-side error monitoring with source maps |
 
 ## Technology
 
-- **Next.js 16** - App Router, Server Actions, Turbopack
-- **React 19** - Latest React with improved Server Components
-- **Tailwind CSS 4** - Utility-first styling
-- **TypeScript** - Full type safety
-- **Sentry** - Error tracking and performance monitoring with source maps
-- [@spree/sdk](https://spreecommerce.org/docs/developer/sdk/quickstart) - Official Spree Commerce SDK
+| Technology | Role |
+|------------|------|
+| **Next.js 16** | App Router, Server Actions, Turbopack |
+| **React 19** | Latest React with improved Server Components |
+| **Tailwind CSS 4** | Utility-first styling |
+| **TypeScript** | Full type safety |
+| **Sentry** | Error tracking and performance monitoring with source maps |
+| [@spree/sdk](https://spreecommerce.org/docs/developer/sdk/quickstart) | Official Spree Commerce SDK |
 
 ## Architecture
 
@@ -264,7 +296,7 @@ Customer-facing emails (order confirmation, shipping notification, password rese
 
 ```env
 SPREE_WEBHOOK_SECRET=your_webhook_endpoint_secret_key
-RESEND_API_KEY=re_your_resend_api_key        # production only
+RESEND_API_KEY=re_your_resend_api_key  # production only
 EMAIL_FROM=Your Store <orders@your-domain.com>  # production only
 ```
 
@@ -275,7 +307,9 @@ brew install cloudflared
 cloudflared tunnel --url http://localhost:3001
 ```
 
-Use the tunnel URL as the webhook endpoint URL in Spree Admin. No `RESEND_API_KEY` needed in dev — emails are rendered to HTML files in `.next/emails/` with a `file://` link logged to the console.
+Use the tunnel URL as the webhook endpoint URL in Spree Admin.
+
+No `RESEND_API_KEY` needed in dev — emails are rendered to HTML files in `.next/emails/` with a `file://` link logged to the console.
 
 ### Email Templates
 
@@ -300,7 +334,7 @@ Opens the [react-email](https://react.email) dev server with all templates and m
 
 ```
 Spree Backend → Webhook POST → /api/webhooks/spree → render email → send via Resend
-                (signed HMAC)   (signature verified)   (react-email)   (or write to disk in dev)
+(signed HMAC)                  (signature verified)  (react-email)  (or write to disk in dev)
 ```
 
 The webhook route handler (`src/app/api/webhooks/spree/route.ts`) uses `createWebhookHandler` from `src/lib/spree/webhooks` — signature verification and event routing are handled automatically.
