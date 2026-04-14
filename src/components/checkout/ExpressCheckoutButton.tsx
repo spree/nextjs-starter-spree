@@ -78,8 +78,14 @@ function ExpressCheckoutInner({
   const currency = cart.currency.toLowerCase();
   useEffect(() => {
     if (!elements) return;
+    const amount = toCents(cart.item_total, currency);
+    console.log("[ExpressCheckout] useEffect sync amount:", {
+      amount,
+      itemTotal: cart.item_total,
+      currency,
+    });
     try {
-      elements.update({ amount: toCents(cart.item_total, currency) });
+      elements.update({ amount });
     } catch (_) {
       /* non-fatal */
     }
@@ -101,8 +107,18 @@ function ExpressCheckoutInner({
   const handleClick = useCallback(
     (event: StripeExpressCheckoutElementClickEvent) => {
       isGooglePayRef.current = event.expressPaymentType === "google_pay";
+      const clickLineItems = buildLineItems(cart);
+      const clickSum = clickLineItems.reduce((s, i) => s + i.amount, 0);
+      console.log("[ExpressCheckout] onClick debug:", {
+        paymentType: event.expressPaymentType,
+        lineItems: clickLineItems,
+        lineItemsSum: clickSum,
+        cartItemTotal: cart.item_total,
+        cartTotal: cart.total,
+        currency: cart.currency,
+      });
       event.resolve({
-        lineItems: buildLineItems(cart),
+        lineItems: clickLineItems,
       });
     },
     [cart],
@@ -147,12 +163,25 @@ function ExpressCheckoutInner({
           0,
         );
 
+        console.log("[ExpressCheckout] shippingAddress resolve debug:", {
+          lineItems,
+          lineItemsSum,
+          defaultShippingAmount,
+          shippingRatesCount: shippingRates.length,
+          elementsAvailable: !!elements,
+        });
+
         // Amount must be updated BEFORE resolve — Stripe validates
         // that Elements amount >= sum(lineItems).
         if (!elements) throw new Error("Elements not available");
         elements.update({ amount: lineItemsSum });
+        console.log(
+          "[ExpressCheckout] elements.update() called with amount:",
+          lineItemsSum,
+        );
 
         event.resolve({ shippingRates, lineItems });
+        console.log("[ExpressCheckout] event.resolve() called");
       } catch (err) {
         console.error("[ExpressCheckout] shipping address error:", err);
         try {
@@ -186,10 +215,22 @@ function ExpressCheckoutInner({
         lineItems.push({ name: t("shipping"), amount: shippingRate.amount });
         const newAmount = lineItems.reduce((s, i) => s + i.amount, 0);
 
+        console.log("[ExpressCheckout] shippingRateChange debug:", {
+          lineItems,
+          newAmount,
+          shippingRateAmount: shippingRate.amount,
+          shippingRateId: shippingRate.id,
+        });
+
         if (!elements) throw new Error("Elements not available");
         elements.update({ amount: newAmount });
+        console.log(
+          "[ExpressCheckout] elements.update() called with amount:",
+          newAmount,
+        );
 
         event.resolve({ lineItems });
+        console.log("[ExpressCheckout] event.resolve() called");
       } catch (_err) {
         try {
           event.reject();
