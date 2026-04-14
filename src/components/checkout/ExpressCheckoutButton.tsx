@@ -146,11 +146,11 @@ function ExpressCheckoutInner({
           (sum, item) => sum + item.amount,
           0,
         );
-        try {
-          elements?.update({ amount: lineItemsSum });
-        } catch (_) {
-          /* elements.update failed — non-fatal */
-        }
+
+        // Amount must be updated BEFORE resolve — Stripe validates
+        // that Elements amount >= sum(lineItems).
+        if (!elements) throw new Error("Elements not available");
+        elements.update({ amount: lineItemsSum });
 
         event.resolve({ shippingRates, lineItems });
       } catch (err) {
@@ -186,11 +186,8 @@ function ExpressCheckoutInner({
         lineItems.push({ name: t("shipping"), amount: shippingRate.amount });
         const newAmount = lineItems.reduce((s, i) => s + i.amount, 0);
 
-        try {
-          elements?.update({ amount: newAmount });
-        } catch (_updateErr) {
-          /* elements.update failed — non-fatal */
-        }
+        if (!elements) throw new Error("Elements not available");
+        elements.update({ amount: newAmount });
 
         event.resolve({ lineItems });
       } catch (_err) {
