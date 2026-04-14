@@ -3,7 +3,6 @@
 import type { AddressParams, Cart } from "@spree/sdk";
 import {
   getCheckoutOrder,
-  getFulfillments,
   selectDeliveryRate,
   updateOrderAddresses,
 } from "@/lib/data/checkout";
@@ -40,18 +39,11 @@ export async function expressCheckoutResolveShipping(
       throw new Error(result.error);
     }
 
-    // getCart() doesn't include fulfillments — fetch them separately
-    const [cart, fulfillments] = await Promise.all([
-      getCheckoutOrder(cartId),
-      getFulfillments(cartId),
-    ]);
+    const cart = await getCheckoutOrder(cartId);
 
     if (!cart) {
       throw new Error("Failed to fetch cart after address update");
     }
-
-    // Attach fulfillments to cart for the client
-    cart.fulfillments = fulfillments;
 
     return { cart };
   }, "Failed to resolve shipping");
@@ -75,10 +67,6 @@ export async function expressCheckoutSelectRates(
     if (!cart) {
       throw new Error("No fulfillment selections provided");
     }
-
-    // selectDeliveryRate may not include fulfillments — fetch separately
-    const fulfillments = await getFulfillments(cartId);
-    cart.fulfillments = fulfillments;
 
     return { cart };
   }, "Failed to select shipping rates");
@@ -116,12 +104,12 @@ export async function expressCheckoutPreparePayment(
 export async function expressCheckoutCreateSession(
   cartId: string,
   paymentMethodId: string,
-  stripePaymentMethodId: string,
+  gatewayPaymentMethodId: string,
 ): ReturnType<typeof createCheckoutPaymentSession> {
   return createCheckoutPaymentSession(
     cartId,
     paymentMethodId,
-    stripePaymentMethodId,
+    gatewayPaymentMethodId,
   );
 }
 

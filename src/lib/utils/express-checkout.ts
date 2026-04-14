@@ -140,25 +140,10 @@ export function buildShippingRateMap(
   >();
 
   for (const shipment of shipments) {
-    // Backend may return "shipping_rates" (old) or "delivery_rates" (new SDK)
-    const rawShipment = shipment as Fulfillment & {
-      shipping_rates?: Array<{
-        id: string;
-        shipping_method_id: string;
-        name: string;
-        selected: boolean;
-        cost: string;
-        display_cost: string;
-      }>;
-    };
-    const rates = shipment.delivery_rates ?? rawShipment.shipping_rates ?? [];
+    const rates = shipment.delivery_rates ?? [];
 
     for (const rate of rates) {
-      // Normalize: old API uses shipping_method_id, new uses delivery_method_id
-      const methodId =
-        (rate as { delivery_method_id?: string }).delivery_method_id ??
-        (rate as { shipping_method_id?: string }).shipping_method_id ??
-        rate.id;
+      const methodId = rate.delivery_method_id;
 
       if (!rateMap.has(methodId)) {
         const id = isGooglePay

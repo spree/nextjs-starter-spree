@@ -504,5 +504,10 @@
     "privacyPolicy": "Privacy Policy",
     "returnsPolicy": "Returns Policy",
     "termsOfService": "Terms of Service"
+  },
+  "expressCheckout": {
+    "shipping": "Shipping",
+    "finalizingPayment": "Finalizing your payment...",
+    "or": "or"
   }
 }

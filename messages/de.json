@@ -504,5 +504,10 @@
     "privacyPolicy": "Datenschutzrichtlinie",
     "returnsPolicy": "Rückgaberichtlinie",
     "termsOfService": "Nutzungsbedingungen"
+  },
+  "expressCheckout": {
+    "shipping": "Versand",
+    "finalizingPayment": "Zahlung wird abgeschlossen...",
+    "or": "oder"
   }
 }

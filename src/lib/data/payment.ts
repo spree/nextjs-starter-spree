@@ -10,7 +10,7 @@ import { actionResult } from "./utils";
 export async function createCheckoutPaymentSession(
   cartId: string,
   paymentMethodId: string,
-  stripePaymentMethodId?: string,
+  gatewayPaymentMethodId?: string,
 ) {
   return actionResult(async () => {
     const options = await getCartOptions();
@@ -19,8 +19,8 @@ export async function createCheckoutPaymentSession(
       id,
       {
         payment_method_id: paymentMethodId,
-        ...(stripePaymentMethodId && {
-          external_data: { stripe_payment_method_id: stripePaymentMethodId },
+        ...(gatewayPaymentMethodId && {
+          external_data: { stripe_payment_method_id: gatewayPaymentMethodId },
         }),
       },
       options,

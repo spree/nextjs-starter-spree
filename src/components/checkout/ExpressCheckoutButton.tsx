@@ -15,6 +15,7 @@ import type {
   StripeExpressCheckoutElementShippingRateChangeEvent,
 } from "@stripe/stripe-js";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   expressCheckoutCreateSession,
@@ -54,6 +55,7 @@ function ExpressCheckoutInner({
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
+  const t = useTranslations("expressCheckout");
   const [available, setAvailable] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -138,7 +140,7 @@ function ExpressCheckoutInner({
 
         const lineItems = buildLineItems(order);
         const defaultShippingAmount = shippingRates[0]?.amount ?? 0;
-        lineItems.push({ name: "Shipping", amount: defaultShippingAmount });
+        lineItems.push({ name: t("shipping"), amount: defaultShippingAmount });
 
         const lineItemsSum = lineItems.reduce(
           (sum, item) => sum + item.amount,
@@ -160,7 +162,7 @@ function ExpressCheckoutInner({
         }
       }
     },
-    [cart.id, elements],
+    [cart.id, elements, t],
   );
 
   const handleShippingRateChange = useCallback(
@@ -181,7 +183,7 @@ function ExpressCheckoutInner({
         }
 
         const lineItems = buildLineItems(result.cart);
-        lineItems.push({ name: "Shipping", amount: shippingRate.amount });
+        lineItems.push({ name: t("shipping"), amount: shippingRate.amount });
         const newAmount = lineItems.reduce((s, i) => s + i.amount, 0);
 
         try {
@@ -199,7 +201,7 @@ function ExpressCheckoutInner({
         }
       }
     },
-    [cart.id, elements],
+    [cart.id, elements, t],
   );
 
   const handleConfirm = useCallback(
@@ -399,7 +401,7 @@ function ExpressCheckoutInner({
         >
           <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
           <p className="mt-4 text-sm font-medium text-gray-700">
-            Finalizing your payment...
+            {t("finalizingPayment")}
           </p>
         </div>
 
@@ -459,7 +461,7 @@ function ExpressCheckoutInner({
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or</span>
+                  <span className="px-2 bg-white text-gray-500">{t("or")}</span>
                 </div>
               </div>
             )}

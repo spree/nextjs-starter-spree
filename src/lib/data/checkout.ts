@@ -64,21 +64,6 @@ export async function updateCartMarket(
   }, "Failed to update order market");
 }
 
-export async function getFulfillments(_cartId: string) {
-  // SDK 0.15 removed the standalone getFulfillments endpoint.
-  // Extract fulfillments from the cart object instead.
-  try {
-    const cart = await getCart();
-    if (cart) {
-      const rawCart = cart as Cart & { shipments?: Cart["fulfillments"] };
-      return cart.fulfillments || rawCart.shipments || [];
-    }
-  } catch (_cartErr) {
-    // Failed to get cart
-  }
-  return [];
-}
-
 export async function selectDeliveryRate(
   cartId: string,
   fulfillmentId: string,
