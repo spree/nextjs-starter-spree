@@ -29,7 +29,6 @@ import {
   buildShippingRateMap,
   buildSpreeAddress,
   parseName,
-  toCents,
 } from "@/lib/utils/express-checkout";
 import { stripePromise } from "@/lib/utils/stripe";
 
@@ -74,22 +73,22 @@ function ExpressCheckoutInner({
     onProcessingChangeRef.current?.(value);
   }, []);
 
-  // Sync amount with Elements when cart changes (without remounting)
-  const currency = cart.currency.toLowerCase();
+  // Sync amount with Elements when cart changes (without remounting).
+  // Must use buildLineItems total (not just item_total) because the cart
+  // may already include tax/discounts from a prior checkout attempt.
+  const cartLineItemsAmount = useMemo(() => {
+    const items = buildLineItems(cart);
+    return items.reduce((sum, item) => sum + item.amount, 0);
+  }, [cart]);
+
   useEffect(() => {
     if (!elements) return;
-    const amount = toCents(cart.item_total, currency);
-    console.log("[ExpressCheckout] useEffect sync amount:", {
-      amount,
-      itemTotal: cart.item_total,
-      currency,
-    });
     try {
-      elements.update({ amount });
+      elements.update({ amount: cartLineItemsAmount });
     } catch (_) {
       /* non-fatal */
     }
-  }, [elements, cart.item_total, currency]);
+  }, [elements, cartLineItemsAmount]);
 
   const handleReady = useCallback(
     (event: StripeExpressCheckoutElementReadyEvent) => {
@@ -107,18 +106,8 @@ function ExpressCheckoutInner({
   const handleClick = useCallback(
     (event: StripeExpressCheckoutElementClickEvent) => {
       isGooglePayRef.current = event.expressPaymentType === "google_pay";
-      const clickLineItems = buildLineItems(cart);
-      const clickSum = clickLineItems.reduce((s, i) => s + i.amount, 0);
-      console.log("[ExpressCheckout] onClick debug:", {
-        paymentType: event.expressPaymentType,
-        lineItems: clickLineItems,
-        lineItemsSum: clickSum,
-        cartItemTotal: cart.item_total,
-        cartTotal: cart.total,
-        currency: cart.currency,
-      });
       event.resolve({
-        lineItems: clickLineItems,
+        lineItems: buildLineItems(cart),
       });
     },
     [cart],
@@ -163,25 +152,12 @@ function ExpressCheckoutInner({
           0,
         );
 
-        console.log("[ExpressCheckout] shippingAddress resolve debug:", {
-          lineItems,
-          lineItemsSum,
-          defaultShippingAmount,
-          shippingRatesCount: shippingRates.length,
-          elementsAvailable: !!elements,
-        });
-
         // Amount must be updated BEFORE resolve — Stripe validates
         // that Elements amount >= sum(lineItems).
         if (!elements) throw new Error("Elements not available");
         elements.update({ amount: lineItemsSum });
-        console.log(
-          "[ExpressCheckout] elements.update() called with amount:",
-          lineItemsSum,
-        );
 
         event.resolve({ shippingRates, lineItems });
-        console.log("[ExpressCheckout] event.resolve() called");
       } catch (err) {
         console.error("[ExpressCheckout] shipping address error:", err);
         try {
@@ -215,22 +191,10 @@ function ExpressCheckoutInner({
         lineItems.push({ name: t("shipping"), amount: shippingRate.amount });
         const newAmount = lineItems.reduce((s, i) => s + i.amount, 0);
 
-        console.log("[ExpressCheckout] shippingRateChange debug:", {
-          lineItems,
-          newAmount,
-          shippingRateAmount: shippingRate.amount,
-          shippingRateId: shippingRate.id,
-        });
-
         if (!elements) throw new Error("Elements not available");
         elements.update({ amount: newAmount });
-        console.log(
-          "[ExpressCheckout] elements.update() called with amount:",
-          newAmount,
-        );
 
         event.resolve({ lineItems });
-        console.log("[ExpressCheckout] event.resolve() called");
       } catch (_err) {
         try {
           event.reject();
@@ -524,7 +488,12 @@ export function ExpressCheckoutButton({
   // Use refs for amount/currency so Elements options stays stable
   // and doesn't cause remount (which destroys the ExpressCheckoutElement).
   // Amount updates are handled via elements.update() inside the inner component.
-  const initialAmountRef = useRef(() => toCents(cart.item_total, currency));
+  // Must use buildLineItems total (not just item_total) because the cart
+  // may already include tax/discounts from a prior checkout attempt.
+  const initialAmountRef = useRef(() => {
+    const items = buildLineItems(cart);
+    return items.reduce((sum, item) => sum + item.amount, 0);
+  });
   const initialCurrencyRef = useRef(currency);
 
   const options = useMemo(
