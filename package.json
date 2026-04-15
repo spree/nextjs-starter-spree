@@ -15,6 +15,7 @@
     "email:dev": "email dev --port 4000"
   },
   "dependencies": {
+    "@adyen/adyen-web": "^6.33.0",
     "@next/third-parties": "^16.1.6",
     "@react-email/components": "^1.0.10",
     "@sentry/nextjs": "^10.38.0",

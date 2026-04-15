@@ -11,7 +11,7 @@ import type {
 import { CircleAlert, CreditCard, Info, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
-  forwardRef,
+  type Ref,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -21,6 +21,10 @@ import {
 } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
+import {
+  AdyenPaymentForm,
+  type AdyenPaymentFormHandle,
+} from "@/components/checkout/AdyenPaymentForm";
 import {
   confirmWithSavedCard,
   StripePaymentForm,
@@ -53,6 +57,7 @@ export interface PaymentSectionHandle {
 }
 
 interface PaymentSectionProps {
+  ref?: Ref<PaymentSectionHandle>;
   cart: Cart;
   countries: Country[];
   isAuthenticated: boolean;
@@ -68,24 +73,19 @@ interface PaymentSectionProps {
   errors?: string[];
 }
 
-export const PaymentSection = forwardRef<
-  PaymentSectionHandle,
-  PaymentSectionProps
->(function PaymentSection(
-  {
-    cart,
-    countries,
-    isAuthenticated,
-    fetchStates,
-    onUpdateBillingAddress,
-    onPaymentComplete,
-    processing,
-    setProcessing,
-    onSessionMethodChange,
-    errors,
-  },
+export function PaymentSection({
   ref,
-) {
+  cart,
+  countries,
+  isAuthenticated,
+  fetchStates,
+  onUpdateBillingAddress,
+  onPaymentComplete,
+  processing,
+  setProcessing,
+  onSessionMethodChange,
+  errors,
+}: PaymentSectionProps) {
   const t = useTranslations("checkout");
 
   // ── Payment methods from Spree ──────────────────────────────────────
@@ -140,17 +140,28 @@ export const PaymentSection = forwardRef<
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   // ── Payment gateway state (session-based) ───────────────────────────
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  // Stores the raw external_data from the Spree PaymentSession.
+  // Each gateway form extracts what it needs (e.g. client_secret for Stripe,
+  // session_id + session_data for Adyen).
+  const [sessionExternalData, setSessionExternalData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
+  const gatewayHandleRef = useRef<
+    StripePaymentFormHandle | AdyenPaymentFormHandle | null
+  >(null);
   const initRef = useRef(false);
   const sessionRequestIdRef = useRef(0);
 
-  const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
-    gatewayHandleRef.current = handle;
-  }, []);
+  const handleGatewayReady = useCallback(
+    (handle: StripePaymentFormHandle | AdyenPaymentFormHandle) => {
+      gatewayHandleRef.current = handle;
+    },
+    [],
+  );
 
   // ── Session management ──────────────────────────────────────────────
   const createSession = useCallback(
@@ -160,7 +171,7 @@ export const PaymentSection = forwardRef<
 
       setLoading(true);
       setGatewayError(null);
-      setClientSecret(null);
+      setSessionExternalData(null);
       setPaymentSessionId(null);
       gatewayHandleRef.current = null;
 
@@ -180,11 +191,9 @@ export const PaymentSection = forwardRef<
         if (requestId !== sessionRequestIdRef.current) return;
 
         if (result.success && result.session) {
-          const secret = result.session.external_data?.client_secret as
-            | string
-            | undefined;
-          if (secret) {
-            setClientSecret(secret);
+          const extData = result.session.external_data;
+          if (extData && Object.keys(extData).length > 0) {
+            setSessionExternalData(extData);
             setPaymentSessionId(result.session.id);
           } else {
             setGatewayError(t("failedToInitPayment"));
@@ -332,7 +341,7 @@ export const PaymentSection = forwardRef<
       }
     } else {
       // Switching to a direct method: clear session state
-      setClientSecret(null);
+      setSessionExternalData(null);
       setPaymentSessionId(null);
       setGatewayError(null);
       gatewayHandleRef.current = null;
@@ -407,7 +416,7 @@ export const PaymentSection = forwardRef<
           // 2. Process payment based on method type
           if (selectedMethod.session_required) {
             // Session-based flow (Stripe, Adyen, etc.)
-            if (!paymentSessionId || !clientSecret) {
+            if (!paymentSessionId || !sessionExternalData) {
               setProcessing(false);
               return { error: t("failedToInitPayment") };
             }
@@ -421,7 +430,12 @@ export const PaymentSection = forwardRef<
 
             let error: string | undefined;
 
-            if (selectedCardId) {
+            const clientSecret = sessionExternalData.client_secret as
+              | string
+              | undefined;
+
+            if (selectedCardId && clientSecret) {
+              // Stripe saved card flow
               const result = await confirmWithSavedCard(
                 clientSecret,
                 selectedCardId,
@@ -429,6 +443,7 @@ export const PaymentSection = forwardRef<
               );
               error = result.error;
             } else {
+              // New payment via gateway handle (Stripe PaymentElement or Adyen Drop-in)
               const result =
                 await gatewayHandleRef.current!.confirmPayment(returnUrl);
               error = result.error;
@@ -473,7 +488,7 @@ export const PaymentSection = forwardRef<
       isZeroAmount,
       selectedMethod,
       paymentSessionId,
-      clientSecret,
+      sessionExternalData,
       selectedCardId,
       useShippingForBilling,
       billAddress,
@@ -577,7 +592,6 @@ export const PaymentSection = forwardRef<
           const pmGatewayId = pm.session_required
             ? resolveGatewayId(pm.type)
             : null;
-          const isPmStripe = pmGatewayId === "stripe";
 
           return (
             <div key={pm.id}>
@@ -609,91 +623,98 @@ export const PaymentSection = forwardRef<
 
               {/* Sub-form for the selected method */}
               {isSelected && (
-                <div
-                  className={`border-t bg-gray-50 ${hasMultipleMethods ? "" : ""}`}
-                >
-                  {/* ── Session-based: Stripe ── */}
-                  {pm.session_required && isPmStripe && (
+                <div className="border-t bg-gray-50">
+                  {pm.session_required ? (
                     <>
-                      {/* Demo-only test card note */}
-                      <p className="text-xs text-gray-400 px-4 pt-3">
-                        {t("testCardNote", {
-                          testCard: "4242 4242 4242 4242",
-                        })}
-                      </p>
+                      {/* Stripe: saved cards selector */}
+                      {pmGatewayId === "stripe" && (
+                        <>
+                          {/* Demo-only test card note */}
+                          <p className="text-xs text-gray-400 px-4 pt-3">
+                            {t("testCardNote", {
+                              testCard: "4242 4242 4242 4242",
+                            })}
+                          </p>
 
-                      {/* Saved cards (nested radio group) */}
-                      {savedCards.length > 0 && (
-                        <div className="px-4 pt-3">
-                          <RadioGroup
-                            value={selectedCardId ?? "__new__"}
-                            onValueChange={(val) =>
-                              handleCardSelect(val === "__new__" ? null : val)
-                            }
-                            className="gap-0 rounded-sm border overflow-hidden"
-                          >
-                            {savedCards.map((card, cardIndex) => (
-                              <label
-                                key={card.id}
-                                className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                                  selectedCardId ===
-                                  card.gateway_payment_profile_id
-                                    ? "bg-white"
-                                    : "bg-white hover:bg-gray-50"
-                                } ${cardIndex > 0 ? "border-t" : ""}`}
+                          {savedCards.length > 0 && (
+                            <div className="px-4 pt-3">
+                              <RadioGroup
+                                value={selectedCardId ?? "__new__"}
+                                onValueChange={(val) =>
+                                  handleCardSelect(
+                                    val === "__new__" ? null : val,
+                                  )
+                                }
+                                className="gap-0 rounded-sm border overflow-hidden"
                               >
-                                <RadioGroupItem
-                                  value={
-                                    card.gateway_payment_profile_id ?? card.id
-                                  }
-                                />
-                                <PaymentIcon
-                                  type={getCardIconType(card.brand)}
-                                  format="flatRounded"
-                                  width={34}
-                                />
-                                <span className="text-sm text-gray-900 flex-1">
-                                  {t("savedCardLabel", {
-                                    brand: getCardLabel(card.brand),
-                                    digits: card.last4,
-                                  })}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {t("cardExpiry", {
-                                    month: String(card.month).padStart(2, "0"),
-                                    year: String(card.year),
-                                  })}
-                                </span>
-                                {card.default && (
-                                  <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                                    {t("default")}
-                                  </span>
-                                )}
-                              </label>
-                            ))}
+                                {savedCards.map((card, cardIndex) => (
+                                  <label
+                                    key={card.id}
+                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                                      selectedCardId ===
+                                      card.gateway_payment_profile_id
+                                        ? "bg-white"
+                                        : "bg-white hover:bg-gray-50"
+                                    } ${cardIndex > 0 ? "border-t" : ""}`}
+                                  >
+                                    <RadioGroupItem
+                                      value={
+                                        card.gateway_payment_profile_id ??
+                                        card.id
+                                      }
+                                    />
+                                    <PaymentIcon
+                                      type={getCardIconType(card.brand)}
+                                      format="flatRounded"
+                                      width={34}
+                                    />
+                                    <span className="text-sm text-gray-900 flex-1">
+                                      {t("savedCardLabel", {
+                                        brand: getCardLabel(card.brand),
+                                        digits: card.last4,
+                                      })}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {t("cardExpiry", {
+                                        month: String(card.month).padStart(
+                                          2,
+                                          "0",
+                                        ),
+                                        year: String(card.year),
+                                      })}
+                                    </span>
+                                    {card.default && (
+                                      <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                        {t("default")}
+                                      </span>
+                                    )}
+                                  </label>
+                                ))}
 
-                            {/* Add new card */}
-                            <label
-                              className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-t transition-colors ${
-                                isAddingNew
-                                  ? "bg-white"
-                                  : "bg-white hover:bg-gray-50"
-                              }`}
-                            >
-                              <RadioGroupItem value="__new__" />
-                              <CreditCard
-                                className="w-5 h-5 text-gray-400"
-                                strokeWidth={1.5}
-                              />
-                              <span className="text-sm text-gray-900">
-                                {t("addNewPaymentMethod")}
-                              </span>
-                            </label>
-                          </RadioGroup>
-                        </div>
+                                {/* Add new card */}
+                                <label
+                                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-t transition-colors ${
+                                    isAddingNew
+                                      ? "bg-white"
+                                      : "bg-white hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <RadioGroupItem value="__new__" />
+                                  <CreditCard
+                                    className="w-5 h-5 text-gray-400"
+                                    strokeWidth={1.5}
+                                  />
+                                  <span className="text-sm text-gray-900">
+                                    {t("addNewPaymentMethod")}
+                                  </span>
+                                </label>
+                              </RadioGroup>
+                            </div>
+                          )}
+                        </>
                       )}
 
-                      {/* Loading state */}
+                      {/* Shared: loading spinner */}
                       {loading && (
                         <div className="flex items-center justify-center py-10">
                           <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
@@ -703,7 +724,7 @@ export const PaymentSection = forwardRef<
                         </div>
                       )}
 
-                      {/* Gateway error */}
+                      {/* Shared: gateway error */}
                       {gatewayError && !loading && (
                         <div className="px-4 py-3">
                           <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3">
@@ -715,34 +736,62 @@ export const PaymentSection = forwardRef<
                         </div>
                       )}
 
-                      {/* Stripe PaymentElement */}
-                      {clientSecret && !loading && isAddingNew && (
-                        <div className="p-4">
-                          <StripePaymentForm
-                            key={clientSecret}
-                            clientSecret={clientSecret}
-                            onReady={handleGatewayReady}
-                          />
-                        </div>
-                      )}
+                      {/* Gateway-specific payment form */}
+                      {!loading &&
+                        sessionExternalData &&
+                        (() => {
+                          const ext = sessionExternalData;
+                          switch (pmGatewayId) {
+                            case "stripe": {
+                              const secret = ext.client_secret as
+                                | string
+                                | undefined;
+                              return (
+                                secret &&
+                                isAddingNew && (
+                                  <div className="p-4">
+                                    <StripePaymentForm
+                                      key={secret}
+                                      clientSecret={secret}
+                                      onReady={handleGatewayReady}
+                                    />
+                                  </div>
+                                )
+                              );
+                            }
+                            case "adyen": {
+                              const sid = ext.session_id as string | undefined;
+                              const sdata = ext.session_data as
+                                | string
+                                | undefined;
+                              return sid && sdata ? (
+                                <div className="p-4">
+                                  <AdyenPaymentForm
+                                    key={sid}
+                                    sessionId={sid}
+                                    sessionData={sdata}
+                                    onReady={handleGatewayReady}
+                                  />
+                                </div>
+                              ) : null;
+                            }
+                            default:
+                              return (
+                                <div className="px-4 py-6 text-center">
+                                  <Info
+                                    className="w-8 h-8 text-gray-300 mx-auto mb-2"
+                                    strokeWidth={1.5}
+                                  />
+                                  <p className="text-sm text-gray-500">
+                                    {t("unsupportedGateway")}
+                                  </p>
+                                </div>
+                              );
+                          }
+                        })()}
                     </>
-                  )}
-
-                  {/* ── Session-based: unsupported gateway ── */}
-                  {pm.session_required && !isPmStripe && (
-                    <div className="px-4 py-6 text-center">
-                      <Info
-                        className="w-8 h-8 text-gray-300 mx-auto mb-2"
-                        strokeWidth={1.5}
-                      />
-                      <p className="text-sm text-gray-500">
-                        {t("unsupportedGateway")}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* ── Direct/manual payment ── */}
-                  {!pm.session_required && (
+                  ) : (
+                    /* ── Direct/manual payment ── */
                     <div className="px-4 py-4">
                       {pm.description && (
                         <p className="text-sm text-gray-600 mb-2">
@@ -788,4 +837,4 @@ export const PaymentSection = forwardRef<
       </div>
     </div>
   );
-});
+}

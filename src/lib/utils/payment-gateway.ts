@@ -36,3 +36,15 @@ const GATEWAY_TYPE_MAP: Record<string, GatewayId> = {
 export function resolveGatewayId(paymentMethodType: string): GatewayId {
   return GATEWAY_TYPE_MAP[paymentMethodType] ?? "unknown";
 }
+
+/** Whether Adyen is configured (client key present in env). */
+export const isAdyenConfigured = Boolean(
+  process.env.NEXT_PUBLIC_ADYEN_CLIENT_KEY,
+);
+
+/** Adyen client key for Drop-in initialization. */
+export const adyenClientKey = process.env.NEXT_PUBLIC_ADYEN_CLIENT_KEY ?? "";
+
+/** Adyen environment: "test" or "live". */
+export const adyenEnvironment = (process.env.NEXT_PUBLIC_ADYEN_ENVIRONMENT ??
+  "test") as "test" | "live";
