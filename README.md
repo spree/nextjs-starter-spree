@@ -15,7 +15,6 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
-[![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://discord.spreecommerce.org/)
 
 A production-ready, headless eCommerce storefront for [Spree Commerce](https://spreecommerce.org), built with Next.js 16, React 19, and the [Spree REST API](https://spreecommerce.org/docs/api-reference). Open source (MIT) and free to fork and customize.
 
