@@ -8,8 +8,6 @@
 ·
 [Documentation](https://spreecommerce.org/docs/)
 ·
-[Spree Discord](https://discord.spreecommerce.org/)
-·
 [Spree Website](https://spreecommerce.org)
 ·
 [For Enterprise](https://spreecommerce.org/enterprise/)
@@ -42,7 +40,7 @@ The CLI walks you through an interactive setup:
 
 Once complete, your store should be running at http://localhost:3000/admin. The port can be different if `3000` is already used on your system. You need to have Node.js 20+ and Docker running.
 
-Read the [installation docs](https://spreecommerce.org/docs/developer/getting-started/quickstart) or let's connect on [Spree Discord](https://discord.spreecommerce.org/).
+Read the [installation docs](https://spreecommerce.org/docs/developer/getting-started/quickstart).
 
 ## Why This Storefront
 
