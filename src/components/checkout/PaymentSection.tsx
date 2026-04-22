@@ -210,7 +210,12 @@ export function PaymentSection({
         if (result.success && result.session) {
           const extData = result.session.external_data;
           if (extData && Object.keys(extData).length > 0) {
-            setSessionExternalData(extData);
+            // Include external_id so gateway forms can access the
+            // provider-side session/order ID (e.g. Adyen session ID).
+            setSessionExternalData({
+              ...extData,
+              _external_id: result.session.external_id,
+            });
             setPaymentSessionId(result.session.id);
           } else {
             setGatewayError(t("failedToInitPayment"));
@@ -834,7 +839,9 @@ export function PaymentSection({
                               );
                             }
                             case "adyen": {
-                              const sid = ext.session_id as string | undefined;
+                              const sid = ext._external_id as
+                                | string
+                                | undefined;
                               const sdata = ext.session_data as
                                 | string
                                 | undefined;
