@@ -66,17 +66,26 @@ function PayPalPaymentFormInner({
 
     let cancelled = false;
 
-    import("@paypal/react-paypal-js").then((mod) => {
-      if (cancelled) return;
-      setPayPalSDK({
-        PayPalScriptProvider: mod.PayPalScriptProvider,
-        PayPalButtons: mod.PayPalButtons,
+    import("@paypal/react-paypal-js")
+      .then((mod) => {
+        if (cancelled) return;
+        setPayPalSDK({
+          PayPalScriptProvider: mod.PayPalScriptProvider,
+          PayPalButtons: mod.PayPalButtons,
+        });
+        onReadyRef.current({
+          confirmPayment: (...args) => confirmPaymentRef.current(...args),
+          fetchUpdates: (...args) => fetchUpdatesRef.current(...args),
+        });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load PayPal. Please refresh and try again.",
+        );
       });
-      onReadyRef.current({
-        confirmPayment: (...args) => confirmPaymentRef.current(...args),
-        fetchUpdates: (...args) => fetchUpdatesRef.current(...args),
-      });
-    });
 
     return () => {
       cancelled = true;

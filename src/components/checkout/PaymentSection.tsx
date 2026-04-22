@@ -96,13 +96,15 @@ export function PaymentSection({
   const paymentMethods = cart.payment_methods ?? [];
   const hasMultipleMethods = paymentMethods.length > 1;
 
-  // Default to the first method
+  // Default to the first method; fall back if the stored ID becomes stale
+  // (e.g. cart.payment_methods changes after a shipping update).
   const [selectedMethodId, setSelectedMethodId] = useState<string>(
     () => paymentMethods[0]?.id ?? "",
   );
-  const selectedMethod = paymentMethods.find(
-    (pm) => pm.id === selectedMethodId,
-  );
+  const selectedMethod: PaymentMethod | undefined =
+    paymentMethods.find((pm) => pm.id === selectedMethodId) ??
+    paymentMethods[0];
+  const effectiveSelectedMethodId = selectedMethod?.id ?? "";
   // Zero-amount check
   const amountDue = parseFloat(cart.amount_due ?? cart.total);
   const isZeroAmount = amountDue === 0;
@@ -164,6 +166,7 @@ export function PaymentSection({
   >(null);
   const initRef = useRef(false);
   const sessionRequestIdRef = useRef(0);
+  const completionInFlightRef = useRef(false);
 
   const handleGatewayReady = useCallback(
     (
@@ -371,8 +374,10 @@ export function PaymentSection({
 
   // ── PayPal: auto-complete after user approves in the popup ─────────
   const handlePayPalApproved = useCallback(async () => {
+    if (completionInFlightRef.current) return;
     if (!paymentSessionId) return;
 
+    completionInFlightRef.current = true;
     setProcessing(true);
     setGatewayError(null);
 
@@ -390,6 +395,7 @@ export function PaymentSection({
 
       if (!addressSuccess) {
         setProcessing(false);
+        completionInFlightRef.current = false;
         setGatewayError(t("failedToSaveBilling"));
         return;
       }
@@ -398,6 +404,7 @@ export function PaymentSection({
     } catch {
       setGatewayError(t("paymentError"));
       setProcessing(false);
+      completionInFlightRef.current = false;
     }
   }, [
     paymentSessionId,
@@ -414,11 +421,48 @@ export function PaymentSection({
     ref,
     () => ({
       submit: async () => {
-        // Zero amount — no payment needed
-        if (isZeroAmount) {
+        if (completionInFlightRef.current) return {};
+        completionInFlightRef.current = true;
+
+        try {
+          // Zero amount — no payment needed
+          if (isZeroAmount) {
+            setProcessing(true);
+            try {
+              // Still update billing address
+              let addressSuccess: boolean;
+              if (useShippingForBilling) {
+                addressSuccess = await onUpdateBillingAddress({
+                  use_shipping: true,
+                });
+              } else {
+                const billingData = formDataToAddress(billAddress);
+                addressSuccess = await onUpdateBillingAddress({
+                  billing_address: billingData,
+                });
+              }
+              if (!addressSuccess) {
+                setProcessing(false);
+                return { error: t("failedToSaveBilling") };
+              }
+              await onPaymentComplete({ type: "direct" });
+              return {};
+            } catch {
+              const msg = t("paymentError");
+              setProcessing(false);
+              return { error: msg };
+            }
+          }
+
+          if (!selectedMethod) {
+            return { error: t("selectPaymentMethod") };
+          }
+
           setProcessing(true);
+          setGatewayError(null);
+
           try {
-            // Still update billing address
+            // 1. Update billing address
             let addressSuccess: boolean;
             if (useShippingForBilling) {
               addressSuccess = await onUpdateBillingAddress({
@@ -430,113 +474,87 @@ export function PaymentSection({
                 billing_address: billingData,
               });
             }
+
             if (!addressSuccess) {
               setProcessing(false);
               return { error: t("failedToSaveBilling") };
             }
+
+            // 2. Process payment based on method type
+            if (selectedMethod.session_required) {
+              // Session-based flow (Stripe, Adyen, etc.)
+              if (!paymentSessionId || !sessionExternalData) {
+                setProcessing(false);
+                return { error: t("failedToInitPayment") };
+              }
+              const basePath = extractBasePath(window.location.pathname);
+              const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}?session=${paymentSessionId}`;
+
+              let error: string | undefined;
+
+              const clientSecret = sessionExternalData.client_secret as
+                | string
+                | undefined;
+              const isStripe =
+                resolveGatewayId(selectedMethod.type) === "stripe";
+              const canUseSavedCard =
+                isStripe && Boolean(selectedCardId && clientSecret);
+
+              if (!canUseSavedCard && !gatewayHandleRef.current) {
+                setProcessing(false);
+                return { error: t("failedToInitPayment") };
+              }
+
+              if (canUseSavedCard) {
+                // Stripe saved card flow
+                const result = await confirmWithSavedCard(
+                  clientSecret!,
+                  selectedCardId!,
+                  returnUrl,
+                );
+                error = result.error;
+              } else {
+                // New payment via gateway handle (Stripe PaymentElement, Adyen Drop-in, etc.)
+                const result =
+                  await gatewayHandleRef.current!.confirmPayment(returnUrl);
+                error = result.error;
+              }
+
+              if (error) {
+                setGatewayError(error);
+                setProcessing(false);
+                return { error };
+              }
+
+              await onPaymentComplete({
+                type: "session",
+                sessionId: paymentSessionId,
+              });
+              return {};
+            }
+
+            // Direct payment flow (Check, Cash on Delivery, etc.)
+            const paymentResult = await createDirectPayment(
+              cart.id,
+              selectedMethod.id,
+            );
+            if (!paymentResult.success) {
+              const msg = paymentResult.error || t("failedToCreatePayment");
+              setGatewayError(msg);
+              setProcessing(false);
+              return { error: msg };
+            }
+
             await onPaymentComplete({ type: "direct" });
             return {};
           } catch {
             const msg = t("paymentError");
-            setProcessing(false);
-            return { error: msg };
-          }
-        }
-
-        if (!selectedMethod) {
-          return { error: t("selectPaymentMethod") };
-        }
-
-        setProcessing(true);
-        setGatewayError(null);
-
-        try {
-          // 1. Update billing address
-          let addressSuccess: boolean;
-          if (useShippingForBilling) {
-            addressSuccess = await onUpdateBillingAddress({
-              use_shipping: true,
-            });
-          } else {
-            const billingData = formDataToAddress(billAddress);
-            addressSuccess = await onUpdateBillingAddress({
-              billing_address: billingData,
-            });
-          }
-
-          if (!addressSuccess) {
-            setProcessing(false);
-            return { error: t("failedToSaveBilling") };
-          }
-
-          // 2. Process payment based on method type
-          if (selectedMethod.session_required) {
-            // Session-based flow (Stripe, Adyen, etc.)
-            if (!paymentSessionId || !sessionExternalData) {
-              setProcessing(false);
-              return { error: t("failedToInitPayment") };
-            }
-            if (!selectedCardId && !gatewayHandleRef.current) {
-              setProcessing(false);
-              return { error: t("failedToInitPayment") };
-            }
-
-            const basePath = extractBasePath(window.location.pathname);
-            const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}?session=${paymentSessionId}`;
-
-            let error: string | undefined;
-
-            const clientSecret = sessionExternalData.client_secret as
-              | string
-              | undefined;
-
-            if (selectedCardId && clientSecret) {
-              // Stripe saved card flow
-              const result = await confirmWithSavedCard(
-                clientSecret,
-                selectedCardId,
-                returnUrl,
-              );
-              error = result.error;
-            } else {
-              // New payment via gateway handle (Stripe PaymentElement or Adyen Drop-in)
-              const result =
-                await gatewayHandleRef.current!.confirmPayment(returnUrl);
-              error = result.error;
-            }
-
-            if (error) {
-              setGatewayError(error);
-              setProcessing(false);
-              return { error };
-            }
-
-            await onPaymentComplete({
-              type: "session",
-              sessionId: paymentSessionId,
-            });
-            return {};
-          }
-
-          // Direct payment flow (Check, Cash on Delivery, etc.)
-          const paymentResult = await createDirectPayment(
-            cart.id,
-            selectedMethod.id,
-          );
-          if (!paymentResult.success) {
-            const msg = paymentResult.error || t("failedToCreatePayment");
             setGatewayError(msg);
             setProcessing(false);
             return { error: msg };
           }
-
-          await onPaymentComplete({ type: "direct" });
-          return {};
-        } catch {
-          const msg = t("paymentError");
-          setGatewayError(msg);
-          setProcessing(false);
-          return { error: msg };
+        } finally {
+          completionInFlightRef.current = false;
         }
       },
     }),
@@ -639,12 +657,12 @@ export function PaymentSection({
 
       {/* Payment methods */}
       <RadioGroup
-        value={selectedMethodId}
+        value={effectiveSelectedMethodId}
         onValueChange={handleMethodSelect}
         className="rounded-sm border overflow-hidden gap-0 mt-3"
       >
         {paymentMethods.map((pm, index) => {
-          const isSelected = pm.id === selectedMethodId;
+          const isSelected = pm.id === effectiveSelectedMethodId;
           const pmGatewayId = pm.session_required
             ? resolveGatewayId(pm.type)
             : null;
