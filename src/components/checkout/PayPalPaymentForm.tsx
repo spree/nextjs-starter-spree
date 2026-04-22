@@ -18,36 +18,37 @@ interface PayPalPaymentFormProps {
   paypalOrderId: string;
   currency: string;
   onReady: (handle: PayPalPaymentFormHandle) => void;
+  /** Called when user approves payment in the PayPal popup. */
+  onApproved: () => void;
 }
 
 function PayPalPaymentFormInner({
   paypalOrderId,
   currency,
   onReady,
+  onApproved,
 }: PayPalPaymentFormProps) {
   const t = useTranslations("checkout");
   const [error, setError] = useState<string | null>(null);
   const approvedRef = useRef(false);
   const [approvedForUI, setApprovedForUI] = useState(false);
 
+  // For PayPal, confirmPayment is called by the checkout page's "Place Order"
+  // button. If the user already approved via the popup, resolve immediately.
+  // Otherwise return an error telling them to use the PayPal button.
   const confirmPayment = useCallback(
     async (_returnUrl: string): Promise<{ error?: string }> => {
       if (approvedRef.current) {
         return {};
       }
-
-      // PayPal requires user to approve via the button first.
-      // Return an error so the checkout page can inform the user.
       return { error: t("paypalApproveFirst") };
     },
     [t],
   );
 
-  const fetchUpdates = useCallback(async () => {
-    // PayPal sessions are managed by the SDK; no manual fetch needed
-  }, []);
+  const fetchUpdates = useCallback(async () => {}, []);
 
-  // Lazy-load the PayPal SDK components via useEffect with cancellation
+  // Lazy-load the PayPal SDK components
   const [PayPalSDK, setPayPalSDK] = useState<{
     PayPalScriptProvider: typeof import("@paypal/react-paypal-js")["PayPalScriptProvider"];
     PayPalButtons: typeof import("@paypal/react-paypal-js")["PayPalButtons"];
@@ -82,6 +83,10 @@ function PayPalPaymentFormInner({
     };
   }, [PayPalSDK]);
 
+  // Stable ref for onApproved to avoid re-renders of PayPalButtons
+  const onApprovedRef = useRef(onApproved);
+  onApprovedRef.current = onApproved;
+
   if (!PayPalSDK) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -108,17 +113,14 @@ function PayPalPaymentFormInner({
             color: "gold",
             label: "paypal",
           }}
-          createOrder={async () => {
-            // Return the PayPal order ID created by Spree's payment session.
-            // No need to call PayPal API — the order already exists.
-            return paypalOrderId;
-          }}
+          createOrder={async () => paypalOrderId}
           onApprove={async () => {
-            // User approved the payment in the PayPal popup.
-            // The actual capture happens in Spree's completePaymentSession.
             approvedRef.current = true;
             setApprovedForUI(true);
             setError(null);
+            // Trigger payment completion directly — no need for
+            // the user to click "Place Order" again.
+            onApprovedRef.current();
           }}
           onError={(err) => {
             const msg = err instanceof Error ? err.message : t("paypalError");

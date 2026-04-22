@@ -369,6 +369,46 @@ export function PaymentSection({
     setBillAddress((prev) => updateAddressField(prev, field, value));
   };
 
+  // ── PayPal: auto-complete after user approves in the popup ─────────
+  const handlePayPalApproved = useCallback(async () => {
+    if (!paymentSessionId) return;
+
+    setProcessing(true);
+    setGatewayError(null);
+
+    try {
+      // Update billing address
+      let addressSuccess: boolean;
+      if (useShippingForBilling) {
+        addressSuccess = await onUpdateBillingAddress({ use_shipping: true });
+      } else {
+        const billingData = formDataToAddress(billAddress);
+        addressSuccess = await onUpdateBillingAddress({
+          billing_address: billingData,
+        });
+      }
+
+      if (!addressSuccess) {
+        setProcessing(false);
+        setGatewayError(t("failedToSaveBilling"));
+        return;
+      }
+
+      await onPaymentComplete({ type: "session", sessionId: paymentSessionId });
+    } catch {
+      setGatewayError(t("paymentError"));
+      setProcessing(false);
+    }
+  }, [
+    paymentSessionId,
+    useShippingForBilling,
+    billAddress,
+    onUpdateBillingAddress,
+    onPaymentComplete,
+    setProcessing,
+    t,
+  ]);
+
   // ── Submit ──────────────────────────────────────────────────────────
   useImperativeHandle(
     ref,
@@ -800,6 +840,7 @@ export function PaymentSection({
                                     paypalOrderId={orderId}
                                     currency={cart.currency}
                                     onReady={handleGatewayReady}
+                                    onApproved={handlePayPalApproved}
                                   />
                                 </div>
                               ) : null;
