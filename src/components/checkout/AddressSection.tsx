@@ -96,9 +96,15 @@ export function AddressSection({
       : undefined;
 
   const [email, setEmail] = useState(cart.email || "");
+  const defaultCountryIso = countries[0]?.iso ?? "";
+
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() => {
     if (initialSavedAddress) return addressToFormData(initialSavedAddress);
     const formData = addressToFormData(cart.shipping_address);
+    // Pre-fill country from the market's first country when empty
+    if (!formData.country_iso && defaultCountryIso) {
+      formData.country_iso = defaultCountryIso;
+    }
     // Pre-fill name from user profile when address has no name yet
     if (!formData.first_name && user?.first_name) {
       formData.first_name = user.first_name;

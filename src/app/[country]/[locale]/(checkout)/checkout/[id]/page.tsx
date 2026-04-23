@@ -239,6 +239,14 @@ function CheckoutPageContent({ params }: CheckoutPageProps) {
       setSavedAddresses(addressesData.data);
       setIsAuthenticated(authStatus);
 
+      // Prefetch states for the default country so they're ready
+      // when the address form renders (warms the server cache)
+      const defaultIso =
+        cartData.shipping_address?.country_iso ?? countriesData.data[0]?.iso;
+      if (defaultIso) {
+        getCountry(defaultIso).catch(() => {});
+      }
+
       if (!beginCheckoutFiredRef.current) {
         try {
           trackBeginCheckout(cartData);
