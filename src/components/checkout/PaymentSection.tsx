@@ -151,7 +151,10 @@ export const PaymentSection = forwardRef<
         const result = existingSessionId
           ? await updateCheckoutPaymentSession(cart.id, existingSessionId, {
               amount: targetAmount,
-              stripePaymentMethodId: cardId ?? undefined,
+              // Always sync — passing null explicitly clears a stale
+              // stripe_payment_method_id when the user switches back to
+              // "add new payment method".
+              stripePaymentMethodId: cardId,
             })
           : await createCheckoutPaymentSession(
               cart.id,

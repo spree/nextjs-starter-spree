@@ -148,6 +148,25 @@ describe("payment server actions", () => {
       );
     });
 
+    it("clears external_data when stripePaymentMethodId is null", async () => {
+      mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
+
+      await updateCheckoutPaymentSession("cart-1", "session-1", {
+        amount: "48.99",
+        stripePaymentMethodId: null,
+      });
+
+      expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
+        "cart-1",
+        "session-1",
+        {
+          amount: "48.99",
+          external_data: { stripe_payment_method_id: null },
+        },
+        { spreeToken: "order-token-123", token: undefined },
+      );
+    });
+
     it("returns error on failure", async () => {
       mockClient.carts.paymentSessions.update.mockRejectedValue(
         new Error("Session locked"),

@@ -33,7 +33,12 @@ export async function createCheckoutPaymentSession(
 export async function updateCheckoutPaymentSession(
   cartId: string,
   sessionId: string,
-  params: { amount?: string; stripePaymentMethodId?: string } = {},
+  params: {
+    amount?: string;
+    // `null` explicitly clears the previously attached payment method
+    // (e.g. user switches from a saved card back to "add new").
+    stripePaymentMethodId?: string | null;
+  } = {},
 ) {
   return actionResult(async () => {
     const options = await getCartOptions();
@@ -43,7 +48,7 @@ export async function updateCheckoutPaymentSession(
       sessionId,
       {
         ...(params.amount && { amount: params.amount }),
-        ...(params.stripePaymentMethodId && {
+        ...(params.stripePaymentMethodId !== undefined && {
           external_data: {
             stripe_payment_method_id: params.stripePaymentMethodId,
           },
