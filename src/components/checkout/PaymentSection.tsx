@@ -29,7 +29,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCountryStates } from "@/hooks/useCountryStates";
 import { getCreditCards } from "@/lib/data/credit-cards";
-import { createCheckoutPaymentSession } from "@/lib/data/payment";
+import {
+  createCheckoutPaymentSession,
+  updateCheckoutPaymentSession,
+} from "@/lib/data/payment";
 import {
   type AddressFormData,
   addressToFormData,
@@ -106,8 +109,11 @@ export const PaymentSection = forwardRef<
   const [loading, setLoading] = useState(false);
   const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
   const initRef = useRef(false);
-  // Monotonic counter to discard stale createSession responses
+  // Monotonic counter to discard stale syncSession responses
   const sessionRequestIdRef = useRef(0);
+  // Mirrors paymentSessionId so syncSession can branch create vs update
+  // without being re-created every time the session changes.
+  const paymentSessionIdRef = useRef<string | null>(null);
 
   const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
     gatewayHandleRef.current = handle;
@@ -118,25 +124,40 @@ export const PaymentSection = forwardRef<
     (pm) => pm.session_required,
   );
 
-  // Helper: create a payment session
-  const createSession = useCallback(
+  // Helper: sync the Spree PaymentSession with current cart/card state.
+  // First call creates the session (and Stripe PaymentIntent). Subsequent
+  // calls PATCH with an explicit `amount` so the Spree backend resizes the
+  // same Stripe PaymentIntent instead of spawning a new one on every gift
+  // card / shipping / card change.
+  const syncSession = useCallback(
     async (cardId: string | null) => {
       if (!sessionPaymentMethod) return;
 
       const requestId = ++sessionRequestIdRef.current;
+      const existingSessionId = paymentSessionIdRef.current;
+      const targetAmount = cart.amount_due ?? cart.total;
 
       setLoading(true);
       setGatewayError(null);
-      setClientSecret(null);
-      setPaymentSessionId(null);
-      gatewayHandleRef.current = null;
+      // Only clear on create — update keeps the same Stripe PaymentIntent
+      // and therefore the same client_secret.
+      if (!existingSessionId) {
+        setClientSecret(null);
+        setPaymentSessionId(null);
+        gatewayHandleRef.current = null;
+      }
 
       try {
-        const result = await createCheckoutPaymentSession(
-          cart.id,
-          sessionPaymentMethod.id,
-          cardId ?? undefined,
-        );
+        const result = existingSessionId
+          ? await updateCheckoutPaymentSession(cart.id, existingSessionId, {
+              amount: targetAmount,
+              stripePaymentMethodId: cardId ?? undefined,
+            })
+          : await createCheckoutPaymentSession(
+              cart.id,
+              sessionPaymentMethod.id,
+              cardId ?? undefined,
+            );
 
         // Discard if a newer request was started while this one was in flight
         if (requestId !== sessionRequestIdRef.current) return;
@@ -146,9 +167,12 @@ export const PaymentSection = forwardRef<
             | string
             | undefined;
           if (secret) {
-            setClientSecret(secret);
+            // Keep client_secret stable across PATCH so the Stripe form
+            // does not remount on every amount change.
+            setClientSecret((prev) => (prev === secret ? prev : secret));
             setPaymentSessionId(result.session.id);
-          } else {
+            paymentSessionIdRef.current = result.session.id;
+          } else if (!existingSessionId) {
             setGatewayError(t("failedToInitPayment"));
           }
         } else if (!result.success) {
@@ -163,11 +187,14 @@ export const PaymentSection = forwardRef<
         }
       }
     },
-    [sessionPaymentMethod, cart.id, t],
+    [sessionPaymentMethod, cart.id, cart.amount_due, cart.total, t],
   );
 
-  // Track the cart total so we can recreate the session when it changes
-  const lastTotalRef = useRef<string | null>(null);
+  // Target amount the gateway must charge. Gift cards reduce amount_due but
+  // not total, so watching total alone misses gift card changes and the
+  // gateway keeps the original (pre-gift-card) PaymentIntent.
+  const paymentTarget = cart.amount_due ?? cart.total;
+  const lastPaymentTargetRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
 
   // On mount: load saved cards (if authenticated), then create initial session — once.
@@ -201,24 +228,24 @@ export const PaymentSection = forwardRef<
       }
 
       selectedCardRef.current = initialCardId;
-      lastTotalRef.current = cart.total;
+      lastPaymentTargetRef.current = paymentTarget;
 
       // Create the initial payment session
-      await createSession(initialCardId);
+      await syncSession(initialCardId);
     };
 
     init();
-  }, [sessionPaymentMethod, isAuthenticated, createSession, cart.total]);
+  }, [sessionPaymentMethod, isAuthenticated, syncSession, paymentTarget]);
 
-  // When cart total changes (shipping rate, coupon, etc.), recreate the
-  // payment session so the amount matches the new order total.
+  // When the payment target changes (shipping rate, coupon, gift card, etc.),
+  // recreate the payment session so the amount matches the new order total.
   useEffect(() => {
     if (!initRef.current) return;
-    if (lastTotalRef.current === cart.total) return;
+    if (lastPaymentTargetRef.current === paymentTarget) return;
 
-    lastTotalRef.current = cart.total;
-    createSession(selectedCardRef.current);
-  }, [cart.total, createSession]);
+    lastPaymentTargetRef.current = paymentTarget;
+    syncSession(selectedCardRef.current);
+  }, [paymentTarget, syncSession]);
 
   const [billStates, isPendingBill] = useCountryStates(
     billAddress.country_iso,
@@ -237,7 +264,7 @@ export const PaymentSection = forwardRef<
     if (cardId === selectedCardId) return;
     setSelectedCardId(cardId);
     selectedCardRef.current = cardId;
-    createSession(cardId);
+    syncSession(cardId);
   };
 
   const updateBillAddress = (field: keyof AddressFormData, value: string) => {

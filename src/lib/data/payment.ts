@@ -30,6 +30,32 @@ export async function createCheckoutPaymentSession(
   }, "Failed to create payment session");
 }
 
+export async function updateCheckoutPaymentSession(
+  cartId: string,
+  sessionId: string,
+  params: { amount?: string; stripePaymentMethodId?: string } = {},
+) {
+  return actionResult(async () => {
+    const options = await getCartOptions();
+    const id = await requireCartId();
+    const session = await getClient().carts.paymentSessions.update(
+      id,
+      sessionId,
+      {
+        ...(params.amount && { amount: params.amount }),
+        ...(params.stripePaymentMethodId && {
+          external_data: {
+            stripe_payment_method_id: params.stripePaymentMethodId,
+          },
+        }),
+      },
+      options,
+    );
+    updateTag("checkout");
+    return { session };
+  }, "Failed to update payment session");
+}
+
 export async function completeCheckoutPaymentSession(
   cartId: string,
   sessionId: string,
