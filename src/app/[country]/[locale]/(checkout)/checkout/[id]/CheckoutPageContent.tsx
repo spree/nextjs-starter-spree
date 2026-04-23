@@ -6,16 +6,21 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
-import { CouponCode } from "@/components/checkout/CouponCode";
 import { DeliveryMethodSection } from "@/components/checkout/DeliveryMethodSection";
 import {
   type PaymentCompleteResult,
   PaymentSection,
   type PaymentSectionHandle,
 } from "@/components/checkout/PaymentSection";
-import { Summary } from "@/components/checkout/Summary";
 import { PolicyConsent } from "@/components/policy/PolicyConsent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +47,7 @@ import {
   completeCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import { extractBasePath } from "@/lib/utils/path";
+import { CheckoutSidebar } from "./CheckoutSidebar";
 import type { CheckoutInitialData } from "./page";
 
 const ExpressCheckoutButton = dynamic(
@@ -51,37 +57,6 @@ const ExpressCheckoutButton = dynamic(
     })),
   { ssr: false },
 );
-
-// Sidebar summary component
-function CheckoutSidebar({
-  cart,
-  onApplyCode,
-  onRemoveDiscount,
-  onRemoveGiftCard,
-}: {
-  cart: Cart;
-  onApplyCode: (code: string) => Promise<{ success: boolean; error?: string }>;
-  onRemoveDiscount: (
-    code: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-  onRemoveGiftCard: (
-    giftCardId: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-}) {
-  return (
-    <>
-      <Summary cart={cart} />
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <CouponCode
-          cart={cart}
-          onApply={onApplyCode}
-          onRemoveDiscount={onRemoveDiscount}
-          onRemoveGiftCard={onRemoveGiftCard}
-        />
-      </div>
-    </>
-  );
-}
 
 interface CheckoutPageContentProps {
   cartId: string;
@@ -177,13 +152,14 @@ function CheckoutPageContentInner({
     return result;
   }, []);
 
-  // Track cart key for sidebar updates
+  // Track cart key for sidebar updates — useLayoutEffect so the sidebar
+  // renders on the first paint (before the browser paints the empty slot)
   const cartKey = cart
     ? `${cart.id}-${cart.total}-${cart.total_quantity}-${cart.amount_due ?? ""}`
     : null;
   const prevOrderKeyRef = useRef<string | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (
       cartKey === prevOrderKeyRef.current &&
       prevOrderKeyRef.current !== null
