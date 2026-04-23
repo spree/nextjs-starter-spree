@@ -11,6 +11,7 @@ import { OrderTotals } from "@/components/order/OrderTotals";
 import { PaymentInfo } from "@/components/order/PaymentInfo";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
+import { useCheckout } from "@/contexts/CheckoutContext";
 import { trackPurchase } from "@/lib/analytics/gtm";
 import { getCompletedOrder } from "@/lib/data/checkout";
 import { getCachedCompletedOrder } from "@/lib/utils/completed-order-cache";
@@ -28,6 +29,7 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const { id: cartId } = use(params);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
+  const { setSummaryContent } = useCheckout();
   const t = useTranslations("orderPlaced");
   const tc = useTranslations("common");
 
@@ -36,6 +38,11 @@ export default function OrderPlacedPage({ params }: OrderPlacedPageProps) {
   const [error, setError] = useState<"orderNotFound" | "failedToLoad" | null>(
     null,
   );
+
+  // Clear sidebar summary
+  useEffect(() => {
+    setSummaryContent(null);
+  }, [setSummaryContent]);
 
   // Track whether we've already loaded the order to avoid re-fetching
   // after the cart token cookie is cleared by CartProvider

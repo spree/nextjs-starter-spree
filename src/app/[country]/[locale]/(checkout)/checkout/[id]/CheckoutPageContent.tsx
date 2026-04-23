@@ -1,12 +1,19 @@
 "use client";
 
 import type { Address, AddressParams, Cart, Country } from "@spree/sdk";
-import { ChevronDown, CircleAlert, Loader2, ShoppingBag } from "lucide-react";
+import { CircleAlert, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { AddressSection } from "@/components/checkout/AddressSection";
 import { DeliveryMethodSection } from "@/components/checkout/DeliveryMethodSection";
 import {
@@ -17,6 +24,7 @@ import {
 import { PolicyConsent } from "@/components/policy/PolicyConsent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCheckout } from "@/contexts/CheckoutContext";
 import {
   trackAddPaymentInfo,
   trackAddShippingInfo,
@@ -50,36 +58,6 @@ const ExpressCheckoutButton = dynamic(
   { ssr: false },
 );
 
-function MobileSummaryToggle({ summary }: { summary: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const tl = useTranslations("checkoutLayout");
-
-  return (
-    <div className="lg:hidden border-b border-gray-200 bg-gray-50 -mx-5 sm:-mx-5">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 py-4 flex items-center justify-between text-left"
-        aria-expanded={isOpen}
-        aria-controls="checkout-summary-panel"
-      >
-        <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
-          <ShoppingBag className="w-5 h-5 text-gray-600" />
-          {isOpen ? tl("hideOrderSummary") : tl("showOrderSummary")}
-        </span>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-      {isOpen && (
-        <div id="checkout-summary-panel" className="px-5 pb-4">
-          {summary}
-        </div>
-      )}
-    </div>
-  );
-}
-
 interface CheckoutPageContentProps {
   cartId: string;
   urlCountry: string;
@@ -95,6 +73,7 @@ function CheckoutPageContentInner({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const basePath = extractBasePath(pathname);
+  const { setSummaryContent } = useCheckout();
   const t = useTranslations("checkout");
   const tc = useTranslations("common");
   const { user, loading: authLoading } = useAuth();
@@ -172,6 +151,43 @@ function CheckoutPageContentInner({
     }
     return result;
   }, []);
+
+  // Track cart key for sidebar updates — useLayoutEffect so the sidebar
+  // renders on the first paint (before the browser paints the empty slot)
+  const cartKey = cart
+    ? `${cart.id}-${cart.total}-${cart.total_quantity}-${cart.amount_due ?? ""}`
+    : null;
+  const prevOrderKeyRef = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    if (
+      cartKey === prevOrderKeyRef.current &&
+      prevOrderKeyRef.current !== null
+    ) {
+      return;
+    }
+    prevOrderKeyRef.current = cartKey;
+
+    if (cart) {
+      setSummaryContent(
+        <CheckoutSidebar
+          cart={cart}
+          onApplyCode={handleApplyCode}
+          onRemoveDiscount={handleRemoveDiscount}
+          onRemoveGiftCard={handleRemoveGiftCard}
+        />,
+      );
+    } else {
+      setSummaryContent(null);
+    }
+  }, [
+    cart,
+    cartKey,
+    setSummaryContent,
+    handleApplyCode,
+    handleRemoveDiscount,
+    handleRemoveGiftCard,
+  ]);
 
   // Refresh cart data (used after coupon changes, express checkout, etc.)
   const loadOrder = useCallback(async () => {
@@ -599,151 +615,128 @@ function CheckoutPageContentInner({
     );
   }
 
-  const sidebarContent = (
-    <CheckoutSidebar
-      cart={cart}
-      onApplyCode={handleApplyCode}
-      onRemoveDiscount={handleRemoveDiscount}
-      onRemoveGiftCard={handleRemoveGiftCard}
-    />
-  );
-
   return (
-    <>
-      {/* Mobile summary toggle */}
-      <MobileSummaryToggle summary={sidebarContent} />
+    <div>
+      {/* Error banner */}
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <CircleAlert />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      {/* Two-column layout: form (left) + sidebar (right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,640px)_minmax(0,440px)]">
-        {/* Main form column */}
-        <div className="px-5 py-6 lg:pl-10 lg:pr-12 lg:py-8">
-          {/* Error banner */}
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <CircleAlert />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+      {/* Express checkout for guests */}
+      {!isAuthenticated && parseFloat(cart.total) > 0 && (
+        <div className={expressAvailable ? "mb-4" : ""}>
+          {expressAvailable && (
+            <h2 className="text-lg font-bold text-gray-900 mb-3">
+              Express checkout
+            </h2>
           )}
+          <ExpressCheckoutButton
+            cart={cart}
+            basePath={basePath}
+            onComplete={async () => {
+              await loadOrder();
+            }}
+            onProcessingChange={setProcessing}
+            onAvailabilityChange={setExpressAvailable}
+            maxColumns={2}
+            showDivider
+          />
+        </div>
+      )}
 
-          {/* Express checkout for guests */}
-          {!isAuthenticated && parseFloat(cart.total) > 0 && (
-            <div className={expressAvailable ? "mb-4" : ""}>
-              {expressAvailable && (
-                <h2 className="text-lg font-bold text-gray-900 mb-3">
-                  Express checkout
-                </h2>
-              )}
-              <ExpressCheckoutButton
-                cart={cart}
-                basePath={basePath}
-                onComplete={async () => {
-                  await loadOrder();
-                }}
-                onProcessingChange={setProcessing}
-                onAvailabilityChange={setExpressAvailable}
-                maxColumns={2}
-                showDivider
-              />
-            </div>
-          )}
-
-          {/* Checkout form sections */}
-          <div
-            className={
-              processing
-                ? "relative opacity-50 pointer-events-none select-none"
-                : "relative"
+      {/* Checkout form sections — dimmed & disabled during express checkout */}
+      <div
+        className={
+          processing
+            ? "relative opacity-50 pointer-events-none select-none"
+            : "relative"
+        }
+      >
+        {/* Contact + Delivery */}
+        <div id="checkout-section-address">
+          <AddressSection
+            cart={cart}
+            countries={countries}
+            savedAddresses={savedAddresses}
+            isAuthenticated={isAuthenticated}
+            signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
+            fetchStates={fetchStates}
+            onEmailBlur={handleEmailBlur}
+            onAutoSave={handleAutoSave}
+            onUpdateSavedAddress={
+              isAuthenticated ? handleUpdateSavedAddress : undefined
             }
-          >
-            {/* Contact + Delivery */}
-            <div id="checkout-section-address">
-              <AddressSection
-                cart={cart}
-                countries={countries}
-                savedAddresses={savedAddresses}
-                isAuthenticated={isAuthenticated}
-                signInUrl={`${basePath}/account?redirect=${encodeURIComponent(pathname)}`}
-                fetchStates={fetchStates}
-                onEmailBlur={handleEmailBlur}
-                onAutoSave={handleAutoSave}
-                onUpdateSavedAddress={
-                  isAuthenticated ? handleUpdateSavedAddress : undefined
-                }
-                errors={sectionErrors.address}
-                saving={saving}
-                processing={processing}
-                user={user}
-              />
-            </div>
+            errors={sectionErrors.address}
+            saving={saving}
+            processing={processing}
+            user={user}
+          />
+        </div>
 
-            {/* Shipping method */}
-            <div id="checkout-section-shipping" className="mt-6">
-              <DeliveryMethodSection
-                fulfillments={fulfillments}
-                onDeliveryRateSelect={handleDeliveryRateSelect}
-                processing={processing}
-                errors={sectionErrors.shipping}
-              />
-            </div>
+        {/* Shipping method */}
+        <div id="checkout-section-shipping" className="mt-6">
+          <DeliveryMethodSection
+            fulfillments={fulfillments}
+            onDeliveryRateSelect={handleDeliveryRateSelect}
+            processing={processing}
+            errors={sectionErrors.shipping}
+          />
+        </div>
 
-            {/* Payment */}
-            <div id="checkout-section-payment" className="mt-6">
-              <PaymentSection
-                ref={paymentRef}
-                cart={cart}
-                countries={countries}
-                isAuthenticated={isAuthenticated}
-                fetchStates={fetchStates}
-                onUpdateBillingAddress={handleUpdateBillingAddress}
-                onPaymentComplete={handlePaymentComplete}
-                processing={processing}
-                setProcessing={setProcessing}
-                onSessionMethodChange={setIsSessionPayment}
-                errors={sectionErrors.payment}
-              />
-            </div>
+        {/* Payment */}
+        <div id="checkout-section-payment" className="mt-6">
+          <PaymentSection
+            ref={paymentRef}
+            cart={cart}
+            countries={countries}
+            isAuthenticated={isAuthenticated}
+            fetchStates={fetchStates}
+            onUpdateBillingAddress={handleUpdateBillingAddress}
+            onPaymentComplete={handlePaymentComplete}
+            processing={processing}
+            setProcessing={setProcessing}
+            onSessionMethodChange={setIsSessionPayment}
+            errors={sectionErrors.payment}
+          />
+        </div>
 
-            {/* Policy consent — guests only */}
-            {!isAuthenticated && (
-              <div className="mt-6">
-                <PolicyConsent
-                  checked={policyConsent}
-                  onCheckedChange={(checked) => {
-                    setPolicyConsent(checked);
-                    if (checked) setPolicyError(false);
-                  }}
-                  error={policyError}
-                />
-              </div>
-            )}
-
-            {/* Pay now button */}
-            <button
-              type="button"
-              onClick={validateAndPay}
-              disabled={processing}
-              className="w-full mt-8 h-[54px] bg-black text-white text-sm font-bold rounded-sm hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              {processing ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {tc("processing")}
-                </>
-              ) : isSessionPayment ? (
-                t("payNow")
-              ) : (
-                t("placeOrder")
-              )}
-            </button>
+        {/* Policy consent — guests only, authenticated users accepted at registration */}
+        {!isAuthenticated && (
+          <div className="mt-6">
+            <PolicyConsent
+              checked={policyConsent}
+              onCheckedChange={(checked) => {
+                setPolicyConsent(checked);
+                if (checked) setPolicyError(false);
+              }}
+              error={policyError}
+            />
           </div>
-        </div>
+        )}
 
-        {/* Desktop sidebar */}
-        <div className="hidden lg:block border-l border-gray-200 bg-gray-50">
-          <div className="sticky top-0 px-10 py-10">{sidebarContent}</div>
-        </div>
+        {/* Pay now button */}
+        <button
+          type="button"
+          onClick={validateAndPay}
+          disabled={processing}
+          className="w-full mt-8 h-[54px] bg-black text-white text-sm font-bold rounded-sm hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        >
+          {processing ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {tc("processing")}
+            </>
+          ) : isSessionPayment ? (
+            t("payNow")
+          ) : (
+            t("placeOrder")
+          )}
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
