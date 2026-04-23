@@ -509,8 +509,10 @@ export function PaymentSection({
               const clientSecret = sessionExternalData.client_secret as
                 | string
                 | undefined;
-              const isStripe =
-                resolveGatewayId(selectedMethod.type) === "stripe";
+              const gatewayId = resolveGatewayId(selectedMethod.type);
+              const isStripe = gatewayId === "stripe";
+              const isApprovalDriven =
+                gatewayId === "adyen" || gatewayId === "paypal";
               const canUseSavedCard =
                 isStripe && Boolean(selectedCardId && clientSecret);
 
@@ -538,6 +540,13 @@ export function PaymentSection({
                 setGatewayError(error);
                 setProcessing(false);
                 return { error };
+              }
+
+              // Approval-driven gateways (Adyen, PayPal) complete the order
+              // via handleGatewayApproved when their callback fires — don't
+              // call onPaymentComplete here or we'll race with the callback.
+              if (isApprovalDriven) {
+                return {};
               }
 
               await onPaymentComplete({
