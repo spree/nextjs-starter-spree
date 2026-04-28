@@ -7,7 +7,6 @@ const mockClient = {
     complete: vi.fn(),
     paymentSessions: {
       create: vi.fn(),
-      update: vi.fn(),
       complete: vi.fn(),
     },
   },
@@ -36,7 +35,6 @@ import {
   completeCheckoutPaymentSession,
   confirmPaymentAndCompleteCart,
   createCheckoutPaymentSession,
-  updateCheckoutPaymentSession,
 } from "@/lib/data/payment";
 
 const mockSession = {
@@ -98,87 +96,6 @@ describe("payment server actions", () => {
         success: false,
         error: "Gateway unavailable",
       });
-    });
-  });
-
-  describe("updateCheckoutPaymentSession", () => {
-    it("sends empty params when no amount or card id", async () => {
-      mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
-
-      const result = await updateCheckoutPaymentSession("cart-1", "session-1");
-
-      expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
-        "cart-1",
-        "session-1",
-        {},
-        { spreeToken: "order-token-123", token: undefined },
-      );
-      expect(result).toEqual({ success: true, session: mockSession });
-    });
-
-    it("passes amount when provided", async () => {
-      mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
-
-      await updateCheckoutPaymentSession("cart-1", "session-1", {
-        amount: "48.99",
-      });
-
-      expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
-        "cart-1",
-        "session-1",
-        { amount: "48.99" },
-        { spreeToken: "order-token-123", token: undefined },
-      );
-    });
-
-    it("passes amount and external_data together", async () => {
-      mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
-
-      await updateCheckoutPaymentSession("cart-1", "session-1", {
-        amount: "48.99",
-        externalData: { stripe_payment_method_id: "spm_123" },
-      });
-
-      expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
-        "cart-1",
-        "session-1",
-        {
-          amount: "48.99",
-          external_data: { stripe_payment_method_id: "spm_123" },
-        },
-        { spreeToken: "order-token-123", token: undefined },
-      );
-    });
-
-    it("preserves null values in external_data (clears stale stripe_payment_method_id)", async () => {
-      mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
-
-      await updateCheckoutPaymentSession("cart-1", "session-1", {
-        amount: "48.99",
-        externalData: { stripe_payment_method_id: null },
-      });
-
-      expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
-        "cart-1",
-        "session-1",
-        {
-          amount: "48.99",
-          external_data: { stripe_payment_method_id: null },
-        },
-        { spreeToken: "order-token-123", token: undefined },
-      );
-    });
-
-    it("returns error on failure", async () => {
-      mockClient.carts.paymentSessions.update.mockRejectedValue(
-        new Error("Session locked"),
-      );
-
-      const result = await updateCheckoutPaymentSession("cart-1", "session-1", {
-        amount: "48.99",
-      });
-
-      expect(result).toEqual({ success: false, error: "Session locked" });
     });
   });
 

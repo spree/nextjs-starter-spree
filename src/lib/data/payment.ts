@@ -29,40 +29,6 @@ export async function createCheckoutPaymentSession(
 }
 
 /**
- * PATCHes an existing PaymentSession. For Stripe this updates the underlying
- * PaymentIntent in place — same `client_secret`, no new pi_… — so the gateway
- * form does not remount on every cart change (e.g. gift card / shipping).
- *
- * Pass `externalData` to overwrite session metadata (e.g. clear a stale
- * `stripe_payment_method_id` by sending `{ stripe_payment_method_id: null }`
- * when the user switches back to "add new payment method").
- */
-export async function updateCheckoutPaymentSession(
-  cartId: string,
-  sessionId: string,
-  params: {
-    amount?: string;
-    externalData?: Record<string, unknown>;
-  } = {},
-) {
-  return actionResult(async () => {
-    const options = await getCartOptions();
-    const id = await requireCartId();
-    const session = await getClient().carts.paymentSessions.update(
-      id,
-      sessionId,
-      {
-        ...(params.amount && { amount: params.amount }),
-        ...(params.externalData && { external_data: params.externalData }),
-      },
-      options,
-    );
-    updateTag("checkout");
-    return { session };
-  }, "Failed to update payment session");
-}
-
-/**
  * Creates a direct payment for non-session payment methods
  * (e.g. Check, Cash on Delivery, Bank Transfer).
  */

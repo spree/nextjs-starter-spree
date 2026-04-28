@@ -41,7 +41,6 @@ import { getCreditCards } from "@/lib/data/credit-cards";
 import {
   createCheckoutPaymentSession,
   createDirectPayment,
-  updateCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import {
   type AddressFormData,
@@ -157,9 +156,6 @@ export function PaymentSection({
     unknown
   > | null>(null);
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
-  // Mirrors paymentSessionId so createSession can branch create-vs-PATCH
-  // without being re-created on every session id change.
-  const paymentSessionIdRef = useRef<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const gatewayHandleRef = useRef<
@@ -190,28 +186,19 @@ export function PaymentSection({
   const paymentTarget = cart.amount_due ?? cart.total;
 
   // ── Session management ──────────────────────────────────────────────
-  // First call creates the Spree PaymentSession (and Stripe PaymentIntent).
-  // For Stripe, subsequent calls PATCH amount / stripe_payment_method_id on
-  // the same session — keeps the same PaymentIntent and `client_secret`,
-  // so the Stripe form does not remount on every gift-card / shipping /
-  // saved-card change. Adyen / PayPal recreate the session because their
-  // drop-in / order is bound to the initial amount.
+  // Always create a fresh PaymentSession on every cart / card / method change
+  // so the gateway charges exactly `paymentTarget`. Updating in place is not
+  // safe — the user could end up charged the wrong amount.
   const createSession = useCallback(
     async (cardId: string | null, method: PaymentMethod) => {
       const currentGatewayId = resolveGatewayId(method.type);
       const requestId = ++sessionRequestIdRef.current;
-      const existingSessionId = paymentSessionIdRef.current;
-      const canPatch = currentGatewayId === "stripe" && !!existingSessionId;
 
       setLoading(true);
       setGatewayError(null);
-      // PATCH keeps the same client_secret — don't tear the form down.
-      if (!canPatch) {
-        setSessionExternalData(null);
-        setPaymentSessionId(null);
-        paymentSessionIdRef.current = null;
-        gatewayHandleRef.current = null;
-      }
+      setSessionExternalData(null);
+      setPaymentSessionId(null);
+      gatewayHandleRef.current = null;
 
       try {
         // Build gateway-specific external_data
@@ -222,25 +209,15 @@ export function PaymentSection({
           return_url: returnUrl,
         };
 
-        if (currentGatewayId === "stripe") {
-          // Always sync — passing `null` explicitly clears a stale
-          // stripe_payment_method_id when the user toggles back to
-          // "add new payment method".
+        if (currentGatewayId === "stripe" && cardId) {
           externalData.stripe_payment_method_id = cardId;
         }
 
-        const result = canPatch
-          ? await updateCheckoutPaymentSession(cart.id, existingSessionId, {
-              amount: paymentTarget,
-              externalData: {
-                stripe_payment_method_id: cardId,
-              },
-            })
-          : await createCheckoutPaymentSession(
-              cart.id,
-              method.id,
-              externalData,
-            );
+        const result = await createCheckoutPaymentSession(
+          cart.id,
+          method.id,
+          externalData,
+        );
 
         if (requestId !== sessionRequestIdRef.current) return;
 
@@ -249,29 +226,12 @@ export function PaymentSection({
           if (extData && Object.keys(extData).length > 0) {
             // Include external_id so gateway forms can access the
             // provider-side session/order ID (e.g. Adyen session ID).
-            const next: Record<string, unknown> = {
+            setSessionExternalData({
               ...extData,
               _external_id: result.session.external_id,
-            };
-            // Avoid spurious remounts of the Stripe form when only `amount`
-            // changed — keep the previous object if client_secret + external_id
-            // are unchanged.
-            setSessionExternalData((prev) => {
-              if (
-                prev &&
-                prev.client_secret === next.client_secret &&
-                prev._external_id === next._external_id
-              ) {
-                return prev;
-              }
-              return next;
             });
             setPaymentSessionId(result.session.id);
-            paymentSessionIdRef.current = result.session.id;
-          } else if (!canPatch) {
-            // Only treat empty external_data as a hard failure on create;
-            // a PATCH that returns no external_data still leaves the prior
-            // session valid, no need to surface an error.
+          } else {
             setGatewayError(t("failedToInitPayment"));
           }
         } else if (!result.success) {
@@ -286,10 +246,10 @@ export function PaymentSection({
         }
       }
     },
-    [cart.id, paymentTarget, t],
+    [cart.id, t],
   );
 
-  // Track the payment target so we can recreate / PATCH the session when it changes
+  // Track the payment target so we can recreate the session when it changes.
   const lastPaymentTargetRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
 
@@ -343,8 +303,7 @@ export function PaymentSection({
   ]);
 
   // When the payment target changes (shipping rate, coupon, gift card, etc.),
-  // re-sync the payment session so the amount matches. For Stripe this PATCHes
-  // the existing PaymentIntent in place; for other gateways it recreates.
+  // recreate the payment session so the amount matches the new total.
   useEffect(() => {
     if (!initRef.current) return;
     if (!isSessionBased || !selectedMethod) return;
@@ -423,7 +382,6 @@ export function PaymentSection({
       sessionRequestIdRef.current += 1;
       setSessionExternalData(null);
       setPaymentSessionId(null);
-      paymentSessionIdRef.current = null;
       setGatewayError(null);
       gatewayHandleRef.current = null;
       setLoading(false);
