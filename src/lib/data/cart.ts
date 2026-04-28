@@ -42,9 +42,15 @@ export async function getCart(explicitCartId?: string): Promise<Cart | null> {
 
     return null;
   } catch {
-    // Cart not found (e.g., order was completed) — clear stale cookies
+    // Cart not found (e.g., order was completed) — clear stale cookies.
+    // Wrapped in try/catch because clearCartCookies sets cookies, which
+    // is not allowed in Server Components (only in Server Actions).
     if (!explicitCartId) {
-      await clearCartCookies();
+      try {
+        await clearCartCookies();
+      } catch {
+        // Ignore — cookie clearing is best-effort
+      }
     }
     return null;
   }

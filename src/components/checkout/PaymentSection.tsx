@@ -4,13 +4,14 @@ import type {
   AddressParams,
   Cart,
   Country,
+  PaymentMethod,
   CreditCard as SpreeCreditCard,
   State,
 } from "@spree/sdk";
-import { CircleAlert, CreditCard, Loader2 } from "lucide-react";
+import { CircleAlert, CreditCard, Info, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
-  forwardRef,
+  type Ref,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -20,6 +21,14 @@ import {
 } from "react";
 import { PaymentIcon } from "react-svg-credit-card-payment-icons";
 import { AddressFormFields } from "@/components/checkout/AddressFormFields";
+import {
+  AdyenPaymentForm,
+  type AdyenPaymentFormHandle,
+} from "@/components/checkout/AdyenPaymentForm";
+import {
+  PayPalPaymentForm,
+  type PayPalPaymentFormHandle,
+} from "@/components/checkout/PayPalPaymentForm";
 import {
   confirmWithSavedCard,
   StripePaymentForm,
@@ -31,6 +40,7 @@ import { useCountryStates } from "@/hooks/useCountryStates";
 import { getCreditCards } from "@/lib/data/credit-cards";
 import {
   createCheckoutPaymentSession,
+  createDirectPayment,
   updateCheckoutPaymentSession,
 } from "@/lib/data/payment";
 import {
@@ -41,12 +51,18 @@ import {
 } from "@/lib/utils/address";
 import { getCardIconType, getCardLabel } from "@/lib/utils/credit-card";
 import { extractBasePath } from "@/lib/utils/path";
+import { resolveGatewayId } from "@/lib/utils/payment-gateway";
+
+export type PaymentCompleteResult =
+  | { type: "session"; sessionId: string; sessionResult?: string }
+  | { type: "direct" };
 
 export interface PaymentSectionHandle {
   submit: () => Promise<{ error?: string }>;
 }
 
 interface PaymentSectionProps {
+  ref?: Ref<PaymentSectionHandle>;
   cart: Cart;
   countries: Country[];
   isAuthenticated: boolean;
@@ -55,32 +71,61 @@ interface PaymentSectionProps {
     billing_address?: AddressParams;
     use_shipping?: boolean;
   }) => Promise<boolean>;
-  onPaymentComplete: (paymentSessionId: string) => Promise<void>;
+  onPaymentComplete: (result: PaymentCompleteResult) => Promise<void>;
   processing: boolean;
   setProcessing: (processing: boolean) => void;
+  onSessionMethodChange?: (isSessionBased: boolean) => void;
   errors?: string[];
 }
 
-export const PaymentSection = forwardRef<
-  PaymentSectionHandle,
-  PaymentSectionProps
->(function PaymentSection(
-  {
-    cart,
-    countries,
-    isAuthenticated,
-    fetchStates,
-    onUpdateBillingAddress,
-    onPaymentComplete,
-    processing,
-    setProcessing,
-    errors,
-  },
+export function PaymentSection({
   ref,
-) {
+  cart,
+  countries,
+  isAuthenticated,
+  fetchStates,
+  onUpdateBillingAddress,
+  onPaymentComplete,
+  processing,
+  setProcessing,
+  onSessionMethodChange,
+  errors,
+}: PaymentSectionProps) {
   const t = useTranslations("checkout");
 
-  // Initialize billing address from cart, check if it matches shipping
+  // ── Payment methods from Spree ──────────────────────────────────────
+  const paymentMethods = cart.payment_methods ?? [];
+  const hasMultipleMethods = paymentMethods.length > 1;
+
+  // Default to the first method; fall back if the stored ID becomes stale
+  // (e.g. cart.payment_methods changes after a shipping update).
+  const [selectedMethodId, setSelectedMethodId] = useState<string>(
+    () => paymentMethods[0]?.id ?? "",
+  );
+  const selectedMethod: PaymentMethod | undefined =
+    paymentMethods.find((pm) => pm.id === selectedMethodId) ??
+    paymentMethods[0];
+  const effectiveSelectedMethodId = selectedMethod?.id ?? "";
+  // Zero-amount check
+  const amountDue = parseFloat(cart.amount_due ?? cart.total);
+  const isZeroAmount = amountDue === 0;
+
+  // Free orders are always treated as non-session (no payment needed)
+  const isSessionBased =
+    !isZeroAmount && (selectedMethod?.session_required ?? false);
+
+  // Notify parent when session method changes (for button text)
+  const onSessionMethodChangeRef = useRef(onSessionMethodChange);
+  onSessionMethodChangeRef.current = onSessionMethodChange;
+
+  const prevIsSessionRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (prevIsSessionRef.current === isSessionBased) return;
+    prevIsSessionRef.current = isSessionBased;
+    onSessionMethodChangeRef.current?.(isSessionBased);
+  }, [isSessionBased]);
+
+  // ── Billing address ─────────────────────────────────────────────────
   const shipAddressData = useMemo(
     () => addressToFormData(cart.shipping_address),
     [cart.shipping_address],
@@ -97,85 +142,136 @@ export const PaymentSection = forwardRef<
   );
   const [useShippingForBilling, setUseShippingForBilling] =
     useState(initialUseShipping);
-  // Saved cards state
+
+  // ── Saved cards (session-based gateways only) ───────────────────────
   const [savedCards, setSavedCards] = useState<SpreeCreditCard[]>([]);
-  // null = "add new payment method", string = gateway_payment_profile_id of selected card
+  // null = "add new payment method", string = gateway_payment_profile_id
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
-  // Payment gateway state
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  // ── Payment gateway state (session-based) ───────────────────────────
+  // Stores the raw external_data from the Spree PaymentSession.
+  // Each gateway form extracts what it needs (e.g. client_secret for Stripe,
+  // session_id + session_data for Adyen).
+  const [sessionExternalData, setSessionExternalData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
+  // Mirrors paymentSessionId so createSession can branch create-vs-PATCH
+  // without being re-created on every session id change.
+  const paymentSessionIdRef = useRef<string | null>(null);
   const [gatewayError, setGatewayError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const gatewayHandleRef = useRef<StripePaymentFormHandle | null>(null);
+  const gatewayHandleRef = useRef<
+    | StripePaymentFormHandle
+    | AdyenPaymentFormHandle
+    | PayPalPaymentFormHandle
+    | null
+  >(null);
   const initRef = useRef(false);
-  // Monotonic counter to discard stale syncSession responses
   const sessionRequestIdRef = useRef(0);
-  // Mirrors paymentSessionId so syncSession can branch create vs update
-  // without being re-created every time the session changes.
-  const paymentSessionIdRef = useRef<string | null>(null);
+  const completionInFlightRef = useRef(false);
 
-  const handleGatewayReady = useCallback((handle: StripePaymentFormHandle) => {
-    gatewayHandleRef.current = handle;
-  }, []);
-
-  // Find the payment method that requires a session (e.g. Stripe, Adyen)
-  const sessionPaymentMethod = cart.payment_methods?.find(
-    (pm) => pm.session_required,
+  const handleGatewayReady = useCallback(
+    (
+      handle:
+        | StripePaymentFormHandle
+        | AdyenPaymentFormHandle
+        | PayPalPaymentFormHandle,
+    ) => {
+      gatewayHandleRef.current = handle;
+    },
+    [],
   );
 
-  // Helper: sync the Spree PaymentSession with current cart/card state.
-  // First call creates the session (and Stripe PaymentIntent). Subsequent
-  // calls PATCH with an explicit `amount` so the Spree backend resizes the
-  // same Stripe PaymentIntent instead of spawning a new one on every gift
-  // card / shipping / card change.
-  const syncSession = useCallback(
-    async (cardId: string | null) => {
-      if (!sessionPaymentMethod) return;
+  // Target amount the gateway must charge. Gift cards reduce `amount_due`
+  // but not `total`, so watching `total` alone misses gift-card changes and
+  // the gateway keeps the original (pre-gift-card) PaymentIntent.
+  const paymentTarget = cart.amount_due ?? cart.total;
 
+  // ── Session management ──────────────────────────────────────────────
+  // First call creates the Spree PaymentSession (and Stripe PaymentIntent).
+  // For Stripe, subsequent calls PATCH amount / stripe_payment_method_id on
+  // the same session — keeps the same PaymentIntent and `client_secret`,
+  // so the Stripe form does not remount on every gift-card / shipping /
+  // saved-card change. Adyen / PayPal recreate the session because their
+  // drop-in / order is bound to the initial amount.
+  const createSession = useCallback(
+    async (cardId: string | null, method: PaymentMethod) => {
+      const currentGatewayId = resolveGatewayId(method.type);
       const requestId = ++sessionRequestIdRef.current;
       const existingSessionId = paymentSessionIdRef.current;
-      const targetAmount = cart.amount_due ?? cart.total;
+      const canPatch = currentGatewayId === "stripe" && !!existingSessionId;
 
       setLoading(true);
       setGatewayError(null);
-      // Only clear on create — update keeps the same Stripe PaymentIntent
-      // and therefore the same client_secret.
-      if (!existingSessionId) {
-        setClientSecret(null);
+      // PATCH keeps the same client_secret — don't tear the form down.
+      if (!canPatch) {
+        setSessionExternalData(null);
         setPaymentSessionId(null);
+        paymentSessionIdRef.current = null;
         gatewayHandleRef.current = null;
       }
 
       try {
-        const result = existingSessionId
+        // Build gateway-specific external_data
+        const basePath = extractBasePath(window.location.pathname);
+        const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}`;
+
+        const externalData: Record<string, unknown> = {
+          return_url: returnUrl,
+        };
+
+        if (currentGatewayId === "stripe") {
+          // Always sync — passing `null` explicitly clears a stale
+          // stripe_payment_method_id when the user toggles back to
+          // "add new payment method".
+          externalData.stripe_payment_method_id = cardId;
+        }
+
+        const result = canPatch
           ? await updateCheckoutPaymentSession(cart.id, existingSessionId, {
-              amount: targetAmount,
-              // Always sync — passing null explicitly clears a stale
-              // stripe_payment_method_id when the user switches back to
-              // "add new payment method".
-              stripePaymentMethodId: cardId,
+              amount: paymentTarget,
+              externalData: {
+                stripe_payment_method_id: cardId,
+              },
             })
           : await createCheckoutPaymentSession(
               cart.id,
-              sessionPaymentMethod.id,
-              cardId ?? undefined,
+              method.id,
+              externalData,
             );
 
-        // Discard if a newer request was started while this one was in flight
         if (requestId !== sessionRequestIdRef.current) return;
 
         if (result.success && result.session) {
-          const secret = result.session.external_data?.client_secret as
-            | string
-            | undefined;
-          if (secret) {
-            // Keep client_secret stable across PATCH so the Stripe form
-            // does not remount on every amount change.
-            setClientSecret((prev) => (prev === secret ? prev : secret));
+          const extData = result.session.external_data;
+          if (extData && Object.keys(extData).length > 0) {
+            // Include external_id so gateway forms can access the
+            // provider-side session/order ID (e.g. Adyen session ID).
+            const next: Record<string, unknown> = {
+              ...extData,
+              _external_id: result.session.external_id,
+            };
+            // Avoid spurious remounts of the Stripe form when only `amount`
+            // changed — keep the previous object if client_secret + external_id
+            // are unchanged.
+            setSessionExternalData((prev) => {
+              if (
+                prev &&
+                prev.client_secret === next.client_secret &&
+                prev._external_id === next._external_id
+              ) {
+                return prev;
+              }
+              return next;
+            });
             setPaymentSessionId(result.session.id);
             paymentSessionIdRef.current = result.session.id;
-          } else if (!existingSessionId) {
+          } else if (!canPatch) {
+            // Only treat empty external_data as a hard failure on create;
+            // a PATCH that returns no external_data still leaves the prior
+            // session valid, no need to surface an error.
             setGatewayError(t("failedToInitPayment"));
           }
         } else if (!result.success) {
@@ -190,19 +286,20 @@ export const PaymentSection = forwardRef<
         }
       }
     },
-    [sessionPaymentMethod, cart.id, cart.amount_due, cart.total, t],
+    [cart.id, paymentTarget, t],
   );
 
-  // Target amount the gateway must charge. Gift cards reduce amount_due but
-  // not total, so watching total alone misses gift card changes and the
-  // gateway keeps the original (pre-gift-card) PaymentIntent.
-  const paymentTarget = cart.amount_due ?? cart.total;
+  // Track the payment target so we can recreate / PATCH the session when it changes
   const lastPaymentTargetRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
 
-  // On mount: load saved cards (if authenticated), then create initial session — once.
+  // On mount: load saved cards (if authenticated + session method), then create initial session
   useEffect(() => {
-    if (initRef.current || !sessionPaymentMethod) return;
+    if (initRef.current) return;
+    if (!selectedMethod) return;
+    if (isZeroAmount) return;
+    if (!isSessionBased) return;
+
     initRef.current = true;
 
     const init = async () => {
@@ -210,7 +307,6 @@ export const PaymentSection = forwardRef<
 
       let initialCardId: string | null = null;
 
-      // Load saved cards for authenticated users
       if (isAuthenticated) {
         try {
           const result = await getCreditCards();
@@ -233,22 +329,30 @@ export const PaymentSection = forwardRef<
       selectedCardRef.current = initialCardId;
       lastPaymentTargetRef.current = paymentTarget;
 
-      // Create the initial payment session
-      await syncSession(initialCardId);
+      await createSession(initialCardId, selectedMethod);
     };
 
     init();
-  }, [sessionPaymentMethod, isAuthenticated, syncSession, paymentTarget]);
+  }, [
+    selectedMethod,
+    isSessionBased,
+    isAuthenticated,
+    createSession,
+    paymentTarget,
+    isZeroAmount,
+  ]);
 
   // When the payment target changes (shipping rate, coupon, gift card, etc.),
-  // recreate the payment session so the amount matches the new order total.
+  // re-sync the payment session so the amount matches. For Stripe this PATCHes
+  // the existing PaymentIntent in place; for other gateways it recreates.
   useEffect(() => {
     if (!initRef.current) return;
+    if (!isSessionBased || !selectedMethod) return;
     if (lastPaymentTargetRef.current === paymentTarget) return;
 
     lastPaymentTargetRef.current = paymentTarget;
-    syncSession(selectedCardRef.current);
-  }, [paymentTarget, syncSession]);
+    createSession(selectedCardRef.current, selectedMethod);
+  }, [paymentTarget, createSession, isSessionBased, selectedMethod]);
 
   const [billStates, isPendingBill] = useCountryStates(
     billAddress.country_iso,
@@ -265,91 +369,280 @@ export const PaymentSection = forwardRef<
 
   const handleCardSelect = (cardId: string | null) => {
     if (cardId === selectedCardId) return;
+    if (!selectedMethod) return;
     setSelectedCardId(cardId);
     selectedCardRef.current = cardId;
-    syncSession(cardId);
+    createSession(cardId, selectedMethod);
+  };
+
+  const handleMethodSelect = (methodId: string) => {
+    if (methodId === selectedMethodId) return;
+    setSelectedMethodId(methodId);
+
+    const newMethod = paymentMethods.find((pm) => pm.id === methodId);
+    if (!newMethod) return;
+
+    if (newMethod.session_required) {
+      // Switching to a session-based method: create session
+      // Reset saved cards state — will be re-initialized
+      if (!initRef.current) {
+        initRef.current = true;
+        const init = async () => {
+          setLoading(true);
+          let cardId: string | null = null;
+
+          if (isAuthenticated) {
+            try {
+              const result = await getCreditCards();
+              const gatewayCards = result.data.filter(
+                (card) => card.gateway_payment_profile_id,
+              );
+              setSavedCards(gatewayCards);
+              if (gatewayCards.length > 0) {
+                const defaultCard =
+                  gatewayCards.find((c) => c.default) || gatewayCards[0];
+                cardId = defaultCard.gateway_payment_profile_id;
+                setSelectedCardId(cardId);
+              }
+            } catch {
+              // proceed without saved cards
+            }
+          }
+
+          selectedCardRef.current = cardId;
+          lastPaymentTargetRef.current = paymentTarget;
+          await createSession(cardId, newMethod);
+        };
+        init();
+      } else {
+        createSession(selectedCardRef.current, newMethod);
+      }
+    } else {
+      // Switching to a direct method: invalidate any in-flight session
+      // request so a late-resolving createSession won't repopulate state.
+      sessionRequestIdRef.current += 1;
+      setSessionExternalData(null);
+      setPaymentSessionId(null);
+      paymentSessionIdRef.current = null;
+      setGatewayError(null);
+      gatewayHandleRef.current = null;
+      setLoading(false);
+    }
   };
 
   const updateBillAddress = (field: keyof AddressFormData, value: string) => {
     setBillAddress((prev) => updateAddressField(prev, field, value));
   };
 
-  // Expose submit handle to parent via ref
+  // ── Auto-complete after gateway approval (PayPal popup / Adyen sessions) ──
+  const handleGatewayApproved = useCallback(
+    async (sessionResult?: string) => {
+      if (completionInFlightRef.current) return;
+      if (!paymentSessionId) return;
+
+      completionInFlightRef.current = true;
+      setProcessing(true);
+      setGatewayError(null);
+
+      try {
+        // Update billing address
+        let addressSuccess: boolean;
+        if (useShippingForBilling) {
+          addressSuccess = await onUpdateBillingAddress({
+            use_shipping: true,
+          });
+        } else {
+          const billingData = formDataToAddress(billAddress);
+          addressSuccess = await onUpdateBillingAddress({
+            billing_address: billingData,
+          });
+        }
+
+        if (!addressSuccess) {
+          setProcessing(false);
+          completionInFlightRef.current = false;
+          setGatewayError(t("failedToSaveBilling"));
+          return;
+        }
+
+        await onPaymentComplete({
+          type: "session",
+          sessionId: paymentSessionId,
+          sessionResult,
+        });
+      } catch {
+        setGatewayError(t("paymentError"));
+        setProcessing(false);
+        completionInFlightRef.current = false;
+      }
+    },
+    [
+      paymentSessionId,
+      useShippingForBilling,
+      billAddress,
+      onUpdateBillingAddress,
+      onPaymentComplete,
+      setProcessing,
+      t,
+    ],
+  );
+
+  // ── Submit ──────────────────────────────────────────────────────────
   useImperativeHandle(
     ref,
     () => ({
       submit: async () => {
-        if (!paymentSessionId || !clientSecret) {
-          return { error: t("failedToInitPayment") };
-        }
-        if (!selectedCardId && !gatewayHandleRef.current) {
-          return { error: t("failedToInitPayment") };
-        }
-
-        setProcessing(true);
-        setGatewayError(null);
+        if (completionInFlightRef.current) return {};
+        completionInFlightRef.current = true;
 
         try {
-          // 1. Update billing address
-          let addressSuccess: boolean;
-          if (useShippingForBilling) {
-            addressSuccess = await onUpdateBillingAddress({
-              use_shipping: true,
-            });
-          } else {
-            const billingData = formDataToAddress(billAddress);
-            addressSuccess = await onUpdateBillingAddress({
-              billing_address: billingData,
-            });
+          // Zero amount — no payment needed
+          if (isZeroAmount) {
+            setProcessing(true);
+            try {
+              // Still update billing address
+              let addressSuccess: boolean;
+              if (useShippingForBilling) {
+                addressSuccess = await onUpdateBillingAddress({
+                  use_shipping: true,
+                });
+              } else {
+                const billingData = formDataToAddress(billAddress);
+                addressSuccess = await onUpdateBillingAddress({
+                  billing_address: billingData,
+                });
+              }
+              if (!addressSuccess) {
+                setProcessing(false);
+                return { error: t("failedToSaveBilling") };
+              }
+              await onPaymentComplete({ type: "direct" });
+              return {};
+            } catch {
+              const msg = t("paymentError");
+              setProcessing(false);
+              return { error: msg };
+            }
           }
 
-          if (!addressSuccess) {
-            setProcessing(false);
-            return { error: t("failedToSaveBilling") };
+          if (!selectedMethod) {
+            return { error: t("selectPaymentMethod") };
           }
 
-          // 2. Confirm payment with gateway
-          // Point to the confirm-payment intermediate page so that offsite
-          // gateways (3D Secure, redirect-based) can verify the payment
-          // session before completing the cart.
-          const basePath = extractBasePath(window.location.pathname);
-          const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}?session=${paymentSessionId}`;
+          setProcessing(true);
+          setGatewayError(null);
 
-          let error: string | undefined;
+          try {
+            // 1. Update billing address
+            let addressSuccess: boolean;
+            if (useShippingForBilling) {
+              addressSuccess = await onUpdateBillingAddress({
+                use_shipping: true,
+              });
+            } else {
+              const billingData = formDataToAddress(billAddress);
+              addressSuccess = await onUpdateBillingAddress({
+                billing_address: billingData,
+              });
+            }
 
-          if (selectedCardId) {
-            const result = await confirmWithSavedCard(
-              clientSecret,
-              selectedCardId,
-              returnUrl,
+            if (!addressSuccess) {
+              setProcessing(false);
+              return { error: t("failedToSaveBilling") };
+            }
+
+            // 2. Process payment based on method type
+            if (selectedMethod.session_required) {
+              // Session-based flow (Stripe, Adyen, etc.)
+              if (!paymentSessionId || !sessionExternalData) {
+                setProcessing(false);
+                return { error: t("failedToInitPayment") };
+              }
+              const basePath = extractBasePath(window.location.pathname);
+              const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}?session=${paymentSessionId}`;
+
+              let error: string | undefined;
+
+              const clientSecret = sessionExternalData.client_secret as
+                | string
+                | undefined;
+              const gatewayId = resolveGatewayId(selectedMethod.type);
+              const isStripe = gatewayId === "stripe";
+              const isApprovalDriven =
+                gatewayId === "adyen" || gatewayId === "paypal";
+              const canUseSavedCard =
+                isStripe && Boolean(selectedCardId && clientSecret);
+
+              if (!canUseSavedCard && !gatewayHandleRef.current) {
+                setProcessing(false);
+                return { error: t("failedToInitPayment") };
+              }
+
+              if (canUseSavedCard) {
+                // Stripe saved card flow
+                const result = await confirmWithSavedCard(
+                  clientSecret!,
+                  selectedCardId!,
+                  returnUrl,
+                );
+                error = result.error;
+              } else {
+                // New payment via gateway handle (Stripe PaymentElement, Adyen Drop-in, etc.)
+                const result =
+                  await gatewayHandleRef.current!.confirmPayment(returnUrl);
+                error = result.error;
+              }
+
+              if (error) {
+                setGatewayError(error);
+                setProcessing(false);
+                return { error };
+              }
+
+              // Approval-driven gateways (Adyen, PayPal) complete the order
+              // via handleGatewayApproved when their callback fires — don't
+              // call onPaymentComplete here or we'll race with the callback.
+              if (isApprovalDriven) {
+                return {};
+              }
+
+              await onPaymentComplete({
+                type: "session",
+                sessionId: paymentSessionId,
+              });
+              return {};
+            }
+
+            // Direct payment flow (Check, Cash on Delivery, etc.)
+            const paymentResult = await createDirectPayment(
+              cart.id,
+              selectedMethod.id,
             );
-            error = result.error;
-          } else {
-            const result =
-              await gatewayHandleRef.current!.confirmPayment(returnUrl);
-            error = result.error;
-          }
+            if (!paymentResult.success) {
+              const msg = paymentResult.error || t("failedToCreatePayment");
+              setGatewayError(msg);
+              setProcessing(false);
+              return { error: msg };
+            }
 
-          if (error) {
-            setGatewayError(error);
+            await onPaymentComplete({ type: "direct" });
+            return {};
+          } catch {
+            const msg = t("paymentError");
+            setGatewayError(msg);
             setProcessing(false);
-            return { error };
+            return { error: msg };
           }
-
-          // 3. Payment succeeded — complete session and cart
-          await onPaymentComplete(paymentSessionId);
-          return {};
-        } catch {
-          const msg = t("paymentError");
-          setGatewayError(msg);
-          setProcessing(false);
-          return { error: msg };
+        } finally {
+          completionInFlightRef.current = false;
         }
       },
     }),
     [
+      isZeroAmount,
+      selectedMethod,
       paymentSessionId,
-      clientSecret,
+      sessionExternalData,
       selectedCardId,
       useShippingForBilling,
       billAddress,
@@ -363,19 +656,77 @@ export const PaymentSection = forwardRef<
 
   const isAddingNew = selectedCardId === null;
 
+  // ── Zero amount: no payment required ────────────────────────────────
+  if (isZeroAmount) {
+    return (
+      <div>
+        <h2 className="text-lg font-bold text-gray-900">
+          {t("paymentMethod")}
+        </h2>
+        <div className="mt-2 rounded-sm border bg-gray-50 px-4 py-6 text-center">
+          <Info
+            className="w-8 h-8 text-gray-300 mx-auto mb-2"
+            strokeWidth={1.5}
+          />
+          <p className="text-sm text-gray-600">{t("noPaymentRequired")}</p>
+        </div>
+
+        {/* Billing address */}
+        <div className="mt-4">
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <Checkbox
+              checked={useShippingForBilling}
+              onCheckedChange={(checked) =>
+                handleUseShippingChange(checked === true)
+              }
+            />
+            <span className="text-sm text-gray-900">{t("sameAsShipping")}</span>
+          </label>
+          {!useShippingForBilling && (
+            <div className="mt-4">
+              <AddressFormFields
+                address={billAddress}
+                countries={countries}
+                states={billStates}
+                loadingStates={isPendingBill}
+                onChange={updateBillAddress}
+                idPrefix="bill"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── No payment methods available ────────────────────────────────────
+  if (paymentMethods.length === 0) {
+    return (
+      <div>
+        <h2 className="text-lg font-bold text-gray-900">
+          {t("paymentMethod")}
+        </h2>
+        <div className="mt-2 rounded-sm border bg-gray-50 px-4 py-8 text-center">
+          <CreditCard
+            className="w-10 h-10 text-gray-300 mx-auto mb-3"
+            strokeWidth={1.5}
+          />
+          <p className="text-sm text-gray-500">{t("noPaymentMethods")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────
   return (
     <div>
       {/* Section Header */}
       <h2 className="text-lg font-bold text-gray-900">{t("paymentMethod")}</h2>
       <p className="text-sm text-gray-500 mt-0.5">{t("secureTransactions")}</p>
-      {/* Demo-only: Remove for production. */}
-      <p className="text-xs text-gray-400 mb-3">
-        {t("testCardNote", { testCard: "4242 4242 4242 4242" })}
-      </p>
 
       {/* Inline requirement errors from parent */}
       {errors && errors.length > 0 && (
-        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-3">
+        <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3 mb-3 mt-2">
           {errors.map((err, i) => (
             <p key={i} className="text-sm text-red-700">
               {err}
@@ -384,126 +735,253 @@ export const PaymentSection = forwardRef<
         </div>
       )}
 
-      {/* Payment method bordered container — Shopify style */}
+      {/* Payment methods */}
       <RadioGroup
-        value={selectedCardId ?? "__new__"}
-        onValueChange={(val) =>
-          handleCardSelect(val === "__new__" ? null : val)
-        }
-        className="rounded-sm border overflow-hidden gap-0"
+        value={effectiveSelectedMethodId}
+        onValueChange={handleMethodSelect}
+        className="rounded-sm border overflow-hidden gap-0 mt-3"
       >
-        {/* Saved Cards */}
-        {savedCards.length > 0 && (
-          <>
-            {savedCards.map((card, index) => (
-              <label
-                key={card.id}
-                className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
-                  selectedCardId === card.gateway_payment_profile_id
-                    ? "bg-blue-50"
-                    : "bg-white hover:bg-gray-50"
-                } ${index > 0 ? "border-t" : ""}`}
-              >
-                <RadioGroupItem
-                  value={card.gateway_payment_profile_id ?? card.id}
-                />
-                <PaymentIcon
-                  type={getCardIconType(card.brand)}
-                  format="flatRounded"
-                  width={34}
-                />
-                <span className="text-sm text-gray-900 flex-1">
-                  {t("savedCardLabel", {
-                    brand: getCardLabel(card.brand),
-                    digits: card.last4,
-                  })}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {t("cardExpiry", {
-                    month: String(card.month).padStart(2, "0"),
-                    year: String(card.year),
-                  })}
-                </span>
-                {card.default && (
-                  <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                    {t("default")}
+        {paymentMethods.map((pm, index) => {
+          const isSelected = pm.id === effectiveSelectedMethodId;
+          const pmGatewayId = pm.session_required
+            ? resolveGatewayId(pm.type)
+            : null;
+
+          return (
+            <div key={pm.id}>
+              {/* Method header row */}
+              {hasMultipleMethods && (
+                <label
+                  className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors ${
+                    isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                  } ${index > 0 ? "border-t" : ""}`}
+                >
+                  <RadioGroupItem value={pm.id} />
+                  <span className="text-sm font-medium text-gray-900">
+                    {pm.name}
                   </span>
-                )}
-              </label>
-            ))}
+                </label>
+              )}
 
-            {/* Add new card option */}
-            <label
-              className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer border-t transition-colors ${
-                isAddingNew ? "bg-blue-50" : "bg-white hover:bg-gray-50"
-              }`}
-            >
-              <RadioGroupItem value="__new__" />
-              <CreditCard className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
-              <span className="text-sm text-gray-900">
-                {t("addNewPaymentMethod")}
-              </span>
-            </label>
-          </>
-        )}
+              {/* Single method header (no radio, like current behavior) */}
+              {!hasMultipleMethods && (
+                <div className="flex items-center justify-between px-4 py-3.5 bg-blue-50">
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value={pm.id} />
+                    <span className="text-sm font-medium text-gray-900">
+                      {pm.name}
+                    </span>
+                  </div>
+                </div>
+              )}
 
-        {/* Credit card header when no saved cards */}
-        {savedCards.length === 0 && (
-          <div className="flex items-center justify-between px-4 py-3.5 bg-blue-50">
-            <div className="flex items-center gap-3">
-              <RadioGroupItem value="__new__" />
-              <span className="text-sm font-medium text-gray-900">
-                {t("creditCard")}
-              </span>
+              {/* Sub-form for the selected method */}
+              {isSelected && (
+                <div className="border-t bg-gray-50">
+                  {pm.session_required ? (
+                    <>
+                      {/* Stripe: saved cards selector */}
+                      {pmGatewayId === "stripe" && (
+                        <>
+                          {/* Demo-only test card note */}
+                          <p className="text-xs text-gray-400 px-4 pt-3">
+                            {t("testCardNote", {
+                              testCard: "4242 4242 4242 4242",
+                            })}
+                          </p>
+
+                          {savedCards.length > 0 && (
+                            <div className="px-4 pt-3">
+                              <RadioGroup
+                                value={selectedCardId ?? "__new__"}
+                                onValueChange={(val) =>
+                                  handleCardSelect(
+                                    val === "__new__" ? null : val,
+                                  )
+                                }
+                                className="gap-0 rounded-sm border overflow-hidden"
+                              >
+                                {savedCards.map((card, cardIndex) => (
+                                  <label
+                                    key={card.id}
+                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                                      selectedCardId ===
+                                      card.gateway_payment_profile_id
+                                        ? "bg-white"
+                                        : "bg-white hover:bg-gray-50"
+                                    } ${cardIndex > 0 ? "border-t" : ""}`}
+                                  >
+                                    <RadioGroupItem
+                                      value={
+                                        card.gateway_payment_profile_id ??
+                                        card.id
+                                      }
+                                    />
+                                    <PaymentIcon
+                                      type={getCardIconType(card.brand)}
+                                      format="flatRounded"
+                                      width={34}
+                                    />
+                                    <span className="text-sm text-gray-900 flex-1">
+                                      {t("savedCardLabel", {
+                                        brand: getCardLabel(card.brand),
+                                        digits: card.last4,
+                                      })}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {t("cardExpiry", {
+                                        month: String(card.month).padStart(
+                                          2,
+                                          "0",
+                                        ),
+                                        year: String(card.year),
+                                      })}
+                                    </span>
+                                    {card.default && (
+                                      <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                        {t("default")}
+                                      </span>
+                                    )}
+                                  </label>
+                                ))}
+
+                                {/* Add new card */}
+                                <label
+                                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-t transition-colors ${
+                                    isAddingNew
+                                      ? "bg-white"
+                                      : "bg-white hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <RadioGroupItem value="__new__" />
+                                  <CreditCard
+                                    className="w-5 h-5 text-gray-400"
+                                    strokeWidth={1.5}
+                                  />
+                                  <span className="text-sm text-gray-900">
+                                    {t("addNewPaymentMethod")}
+                                  </span>
+                                </label>
+                              </RadioGroup>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Shared: loading spinner */}
+                      {loading && (
+                        <div className="flex items-center justify-center py-10">
+                          <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
+                          <span className="ml-2 text-sm text-gray-500">
+                            {t("loadingPaymentForm")}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Shared: gateway error */}
+                      {gatewayError && !loading && (
+                        <div className="px-4 py-3">
+                          <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3">
+                            <p className="text-sm text-red-700 flex items-center gap-2">
+                              <CircleAlert className="h-4 w-4 flex-shrink-0" />
+                              {gatewayError}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Gateway-specific payment form */}
+                      {!loading &&
+                        sessionExternalData &&
+                        (() => {
+                          const ext = sessionExternalData;
+                          switch (pmGatewayId) {
+                            case "stripe": {
+                              const secret = ext.client_secret as
+                                | string
+                                | undefined;
+                              return (
+                                secret &&
+                                isAddingNew && (
+                                  <div className="p-4">
+                                    <StripePaymentForm
+                                      key={secret}
+                                      clientSecret={secret}
+                                      onReady={handleGatewayReady}
+                                    />
+                                  </div>
+                                )
+                              );
+                            }
+                            case "adyen": {
+                              const sid = ext._external_id as
+                                | string
+                                | undefined;
+                              const sdata = ext.session_data as
+                                | string
+                                | undefined;
+                              return sid && sdata ? (
+                                <div className="p-4">
+                                  <AdyenPaymentForm
+                                    key={sid}
+                                    sessionId={sid}
+                                    sessionData={sdata}
+                                    onReady={handleGatewayReady}
+                                    onApproved={handleGatewayApproved}
+                                  />
+                                </div>
+                              ) : null;
+                            }
+                            case "paypal": {
+                              const orderId = ext.id as string | undefined;
+                              return orderId ? (
+                                <div className="p-4">
+                                  <PayPalPaymentForm
+                                    key={orderId}
+                                    paypalOrderId={orderId}
+                                    currency={cart.currency}
+                                    onReady={handleGatewayReady}
+                                    onApproved={handleGatewayApproved}
+                                  />
+                                </div>
+                              ) : null;
+                            }
+                            default:
+                              return (
+                                <div className="px-4 py-6 text-center">
+                                  <Info
+                                    className="w-8 h-8 text-gray-300 mx-auto mb-2"
+                                    strokeWidth={1.5}
+                                  />
+                                  <p className="text-sm text-gray-500">
+                                    {t("unsupportedGateway")}
+                                  </p>
+                                </div>
+                              );
+                          }
+                        })()}
+                    </>
+                  ) : (
+                    /* ── Direct/manual payment ── */
+                    <div className="px-4 py-4">
+                      {pm.description && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          {pm.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-500">
+                        {t("manualPaymentInfo")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* Card form area — inside the bordered container */}
-        <div className="border-t bg-gray-50">
-          {loading && (
-            <div className="flex items-center justify-center py-10">
-              <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
-              <span className="ml-2 text-sm text-gray-500">
-                {t("loadingPaymentForm")}
-              </span>
-            </div>
-          )}
-
-          {gatewayError && !loading && (
-            <div className="px-4 py-3">
-              <div className="rounded-sm border border-red-300 bg-red-50 px-4 py-3">
-                <p className="text-sm text-red-700 flex items-center gap-2">
-                  <CircleAlert className="h-4 w-4 flex-shrink-0" />
-                  {gatewayError}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {clientSecret && !loading && isAddingNew && (
-            <div className="p-4">
-              <StripePaymentForm
-                key={clientSecret}
-                clientSecret={clientSecret}
-                onReady={handleGatewayReady}
-              />
-            </div>
-          )}
-
-          {!sessionPaymentMethod && !loading && (
-            <div className="px-4 py-8 text-center">
-              <CreditCard
-                className="w-10 h-10 text-gray-300 mx-auto mb-3"
-                strokeWidth={1.5}
-              />
-              <p className="text-sm text-gray-500">{t("noPaymentMethods")}</p>
-            </div>
-          )}
-        </div>
+          );
+        })}
       </RadioGroup>
 
-      {/* Billing address — Shopify checkbox below payment box */}
+      {/* Billing address — below payment box */}
       <div className="mt-4">
         <label className="flex items-center gap-2.5 cursor-pointer">
           <Checkbox
@@ -530,4 +1008,4 @@ export const PaymentSection = forwardRef<
       </div>
     </div>
   );
-});
+}

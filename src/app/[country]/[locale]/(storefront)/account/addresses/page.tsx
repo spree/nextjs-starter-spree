@@ -4,8 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { AddressManagement } from "@/components/addresses/AddressManagement";
 import type { User } from "@/contexts/AuthContext";
 import { getAddresses } from "@/lib/data/addresses";
-import { getCountries } from "@/lib/data/countries";
 import { getCustomer } from "@/lib/data/customer";
+import { getMarketCountries, resolveMarket } from "@/lib/data/markets";
 
 interface AddressesPageProps {
   params: Promise<{ country: string; locale: string }>;
@@ -13,16 +13,20 @@ interface AddressesPageProps {
 
 export default async function AddressesPage({ params }: AddressesPageProps) {
   await connection();
-  const { locale } = await params;
+  const { country: urlCountry, locale } = await params;
   const t = await getTranslations({
     locale: locale as Locale,
     namespace: "account",
   });
-  const [addressResponse, countriesResponse, customer] = await Promise.all([
+  const [addressResponse, market, customer] = await Promise.all([
     getAddresses(),
-    getCountries(),
+    resolveMarket(urlCountry).catch(() => null),
     getCustomer().catch(() => null),
   ]);
+
+  const countriesResponse = market
+    ? await getMarketCountries(market.id).catch(() => ({ data: [] }))
+    : { data: [] };
 
   const addresses = addressResponse.data;
   const countries = countriesResponse.data;

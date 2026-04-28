@@ -13,17 +13,26 @@ export async function getLocaleOptions(): Promise<{
   country?: string;
 }> {
   const config = getConfig();
-  const cookieStore = await cookies();
 
-  const country = cookieStore.get(
-    config.countryCookieName ?? DEFAULT_COUNTRY_COOKIE,
-  )?.value;
-  const locale = cookieStore.get(
-    config.localeCookieName ?? DEFAULT_LOCALE_COOKIE,
-  )?.value;
+  try {
+    const cookieStore = await cookies();
 
-  return {
-    locale: locale || config.defaultLocale,
-    country: country || config.defaultCountry,
-  };
+    const country = cookieStore.get(
+      config.countryCookieName ?? DEFAULT_COUNTRY_COOKIE,
+    )?.value;
+    const locale = cookieStore.get(
+      config.localeCookieName ?? DEFAULT_LOCALE_COOKIE,
+    )?.value;
+
+    return {
+      locale: locale || config.defaultLocale,
+      country: country || config.defaultCountry,
+    };
+  } catch {
+    // During prerendering, cookies() rejects — fall back to config defaults
+    return {
+      locale: config.defaultLocale,
+      country: config.defaultCountry,
+    };
+  }
 }

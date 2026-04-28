@@ -15,7 +15,9 @@
     "email:dev": "email dev --port 4000"
   },
   "dependencies": {
+    "@adyen/adyen-web": "^6.33.0",
     "@next/third-parties": "^16.1.6",
+    "@paypal/react-paypal-js": "^9.1.1",
     "@react-email/components": "^1.0.10",
     "@sentry/nextjs": "^10.38.0",
     "@spree/sdk": "^1.0.0",

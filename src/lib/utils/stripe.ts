@@ -2,10 +2,9 @@ import { loadStripe } from "@stripe/stripe-js";
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
-if (!stripePublishableKey) {
-  console.error(
-    "Missing NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY environment variable. Express checkout will not be available.",
-  );
-}
+/** Whether Stripe is configured (publishable key present in env). */
+export const isStripeConfigured = Boolean(stripePublishableKey);
 
-export const stripePromise = loadStripe(stripePublishableKey ?? "");
+export const stripePromise = stripePublishableKey
+  ? loadStripe(stripePublishableKey)
+  : Promise.resolve(null);

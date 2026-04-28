@@ -18,8 +18,8 @@ interface ConfirmPaymentPageProps {
 /**
  * Intermediate page that offsite payment gateways redirect to.
  *
- * When a customer returns from an offsite gateway (e.g. Stripe 3D Secure),
- * the payment webhook may not have arrived yet. This page:
+ * When a customer returns from an offsite gateway (e.g. Stripe 3D Secure,
+ * Adyen Klarna/iDEAL), the payment webhook may not have arrived yet. This page:
  * 1. Tries to complete the payment session (tells Spree to check with the provider)
  * 2. If successful, completes the order and redirects to order-placed
  * 3. If failed, redirects back to checkout with an error
@@ -39,12 +39,20 @@ export default function ConfirmPaymentPage({
     if (attemptedRef.current) return;
     attemptedRef.current = true;
 
+    // Stripe: ?session={spreeSessionId}
+    // Adyen:  ?sessionId={adyenSessionId}&redirectResult=...
     const sessionId = searchParams.get("session");
+    const sessionResult = searchParams.get("sessionResult");
+    const redirectResult = searchParams.get("redirectResult");
+    const adyenSessionId = searchParams.get("sessionId");
 
     async function confirmAndRedirect() {
       const result = await confirmPaymentAndCompleteCart(
         cartId,
         sessionId ?? undefined,
+        sessionResult ?? undefined,
+        redirectResult ?? undefined,
+        adyenSessionId ?? undefined,
       );
 
       if (result.success) {

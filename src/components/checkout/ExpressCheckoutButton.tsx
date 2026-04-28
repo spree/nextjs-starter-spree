@@ -30,7 +30,7 @@ import {
   buildSpreeAddress,
   parseName,
 } from "@/lib/utils/express-checkout";
-import { stripePromise } from "@/lib/utils/stripe";
+import { isStripeConfigured, stripePromise } from "@/lib/utils/stripe";
 
 export interface ExpressCheckoutButtonProps {
   cart: Cart;
@@ -474,7 +474,7 @@ function ExpressCheckoutInner({
   );
 }
 
-export function ExpressCheckoutButton({
+function ExpressCheckoutWithElements({
   cart,
   basePath,
   onComplete,
@@ -519,4 +519,20 @@ export function ExpressCheckoutButton({
       />
     </Elements>
   );
+}
+
+export function ExpressCheckoutButton(props: ExpressCheckoutButtonProps) {
+  const { onAvailabilityChange } = props;
+
+  useEffect(() => {
+    if (!isStripeConfigured) {
+      onAvailabilityChange?.(false);
+    }
+  }, [onAvailabilityChange]);
+
+  if (!isStripeConfigured) {
+    return null;
+  }
+
+  return <ExpressCheckoutWithElements {...props} />;
 }

@@ -79,8 +79,37 @@ describe("ConfirmPaymentPage", () => {
     });
 
     await waitFor(() => {
-      expect(mockConfirm).toHaveBeenCalledWith("cart-1", "session-1");
+      expect(mockConfirm).toHaveBeenCalledWith(
+        "cart-1",
+        "session-1",
+        undefined,
+        undefined,
+        undefined,
+      );
       expect(mockReplace).toHaveBeenCalledWith("/us/en/order-placed/cart-1");
+    });
+  });
+
+  it("passes sessionResult query param to confirmPaymentAndCompleteCart", async () => {
+    mockSearchParams.set("session", "session-1");
+    mockSearchParams.set("sessionResult", "eyJhYmMiOiJ4eXoifQ==");
+    mockConfirm.mockResolvedValue({
+      success: true as const,
+      order: { id: "cart-1" },
+    });
+
+    await act(async () => {
+      renderPage();
+    });
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        "cart-1",
+        "session-1",
+        "eyJhYmMiOiJ4eXoifQ==",
+        undefined,
+        undefined,
+      );
     });
   });
 
@@ -113,7 +142,13 @@ describe("ConfirmPaymentPage", () => {
     });
 
     await waitFor(() => {
-      expect(mockConfirm).toHaveBeenCalledWith("cart-1", undefined);
+      expect(mockConfirm).toHaveBeenCalledWith(
+        "cart-1",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
       expect(mockReplace).toHaveBeenCalledWith("/us/en/order-placed/cart-1");
     });
   });

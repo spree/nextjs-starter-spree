@@ -106,11 +106,9 @@ export async function expressCheckoutCreateSession(
   paymentMethodId: string,
   gatewayPaymentMethodId: string,
 ): ReturnType<typeof createCheckoutPaymentSession> {
-  return createCheckoutPaymentSession(
-    cartId,
-    paymentMethodId,
-    gatewayPaymentMethodId,
-  );
+  return createCheckoutPaymentSession(cartId, paymentMethodId, {
+    stripe_payment_method_id: gatewayPaymentMethodId,
+  });
 }
 
 export async function expressCheckoutFinalize(

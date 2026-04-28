@@ -70,10 +70,12 @@ describe("payment server actions", () => {
       expect(result).toEqual({ success: true, session: mockSession });
     });
 
-    it("passes stripe payment method id in external_data", async () => {
+    it("passes external_data when provided", async () => {
       mockClient.carts.paymentSessions.create.mockResolvedValue(mockSession);
 
-      await createCheckoutPaymentSession("cart-1", "pm-1", "spm_123");
+      await createCheckoutPaymentSession("cart-1", "pm-1", {
+        stripe_payment_method_id: "spm_123",
+      });
 
       expect(mockClient.carts.paymentSessions.create).toHaveBeenCalledWith(
         "cart-1",
@@ -129,12 +131,12 @@ describe("payment server actions", () => {
       );
     });
 
-    it("passes both amount and stripe payment method id", async () => {
+    it("passes amount and external_data together", async () => {
       mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
 
       await updateCheckoutPaymentSession("cart-1", "session-1", {
         amount: "48.99",
-        stripePaymentMethodId: "spm_123",
+        externalData: { stripe_payment_method_id: "spm_123" },
       });
 
       expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
@@ -148,12 +150,12 @@ describe("payment server actions", () => {
       );
     });
 
-    it("clears external_data when stripePaymentMethodId is null", async () => {
+    it("preserves null values in external_data (clears stale stripe_payment_method_id)", async () => {
       mockClient.carts.paymentSessions.update.mockResolvedValue(mockSession);
 
       await updateCheckoutPaymentSession("cart-1", "session-1", {
         amount: "48.99",
-        stripePaymentMethodId: null,
+        externalData: { stripe_payment_method_id: null },
       });
 
       expect(mockClient.carts.paymentSessions.update).toHaveBeenCalledWith(
