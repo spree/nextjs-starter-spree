@@ -27,6 +27,7 @@ const GATEWAY_TYPE_MAP: Record<string, GatewayId> = {
   "Spree::Gateway::PayPalExpress": "paypal",
   // Razorpay (spree_razorpay_checkout gem)
   "SpreeRazorpayCheckout::Gateway": "razorpay",
+  "Spree::Gateway::RazorpayGateway": "razorpay",
 };
 
 /**
