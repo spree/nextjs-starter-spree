@@ -63,9 +63,8 @@ export function OrderTotals({ order }: OrderTotalsProps) {
         </div>
       ) : null}
 
-      {order.amount_due &&
-        order.amount_due !== order.total &&
-        Number.parseFloat(order.amount_due) > 0 && (
+      {Number.parseFloat(order.amount_due) > 0 &&
+        order.amount_due !== order.total && (
           <div className="flex justify-between pt-2 border-t border-gray-200">
             <span className="font-semibold text-gray-900">
               {t("amountDue")}
