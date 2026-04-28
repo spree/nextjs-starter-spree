@@ -180,7 +180,15 @@ export function PaymentSection({
     [],
   );
 
+  // Target amount the gateway must charge. Gift cards reduce `amount_due`
+  // but not `total`, so watching `total` alone misses gift-card changes and
+  // the gateway keeps the original (pre-gift-card) PaymentIntent.
+  const paymentTarget = cart.amount_due ?? cart.total;
+
   // ── Session management ──────────────────────────────────────────────
+  // Always create a fresh PaymentSession on every cart / card / method change
+  // so the gateway charges exactly `paymentTarget`. Updating in place is not
+  // safe — the user could end up charged the wrong amount.
   const createSession = useCallback(
     async (cardId: string | null, method: PaymentMethod) => {
       const currentGatewayId = resolveGatewayId(method.type);
@@ -241,8 +249,8 @@ export function PaymentSection({
     [cart.id, t],
   );
 
-  // Track the cart total so we can recreate the session when it changes
-  const lastTotalRef = useRef<string | null>(null);
+  // Track the payment target so we can recreate the session when it changes.
+  const lastPaymentTargetRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
 
   // On mount: load saved cards (if authenticated + session method), then create initial session
@@ -279,7 +287,7 @@ export function PaymentSection({
       }
 
       selectedCardRef.current = initialCardId;
-      lastTotalRef.current = cart.total;
+      lastPaymentTargetRef.current = paymentTarget;
 
       await createSession(initialCardId, selectedMethod);
     };
@@ -290,19 +298,20 @@ export function PaymentSection({
     isSessionBased,
     isAuthenticated,
     createSession,
-    cart.total,
+    paymentTarget,
     isZeroAmount,
   ]);
 
-  // When cart total changes, recreate the payment session
+  // When the payment target changes (shipping rate, coupon, gift card, etc.),
+  // recreate the payment session so the amount matches the new total.
   useEffect(() => {
     if (!initRef.current) return;
     if (!isSessionBased || !selectedMethod) return;
-    if (lastTotalRef.current === cart.total) return;
+    if (lastPaymentTargetRef.current === paymentTarget) return;
 
-    lastTotalRef.current = cart.total;
+    lastPaymentTargetRef.current = paymentTarget;
     createSession(selectedCardRef.current, selectedMethod);
-  }, [cart.total, createSession, isSessionBased, selectedMethod]);
+  }, [paymentTarget, createSession, isSessionBased, selectedMethod]);
 
   const [billStates, isPendingBill] = useCountryStates(
     billAddress.country_iso,
@@ -360,7 +369,7 @@ export function PaymentSection({
           }
 
           selectedCardRef.current = cardId;
-          lastTotalRef.current = cart.total;
+          lastPaymentTargetRef.current = paymentTarget;
           await createSession(cardId, newMethod);
         };
         init();
