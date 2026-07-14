@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -76,13 +77,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [router]);
 
+  // Timestamp of the last session sync, used to throttle focus-driven re-syncs.
+  const lastSyncRef = useRef(0);
+
   // Initialize auth state
   useEffect(() => {
     const initAuth = async () => {
+      lastSyncRef.current = Date.now();
       await refreshUser();
       setLoading(false);
     };
     initAuth();
+  }, [refreshUser]);
+
+  // Re-sync the session when the tab regains focus after being idle. The JWT
+  // can expire while the tab is backgrounded; refreshing on return renews it
+  // (or treats the session as logged out) without a manual reload. Throttled
+  // so ordinary focus churn doesn't hit the server on every event.
+  useEffect(() => {
+    const RESYNC_THROTTLE_MS = 30_000;
+    const maybeResync = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastSyncRef.current < RESYNC_THROTTLE_MS) return;
+      lastSyncRef.current = Date.now();
+      void refreshUser();
+    };
+    document.addEventListener("visibilitychange", maybeResync);
+    window.addEventListener("focus", maybeResync);
+    return () => {
+      document.removeEventListener("visibilitychange", maybeResync);
+      window.removeEventListener("focus", maybeResync);
+    };
   }, [refreshUser]);
 
   // Login
