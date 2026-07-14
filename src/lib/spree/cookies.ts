@@ -8,6 +8,22 @@ const CART_TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
+/**
+ * Whether the current execution context may write cookies. Next.js allows
+ * cookie mutation only in Server Actions and Route Handlers, never during a
+ * Server Component render. We probe with a harmless deletion of a throwaway
+ * cookie: it succeeds in a writable context and throws otherwise.
+ */
+export async function canPersistCookies(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("_spree_write_probe", "", { maxAge: -1, path: "/" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function getCartCookieName(): string {
   try {
     return getConfig().cartCookieName ?? DEFAULT_CART_COOKIE;

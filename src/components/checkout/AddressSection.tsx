@@ -95,7 +95,7 @@ export function AddressSection({
       ? initialSavedAddresses[0]
       : undefined;
 
-  const [email, setEmail] = useState(cart.email || "");
+  const [email, setEmail] = useState(cart.email || user?.email || "");
   const defaultCountryIso = countries[0]?.iso ?? "";
 
   const [shipAddress, setShipAddress] = useState<AddressFormData>(() => {
@@ -274,10 +274,13 @@ export function AddressSection({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onBlur={handleEmailBlur}
-          disabled={isAuthenticated}
+          // Lock to the account email only when we actually have one — never
+          // leave the field both disabled and blank (a stale session would
+          // otherwise make checkout impossible).
+          disabled={isAuthenticated && !!email}
           placeholder={t("emailAddress")}
         />
-        {isAuthenticated && (
+        {isAuthenticated && !!email && (
           <p className="text-xs text-gray-500 mt-1.5">
             {t("usingAccountEmail")}
           </p>

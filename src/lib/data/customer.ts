@@ -7,6 +7,7 @@ import {
   clearAccessToken,
   clearCartCookies,
   clearRefreshToken,
+  ensureFreshSession,
   getAccessToken,
   getCartId,
   getCartToken,
@@ -17,6 +18,19 @@ import {
   withAuthRefresh,
 } from "@/lib/spree";
 import { actionResult } from "./utils";
+
+/**
+ * Clear auth cookies, tolerating a read-only (Server Component) context where
+ * cookie writes are not permitted.
+ */
+async function clearAuthTokens() {
+  try {
+    await clearAccessToken();
+    await clearRefreshToken();
+  } catch {
+    // Best-effort — not writable during a Server Component render.
+  }
+}
 
 /**
  * Post-auth bootstrap: store tokens, associate guest cart, invalidate caches.
@@ -62,11 +76,28 @@ export async function getCustomer(): Promise<Customer | null> {
       error instanceof SpreeError &&
       (error.status === 401 || error.status === 403)
     ) {
-      await clearAccessToken();
-      await clearRefreshToken();
+      await clearAuthTokens();
     }
     return null;
   }
+}
+
+/**
+ * Reconcile the customer session on the client: refresh an expired JWT when
+ * possible, then return the current customer. `refreshed` is true when a
+ * transparent token refresh occurred, signalling the client to re-render
+ * server components so their data reflects the renewed session.
+ */
+export async function syncSession(): Promise<{
+  customer: Customer | null;
+  refreshed: boolean;
+}> {
+  const state = await ensureFreshSession();
+  if (state === "anonymous" || state === "expired") {
+    return { customer: null, refreshed: false };
+  }
+  const customer = await getCustomer();
+  return { customer, refreshed: state === "refreshed" };
 }
 
 /**
@@ -204,8 +235,7 @@ export async function updateCustomer(data: {
         error instanceof SpreeError &&
         (error.status === 401 || error.status === 403)
       ) {
-        await clearAccessToken();
-        await clearRefreshToken();
+        await clearAuthTokens();
       }
       throw error;
     }

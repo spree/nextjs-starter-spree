@@ -11,10 +11,10 @@ import {
   useState,
 } from "react";
 import {
-  getCustomer,
   login as loginAction,
   logout as logoutAction,
   register as registerAction,
+  syncSession,
 } from "@/lib/data/customer";
 
 export interface User {
@@ -59,15 +59,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Fetch current user from server
+  // Fetch current user from server, refreshing an expired JWT when possible.
+  // A transparent refresh persists a new token via a Server Action (cookie
+  // writes aren't allowed during a Server Component render), so re-render the
+  // server components afterwards to replace any data they fetched with the
+  // stale session.
   const refreshUser = useCallback(async () => {
     try {
-      const customer = await getCustomer();
+      const { customer, refreshed } = await syncSession();
       setUser(customer ? toUser(customer) : null);
+      if (refreshed) {
+        router.refresh();
+      }
     } catch {
       setUser(null);
     }
-  }, []);
+  }, [router]);
 
   // Initialize auth state
   useEffect(() => {

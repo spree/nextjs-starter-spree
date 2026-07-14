@@ -1,10 +1,16 @@
 // Configuration
 
 // Auth helpers (token refresh, cookie-based auth)
-export { getAuthOptions, withAuthRefresh } from "./auth-helpers";
+export {
+  ensureFreshSession,
+  getAuthOptions,
+  type SessionState,
+  withAuthRefresh,
+} from "./auth-helpers";
 export { getClient, getConfig, initSpreeNext } from "./config";
 // Cookie management
 export {
+  canPersistCookies,
   clearAccessToken,
   clearCartCookies,
   clearRefreshToken,
@@ -18,6 +24,8 @@ export {
   setCartCookies,
   setRefreshToken,
 } from "./cookies";
+// JWT helpers (expiry inspection, no signature verification)
+export { decodeJwtExp, isJwtExpired } from "./jwt";
 // Locale resolution (reads country/locale from cookies)
 export { getLocaleOptions } from "./locale";
 export type { SpreeNextConfig, SpreeNextOptions } from "./types";
