@@ -274,13 +274,14 @@ export function AddressSection({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onBlur={handleEmailBlur}
-          // Lock to the account email only when we actually have one — never
-          // leave the field both disabled and blank (a stale session would
-          // otherwise make checkout impossible).
-          disabled={isAuthenticated && !!email}
+          // Lock to the account email only when we actually have one — key off
+          // the account email, not the live input, so an authenticated user
+          // without an email on file can still type (and a stale session never
+          // leaves the field both disabled and blank, blocking checkout).
+          disabled={isAuthenticated && !!user?.email}
           placeholder={t("emailAddress")}
         />
-        {isAuthenticated && !!email && (
+        {isAuthenticated && !!user?.email && (
           <p className="text-xs text-gray-500 mt-1.5">
             {t("usingAccountEmail")}
           </p>

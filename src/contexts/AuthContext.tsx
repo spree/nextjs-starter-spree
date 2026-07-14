@@ -67,13 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // stale session.
   const refreshUser = useCallback(async () => {
     try {
-      const { customer, refreshed } = await syncSession();
+      const { customer, refreshed, stale } = await syncSession();
+      // A transient fetch failure returns `stale` — keep the current session
+      // rather than flashing the user to logged-out on a blip.
+      if (stale) return;
       setUser(customer ? toUser(customer) : null);
       if (refreshed) {
         router.refresh();
       }
     } catch {
-      setUser(null);
+      // Unexpected failure — leave the existing session untouched.
     }
   }, [router]);
 

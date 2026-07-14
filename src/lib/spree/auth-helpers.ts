@@ -92,6 +92,13 @@ export async function ensureFreshSession(): Promise<SessionState> {
   return "expired";
 }
 
+// Coalesces concurrent refreshes that share the same rotated refresh token.
+// The backend invalidates a refresh token once it's used, so two in-flight
+// refreshes racing on the same token would leave the loser rotating a
+// now-stale token and clearing the freshly persisted session. Keyed by the
+// token value so distinct sessions never share a refresh.
+const refreshInFlight = new Map<string, Promise<string | null>>();
+
 /**
  * Try to refresh the access token using the stored refresh token.
  * Returns the new access token on success, null on failure.
@@ -108,21 +115,31 @@ async function tryRefresh(): Promise<string | null> {
   // Don't rotate a refresh token we have no way to persist.
   if (!(await canPersistCookies())) return null;
 
-  try {
-    const refreshed = await getClient().auth.refresh({
-      refresh_token: refreshToken,
-    });
-    await setAccessToken(refreshed.token);
-    await setRefreshToken(refreshed.refresh_token);
-    return refreshed.token;
-  } catch {
-    // Refresh token is invalid/expired — clear it
-    await clearAuthCookies();
-    return null;
-  }
+  const existing = refreshInFlight.get(refreshToken);
+  if (existing) return existing;
+
+  const refresh = (async () => {
+    try {
+      const refreshed = await getClient().auth.refresh({
+        refresh_token: refreshToken,
+      });
+      await setAccessToken(refreshed.token);
+      await setRefreshToken(refreshed.refresh_token);
+      return refreshed.token;
+    } catch {
+      // Refresh token is invalid/expired — clear it
+      await clearAuthCookies();
+      return null;
+    } finally {
+      refreshInFlight.delete(refreshToken);
+    }
+  })();
+
+  refreshInFlight.set(refreshToken, refresh);
+  return refresh;
 }
 
-async function clearAuthCookies(): Promise<void> {
+export async function clearAuthCookies(): Promise<void> {
   try {
     await clearAccessToken();
     await clearRefreshToken();
