@@ -5,6 +5,7 @@ export {
   clearAuthCookies,
   ensureFreshSession,
   getAuthOptions,
+  isAuthError,
   type SessionState,
   withAuthRefresh,
 } from "./auth-helpers";

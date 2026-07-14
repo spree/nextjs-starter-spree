@@ -1,7 +1,6 @@
 "use server";
 
 import type { Customer } from "@spree/sdk";
-import { SpreeError } from "@spree/sdk";
 import { updateTag } from "next/cache";
 import {
   clearAccessToken,
@@ -14,23 +13,12 @@ import {
   getCartToken,
   getClient,
   getRefreshToken,
+  isAuthError,
   setAccessToken,
   setRefreshToken,
   withAuthRefresh,
 } from "@/lib/spree";
 import { actionResult } from "./utils";
-
-/**
- * Whether an error is a confirmed authentication failure (401/403) rather than
- * a transient network or server error. Only auth failures should log the user
- * out; transient failures must preserve the session.
- */
-function isAuthError(error: unknown): boolean {
-  return (
-    error instanceof SpreeError &&
-    (error.status === 401 || error.status === 403)
-  );
-}
 
 /**
  * Fetch the current customer with automatic token refresh. Throws on any
@@ -103,6 +91,11 @@ export async function syncSession(): Promise<{
   if (state === "anonymous" || state === "expired") {
     return { customer: null, refreshed: false };
   }
+  if (state === "stale") {
+    // The expired JWT couldn't be refreshed due to a transient failure — keep
+    // the current client session rather than logging out on a blip.
+    return { customer: null, refreshed: false, stale: true };
+  }
 
   try {
     const customer = await fetchCustomer();
@@ -112,8 +105,9 @@ export async function syncSession(): Promise<{
       await clearAuthCookies();
       return { customer: null, refreshed: false };
     }
-    // Transient failure — signal the client to preserve its current session.
-    return { customer: null, refreshed: false, stale: true };
+    // Transient failure — preserve the session. Still surface a rotation that
+    // did occur so the client re-renders server components under the new token.
+    return { customer: null, refreshed: state === "refreshed", stale: true };
   }
 }
 

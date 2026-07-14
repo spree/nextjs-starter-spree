@@ -25,6 +25,12 @@ vi.mock("@/lib/spree", () => ({
     },
   ),
   ensureFreshSession: vi.fn().mockResolvedValue("valid"),
+  isAuthError: (error: unknown) =>
+    !!error &&
+    typeof error === "object" &&
+    "status" in error &&
+    ((error as { status?: number }).status === 401 ||
+      (error as { status?: number }).status === 403),
   getAccessToken: vi.fn().mockResolvedValue("jwt-token"),
   setAccessToken: vi.fn(),
   clearAccessToken: vi.fn(),
@@ -187,6 +193,41 @@ describe("customer server actions", () => {
       });
       // A transient failure must not clear the session.
       expect(clearAuthCookies).not.toHaveBeenCalled();
+    });
+
+    it("preserves the session without fetching when the refresh is transiently stale", async () => {
+      const { ensureFreshSession, clearAuthCookies } = await import(
+        "@/lib/spree"
+      );
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "stale",
+      );
+
+      const result = await syncSession();
+
+      expect(result).toEqual({
+        customer: null,
+        refreshed: false,
+        stale: true,
+      });
+      expect(mockClient.customer.get).not.toHaveBeenCalled();
+      expect(clearAuthCookies).not.toHaveBeenCalled();
+    });
+
+    it("keeps the refresh signal when a rotation is followed by a transient fetch failure", async () => {
+      const { ensureFreshSession } = await import("@/lib/spree");
+      (ensureFreshSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        "refreshed",
+      );
+      mockClient.customer.get.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await syncSession();
+
+      expect(result).toEqual({
+        customer: null,
+        refreshed: true,
+        stale: true,
+      });
     });
 
     it("logs out (no stale flag) when the fetch returns an auth error", async () => {
