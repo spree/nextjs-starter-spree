@@ -96,10 +96,11 @@ export function AddressSection({
       : undefined;
 
   const [email, setEmail] = useState(cart.email || user?.email || "");
-  // Lock the email field to the account email only when one actually exists —
-  // key off the account email, not the live input, so an authenticated user
-  // without an email on file can still type (and a stale session never leaves
-  // the field both disabled and blank, blocking checkout).
+  // Lock the email field only once the account email is actually loaded. The
+  // server-derived `isAuthenticated` can be true while the AuthContext `user` is
+  // still null — during hydration, or after a transient sync is preserved as
+  // `stale` — so keying off `isAuthenticated` alone would leave the field
+  // disabled and blank, blocking checkout. Gate on the account email instead.
   const hasAccountEmail = isAuthenticated && !!user?.email;
   const defaultCountryIso = countries[0]?.iso ?? "";
 
