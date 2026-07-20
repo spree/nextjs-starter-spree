@@ -1,14 +1,45 @@
+# [Spree Commerce Next.js Storefront](https://spreecommerce.org)
+
+[Live Demo](https://demo.spreecommerce.org) 
+·
+[TypeScript SDK](https://www.npmjs.com/package/@spree/sdk)
+·
+[API Reference](https://spreecommerce.org/docs/api-reference/)
+·
+[Documentation](https://spreecommerce.org/docs/)
+·
+[Spree Website](https://spreecommerce.org)
+·
+[For Enterprise](https://spreecommerce.org/enterprise/)
+
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
 
-# Spree Storefront
-
-A production-ready, headless ecommerce storefront for [Spree Commerce](https://spreecommerce.org), built with Next.js 16, React 19, and the [Spree REST API](https://spreecommerce.org/docs/api-reference). Open source (MIT) and free to fork and customize.
+A production-ready, headless eCommerce storefront for [Spree Commerce](https://spreecommerce.org), built with Next.js 16, React 19, and the [Spree REST API](https://spreecommerce.org/docs/api-reference). Open source (MIT) and free to fork and customize.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/spree/storefront)
 
-[Live Demo](https://demo.spreecommerce.org) | [Quickstart Docs](https://spreecommerce.org/docs/developer/storefront/nextjs/quickstart) | [TypeScript SDK](https://www.npmjs.com/package/@spree/sdk)
+If you like what you see, consider giving this repo a star ⭐
+
+Thank you for supporting Spree open source ❤️
+
+## Get Started Locally
+
+Get started locally within a few minutes with a single command scaffolding a full Spree project with Next.js Storefront (optional).
+
+```bash
+npx create-spree-app@latest my-store
+```
+
+The CLI walks you through an interactive setup:
+
+1. Choose Full-stack (Backend + Next.js Storefront) or Backend only
+2. Optionally load sample data (products, categories, images)
+
+Once complete, your store should be running at http://localhost:3000/admin. The port can be different if `3000` is already used on your system. You need to have Node.js 20+ and Docker running.
+
+Read the [installation docs](https://spreecommerce.org/docs/developer/getting-started/quickstart).
 
 ## Why This Storefront
 
