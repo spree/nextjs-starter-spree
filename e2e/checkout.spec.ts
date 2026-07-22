@@ -10,7 +10,7 @@ import { expect, type FrameLocator, type Page, test } from "@playwright/test";
  * Backend: e2e-backend/docker-compose.yml (Spree 5.4.3.1 with sample data).
  * Payments: real Stripe test mode (pk_test_...) — card 4242 4242 4242 4242.
  *
- * Run with: npm run e2e:up && npm run test:e2e
+ * Run with: pnpm e2e:up && pnpm test:e2e
  */
 
 const TEST_CARD = "4242424242424242";

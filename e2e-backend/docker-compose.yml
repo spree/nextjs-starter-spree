@@ -8,8 +8,8 @@
 #
 # Usage (driven by ../scripts/e2e/bootstrap-spree.sh):
 #   docker compose up -d --wait
-#   npx @spree/cli seed && npx @spree/cli sample-data
-#   npx @spree/cli api-key create --name E2E --type publishable
+#   ../node_modules/.bin/spree seed && ../node_modules/.bin/spree sample-data
+#   ../node_modules/.bin/spree api-key create --name E2E --type publishable
 #
 # Spree exposes the storefront API on http://localhost:4000/api/v3/store.
 # Postgres and Redis are reachable only on the compose network — use

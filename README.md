@@ -83,7 +83,8 @@ Browser → Server Action → @spree/sdk → Spree API
 
 ### Prerequisites
 
-- Node.js 20+ (required for Next.js 16)
+- Node.js 22.13+
+- pnpm 11 (Corepack can install the version pinned by this project)
 - A running Spree Commerce 5.4+
 
 ### Installation
@@ -91,7 +92,8 @@ Browser → Server Action → @spree/sdk → Spree API
 1. Install dependencies:
 
 ```bash
-npm install
+corepack enable
+pnpm install --frozen-lockfile
 ```
 
 2. Copy the environment file and configure:
@@ -132,7 +134,7 @@ SPREE_PUBLISHABLE_KEY=your_publishable_api_key_here
 ### Development
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser.
@@ -150,7 +152,7 @@ brew install cloudflared
 2. Start the dev server normally (HTTP on port 3001):
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 3. In a second terminal, expose it through a quick tunnel:
@@ -172,8 +174,8 @@ The output will contain a URL like `https://<random-words>.trycloudflare.com`.
 ### Production Build
 
 ```bash
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 ### Testing
@@ -181,8 +183,8 @@ npm start
 Unit and integration tests run through Vitest:
 
 ```bash
-npm test            # one-shot
-npm run test:watch  # watch mode
+pnpm test        # one-shot
+pnpm test:watch  # watch mode
 ```
 
 End-to-end tests run through Playwright against a real Spree backend booted in Docker. The compose file at `e2e-backend/docker-compose.yml` ships Postgres + Redis + the official `ghcr.io/spree/spree:5.4.3.1` image — no `create-spree-app` setup required. Seeding and API-key creation go through the official [`@spree/cli`](https://spreecommerce.org/docs/developer/cli/quickstart) (`spree seed`, `spree sample-data`, `spree api-key create`), installed as a dev dependency.
@@ -197,16 +199,16 @@ export STRIPE_SECRET_KEY=sk_test_…
 
 # 2. Boot Spree + Postgres + Redis, seed sample data, register a Stripe
 #    payment gateway, mint a publishable key, and write .env.e2e.
-npm run e2e:up
+pnpm e2e:up
 
 # 3. Run the suite. Playwright boots `next dev` against .env.e2e.
-npm run test:e2e
+pnpm test:e2e
 
 # Optional: interactive UI mode.
-npm run test:e2e:ui
+pnpm test:e2e:ui
 
 # Tear everything down.
-npm run e2e:down
+pnpm e2e:down
 ```
 
 The checkout test pays with card `4242 4242 4242 4242` through Stripe's [test mode](https://docs.stripe.com/keys). PaymentIntents land in whichever Stripe test account owns the keys you exported. In CI, set `STRIPE_SECRET_KEY` as a repository secret and `STRIPE_PUBLISHABLE_KEY` as a repository variable (Settings → Secrets and variables → Actions). The E2E job skips itself on fork PRs, where GitHub never exposes repository secrets.
@@ -391,7 +393,7 @@ Templates are in `src/lib/emails/` as React components:
 
 ### Previewing Templates
 
-Run the storefront in development (`npm run dev`) and visit [http://localhost:3001/dev/emails](http://localhost:3001/dev/emails). Each template is rendered with sample data using `@react-email/render`; the route is gated to non-production environments.
+Run the storefront in development (`pnpm dev`) and visit [http://localhost:3001/dev/emails](http://localhost:3001/dev/emails). Each template is rendered with sample data using `@react-email/render`; the route is gated to non-production environments.
 
 ### How It Works
 

@@ -569,16 +569,16 @@ This project uses [Biome](https://biomejs.dev/) for linting and formatting (not 
 
 ```bash
 # Lint the codebase
-npm run lint
+pnpm lint
 
 # Format all files
-npm run format
+pnpm format
 
 # Run both lint and format checks
-npm run check
+pnpm check
 ```
 
-Always use `npm run check` before committing changes and fix any issues with `npm run format`.
+Always use `pnpm check` before committing changes and fix any issues with `pnpm format`.
 
 ### Configuration
 
