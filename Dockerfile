@@ -26,20 +26,26 @@
 ARG NODE_VERSION=22-alpine
 
 
+# ---- base: pin pnpm from package.json via Corepack ----
+FROM node:${NODE_VERSION} AS base
+RUN corepack enable
+
+
 # ---- deps: install production+dev dependencies for the build ----
-FROM node:${NODE_VERSION} AS deps
+FROM base AS deps
 WORKDIR /app
 
 # libc6-compat keeps a few native modules happy on Alpine (musl).
 RUN apk add --no-cache libc6-compat
 
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --include=dev
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm config set store-dir /pnpm/store && \
+    CI=true pnpm install --frozen-lockfile
 
 
 # ---- builder: compile the Next.js app ----
-FROM node:${NODE_VERSION} AS builder
+FROM base AS builder
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -69,7 +75,7 @@ COPY . .
 
 RUN --mount=type=secret,id=sentry_auth_token,required=false \
     SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)" \
-    npm run build
+    pnpm build
 
 
 # ---- runner: minimal runtime image ----

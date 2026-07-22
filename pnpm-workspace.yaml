@@ -1,0 +1,22 @@
+packages:
+  - "."
+
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
+# Apply downgrade checks to releases from the last year. Older versions are
+# treated as established, avoiding one-off exceptions for legacy packages.
+trustPolicyIgnoreAfter: 525600
+dangerouslyAllowAllBuilds: false
+
+overrides:
+  minimatch: ^10.2.1
+  postcss: ^8.5.10
+  mute-stream: ^3.0.0
+
+allowBuilds:
+  "@parcel/watcher": true
+  "@sentry/cli": true
+  "@swc/core": true
+  esbuild: true
+  lefthook: true
+  sharp: false

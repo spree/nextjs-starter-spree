@@ -19,7 +19,13 @@ set -euo pipefail
 readonly REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 readonly BACKEND_DIR="$REPO_ROOT/e2e-backend"
 readonly ENV_FILE="$REPO_ROOT/.env.e2e"
+readonly SPREE_CLI="$REPO_ROOT/node_modules/.bin/spree"
 readonly SPREE_URL="http://localhost:4000"
+
+if [[ ! -x "$SPREE_CLI" ]]; then
+  echo "Spree CLI not found. Run 'pnpm install --frozen-lockfile' first." >&2
+  exit 1
+fi
 
 # Stripe test-mode API keys. Both must come from the SAME Stripe sandbox
 # account — a mismatched pair makes Stripe.js fail to confirm the
@@ -29,7 +35,7 @@ readonly SPREE_URL="http://localhost:4000"
 #
 #   export STRIPE_PUBLISHABLE_KEY=pk_test_…
 #   export STRIPE_SECRET_KEY=sk_test_…
-#   npm run e2e:up
+#   pnpm e2e:up
 #
 # The secret key is never committed: GitHub's push protection flags any
 # sk_test_ literal as a secret regardless of provenance. In CI,
@@ -61,7 +67,7 @@ fi
 # happen from the backend dir.
 cd "$BACKEND_DIR"
 
-# Both callers (`npm run e2e:up` and CI) already gate on the compose
+# Both callers (`pnpm e2e:up` and CI) already gate on the compose
 # healthcheck via `up -d --wait`; this guard only covers running the
 # script standalone against a still-booting stack.
 echo "==> Waiting for Spree to accept HTTP requests at $SPREE_URL/up"
@@ -71,10 +77,10 @@ if ! curl -fsS --retry 60 --retry-delay 2 --retry-all-errors "$SPREE_URL/up" >/d
 fi
 
 echo "==> Seeding default Spree data (spree seed)"
-npx @spree/cli seed
+"$SPREE_CLI" seed
 
 echo "==> Loading sample products and categories (spree sample-data)"
-npx @spree/cli sample-data
+"$SPREE_CLI" sample-data
 
 # Vanilla Spree ships without any payment gateway configured. The Admin API
 # can create one declaratively, but that endpoint only exists from Spree 5.5
@@ -107,7 +113,7 @@ puts "OK: gateway #{gateway.id} (#{gateway.name})"
 RUBY
 
 echo "==> Creating publishable API key (spree api-key create)"
-api_key_output=$(npx @spree/cli api-key create --name E2E --type publishable)
+api_key_output=$("$SPREE_CLI" api-key create --name E2E --type publishable)
 
 publishable_key=$(printf '%s\n' "$api_key_output" | grep -oE 'pk_[A-Za-z0-9_-]+' | head -n 1)
 if [[ -z "$publishable_key" ]]; then

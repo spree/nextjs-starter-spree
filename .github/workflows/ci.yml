@@ -18,12 +18,13 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run check
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
 
   typecheck:
     name: Type Check
@@ -32,12 +33,13 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npx tsc --noEmit
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
 
   test:
     name: Unit Tests
@@ -46,12 +48,13 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run test
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
 
   e2e:
     name: E2E (Playwright + Spree)
@@ -80,11 +83,12 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       # Key the browser cache on the Playwright version, not the whole
       # lockfile — unrelated dependency bumps shouldn't force a ~150MB
       # Chromium re-download.
@@ -99,23 +103,23 @@ jobs:
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Install Playwright system deps only
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: pnpm exec playwright install-deps chromium
       - name: Boot Spree backend (Postgres + Redis + Spree 5.4.3.1)
         run: docker compose -f e2e-backend/docker-compose.yml up -d --wait
       - name: Seed Spree and issue API key
         env:
           # Test-mode Stripe key pair from one sandbox account, consumed by
           # bootstrap-spree.sh to configure the Spree Stripe gateway. Scoped
-          # to this step so npm postinstall scripts and third-party actions
+          # to this step so dependency lifecycle scripts and third-party actions
           # in other steps never see the secret.
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
         run: ./scripts/e2e/bootstrap-spree.sh
       - name: Run Playwright tests
-        run: npm run test:e2e
+        run: pnpm test:e2e
       - name: Dump Spree logs on failure
         if: failure()
         run: docker compose -f e2e-backend/docker-compose.yml logs --no-color web > spree.log || true
