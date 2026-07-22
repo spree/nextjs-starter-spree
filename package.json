@@ -38,7 +38,7 @@
     "radix-ui": "^1.4.3",
     "react": "^19",
     "react-dom": "^19",
-    "react-email": "^6.1.4",
+    "react-email": "^6.6.3",
     "react-svg-credit-card-payment-icons": "^5.1.2",
     "resend": "^6.9.4",
     "shadcn": "^4.0.2",
