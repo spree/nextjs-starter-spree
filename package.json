@@ -39,7 +39,7 @@
     "react": "^19",
     "react-dom": "^19",
     "react-email": "^6.1.4",
-    "react-svg-credit-card-payment-icons": "^5.1.2",
+    "react-svg-credit-card-payment-icons": "^6.0.4",
     "resend": "^6.9.4",
     "shadcn": "^4.0.2",
     "sonner": "^2.0.7",
