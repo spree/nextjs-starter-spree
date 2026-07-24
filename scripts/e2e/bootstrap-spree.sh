@@ -107,6 +107,24 @@ gateway.save!(validate: false)
 puts "OK: gateway #{gateway.id} (#{gateway.name})"
 RUBY
 
+# The wholesale suite (e2e/wholesale.spec.ts) runs the seeded gated channel
+# in its `prices_hidden` posture — guests browse the catalog with prices
+# nulled — which exercises strictly more portal UI than the seed's
+# `login_required` default (guest browse, sign-in-for-pricing prompts, the
+# dedicated sign-in page), while ordering surfaces wall guests off under
+# either posture. Idempotent: find_or_create + reassign converges.
+echo "==> Setting the wholesale channel to prices_hidden"
+docker compose exec -T web bin/rails runner - <<'RUBY'
+store = Spree::Store.default
+channel = store.channels.find_or_create_by!(code: 'wholesale') do |c|
+  c.name = 'Wholesale'
+  c.preferred_guest_checkout = false
+end
+channel.preferred_storefront_access = 'prices_hidden'
+channel.save!
+puts "OK: channel #{channel.code} storefront_access=#{channel.resolved_storefront_access}"
+RUBY
+
 echo "==> Creating publishable API key (spree api-key create)"
 api_key_output=$(npx @spree/cli api-key create --name E2E --type publishable)
 
@@ -122,6 +140,8 @@ cat >"$ENV_FILE" <<EOF
 SPREE_API_URL=$SPREE_URL
 SPREE_PUBLISHABLE_KEY=$publishable_key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY
+# Enables the wholesale portal against the seeded gated channel.
+SPREE_WHOLESALE_CHANNEL=wholesale
 EOF
 
 echo
