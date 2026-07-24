@@ -5,12 +5,12 @@ import { CircleCheckBig, CircleX, Loader2, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import { HiddenPricePrompt } from "@/components/products/HiddenPricePrompt";
 import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
-import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { useHiddenPricing } from "@/contexts/HiddenPricingContext";
 import { useStore } from "@/contexts/StoreContext";
@@ -194,10 +194,9 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               </Button>
             ) : (
               <div className="flex gap-4">
-                <QuantityPicker
+                <QuantityPickerField
                   quantity={quantity}
-                  onDecrement={() => setQuantity(Math.max(1, quantity - 1))}
-                  onIncrement={() => setQuantity(quantity + 1)}
+                  onQuantityChange={setQuantity}
                   size="lg"
                 />
 

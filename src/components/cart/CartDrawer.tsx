@@ -6,9 +6,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
-import { QuantityPicker } from "@/components/ui/quantity-picker";
 import {
   Sheet,
   SheetContent,
@@ -194,13 +194,10 @@ export function CartDrawer() {
 
                       {/* Quantity & Price */}
                       <div className="mt-3 flex items-center justify-between">
-                        <QuantityPicker
+                        <QuantityPickerField
                           quantity={item.quantity}
-                          onDecrement={() =>
-                            updateItem(item.id, Math.max(1, item.quantity - 1))
-                          }
-                          onIncrement={() =>
-                            updateItem(item.id, item.quantity + 1)
+                          onQuantityChange={(quantity) =>
+                            updateItem(item.id, quantity)
                           }
                           disabled={updating}
                         />

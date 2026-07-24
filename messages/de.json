@@ -1,5 +1,8 @@
 {
   "common": {
+    "decreaseQuantity": "Menge verringern",
+    "increaseQuantity": "Menge erhöhen",
+    "quantity": "Menge",
     "subtotal": "Zwischensumme",
     "shipping": "Versand",
     "tax": "Steuer",
@@ -98,8 +101,6 @@
     "emptyCart": "Ihr Warenkorb ist leer",
     "emptyCartDescription": "Es sieht so aus, als hätten Sie noch nichts in Ihren Warenkorb gelegt.",
     "removeItem": "Artikel entfernen",
-    "decreaseQuantity": "Menge verringern",
-    "increaseQuantity": "Menge erhöhen",
     "shippingNote": "Versand und Steuern werden an der Kasse berechnet",
     "checkout": "Zur Kasse",
     "viewCart": "Warenkorb anzeigen",
@@ -165,8 +166,6 @@
     "noImageAvailable": "Kein Bild verfügbar",
     "clickToZoom": "Zum Vergrößern klicken",
     "noProductsMatchingFilters": "Keine Produkte gefunden, die Ihren Filtern entsprechen.",
-    "decreaseQuantity": "Menge verringern",
-    "increaseQuantity": "Menge erhöhen",
     "carouselPrev": "Vorherige Produkte",
     "carouselNext": "Nächste Produkte",
     "lightboxClose": "Lightbox schließen",

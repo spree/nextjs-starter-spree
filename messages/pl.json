@@ -1,5 +1,8 @@
 {
   "common": {
+    "decreaseQuantity": "Zmniejsz ilość",
+    "increaseQuantity": "Zwiększ ilość",
+    "quantity": "Ilość",
     "subtotal": "Suma częściowa",
     "shipping": "Wysyłka",
     "tax": "Podatek",
@@ -98,8 +101,6 @@
     "emptyCart": "Twój koszyk jest pusty",
     "emptyCartDescription": "Wygląda na to, że nie dodałeś jeszcze nic do koszyka.",
     "removeItem": "Usuń produkt",
-    "decreaseQuantity": "Zmniejsz ilość",
-    "increaseQuantity": "Zwiększ ilość",
     "shippingNote": "Koszty wysyłki i podatki zostaną obliczone przy kasie",
     "checkout": "Do kasy",
     "viewCart": "Zobacz koszyk",
@@ -165,8 +166,6 @@
     "noImageAvailable": "Brak zdjęcia",
     "clickToZoom": "Kliknij aby powiększyć",
     "noProductsMatchingFilters": "Nie znaleziono produktów pasujących do wybranych filtrów.",
-    "decreaseQuantity": "Zmniejsz ilość",
-    "increaseQuantity": "Zwiększ ilość",
     "carouselPrev": "Poprzednie produkty",
     "carouselNext": "Następne produkty",
     "lightboxClose": "Zamknij podgląd",

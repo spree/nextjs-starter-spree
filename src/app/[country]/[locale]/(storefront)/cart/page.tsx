@@ -7,9 +7,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { QuantityPickerField } from "@/components/cart/QuantityPickerField";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
-import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { useCart } from "@/contexts/CartContext";
 import { trackRemoveFromCart, trackViewCart } from "@/lib/analytics/gtm";
 import { extractBasePath } from "@/lib/utils/path";
@@ -130,12 +130,11 @@ export default function CartPage() {
 
                 {/* Quantity & Actions */}
                 <div className="flex flex-col items-end gap-2">
-                  <QuantityPicker
+                  <QuantityPickerField
                     quantity={item.quantity}
-                    onDecrement={() =>
-                      updateItem(item.id, Math.max(1, item.quantity - 1))
+                    onQuantityChange={(quantity) =>
+                      updateItem(item.id, quantity)
                     }
-                    onIncrement={() => updateItem(item.id, item.quantity + 1)}
                   />
                   <Button
                     variant="destructive"
