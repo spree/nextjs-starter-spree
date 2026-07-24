@@ -12,6 +12,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetFooter,
   SheetTitle,
 } from "@/components/ui/sheet";
 
@@ -262,42 +263,34 @@ export function MobileMenu({
                     {t("wholesale")}
                   </Link>
                 )}
-                <SheetClose asChild>
-                  <Link
-                    href={`${basePath}/account`}
-                    className={`${linkClass} block`}
-                  >
-                    {t("myAccount")}
-                  </Link>
-                </SheetClose>
               </div>
             </nav>
 
             {/* Footer: region preferences and account links on mobile */}
-            <div className="lg:hidden border-t border-gray-200 pt-4">
-              <div className="mx-4 mb-3">
+            <SheetFooter className="lg:hidden items-center border-t border-gray-200 pt-4 gap-2">
+              <div className="mx-4 mb-3 w-full">
                 <RegionPreferences variant="menu" />
               </div>
+            </SheetFooter>
 
-              <div className="md:hidden space-y-2 mx-4 mb-2">
-                <SheetClose asChild>
-                  <Link
-                    href={`${basePath}/account/wishlist`}
-                    className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 text-gray-800 rounded-lg text-base font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    <span>{t("wishlist")}</span>
-                  </Link>
-                </SheetClose>
+            <div className="md:hidden space-y-2 mx-4 mb-2">
+              <SheetClose asChild>
+                <Link
+                  href={`${basePath}/account/wishlist`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 text-gray-800 rounded-lg text-base font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <span>{t("wishlist")}</span>
+                </Link>
+              </SheetClose>
 
-                <SheetClose asChild>
-                  <Link
-                    href={`${basePath}/account`}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-base font-medium hover:bg-gray-800 transition-colors"
-                  >
-                    <span>{t("myAccount")}</span>
-                  </Link>
-                </SheetClose>
-              </div>
+              <SheetClose asChild>
+                <Link
+                  href={`${basePath}/account`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-base font-medium hover:bg-gray-800 transition-colors"
+                >
+                  <span>{t("myAccount")}</span>
+                </Link>
+              </SheetClose>
             </div>
           </div>
 

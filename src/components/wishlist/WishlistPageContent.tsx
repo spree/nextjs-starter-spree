@@ -17,20 +17,112 @@ import { extractBasePath } from "@/lib/utils/path";
 type VariantWithProduct = Variant & {
   name?: string;
   slug?: string;
+  product_name?: string;
+  product_slug?: string;
+  images?: Array<{
+    url?: string | null;
+    original_url?: string | null;
+    styles?: {
+      large?: string | null;
+      product?: string | null;
+      small?: string | null;
+    };
+  }>;
+  option_values?: Array<{
+    image_url?: string | null;
+  }>;
   product?: {
     name?: string;
     slug?: string;
     thumbnail_url?: string | null;
+    attributes?: {
+      name?: string;
+      slug?: string;
+      thumbnail_url?: string | null;
+    };
+  };
+};
+
+type WishlistItemWithDisplay = WishlistItem & {
+  name?: string;
+  slug?: string;
+  product_name?: string;
+  product_slug?: string;
+  thumbnail_url?: string | null;
+  product?: {
+    name?: string;
+    slug?: string;
+    thumbnail_url?: string | null;
+    images?: Array<{
+      url?: string | null;
+      original_url?: string | null;
+      styles?: {
+        large?: string | null;
+        product?: string | null;
+        small?: string | null;
+      };
+    }>;
+    attributes?: {
+      name?: string;
+      slug?: string;
+      thumbnail_url?: string | null;
+    };
   };
 };
 
 function getDisplayFields(item: WishlistItem) {
+  const wishlistItem = item as WishlistItemWithDisplay;
   const variant = item.variant as VariantWithProduct;
+  const itemProduct = wishlistItem.product;
+  const itemProductAttributes = itemProduct?.attributes;
+  const product = variant.product;
+  const productAttributes = product?.attributes;
+
+  const variantName =
+    variant.name && variant.name !== "Product" ? variant.name : undefined;
+
   const productName =
-    variant.product?.name || variant.name || variant.sku || "Product";
-  const productSlug = variant.product?.slug || variant.slug;
+    itemProduct?.name ||
+    itemProductAttributes?.name ||
+    product?.name ||
+    productAttributes?.name ||
+    wishlistItem.product_name ||
+    variant.product_name ||
+    wishlistItem.name ||
+    variantName ||
+    variant.sku ||
+    "Product";
+
+  const productSlug =
+    itemProduct?.slug ||
+    itemProductAttributes?.slug ||
+    product?.slug ||
+    productAttributes?.slug ||
+    wishlistItem.product_slug ||
+    variant.product_slug ||
+    wishlistItem.slug ||
+    variant.slug;
+
   const imageUrl =
-    variant.thumbnail_url || variant.product?.thumbnail_url || null;
+    variant.thumbnail_url ||
+    variant.option_values?.find((value) => Boolean(value.image_url))
+      ?.image_url ||
+    variant.images?.[0]?.styles?.product ||
+    variant.images?.[0]?.styles?.large ||
+    variant.images?.[0]?.styles?.small ||
+    variant.images?.[0]?.url ||
+    variant.images?.[0]?.original_url ||
+    wishlistItem.thumbnail_url ||
+    itemProduct?.thumbnail_url ||
+    itemProductAttributes?.thumbnail_url ||
+    itemProduct?.images?.[0]?.styles?.product ||
+    itemProduct?.images?.[0]?.styles?.large ||
+    itemProduct?.images?.[0]?.styles?.small ||
+    itemProduct?.images?.[0]?.url ||
+    itemProduct?.images?.[0]?.original_url ||
+    product?.thumbnail_url ||
+    productAttributes?.thumbnail_url ||
+    null;
 
   return { productName, productSlug, imageUrl };
 }

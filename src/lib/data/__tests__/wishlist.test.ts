@@ -2,6 +2,9 @@ import type { Wishlist } from "@spree/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockClient = {
+  products: {
+    get: vi.fn(),
+  },
   wishlists: {
     list: vi.fn(),
     get: vi.fn(),
@@ -71,6 +74,13 @@ describe("wishlist server actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockWithAuthRefresh.mockImplementation(async (fn) => fn({ token: "jwt" }));
+    mockClient.products.get.mockResolvedValue({
+      id: "prod_1",
+      name: "Sample Product",
+      slug: "sample-product",
+      thumbnail_url: "https://example.com/sample-product.jpg",
+      images: [],
+    });
   });
 
   it("returns wishlist for authenticated users", async () => {
@@ -81,10 +91,27 @@ describe("wishlist server actions", () => {
 
     const result = await getWishlist();
 
-    expect(result).toEqual(wishlistFixture);
+    expect(result).toMatchObject({
+      id: wishlistFixture.id,
+      is_default: wishlistFixture.is_default,
+      items: [
+        expect.objectContaining({
+          id: "wi_1",
+          product_name: "Sample Product",
+          product_slug: "sample-product",
+          thumbnail_url: "https://example.com/sample-product.jpg",
+        }),
+      ],
+    });
     expect(mockClient.wishlists.get).toHaveBeenCalledWith(
       "wl_1",
-      { expand: ["items.variant"] },
+      {
+        expand: [
+          "items.variant",
+          "items.variant.product",
+          "items.variant.images",
+        ],
+      },
       { token: "jwt" },
     );
   });

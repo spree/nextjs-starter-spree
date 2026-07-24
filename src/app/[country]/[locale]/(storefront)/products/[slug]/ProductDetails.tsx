@@ -235,6 +235,14 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
                     t("outOfStock")
                   )}
                 </Button>
+
+                {selectedVariantId && (
+                  <WishlistButton
+                    variantId={selectedVariantId}
+                    size="lg"
+                    className="min-w-55"
+                  />
+                )}
               </div>
             )}
           </div>
