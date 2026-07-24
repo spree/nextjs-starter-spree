@@ -41,6 +41,10 @@ vi.mock("@/lib/spree", () => ({
   getCartToken: vi.fn().mockResolvedValue(undefined),
   getCartId: vi.fn().mockResolvedValue(undefined),
   clearCartCookies: vi.fn(),
+  clearAllCartCookies: vi.fn(),
+  cacheTagSuffix: (surface: string) =>
+    surface === "wholesale" ? "-wholesale" : "",
+  SURFACES: ["dtc", "wholesale"] as const,
 }));
 
 vi.mock("@spree/sdk", () => ({
@@ -301,11 +305,24 @@ describe("customer server actions", () => {
     it("clears cookies", async () => {
       await logout();
 
-      const { clearAccessToken, clearRefreshToken, clearCartCookies } =
+      const { clearAccessToken, clearRefreshToken, clearAllCartCookies } =
         await import("@/lib/spree");
       expect(clearAccessToken).toHaveBeenCalled();
       expect(clearRefreshToken).toHaveBeenCalled();
-      expect(clearCartCookies).toHaveBeenCalled();
+      // Logout must clear every surface's cart, not just DTC.
+      expect(clearAllCartCookies).toHaveBeenCalled();
+    });
+
+    it("invalidates cart and checkout caches for every surface", async () => {
+      const { updateTag } = await import("next/cache");
+      await logout();
+
+      // Both surfaces, both tags — a cart-only clear would leave the previous
+      // buyer's checkout (address/delivery) state cached after logout.
+      expect(updateTag).toHaveBeenCalledWith("cart");
+      expect(updateTag).toHaveBeenCalledWith("cart-wholesale");
+      expect(updateTag).toHaveBeenCalledWith("checkout");
+      expect(updateTag).toHaveBeenCalledWith("checkout-wholesale");
     });
   });
 

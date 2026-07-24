@@ -32,7 +32,7 @@ export function OrderTotals({ order }: OrderTotalsProps) {
           </div>
         )}
 
-      {Number.parseFloat(order.tax_total) > 0 && (
+      {Number.parseFloat(order.tax_total ?? "0") > 0 && (
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">{t("tax")}</span>
           <span className="text-gray-900">{order.display_tax_total}</span>
@@ -46,7 +46,8 @@ export function OrderTotals({ order }: OrderTotalsProps) {
         </span>
       </div>
 
-      {order.gift_card && Number.parseFloat(order.gift_card_total) > 0 ? (
+      {order.gift_card &&
+      Number.parseFloat(order.gift_card_total ?? "0") > 0 ? (
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">{t("giftCard")}</span>
           <span className="text-green-600">
@@ -63,7 +64,7 @@ export function OrderTotals({ order }: OrderTotalsProps) {
         </div>
       ) : null}
 
-      {Number.parseFloat(order.amount_due) > 0 &&
+      {Number.parseFloat(order.amount_due ?? "0") > 0 &&
         order.amount_due !== order.total && (
           <div className="flex justify-between pt-2 border-t border-gray-200">
             <span className="font-semibold text-gray-900">

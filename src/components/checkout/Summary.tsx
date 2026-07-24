@@ -77,7 +77,7 @@ export function Summary({ cart }: SummaryProps) {
           </div>
         )}
 
-        {parseFloat(cart.tax_total) > 0 && (
+        {parseFloat(cart.tax_total ?? "0") > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-700">{tc("tax")}</span>
             <span className="text-gray-900">{cart.display_tax_total}</span>
@@ -101,7 +101,7 @@ export function Summary({ cart }: SummaryProps) {
 
         {/* Gift card or store credit — shown below total, reduces amount due.
             Gift cards use store credits under the hood, so only show one. */}
-        {cart.gift_card && parseFloat(cart.gift_card_total) > 0 ? (
+        {cart.gift_card && parseFloat(cart.gift_card_total ?? "0") > 0 ? (
           <div className="flex justify-between text-sm">
             <span className="text-gray-700">{tc("giftCard")}</span>
             <span className="text-green-700">

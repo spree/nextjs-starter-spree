@@ -116,7 +116,7 @@ describe("CartContext", () => {
         await result.current.addItem("variant-1", 2);
       });
 
-      expect(mockAddToCart).toHaveBeenCalledWith("variant-1", 2);
+      expect(mockAddToCart).toHaveBeenCalledWith("variant-1", 2, "dtc");
       expect(result.current.cart).toBe(updatedCart);
       expect(result.current.isOpen).toBe(true);
       expect(result.current.updating).toBe(false);
@@ -179,7 +179,7 @@ describe("CartContext", () => {
         await result.current.updateItem("li-1", 5);
       });
 
-      expect(mockUpdateCartItem).toHaveBeenCalledWith("li-1", 5);
+      expect(mockUpdateCartItem).toHaveBeenCalledWith("li-1", 5, "dtc");
       expect(result.current.cart).toBe(updatedCart);
       expect(result.current.updating).toBe(false);
     });
@@ -207,7 +207,7 @@ describe("CartContext", () => {
         await result.current.removeItem("li-1");
       });
 
-      expect(mockRemoveCartItem).toHaveBeenCalledWith("li-1");
+      expect(mockRemoveCartItem).toHaveBeenCalledWith("li-1", "dtc");
       expect(result.current.cart).toBe(cartAfterRemoval);
       expect(result.current.itemCount).toBe(1);
     });

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FeaturedProductsSection } from "@/components/home/FeaturedProductsSection";
 import { HeroSection } from "@/components/home/HeroSection";
+import { WholesaleSection } from "@/components/home/WholesaleSection";
 import { getMarkets, resolveCurrency } from "@/lib/data/markets";
 import { generateHomeMetadata } from "@/lib/metadata/home";
 import { getDefaultCountry, getDefaultLocale } from "@/lib/store";
@@ -82,6 +83,7 @@ export default async function HomePage({ params }: HomePageProps) {
         country={country}
         currency={currency}
       />
+      <WholesaleSection basePath={basePath} locale={locale} />
     </div>
   );
 }

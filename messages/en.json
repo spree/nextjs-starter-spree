@@ -1,5 +1,8 @@
 {
   "common": {
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "quantity": "Quantity",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
     "tax": "Tax",
@@ -39,6 +42,16 @@
     "closeSearch": "Close search",
     "myAccount": "My Account",
     "wishlist": "Wishlist"
+    "wholesale": "Wholesale"
+  },
+  "regionPreferences": {
+    "title": "Region and language",
+    "description": "Choose your region and language. Currency is set by the selected region.",
+    "region": "Region",
+    "language": "Language",
+    "updatePreferences": "Update preferences",
+    "updatingPreferences": "Updating preferences...",
+    "updatePreferencesFailed": "We couldn't update your region preferences. Please try again."
   },
   "footer": {
     "description": "Open-source ecommerce powered by Spree REST API, TypeScript SDK, and Next.js. Self-host it. Own your data. Zero platform fees.",
@@ -56,6 +69,7 @@
     "poweredBy": "Powered by",
     "copyright": "© {year} {storeName}. Powered by Spree Commerce.",
     "wishlist": "Wishlist"
+    "wholesale": "Trade & Wholesale"
   },
   "home": {
     "welcome": "{storeName} Storefront",
@@ -70,7 +84,18 @@
     "fastShipping": "Fast Shipping",
     "shippingDescription": "Quick and reliable delivery to your doorstep.",
     "support": "24/7 Support",
-    "supportDescription": "Our team is here to help you anytime."
+    "supportDescription": "Our team is here to help you anytime.",
+    "wholesaleBadge": "Trade & Wholesale",
+    "wholesaleTitle": "Buying for your business?",
+    "wholesaleDescription": "Approved trade buyers get wholesale pricing on the full catalog, bulk quick-order by SKU, and their own order history. Apply once — we'll review and activate your account.",
+    "wholesaleCtaPrimary": "Enter wholesale portal",
+    "wholesaleCtaSecondary": "Apply for an account",
+    "wholesaleBenefitPricingTitle": "Trade pricing",
+    "wholesaleBenefitPricingDescription": "Your negotiated rates applied automatically across the full catalog.",
+    "wholesaleBenefitQuickOrderTitle": "Bulk quick-order",
+    "wholesaleBenefitQuickOrderDescription": "Enter SKUs and quantities to build a large order in seconds.",
+    "wholesaleBenefitOrdersTitle": "Order history",
+    "wholesaleBenefitOrdersDescription": "Review past orders and reorder your regular lines in a couple of clicks."
   },
   "cart": {
     "cart": "Cart",
@@ -78,8 +103,6 @@
     "emptyCart": "Your cart is empty",
     "emptyCartDescription": "Looks like you haven't added anything to your cart yet.",
     "removeItem": "Remove item",
-    "decreaseQuantity": "Decrease quantity",
-    "increaseQuantity": "Increase quantity",
     "shippingNote": "Shipping and taxes calculated at checkout",
     "checkout": "Checkout",
     "viewCart": "View Cart",
@@ -145,8 +168,6 @@
     "noImageAvailable": "No image available",
     "clickToZoom": "Click to zoom",
     "noProductsMatchingFilters": "No products found matching your filters.",
-    "decreaseQuantity": "Decrease quantity",
-    "increaseQuantity": "Increase quantity",
     "carouselPrev": "Previous products",
     "carouselNext": "Next products",
     "lightboxClose": "Close lightbox",
@@ -548,5 +569,87 @@
     "refresh": "Refresh",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  "wholesale": {
+    "portalTitle": "Wholesale Portal",
+    "portalName": "Wholesale Portal",
+    "badge": "Wholesale",
+    "nav": {
+      "catalog": "Catalog",
+      "quickOrder": "Quick Order",
+      "cart": "Cart",
+      "backToStore": "Back to store",
+      "signOut": "Sign out",
+      "signIn": "Sign in"
+    },
+    "signInWall": {
+      "title": "Trade pricing for approved buyers",
+      "description": "Sign in to your wholesale account to browse the full catalog at your negotiated trade pricing and place bulk orders.",
+      "gatedNotice": "This portal is available to approved wholesale buyers only. Prices and products are visible after you sign in.",
+      "noAccount": "Don't have a wholesale account?",
+      "applyLink": "Apply for access",
+      "formTitle": "Sign in",
+      "formDescription": "Use the email and password for your wholesale account.",
+      "submit": "Sign in"
+    },
+    "pending": {
+      "title": "Your application is under review",
+      "description": "Thanks for applying. Your account is set up, but wholesale access is still pending approval.",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "whatNext": "Our team reviews new wholesale applications and enables trade pricing once approved. You'll be able to sign in here as soon as your account is activated.",
+      "support": "Questions? Contact wholesale@example.com"
+    },
+    "plp": {
+      "title": "Wholesale Catalog",
+      "subtitle": "Your trade pricing is applied automatically at checkout.",
+      "empty": "No products are available on the wholesale catalog yet.",
+      "noMatchingProducts": "No products match \"{query}\".",
+      "tradePriceNote": "All catalog prices shown are trade prices, applied on orders of {min}+ per item."
+    },
+    "pdp": {
+      "tradePriceHint": "Trade price applies on orders of {min}+"
+    },
+    "cart": {
+      "title": "Wholesale Cart",
+      "emptyDescription": "Add products from the catalog or use quick order to get started.",
+      "browseCatalog": "Browse catalog",
+      "unlockNudge": "Add {count} more to unlock trade pricing",
+      "tradePriceApplied": "Trade price applied"
+    },
+    "quickOrder": {
+      "title": "Quick Order",
+      "subtitle": "Enter SKUs and quantities to add multiple products to your cart at once.",
+      "skuHeader": "SKU",
+      "qtyHeader": "Qty",
+      "actionsHeader": "Actions",
+      "skuPlaceholder": "Enter a SKU",
+      "addRow": "Add row",
+      "removeRow": "Remove row",
+      "addAll": "Add all to cart",
+      "adding": "Adding…",
+      "added": "Added {name}",
+      "skuNotFound": "No product found for this SKU.",
+      "notPurchasable": "This item is not available to purchase.",
+      "addFailed": "Couldn't add this item. Please try again.",
+      "searching": "Searching…",
+      "noResults": "No products found"
+    },
+    "apply": {
+      "title": "Apply for wholesale access",
+      "description": "Tell us about your business. We'll review your application and enable trade pricing once approved.",
+      "companyLabel": "Company name",
+      "companyPlaceholder": "Acme Trading Co.",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "submit": "Submit application",
+      "alreadyMember": "Already have a wholesale account?",
+      "receivedTitle": "Application received",
+      "receivedDescription": "Thanks for applying. We'll review your account and approve wholesale access shortly.",
+      "goToPortal": "Go to portal"
+    },
+    "hiddenPrice": {
+      "signInForPricing": "Sign in for pricing",
+      "signInToOrder": "Sign in to order"
+    }
   }
 }

@@ -132,10 +132,10 @@ function GiftCardItem({ card }: { card: GiftCard }) {
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
           <span className="text-gray-600">
-            {t("usedAmount", { amount: card.display_amount_used })}
+            {t("usedAmount", { amount: card.display_amount_used ?? "" })}
           </span>
           <span className="text-gray-600">
-            {t("totalAmountWithValue", { amount: card.display_amount })}
+            {t("totalAmountWithValue", { amount: card.display_amount ?? "" })}
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-lg h-2">

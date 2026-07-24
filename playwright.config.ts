@@ -3,8 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * Playwright config for the storefront E2E suite.
  *
- * Prerequisites (run once before `npm run test:e2e`):
- *   npm run e2e:up      # boots Docker + bootstraps Spree via @spree/cli
+ * Prerequisites (run once before `pnpm run test:e2e`):
+ *   pnpm run e2e:up     # boots Docker + bootstraps Spree via @spree/cli
  *
  * That seeds Spree with sample data and writes `.env.e2e` with the
  * publishable key the storefront needs.

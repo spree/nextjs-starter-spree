@@ -37,6 +37,7 @@ export async function FeaturedProducts({
   const productsResponse = await cachedListProducts(
     { limit: 8, fields: PRODUCT_CARD_FIELDS },
     { locale, country },
+    "dtc",
     userToken,
   );
 

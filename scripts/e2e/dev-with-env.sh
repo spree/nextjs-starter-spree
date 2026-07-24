@@ -17,4 +17,4 @@ source .env.e2e
 set +a
 
 # Reuse the canonical dev command (port + flags) from package.json.
-exec npm run dev
+exec pnpm run dev

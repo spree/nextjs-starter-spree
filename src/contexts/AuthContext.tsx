@@ -38,6 +38,8 @@ interface AuthContextType {
     password_confirmation: string;
     first_name?: string;
     last_name?: string;
+    phone?: string;
+    metadata?: Record<string, unknown>;
   }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -137,6 +139,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password_confirmation: string;
       first_name?: string;
       last_name?: string;
+      phone?: string;
+      metadata?: Record<string, unknown>;
     }) => {
       const result = await registerAction(params);
       if (result.success && result.user) {

@@ -19,6 +19,7 @@ import {
   removeCartItem as removeCartItemAction,
   updateCartItem as updateCartItemAction,
 } from "@/lib/data/cart";
+import type { Surface } from "@/lib/spree/surface";
 
 interface CartContextType {
   cart: Cart | null;
@@ -36,7 +37,14 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  children,
+  surface = "dtc",
+}: {
+  children: ReactNode;
+  /** Which surface's cart this provider manages. Defaults to the DTC cart. */
+  surface?: Surface;
+}) {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -50,14 +58,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const refreshCart = useCallback(async () => {
     try {
-      const cartData = await getCartAction();
+      const cartData = await getCartAction(undefined, surface);
       setCart(cartData);
     } catch {
       setCart(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [surface]);
 
   const mutateCart = useCallback(
     async (
@@ -91,32 +99,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback(
     async (variantId: string, quantity = 1) => {
       await mutateCart(
-        () => addToCartAction(variantId, quantity),
+        () => addToCartAction(variantId, quantity, surface),
         t("failedToAddItem"),
         () => setIsOpen(true),
       );
     },
-    [mutateCart, t],
+    [mutateCart, t, surface],
   );
 
   const updateItem = useCallback(
     async (lineItemId: string, quantity: number) => {
       await mutateCart(
-        () => updateCartItemAction(lineItemId, quantity),
+        () => updateCartItemAction(lineItemId, quantity, surface),
         t("failedToUpdateItem"),
       );
     },
-    [mutateCart, t],
+    [mutateCart, t, surface],
   );
 
   const removeItem = useCallback(
     async (lineItemId: string) => {
       await mutateCart(
-        () => removeCartItemAction(lineItemId),
+        () => removeCartItemAction(lineItemId, surface),
         t("failedToRemoveItem"),
       );
     },
-    [mutateCart, t],
+    [mutateCart, t, surface],
   );
 
   // Re-fetch cart on navigation (e.g., after checkout completes, the stale

@@ -1,5 +1,8 @@
 {
   "common": {
+    "decreaseQuantity": "Menge verringern",
+    "increaseQuantity": "Menge erhöhen",
+    "quantity": "Menge",
     "subtotal": "Zwischensumme",
     "shipping": "Versand",
     "tax": "Steuer",
@@ -39,6 +42,16 @@
     "closeSearch": "Suche schließen",
     "myAccount": "Mein Konto",
     "wishlist": "Wunschliste"
+    "wholesale": "Großhandel"
+  },
+  "regionPreferences": {
+    "title": "Region und Sprache",
+    "description": "Wählen Sie Ihre Region und Sprache. Die Währung wird durch die ausgewählte Region festgelegt.",
+    "region": "Region",
+    "language": "Sprache",
+    "updatePreferences": "Einstellungen aktualisieren",
+    "updatingPreferences": "Einstellungen werden aktualisiert...",
+    "updatePreferencesFailed": "Die regionalen Einstellungen konnten nicht aktualisiert werden. Bitte versuchen Sie es erneut."
   },
   "footer": {
     "description": "Open-Source-E-Commerce basierend auf Spree REST API, TypeScript SDK und Next.js. Selbst hosten. Eigene Daten. Keine Plattformgebühren.",
@@ -56,6 +69,7 @@
     "poweredBy": "Betrieben von",
     "copyright": "© {year} {storeName}. Unterstützt durch Spree Commerce.",
     "wishlist": "Wunschliste"
+    "wholesale": "Handel & Großhandel"
   },
   "home": {
     "welcome": "{storeName} Storefront",
@@ -70,7 +84,18 @@
     "fastShipping": "Schneller Versand",
     "shippingDescription": "Schnelle und zuverlässige Lieferung bis an Ihre Haustür.",
     "support": "24/7 Support",
-    "supportDescription": "Unser Team ist jederzeit für Sie da."
+    "supportDescription": "Unser Team ist jederzeit für Sie da.",
+    "wholesaleBadge": "Handel & Großhandel",
+    "wholesaleTitle": "Einkauf für Ihr Unternehmen?",
+    "wholesaleDescription": "Freigegebene Geschäftskunden erhalten Großhandelspreise auf den gesamten Katalog, schnelle Sammelbestellung per SKU und ihren eigenen Bestellverlauf. Einmal bewerben — wir prüfen und aktivieren Ihr Konto.",
+    "wholesaleCtaPrimary": "Zum Großhandelsportal",
+    "wholesaleCtaSecondary": "Konto beantragen",
+    "wholesaleBenefitPricingTitle": "Handelspreise",
+    "wholesaleBenefitPricingDescription": "Ihre ausgehandelten Konditionen werden automatisch auf den gesamten Katalog angewendet.",
+    "wholesaleBenefitQuickOrderTitle": "Schnelle Sammelbestellung",
+    "wholesaleBenefitQuickOrderDescription": "Geben Sie SKUs und Mengen ein, um in Sekunden eine große Bestellung zusammenzustellen.",
+    "wholesaleBenefitOrdersTitle": "Bestellverlauf",
+    "wholesaleBenefitOrdersDescription": "Sehen Sie vergangene Bestellungen ein und bestellen Sie Ihre Standardartikel mit wenigen Klicks nach."
   },
   "cart": {
     "cart": "Warenkorb",
@@ -78,8 +103,6 @@
     "emptyCart": "Ihr Warenkorb ist leer",
     "emptyCartDescription": "Es sieht so aus, als hätten Sie noch nichts in Ihren Warenkorb gelegt.",
     "removeItem": "Artikel entfernen",
-    "decreaseQuantity": "Menge verringern",
-    "increaseQuantity": "Menge erhöhen",
     "shippingNote": "Versand und Steuern werden an der Kasse berechnet",
     "checkout": "Zur Kasse",
     "viewCart": "Warenkorb anzeigen",
@@ -145,8 +168,6 @@
     "noImageAvailable": "Kein Bild verfügbar",
     "clickToZoom": "Zum Vergrößern klicken",
     "noProductsMatchingFilters": "Keine Produkte gefunden, die Ihren Filtern entsprechen.",
-    "decreaseQuantity": "Menge verringern",
-    "increaseQuantity": "Menge erhöhen",
     "carouselPrev": "Vorherige Produkte",
     "carouselNext": "Nächste Produkte",
     "lightboxClose": "Lightbox schließen",
@@ -548,5 +569,87 @@
     "refresh": "Aktualisieren",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  "wholesale": {
+    "portalTitle": "Großhandelsportal",
+    "portalName": "Großhandelsportal",
+    "badge": "Großhandel",
+    "nav": {
+      "catalog": "Katalog",
+      "quickOrder": "Schnellbestellung",
+      "cart": "Warenkorb",
+      "backToStore": "Zurück zum Shop",
+      "signOut": "Abmelden",
+      "signIn": "Anmelden"
+    },
+    "signInWall": {
+      "title": "Handelspreise für freigegebene Käufer",
+      "description": "Melden Sie sich bei Ihrem Großhandelskonto an, um den gesamten Katalog zu Ihren ausgehandelten Handelspreisen zu durchsuchen und Sammelbestellungen aufzugeben.",
+      "gatedNotice": "Dieses Portal steht ausschließlich freigegebenen Großhandelskäufern zur Verfügung. Preise und Produkte sind nach der Anmeldung sichtbar.",
+      "noAccount": "Sie haben kein Großhandelskonto?",
+      "applyLink": "Zugang beantragen",
+      "formTitle": "Anmelden",
+      "formDescription": "Verwenden Sie die E-Mail-Adresse und das Passwort Ihres Großhandelskontos.",
+      "submit": "Anmelden"
+    },
+    "pending": {
+      "title": "Ihre Bewerbung wird geprüft",
+      "description": "Vielen Dank für Ihre Bewerbung. Ihr Konto ist eingerichtet, aber der Großhandelszugang steht noch zur Genehmigung aus.",
+      "nameLabel": "Name",
+      "emailLabel": "E-Mail",
+      "whatNext": "Unser Team prüft neue Großhandelsbewerbungen und aktiviert nach der Genehmigung die Handelspreise. Sobald Ihr Konto aktiviert ist, können Sie sich hier anmelden.",
+      "support": "Fragen? Kontaktieren Sie wholesale@example.com"
+    },
+    "plp": {
+      "title": "Großhandelskatalog",
+      "subtitle": "Ihre Handelspreise werden an der Kasse automatisch angewendet.",
+      "empty": "Im Großhandelskatalog sind noch keine Produkte verfügbar.",
+      "noMatchingProducts": "Keine Produkte entsprechen \"{query}\".",
+      "tradePriceNote": "Alle angezeigten Katalogpreise sind Handelspreise und gelten für Bestellungen ab {min} pro Artikel."
+    },
+    "pdp": {
+      "tradePriceHint": "Handelspreis gilt für Bestellungen ab {min}"
+    },
+    "cart": {
+      "title": "Großhandels-Warenkorb",
+      "emptyDescription": "Fügen Sie Produkte aus dem Katalog hinzu oder nutzen Sie die Schnellbestellung, um zu beginnen.",
+      "browseCatalog": "Katalog durchsuchen",
+      "unlockNudge": "{count} weitere hinzufügen, um Handelspreise freizuschalten",
+      "tradePriceApplied": "Handelspreis angewendet"
+    },
+    "quickOrder": {
+      "title": "Schnellbestellung",
+      "subtitle": "Geben Sie SKUs und Mengen ein, um mehrere Produkte auf einmal zu Ihrem Warenkorb hinzuzufügen.",
+      "skuHeader": "SKU",
+      "qtyHeader": "Menge",
+      "actionsHeader": "Aktionen",
+      "skuPlaceholder": "SKU eingeben",
+      "addRow": "Zeile hinzufügen",
+      "removeRow": "Zeile entfernen",
+      "addAll": "Alle zum Warenkorb hinzufügen",
+      "adding": "Wird hinzugefügt…",
+      "added": "{name} hinzugefügt",
+      "skuNotFound": "Kein Produkt für diese SKU gefunden.",
+      "notPurchasable": "Dieser Artikel ist nicht käuflich verfügbar.",
+      "addFailed": "Dieser Artikel konnte nicht hinzugefügt werden. Bitte versuchen Sie es erneut.",
+      "searching": "Suche läuft…",
+      "noResults": "Keine Produkte gefunden"
+    },
+    "apply": {
+      "title": "Großhandelszugang beantragen",
+      "description": "Erzählen Sie uns von Ihrem Unternehmen. Wir prüfen Ihre Bewerbung und aktivieren nach der Genehmigung die Handelspreise.",
+      "companyLabel": "Firmenname",
+      "companyPlaceholder": "Acme Trading Co.",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "submit": "Bewerbung absenden",
+      "alreadyMember": "Sie haben bereits ein Großhandelskonto?",
+      "receivedTitle": "Bewerbung eingegangen",
+      "receivedDescription": "Vielen Dank für Ihre Bewerbung. Wir prüfen Ihr Konto und geben den Großhandelszugang in Kürze frei.",
+      "goToPortal": "Zum Portal"
+    },
+    "hiddenPrice": {
+      "signInForPricing": "Zur Preisanzeige anmelden",
+      "signInToOrder": "Zum Bestellen anmelden"
+    }
   }
 }

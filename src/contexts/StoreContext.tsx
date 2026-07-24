@@ -8,6 +8,7 @@ import { getStoreName } from "@/lib/store";
 export interface CountryWithMarket extends Country {
   currency: string;
   default_locale: string;
+  supported_locales: string[];
   marketId: string | null;
 }
 
@@ -45,12 +46,16 @@ function buildCountriesFromMarkets(markets: Market[]): CountryWithMarket[] {
         ...country,
         currency: market.currency,
         default_locale: market.default_locale,
+        supported_locales:
+          market.supported_locales.length > 0
+            ? market.supported_locales
+            : [market.default_locale],
         marketId: market.id,
       });
     }
   }
 
-  return result;
+  return result.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** Find a country by ISO code in the flat countries list. */

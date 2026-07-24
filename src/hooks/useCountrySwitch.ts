@@ -10,58 +10,86 @@ import { getPathWithoutPrefix } from "@/lib/utils/path";
 
 interface UseCountrySwitchOptions {
   currentCountry: string;
+  currentLocale: string;
   onBeforeNavigate?: () => void;
 }
 
 interface UseCountrySwitchResult {
+  isCartLoading: boolean;
   isCountryNavigating: boolean;
-  handleCountrySelect: (entry: CountryWithMarket) => Promise<void>;
+  handleCountrySelect: (
+    entry: CountryWithMarket,
+    locale?: string,
+  ) => Promise<boolean>;
 }
 
 export function useCountrySwitch({
   currentCountry,
+  currentLocale,
   onBeforeNavigate,
 }: UseCountrySwitchOptions): UseCountrySwitchResult {
-  const { cart, refreshCart } = useCart();
+  const { cart, loading: isCartLoading, refreshCart } = useCart();
   const pathname = usePathname();
   const [isCountryNavigating, setIsCountryNavigating] = useState(false);
 
   const handleCountrySelect = async (
     entry: CountryWithMarket,
-  ): Promise<void> => {
+    locale?: string,
+  ): Promise<boolean> => {
     const nextCountry = entry.iso.toLowerCase();
     const activeCountry = currentCountry.toLowerCase();
-    if (isCountryNavigating || nextCountry === activeCountry) {
-      return;
+    const newLocale = locale || entry.default_locale || "en";
+
+    if (isCountryNavigating) {
+      return false;
+    }
+
+    if (nextCountry === activeCountry && newLocale === currentLocale) {
+      return true;
+    }
+
+    if (isCartLoading) {
+      return false;
     }
 
     setIsCountryNavigating(true);
 
-    const newLocale = entry.default_locale || "en";
     const newCurrency = entry.currency;
     const pathRest = getPathWithoutPrefix(pathname);
     const newPath = `/${nextCountry}/${newLocale}${pathRest}`;
 
-    if (cart && (cart.currency !== newCurrency || cart.locale !== newLocale)) {
-      const result = await updateCartMarket(cart.id, {
-        currency: newCurrency,
-        locale: newLocale,
-      });
+    try {
+      if (
+        cart &&
+        (cart.currency !== newCurrency || cart.locale !== newLocale)
+      ) {
+        const result = await updateCartMarket(cart.id, {
+          currency: newCurrency,
+          locale: newLocale,
+        });
 
-      if (!result.success) {
-        setIsCountryNavigating(false);
-        return;
+        if (!result.success) {
+          return false;
+        }
+
+        await refreshCart();
       }
 
-      await refreshCart();
+      setStoreCookies(nextCountry, newLocale);
+      onBeforeNavigate?.();
+      window.location.assign(
+        `${newPath}${window.location.search}${window.location.hash}`,
+      );
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setIsCountryNavigating(false);
     }
-
-    setStoreCookies(nextCountry, newLocale);
-    onBeforeNavigate?.();
-    window.location.assign(newPath);
   };
 
   return {
+    isCartLoading,
     isCountryNavigating,
     handleCountrySelect,
   };

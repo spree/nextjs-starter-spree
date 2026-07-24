@@ -15,11 +15,21 @@ const mockClient = {
 
 vi.mock("@/lib/spree", () => ({
   getClient: () => mockClient,
+  getClientForSurface: () => mockClient,
+  cacheTagSuffix: () => "",
+  DEFAULT_SURFACE: "dtc",
+  isWholesaleEnabled: vi.fn().mockReturnValue(false),
   getCartToken: vi.fn().mockResolvedValue("order-token-123"),
-  getCartId: vi.fn().mockResolvedValue("order-1"),
+  // DTC cart only; the wholesale cart cookie is absent so poison/surface
+  // checks resolve to DTC.
+  getCartId: vi.fn((surface = "dtc") =>
+    Promise.resolve(surface === "wholesale" ? undefined : "order-1"),
+  ),
   getAccessToken: vi.fn().mockResolvedValue(undefined),
   setCartCookies: vi.fn(),
   clearCartCookies: vi.fn(),
+  // No wholesale cookie in these DTC tests → never poisoned.
+  isPoisonedDtcCartId: vi.fn().mockResolvedValue(false),
   getCartOptions: vi.fn().mockResolvedValue({
     spreeToken: "order-token-123",
     token: undefined,
@@ -113,7 +123,10 @@ describe("checkout server actions", () => {
       expect(mockClient.carts.update).toHaveBeenCalledWith(
         "order-1",
         addresses,
-        { spreeToken: "order-token-123", token: undefined },
+        {
+          spreeToken: "order-token-123",
+          token: undefined,
+        },
       );
       expect(result).toEqual({ success: true, cart: mockOrder });
     });
@@ -358,7 +371,10 @@ describe("checkout server actions", () => {
       expect(mockClient.carts.discountCodes.remove).toHaveBeenCalledWith(
         "order-1",
         "SAVE10",
-        { spreeToken: "order-token-123", token: undefined },
+        {
+          spreeToken: "order-token-123",
+          token: undefined,
+        },
       );
       expect(result).toEqual({ success: true, cart: mockOrder });
     });
@@ -386,7 +402,10 @@ describe("checkout server actions", () => {
       expect(mockClient.carts.giftCards.remove).toHaveBeenCalledWith(
         "order-1",
         "gc_abc123",
-        { spreeToken: "order-token-123", token: undefined },
+        {
+          spreeToken: "order-token-123",
+          token: undefined,
+        },
       );
       expect(result).toEqual({ success: true, cart: mockOrder });
     });

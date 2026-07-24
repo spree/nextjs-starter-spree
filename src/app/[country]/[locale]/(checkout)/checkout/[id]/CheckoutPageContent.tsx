@@ -670,7 +670,7 @@ function CheckoutPageContentInner({
       )}
 
       {/* Express checkout for guests */}
-      {!isAuthenticated && parseFloat(cart.total) > 0 && (
+      {!isAuthenticated && parseFloat(cart.total ?? "0") > 0 && (
         <div className={expressAvailable ? "mb-4" : ""}>
           {expressAvailable && (
             <h2 className="text-lg font-bold text-gray-900 mb-3">

@@ -8,6 +8,7 @@ import { CartButton } from "@/components/layout/CartButton";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { WishlistNavButton } from "@/components/layout/WishlistNavButton";
 import { Button } from "@/components/ui/button";
+import { isWholesaleEnabled } from "@/lib/spree";
 import { getStoreName } from "@/lib/store";
 
 const LazyMobileMenu = dynamic(
@@ -22,17 +23,13 @@ const LazyMobileMenu = dynamic(
   },
 );
 
-const LazyCountrySwitcher = dynamic(
+const LazyRegionPreferences = dynamic(
   () =>
-    import("@/components/layout/CountrySwitcher").then((mod) => ({
-      default: mod.CountrySwitcher,
+    import("@/components/layout/RegionPreferences").then((mod) => ({
+      default: mod.RegionPreferences,
     })),
   {
-    loading: () => (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400">
-        <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-      </div>
-    ),
+    loading: () => <div className="size-11" aria-hidden="true" />,
   },
 );
 
@@ -50,12 +47,17 @@ export async function Header({
   locale,
 }: HeaderProps) {
   const t = await getTranslations({ locale, namespace: "header" });
+  const wholesaleEnabled = isWholesaleEnabled();
 
   return (
     <SearchToggle
       basePath={basePath}
       left={
-        <LazyMobileMenu rootCategories={rootCategories} basePath={basePath} />
+        <LazyMobileMenu
+          rootCategories={rootCategories}
+          basePath={basePath}
+          wholesaleEnabled={wholesaleEnabled}
+        />
       }
       center={
         <Link href={basePath || "/"} className="flex items-center min-w-0">
@@ -72,8 +74,18 @@ export async function Header({
         </Link>
       }
       rightStart={
-        <div className="hidden lg:block">
-          <LazyCountrySwitcher />
+        <div className="hidden lg:flex lg:items-center lg:gap-1">
+          {/* Trade portal entry point — understated, secondary to the catalog nav.
+              Only shown when the wholesale addon is enabled. */}
+          {wholesaleEnabled && (
+            <Link
+              href={`${basePath}/wholesale`}
+              className="px-2 py-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors whitespace-nowrap"
+            >
+              {t("wholesale")}
+            </Link>
+          )}
+          <LazyRegionPreferences variant="header" />
         </div>
       }
       rightEnd={

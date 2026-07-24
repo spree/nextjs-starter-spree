@@ -37,7 +37,10 @@ services:
       retries: 10
 
   web:
-    image: ghcr.io/spree/spree:5.4.3.1
+    # `latest` tracks the newest published Spree, matching what
+    # create-spree-app / spree-starter build. Override for a pinned run:
+    #   SPREE_IMAGE=ghcr.io/spree/spree:5.6.0.rc4.1 docker compose … up
+    image: ${SPREE_IMAGE:-ghcr.io/spree/spree:latest}
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,6 +52,20 @@ services:
       SECRET_KEY_BASE: e2e_secret_key_base_not_for_production_use_only_e2e_e2e_e2e_e2e
       RAILS_FORCE_SSL: "false"
       RAILS_ASSUME_SSL: "false"
+      # The canonical public host Spree uses for URLs generated outside a request
+      # context — including the image/attachment URLs in Store API responses.
+      # Without it those fall back to the store's default (`localhost`), yielding
+      # unreachable `https://localhost/...` image URLs; the storefront reaches the
+      # backend at the host-mapped :4000, so point RAILS_HOST there. With both SSL
+      # flags false above, the scheme is http.
+      RAILS_HOST: localhost:4000
+      # Don't run SolidQueue inside Puma. Sample-data enqueues a storm of image
+      # download/transform jobs; running them in-process on the single web
+      # process starves API requests (ECONNREFUSED / multi-second page loads)
+      # and races the tests. With no dedicated worker the jobs simply queue and
+      # never run — fine here, since the checkout golden path doesn't depend on
+      # any job output (see note above), and the tests never assert on images.
+      SOLID_QUEUE_IN_PUMA: "false"
     ports:
       - "4000:3000"
     healthcheck:

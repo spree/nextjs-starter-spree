@@ -1,7 +1,14 @@
 "use server";
 
 import type { OrderListParams } from "@spree/sdk";
-import { getCartOptions, getClient, withAuthRefresh } from "@/lib/spree";
+import {
+  DEFAULT_SURFACE,
+  getCartOptions,
+  getClient,
+  getClientForSurface,
+  type Surface,
+  withAuthRefresh,
+} from "@/lib/spree";
 import { withFallback } from "./utils";
 
 export async function getOrders(params?: OrderListParams) {
@@ -31,10 +38,16 @@ export async function getOrders(params?: OrderListParams) {
 /**
  * Get a single order by ID or number.
  * Works for both authenticated users (JWT) and guests (spreeToken).
+ * The surface selects the cart token cookie + client so wholesale orders
+ * resolve through the wholesale channel.
  */
-export async function getOrder(id: string, params?: Record<string, unknown>) {
+export async function getOrder(
+  id: string,
+  params?: Record<string, unknown>,
+  surface: Surface = DEFAULT_SURFACE,
+) {
   return withFallback(async () => {
-    const options = await getCartOptions();
-    return getClient().orders.get(id, params, options);
+    const options = await getCartOptions(surface);
+    return getClientForSurface(surface).orders.get(id, params, options);
   }, null);
 }

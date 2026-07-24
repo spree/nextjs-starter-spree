@@ -28,6 +28,7 @@ import {
   buildLineItems,
   buildShippingRateMap,
   buildSpreeAddress,
+  hasPayableTotal,
   parseName,
 } from "@/lib/utils/express-checkout";
 import { isStripeConfigured, stripePromise } from "@/lib/utils/stripe";
@@ -522,15 +523,20 @@ function ExpressCheckoutWithElements({
 }
 
 export function ExpressCheckoutButton(props: ExpressCheckoutButtonProps) {
-  const { onAvailabilityChange } = props;
+  const { onAvailabilityChange, cart } = props;
+
+  // Express Checkout needs a positive payable amount. A prices-hidden cart has
+  // a null total, which would otherwise mount Elements with `amount: 0` and
+  // break the flow — so skip it entirely and report unavailable.
+  const payable = hasPayableTotal(cart);
 
   useEffect(() => {
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured || !payable) {
       onAvailabilityChange?.(false);
     }
-  }, [onAvailabilityChange]);
+  }, [onAvailabilityChange, payable]);
 
-  if (!isStripeConfigured) {
+  if (!isStripeConfigured || !payable) {
     return null;
   }
 

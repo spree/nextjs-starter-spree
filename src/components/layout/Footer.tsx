@@ -2,6 +2,7 @@ import type { Category } from "@spree/sdk";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { POLICY_LINKS } from "@/lib/constants/policies";
+import { isWholesaleEnabled } from "@/lib/spree";
 import { getStoreDescription, getStoreName } from "@/lib/store";
 import { CurrentYear } from "./CurrentYear";
 
@@ -27,6 +28,7 @@ export async function Footer({
 }: FooterProps) {
   const t = await getTranslations({ locale, namespace: "footer" });
   const tp = await getTranslations({ locale, namespace: "policies" });
+  const wholesaleEnabled = isWholesaleEnabled();
 
   return (
     <footer className="bg-primary text-gray-300">
@@ -133,6 +135,16 @@ export async function Footer({
                   {t("cart")}
                 </Link>
               </li>
+              {wholesaleEnabled && (
+                <li>
+                  <Link
+                    href={`${basePath}/wholesale`}
+                    className="text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
+                  >
+                    {t("wholesale")}
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

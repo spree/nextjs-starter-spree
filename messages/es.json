@@ -1,5 +1,8 @@
 {
   "common": {
+    "decreaseQuantity": "Disminuir cantidad",
+    "increaseQuantity": "Aumentar cantidad",
+    "quantity": "Cantidad",
     "subtotal": "Subtotal",
     "shipping": "Envio",
     "tax": "Impuestos",
@@ -39,6 +42,16 @@
     "closeSearch": "Cerrar busqueda",
     "myAccount": "Mi cuenta",
     "wishlist": "Lista de deseos"
+    "wholesale": "Mayorista"
+  },
+  "regionPreferences": {
+    "title": "Región e idioma",
+    "description": "Elige tu región e idioma. La moneda depende de la región seleccionada.",
+    "region": "Región",
+    "language": "Idioma",
+    "updatePreferences": "Actualizar preferencias",
+    "updatingPreferences": "Actualizando preferencias...",
+    "updatePreferencesFailed": "No pudimos actualizar tus preferencias regionales. Inténtalo de nuevo."
   },
   "footer": {
     "description": "Comercio electrónico de código abierto basado en Spree REST API, TypeScript SDK y Next.js. Alójalo tú mismo. Tus datos. Sin comisiones de plataforma.",
@@ -56,6 +69,7 @@
     "poweredBy": "Impulsado por",
     "copyright": "© {year} {storeName}. Impulsado por Spree Commerce.",
     "wishlist": "Lista de deseos"
+    "wholesale": "Comercio y venta al por mayor"
   },
   "home": {
     "welcome": "{storeName} Storefront",
@@ -70,7 +84,18 @@
     "fastShipping": "Envio rapido",
     "shippingDescription": "Entrega rapida y fiable hasta tu puerta.",
     "support": "Soporte 24/7",
-    "supportDescription": "Nuestro equipo esta aqui para ayudarte en cualquier momento."
+    "supportDescription": "Nuestro equipo esta aqui para ayudarte en cualquier momento.",
+    "wholesaleBadge": "Comercio y venta al por mayor",
+    "wholesaleTitle": "¿Compras para tu empresa?",
+    "wholesaleDescription": "Los compradores mayoristas aprobados obtienen precios al por mayor en todo el catálogo, pedidos rápidos por lotes mediante SKU y su propio historial de pedidos. Solicítalo una vez: lo revisaremos y activaremos tu cuenta.",
+    "wholesaleCtaPrimary": "Entrar al portal mayorista",
+    "wholesaleCtaSecondary": "Solicitar una cuenta",
+    "wholesaleBenefitPricingTitle": "Precios comerciales",
+    "wholesaleBenefitPricingDescription": "Tus tarifas negociadas se aplican automáticamente en todo el catálogo.",
+    "wholesaleBenefitQuickOrderTitle": "Pedido rápido por lotes",
+    "wholesaleBenefitQuickOrderDescription": "Introduce SKUs y cantidades para crear un pedido grande en segundos.",
+    "wholesaleBenefitOrdersTitle": "Historial de pedidos",
+    "wholesaleBenefitOrdersDescription": "Consulta pedidos anteriores y vuelve a pedir tus líneas habituales con un par de clics."
   },
   "cart": {
     "cart": "Carrito",
@@ -78,8 +103,6 @@
     "emptyCart": "Tu carrito esta vacio",
     "emptyCartDescription": "Parece que aun no has agregado nada a tu carrito.",
     "removeItem": "Eliminar articulo",
-    "decreaseQuantity": "Disminuir cantidad",
-    "increaseQuantity": "Aumentar cantidad",
     "shippingNote": "Envio e impuestos calculados en el checkout",
     "checkout": "Pagar",
     "viewCart": "Ver carrito",
@@ -145,8 +168,6 @@
     "noImageAvailable": "Imagen no disponible",
     "clickToZoom": "Clic para ampliar",
     "noProductsMatchingFilters": "No se encontraron productos que coincidan con tus filtros.",
-    "decreaseQuantity": "Disminuir cantidad",
-    "increaseQuantity": "Aumentar cantidad",
     "carouselPrev": "Productos anteriores",
     "carouselNext": "Productos siguientes",
     "lightboxClose": "Cerrar visor",
@@ -316,6 +337,7 @@
     "policyConsentRequired": "Debes aceptar las politicas de la tienda para crear una cuenta",
     "wishlist": "Lista de deseos",
     "wishlistDescription": "Gestiona tus productos guardados"
+    "policyConsentRequired": "Debes aceptar las politicas de la tienda para crear una cuenta"
   },
   "register": {
     "createAccount": "Crear cuenta",
@@ -548,5 +570,87 @@
     "refresh": "Actualizar",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  "wholesale": {
+    "portalTitle": "Portal mayorista",
+    "portalName": "Portal mayorista",
+    "badge": "Mayorista",
+    "nav": {
+      "catalog": "Catálogo",
+      "quickOrder": "Pedido rápido",
+      "cart": "Carrito",
+      "backToStore": "Volver a la tienda",
+      "signOut": "Cerrar sesión",
+      "signIn": "Iniciar sesión"
+    },
+    "signInWall": {
+      "title": "Precios comerciales para compradores aprobados",
+      "description": "Inicia sesión en tu cuenta mayorista para explorar todo el catálogo con tus precios comerciales negociados y realizar pedidos por lotes.",
+      "gatedNotice": "Este portal está disponible solo para compradores mayoristas aprobados. Los precios y productos son visibles después de iniciar sesión.",
+      "noAccount": "¿No tienes una cuenta mayorista?",
+      "applyLink": "Solicitar acceso",
+      "formTitle": "Iniciar sesión",
+      "formDescription": "Usa el correo electrónico y la contraseña de tu cuenta mayorista.",
+      "submit": "Iniciar sesión"
+    },
+    "pending": {
+      "title": "Tu solicitud está en revisión",
+      "description": "Gracias por tu solicitud. Tu cuenta está creada, pero el acceso mayorista aún está pendiente de aprobación.",
+      "nameLabel": "Nombre",
+      "emailLabel": "Correo electrónico",
+      "whatNext": "Nuestro equipo revisa las nuevas solicitudes mayoristas y activa los precios comerciales una vez aprobadas. Podrás iniciar sesión aquí en cuanto se active tu cuenta.",
+      "support": "¿Preguntas? Contacta con wholesale@example.com"
+    },
+    "plp": {
+      "title": "Catálogo mayorista",
+      "subtitle": "Tus precios comerciales se aplican automáticamente al finalizar la compra.",
+      "empty": "Aún no hay productos disponibles en el catálogo mayorista.",
+      "noMatchingProducts": "Ningún producto coincide con \"{query}\".",
+      "tradePriceNote": "Todos los precios del catálogo que se muestran son precios comerciales, aplicables a pedidos de {min}+ por artículo."
+    },
+    "pdp": {
+      "tradePriceHint": "El precio comercial se aplica a pedidos de {min}+"
+    },
+    "cart": {
+      "title": "Carrito mayorista",
+      "emptyDescription": "Añade productos del catálogo o usa el pedido rápido para empezar.",
+      "browseCatalog": "Explorar catálogo",
+      "unlockNudge": "Añade {count} más para desbloquear los precios comerciales",
+      "tradePriceApplied": "Precio comercial aplicado"
+    },
+    "quickOrder": {
+      "title": "Pedido rápido",
+      "subtitle": "Introduce SKUs y cantidades para añadir varios productos a tu carrito a la vez.",
+      "skuHeader": "SKU",
+      "qtyHeader": "Cant.",
+      "actionsHeader": "Acciones",
+      "skuPlaceholder": "Introduce un SKU",
+      "addRow": "Añadir fila",
+      "removeRow": "Eliminar fila",
+      "addAll": "Añadir todo al carrito",
+      "adding": "Añadiendo…",
+      "added": "{name} añadido",
+      "skuNotFound": "No se encontró ningún producto para este SKU.",
+      "notPurchasable": "Este artículo no está disponible para comprar.",
+      "addFailed": "No se pudo añadir este artículo. Inténtalo de nuevo.",
+      "searching": "Buscando…",
+      "noResults": "No se encontraron productos"
+    },
+    "apply": {
+      "title": "Solicitar acceso mayorista",
+      "description": "Cuéntanos sobre tu empresa. Revisaremos tu solicitud y activaremos los precios comerciales una vez aprobada.",
+      "companyLabel": "Nombre de la empresa",
+      "companyPlaceholder": "Acme Trading Co.",
+      "phoneLabel": "Teléfono",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "submit": "Enviar solicitud",
+      "alreadyMember": "¿Ya tienes una cuenta mayorista?",
+      "receivedTitle": "Solicitud recibida",
+      "receivedDescription": "Gracias por tu solicitud. Revisaremos tu cuenta y aprobaremos el acceso mayorista en breve.",
+      "goToPortal": "Ir al portal"
+    },
+    "hiddenPrice": {
+      "signInForPricing": "Inicia sesión para ver precios",
+      "signInToOrder": "Inicia sesión para pedir"
+    }
   }
 }

@@ -12,16 +12,34 @@ const mockClient = {
       delete: vi.fn(),
     },
   },
+  channel: {
+    get: vi.fn().mockResolvedValue({ id: "ch-dtc", code: "public" }),
+  },
 };
+
+const { mockGetCartId } = vi.hoisted(() => ({ mockGetCartId: vi.fn() }));
 
 vi.mock("@/lib/spree", () => ({
   getClient: () => mockClient,
+  getClientForSurface: () => mockClient,
+  cacheTagSuffix: () => "",
+  DEFAULT_SURFACE: "dtc",
+  isWholesaleEnabled: vi.fn().mockReturnValue(false),
   getCartToken: vi.fn().mockResolvedValue("order-token-123"),
-  getCartId: vi.fn().mockResolvedValue("cart-1"),
+  // Surface-aware default is (re)installed in beforeEach — clearAllMocks resets
+  // implementations, so setting it here would not survive.
+  getCartId: mockGetCartId,
   getAccessToken: vi.fn().mockResolvedValue(undefined),
   getLocaleOptions: vi.fn().mockResolvedValue({ locale: "en", country: "us" }),
   setCartCookies: vi.fn(),
   clearCartCookies: vi.fn(),
+  // Real logic against the mocked getCartId — the DTC cookie is poisoned when
+  // it holds the wholesale cart's id.
+  isPoisonedDtcCartId: async (cartId: string, surface: string) => {
+    if (surface !== "dtc") return false;
+    const wholesaleCartId = await mockGetCartId("wholesale");
+    return Boolean(wholesaleCartId) && wholesaleCartId === cartId;
+  },
   getCartOptions: vi.fn().mockResolvedValue({
     spreeToken: "order-token-123",
     token: undefined,
@@ -54,8 +72,15 @@ const mockCart = {
 };
 
 describe("cart server actions", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Surface-aware cart-id cookie: only DTC has one by default, so the
+    // cross-surface poison guard sees no wholesale cookie to collide with.
+    const { getCartId } = await import("@/lib/spree");
+    (getCartId as ReturnType<typeof vi.fn>).mockImplementation(
+      async (surface = "dtc") =>
+        surface === "wholesale" ? undefined : "cart-1",
+    );
   });
 
   describe("getCart", () => {
@@ -67,6 +92,52 @@ describe("cart server actions", () => {
         token: undefined,
       });
       expect(result).toBe(mockCart);
+    });
+
+    it("drops a DTC cookie poisoned with the wholesale cart id and returns null", async () => {
+      const { getCartId, clearCartCookies } = await import("@/lib/spree");
+      // Both surfaces' cookies point at the same cart — the pre-fix poisoning.
+      (getCartId as ReturnType<typeof vi.fn>).mockResolvedValue("cart-1");
+
+      const result = await getCart(undefined, "dtc");
+
+      expect(result).toBeNull();
+      expect(mockClient.carts.get).not.toHaveBeenCalled();
+      expect(clearCartCookies).toHaveBeenCalledWith("dtc");
+    });
+
+    it("keeps the wholesale cart even when the DTC cookie collides (directional guard)", async () => {
+      const { getCartId } = await import("@/lib/spree");
+      (getCartId as ReturnType<typeof vi.fn>).mockResolvedValue("cart-1");
+      mockClient.carts.get.mockResolvedValue(mockCart);
+
+      const result = await getCart(undefined, "wholesale");
+
+      expect(result).toBe(mockCart);
+    });
+
+    it("drops a cookie cart whose channel_id does not match the surface", async () => {
+      const { clearCartCookies } = await import("@/lib/spree");
+      mockClient.carts.get.mockResolvedValue({
+        ...mockCart,
+        channel_id: "ch-wholesale",
+      });
+      // DTC surface resolves to ch-dtc (mockClient.channel.get), so ch-wholesale
+      // is a confirmed mismatch.
+      const result = await getCart(undefined, "dtc");
+
+      expect(result).toBeNull();
+      expect(clearCartCookies).toHaveBeenCalledWith("dtc");
+    });
+
+    it("keeps a cookie cart whose channel_id matches the surface", async () => {
+      mockClient.carts.get.mockResolvedValue({
+        ...mockCart,
+        channel_id: "ch-dtc",
+      });
+      const result = await getCart(undefined, "dtc");
+
+      expect(result).toMatchObject({ id: "cart-1" });
     });
   });
 
@@ -176,7 +247,10 @@ describe("cart server actions", () => {
       expect(mockClient.carts.items.delete).toHaveBeenCalledWith(
         "cart-1",
         "li-1",
-        { spreeToken: "order-token-123", token: undefined },
+        {
+          spreeToken: "order-token-123",
+          token: undefined,
+        },
       );
       expect(result).toEqual({ success: true, cart: mockCart });
     });

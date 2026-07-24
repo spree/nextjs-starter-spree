@@ -3,7 +3,9 @@
 import type { Customer } from "@spree/sdk";
 import { updateTag } from "next/cache";
 import {
+  cacheTagSuffix,
   clearAccessToken,
+  clearAllCartCookies,
   clearAuthCookies,
   clearCartCookies,
   clearRefreshToken,
@@ -14,6 +16,7 @@ import {
   getClient,
   getRefreshToken,
   isAuthError,
+  SURFACES,
   setAccessToken,
   setRefreshToken,
   withAuthRefresh,
@@ -151,6 +154,9 @@ export async function register(params: {
   password_confirmation: string;
   first_name?: string;
   last_name?: string;
+  phone?: string;
+  /** Arbitrary key-value data stored on the customer (e.g. wholesale company). */
+  metadata?: Record<string, unknown>;
 }): Promise<{
   success: boolean;
   user?: {
@@ -188,9 +194,18 @@ export async function logout(): Promise<void> {
 
   await clearAccessToken();
   await clearRefreshToken();
-  await clearCartCookies();
+  // Clear every surface's cart — the wholesale cart lives in its own cookie
+  // pair and cache tag, so a DTC-only clear would leave it behind for the
+  // next session.
+  await clearAllCartCookies();
   updateTag("customer");
-  updateTag("cart");
+  // Invalidate both the cart and the checkout (address/delivery) caches for
+  // every surface — checkout state is tagged separately, so a cart-only clear
+  // would leave the previous buyer's checkout data cached after logout.
+  for (const surface of SURFACES) {
+    updateTag(`cart${cacheTagSuffix(surface)}`);
+    updateTag(`checkout${cacheTagSuffix(surface)}`);
+  }
   updateTag("addresses");
   updateTag("credit-cards");
 }

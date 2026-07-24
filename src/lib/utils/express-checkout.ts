@@ -47,6 +47,19 @@ export function randomSuffix(): string {
 }
 
 /**
+ * Whether an order has a positive payable total for Stripe. Express Checkout
+ * requires a positive `amount`; a null total (money fields hidden for a
+ * prices-hidden guest cart) or a zero total has no valid payable amount, so the
+ * caller must skip Express Checkout entirely rather than send `amount: 0`.
+ */
+export function hasPayableTotal(order: Cart): boolean {
+  const total = order.total ?? order.item_total;
+  if (total == null) return false;
+  const n = Number(total);
+  return Number.isFinite(n) && n > 0;
+}
+
+/**
  * Build the line items array for the Stripe payment sheet from a Spree order.
  * NOTE: Shipping is excluded because the Express Checkout Element handles it
  * separately via shippingRates. Including it here would cause the line item
@@ -56,15 +69,23 @@ export function buildLineItems(order: Cart) {
   const currency = order.currency;
   const items: Array<{ name: string; amount: number }> = [];
 
-  const itemTotal = toCents(order.item_total, currency);
-  items.push({ name: "Subtotal", amount: itemTotal });
+  // The subtotal anchors the breakdown. When it's unknown — money fields are
+  // nullable for prices-hidden carts — return no line items at all so the
+  // Express Checkout Element falls back to the total-only amount, rather than
+  // emitting orphan Discount/Tax lines against a missing subtotal.
+  if (order.item_total == null) return items;
 
-  const promoTotal = toCents(order.discount_total, currency);
+  items.push({ name: "Subtotal", amount: toCents(order.item_total, currency) });
+
+  const promoTotal = toCents(order.discount_total ?? "0", currency);
   if (promoTotal < 0) {
     items.push({ name: "Discount", amount: promoTotal });
   }
 
-  const additionalTaxTotal = toCents(order.additional_tax_total, currency);
+  const additionalTaxTotal = toCents(
+    order.additional_tax_total ?? "0",
+    currency,
+  );
   if (additionalTaxTotal > 0) {
     items.push({ name: "Tax", amount: additionalTaxTotal });
   }

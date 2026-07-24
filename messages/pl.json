@@ -1,5 +1,8 @@
 {
   "common": {
+    "decreaseQuantity": "Zmniejsz ilość",
+    "increaseQuantity": "Zwiększ ilość",
+    "quantity": "Ilość",
     "subtotal": "Suma częściowa",
     "shipping": "Wysyłka",
     "tax": "Podatek",
@@ -39,6 +42,16 @@
     "closeSearch": "Zamknij wyszukiwanie",
     "myAccount": "Moje konto",
     "wishlist": "Lista życzeń"
+    "wholesale": "Hurt"
+  },
+  "regionPreferences": {
+    "title": "Region i język",
+    "description": "Wybierz region i język. Waluta jest ustawiana na podstawie wybranego regionu.",
+    "region": "Region",
+    "language": "Język",
+    "updatePreferences": "Zaktualizuj preferencje",
+    "updatingPreferences": "Aktualizowanie preferencji...",
+    "updatePreferencesFailed": "Nie udało się zaktualizować preferencji regionalnych. Spróbuj ponownie."
   },
   "footer": {
     "description": "Sklep e-commerce open source oparty na Spree REST API, TypeScript SDK i Next.js. Hostuj samodzielnie. Twoje dane. Zero opłat platformowych.",
@@ -56,6 +69,7 @@
     "poweredBy": "Zasilany przez",
     "copyright": "© {year} {storeName}. Zasilany przez Spree Commerce.",
     "wishlist": "Lista życzeń"
+    "wholesale": "Handel i sprzedaż hurtowa"
   },
   "home": {
     "welcome": "{storeName} Storefront",
@@ -70,7 +84,18 @@
     "fastShipping": "Szybka wysyłka",
     "shippingDescription": "Szybka i niezawodna dostawa pod Twoje drzwi.",
     "support": "Wsparcie 24/7",
-    "supportDescription": "Nasz zespół jest do Twojej dyspozycji o każdej porze."
+    "supportDescription": "Nasz zespół jest do Twojej dyspozycji o każdej porze.",
+    "wholesaleBadge": "Handel i sprzedaż hurtowa",
+    "wholesaleTitle": "Kupujesz dla swojej firmy?",
+    "wholesaleDescription": "Zatwierdzeni nabywcy hurtowi otrzymują ceny hurtowe na cały katalog, szybkie zamówienia zbiorcze według numeru SKU oraz własną historię zamówień. Złóż wniosek raz — sprawdzimy go i aktywujemy Twoje konto.",
+    "wholesaleCtaPrimary": "Przejdź do portalu hurtowego",
+    "wholesaleCtaSecondary": "Złóż wniosek o konto",
+    "wholesaleBenefitPricingTitle": "Ceny handlowe",
+    "wholesaleBenefitPricingDescription": "Twoje wynegocjowane stawki stosowane automatycznie w całym katalogu.",
+    "wholesaleBenefitQuickOrderTitle": "Szybkie zamówienie zbiorcze",
+    "wholesaleBenefitQuickOrderDescription": "Wprowadź numery SKU i ilości, aby w kilka sekund złożyć duże zamówienie.",
+    "wholesaleBenefitOrdersTitle": "Historia zamówień",
+    "wholesaleBenefitOrdersDescription": "Przeglądaj poprzednie zamówienia i zamawiaj ponownie swoje stałe pozycje w kilka kliknięć."
   },
   "cart": {
     "cart": "Koszyk",
@@ -78,8 +103,6 @@
     "emptyCart": "Twój koszyk jest pusty",
     "emptyCartDescription": "Wygląda na to, że nie dodałeś jeszcze nic do koszyka.",
     "removeItem": "Usuń produkt",
-    "decreaseQuantity": "Zmniejsz ilość",
-    "increaseQuantity": "Zwiększ ilość",
     "shippingNote": "Koszty wysyłki i podatki zostaną obliczone przy kasie",
     "checkout": "Do kasy",
     "viewCart": "Zobacz koszyk",
@@ -145,8 +168,6 @@
     "noImageAvailable": "Brak zdjęcia",
     "clickToZoom": "Kliknij aby powiększyć",
     "noProductsMatchingFilters": "Nie znaleziono produktów pasujących do wybranych filtrów.",
-    "decreaseQuantity": "Zmniejsz ilość",
-    "increaseQuantity": "Zwiększ ilość",
     "carouselPrev": "Poprzednie produkty",
     "carouselNext": "Następne produkty",
     "lightboxClose": "Zamknij podgląd",
@@ -548,5 +569,87 @@
     "refresh": "Odśwież",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  "wholesale": {
+    "portalTitle": "Portal hurtowy",
+    "portalName": "Portal hurtowy",
+    "badge": "Hurt",
+    "nav": {
+      "catalog": "Katalog",
+      "quickOrder": "Szybkie zamówienie",
+      "cart": "Koszyk",
+      "backToStore": "Wróć do sklepu",
+      "signOut": "Wyloguj się",
+      "signIn": "Zaloguj się"
+    },
+    "signInWall": {
+      "title": "Ceny handlowe dla zatwierdzonych nabywców",
+      "description": "Zaloguj się do swojego konta hurtowego, aby przeglądać cały katalog w wynegocjowanych cenach handlowych i składać zamówienia zbiorcze.",
+      "gatedNotice": "Ten portal jest dostępny wyłącznie dla zatwierdzonych nabywców hurtowych. Ceny i produkty są widoczne po zalogowaniu.",
+      "noAccount": "Nie masz konta hurtowego?",
+      "applyLink": "Złóż wniosek o dostęp",
+      "formTitle": "Zaloguj się",
+      "formDescription": "Użyj adresu e-mail i hasła swojego konta hurtowego.",
+      "submit": "Zaloguj się"
+    },
+    "pending": {
+      "title": "Twój wniosek jest rozpatrywany",
+      "description": "Dziękujemy za złożenie wniosku. Twoje konto zostało utworzone, ale dostęp hurtowy nadal czeka na zatwierdzenie.",
+      "nameLabel": "Imię i nazwisko",
+      "emailLabel": "E-mail",
+      "whatNext": "Nasz zespół sprawdza nowe wnioski hurtowe i po zatwierdzeniu włącza ceny handlowe. Będziesz mógł zalogować się tutaj, gdy tylko Twoje konto zostanie aktywowane.",
+      "support": "Masz pytania? Skontaktuj się z wholesale@example.com"
+    },
+    "plp": {
+      "title": "Katalog hurtowy",
+      "subtitle": "Twoje ceny handlowe są stosowane automatycznie przy realizacji zamówienia.",
+      "empty": "W katalogu hurtowym nie ma jeszcze dostępnych produktów.",
+      "noMatchingProducts": "Żaden produkt nie pasuje do \"{query}\".",
+      "tradePriceNote": "Wszystkie wyświetlane ceny katalogowe to ceny handlowe, obowiązujące przy zamówieniach od {min} szt. na pozycję."
+    },
+    "pdp": {
+      "tradePriceHint": "Cena handlowa obowiązuje przy zamówieniach od {min}"
+    },
+    "cart": {
+      "title": "Koszyk hurtowy",
+      "emptyDescription": "Dodaj produkty z katalogu lub użyj szybkiego zamówienia, aby rozpocząć.",
+      "browseCatalog": "Przeglądaj katalog",
+      "unlockNudge": "Dodaj jeszcze {count}, aby odblokować ceny handlowe",
+      "tradePriceApplied": "Zastosowano cenę handlową"
+    },
+    "quickOrder": {
+      "title": "Szybkie zamówienie",
+      "subtitle": "Wprowadź numery SKU i ilości, aby dodać wiele produktów do koszyka jednocześnie.",
+      "skuHeader": "SKU",
+      "qtyHeader": "Ilość",
+      "actionsHeader": "Akcje",
+      "skuPlaceholder": "Wprowadź SKU",
+      "addRow": "Dodaj wiersz",
+      "removeRow": "Usuń wiersz",
+      "addAll": "Dodaj wszystko do koszyka",
+      "adding": "Dodawanie…",
+      "added": "Dodano {name}",
+      "skuNotFound": "Nie znaleziono produktu dla tego numeru SKU.",
+      "notPurchasable": "Ten artykuł nie jest dostępny do zakupu.",
+      "addFailed": "Nie udało się dodać tego artykułu. Spróbuj ponownie.",
+      "searching": "Wyszukiwanie…",
+      "noResults": "Nie znaleziono produktów"
+    },
+    "apply": {
+      "title": "Złóż wniosek o dostęp hurtowy",
+      "description": "Opowiedz nam o swojej firmie. Sprawdzimy Twój wniosek i po zatwierdzeniu włączymy ceny handlowe.",
+      "companyLabel": "Nazwa firmy",
+      "companyPlaceholder": "Acme Trading Co.",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "submit": "Wyślij wniosek",
+      "alreadyMember": "Masz już konto hurtowe?",
+      "receivedTitle": "Wniosek otrzymany",
+      "receivedDescription": "Dziękujemy za złożenie wniosku. Sprawdzimy Twoje konto i wkrótce zatwierdzimy dostęp hurtowy.",
+      "goToPortal": "Przejdź do portalu"
+    },
+    "hiddenPrice": {
+      "signInForPricing": "Zaloguj się, aby zobaczyć ceny",
+      "signInToOrder": "Zaloguj się, aby zamówić"
+    }
   }
 }

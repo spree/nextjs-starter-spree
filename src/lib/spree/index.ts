@@ -9,11 +9,20 @@ export {
   type SessionState,
   withAuthRefresh,
 } from "./auth-helpers";
-export { getClient, getConfig, initSpreeNext } from "./config";
+export {
+  getClient,
+  getClientForSurface,
+  getConfig,
+  getWholesaleChannelCode,
+  getWholesaleClient,
+  initSpreeNext,
+  isWholesaleEnabled,
+} from "./config";
 // Cookie management
 export {
   canPersistCookies,
   clearAccessToken,
+  clearAllCartCookies,
   clearCartCookies,
   clearRefreshToken,
   getAccessToken,
@@ -21,6 +30,7 @@ export {
   getCartOptions,
   getCartToken,
   getRefreshToken,
+  isPoisonedDtcCartId,
   requireCartId,
   setAccessToken,
   setCartCookies,
@@ -30,4 +40,12 @@ export {
 export { decodeJwtExp, isJwtExpired } from "./jwt";
 // Locale resolution (reads country/locale from cookies)
 export { getLocaleOptions } from "./locale";
+// Surface (DTC vs wholesale sales context)
+export {
+  cacheTagSuffix,
+  cartCookieBaseName,
+  DEFAULT_SURFACE,
+  SURFACES,
+  type Surface,
+} from "./surface";
 export type { SpreeNextConfig, SpreeNextOptions } from "./types";

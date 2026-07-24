@@ -2,10 +2,28 @@
 
 import type { Order } from "@spree/sdk";
 import { updateTag } from "next/cache";
-import { getCartOptions, getClient, requireCartId } from "@/lib/spree";
+import {
+  cacheTagSuffix,
+  getCartOptions,
+  getClientForSurface,
+  requireCartId,
+  type Surface,
+} from "@/lib/spree";
 import { getCart } from "./cart";
+import {
+  resolveSurfaceForCart,
+  resolveSurfaceForCartVerified,
+} from "./checkout";
 import { getOrder } from "./orders";
 import { actionResult } from "./utils";
+
+function checkoutTag(surface: Surface): string {
+  return `checkout${cacheTagSuffix(surface)}`;
+}
+
+function cartTag(surface: Surface): string {
+  return `cart${cacheTagSuffix(surface)}`;
+}
 
 export async function createCheckoutPaymentSession(
   cartId: string,
@@ -13,9 +31,12 @@ export async function createCheckoutPaymentSession(
   externalData?: Record<string, unknown>,
 ) {
   return actionResult(async () => {
-    const options = await getCartOptions();
-    const id = await requireCartId();
-    const session = await getClient().carts.paymentSessions.create(
+    const surface = await resolveSurfaceForCart(cartId);
+    const options = await getCartOptions(surface);
+    const id = await requireCartId(surface);
+    const session = await getClientForSurface(
+      surface,
+    ).carts.paymentSessions.create(
       id,
       {
         payment_method_id: paymentMethodId,
@@ -23,9 +44,31 @@ export async function createCheckoutPaymentSession(
       },
       options,
     );
-    updateTag("checkout");
+    updateTag(checkoutTag(surface));
     return { session };
   }, "Failed to create payment session");
+}
+
+/**
+ * Syncs an existing payment session with the provider (e.g. after the cart
+ * total changed). Keeps the provider-side session — and therefore the
+ * mounted gateway form — alive, unlike creating a fresh session.
+ */
+export async function updateCheckoutPaymentSession(
+  cartId: string,
+  sessionId: string,
+  params: { amount?: string; external_data?: Record<string, unknown> } = {},
+) {
+  return actionResult(async () => {
+    const surface = await resolveSurfaceForCart(cartId);
+    const options = await getCartOptions(surface);
+    const id = await requireCartId(surface);
+    const session = await getClientForSurface(
+      surface,
+    ).carts.paymentSessions.update(id, sessionId, params, options);
+    updateTag(checkoutTag(surface));
+    return { session };
+  }, "Failed to update payment session");
 }
 
 /**
@@ -37,14 +80,15 @@ export async function createDirectPayment(
   paymentMethodId: string,
 ) {
   return actionResult(async () => {
-    const options = await getCartOptions();
-    const id = await requireCartId();
-    const payment = await getClient().carts.payments.create(
+    const surface = await resolveSurfaceForCart(cartId);
+    const options = await getCartOptions(surface);
+    const id = await requireCartId(surface);
+    const payment = await getClientForSurface(surface).carts.payments.create(
       id,
       { payment_method_id: paymentMethodId },
       options,
     );
-    updateTag("checkout");
+    updateTag(checkoutTag(surface));
     return { payment };
   }, "Failed to create payment");
 }
@@ -55,15 +99,13 @@ export async function completeCheckoutPaymentSession(
   params?: { session_result?: string; external_data?: Record<string, unknown> },
 ) {
   return actionResult(async () => {
-    const options = await getCartOptions();
-    const id = await requireCartId();
-    const session = await getClient().carts.paymentSessions.complete(
-      id,
-      sessionId,
-      params,
-      options,
-    );
-    updateTag("checkout");
+    const surface = await resolveSurfaceForCart(cartId);
+    const options = await getCartOptions(surface);
+    const id = await requireCartId(surface);
+    const session = await getClientForSurface(
+      surface,
+    ).carts.paymentSessions.complete(id, sessionId, params, options);
+    updateTag(checkoutTag(surface));
     return { session };
   }, "Failed to complete payment session");
 }
@@ -76,12 +118,19 @@ export async function completeCheckoutPaymentSession(
  * When the order was already completed (403/422), fetch it from the API
  * so the caller always gets the order data for caching on the thank-you page.
  */
-export async function completeCheckoutOrder(cartId: string) {
+export async function completeCheckoutOrder(
+  cartId: string,
+  knownSurface?: Surface,
+) {
+  const surface = knownSurface ?? (await resolveSurfaceForCart(cartId));
   try {
-    const options = await getCartOptions();
-    const order: Order = await getClient().carts.complete(cartId, options);
-    updateTag("checkout");
-    updateTag("cart");
+    const options = await getCartOptions(surface);
+    const order: Order = await getClientForSurface(surface).carts.complete(
+      cartId,
+      options,
+    );
+    updateTag(checkoutTag(surface));
+    updateTag(cartTag(surface));
     return { success: true as const, order };
   } catch (error: unknown) {
     if (error && typeof error === "object" && "status" in error) {
@@ -89,9 +138,11 @@ export async function completeCheckoutOrder(cartId: string) {
       if (status === 403 || status === 422) {
         // Order already completed — try to fetch it so the thank-you page
         // can cache and display it without a second round-trip.
-        const completedOrder = await getOrder(cartId).catch(() => null);
-        updateTag("checkout");
-        updateTag("cart");
+        const completedOrder = await getOrder(cartId, undefined, surface).catch(
+          () => null,
+        );
+        updateTag(checkoutTag(surface));
+        updateTag(cartTag(surface));
         return { success: true as const, order: completedOrder };
       }
     }
@@ -116,13 +167,29 @@ export async function confirmPaymentAndCompleteCart(
 ): Promise<
   { success: true; order: unknown } | { success: false; error: string }
 > {
+  // Cookies may have been cleared during the offsite redirect, so verify the
+  // surface against the cart's own channel rather than trusting the cookie.
+  const verifiedSurface = await resolveSurfaceForCartVerified(cartId);
+  if (verifiedSurface === "unverified") {
+    // The wholesale check couldn't run to completion (transient fetch/channel
+    // failure). Fail closed rather than defaulting to DTC: completing a
+    // possibly-wholesale checkout through the DTC client, or reporting success
+    // for a cart we couldn't fetch, would be worse than asking the caller to
+    // retry once the backend recovers.
+    return {
+      success: false,
+      error: "Couldn't confirm your order yet. Please try again in a moment.",
+    };
+  }
+  const surface = verifiedSurface;
   try {
-    // Use explicit cartId — cookies may have been cleared during offsite redirect
-    const cart = await getCart(cartId);
+    const cart = await getCart(cartId, surface);
     if (!cart) {
       // Cart not found — the order may already be completed (e.g. by webhook).
       // Try fetching it as a completed order before giving up.
-      const completedOrder = await getOrder(cartId).catch(() => null);
+      const completedOrder = await getOrder(cartId, undefined, surface).catch(
+        () => null,
+      );
       return { success: true, order: completedOrder };
     }
 
@@ -131,9 +198,11 @@ export async function confirmPaymentAndCompleteCart(
     }
 
     if (sessionId) {
-      const options = await getCartOptions();
-      const id = await requireCartId();
-      const completeResult = await getClient().carts.paymentSessions.complete(
+      const options = await getCartOptions(surface);
+      const id = await requireCartId(surface);
+      const completeResult = await getClientForSurface(
+        surface,
+      ).carts.paymentSessions.complete(
         id,
         sessionId,
         sessionResult ? { session_result: sessionResult } : undefined,
@@ -148,9 +217,11 @@ export async function confirmPaymentAndCompleteCart(
     } else if (redirectResult) {
       // Adyen redirect flow: redirectResult is appended by Adyen to the return URL.
       // Pass it to the backend which resolves the session and processes the redirect.
-      const options = await getCartOptions();
-      const id = await requireCartId();
-      const completeResult = await getClient().carts.paymentSessions.complete(
+      const options = await getCartOptions(surface);
+      const id = await requireCartId(surface);
+      const completeResult = await getClientForSurface(
+        surface,
+      ).carts.paymentSessions.complete(
         id,
         adyenSessionId ?? "",
         {
@@ -168,7 +239,9 @@ export async function confirmPaymentAndCompleteCart(
       }
     }
 
-    const result = await completeCheckoutOrder(cartId);
+    // Pass the verified surface so completion doesn't re-resolve from the
+    // (possibly cleared) cookie.
+    const result = await completeCheckoutOrder(cartId, surface);
     if (result.success) {
       return { success: true, order: result.order };
     }
