@@ -13,10 +13,12 @@ export function WishlistNavButton() {
   const basePath = extractBasePath(pathname);
   const t = useTranslations("header");
   const { itemCount } = useWishlist();
+  const ariaLabel =
+    itemCount > 0 ? `${t("wishlist")} (${itemCount})` : t("wishlist");
 
   return (
     <Button variant="ghost" size="icon-lg" asChild className="relative">
-      <Link href={`${basePath}/account/wishlist`} aria-label={t("wishlist")}>
+      <Link href={`${basePath}/account/wishlist`} aria-label={ariaLabel}>
         <Heart className="size-5" />
         {itemCount > 0 && (
           <span className="absolute top-0 right-0 bg-primary text-white text-xs font-medium rounded-full h-5 w-5 flex items-center justify-center">

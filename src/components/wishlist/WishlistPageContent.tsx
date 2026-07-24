@@ -175,9 +175,7 @@ export function WishlistPageContent() {
                   <Button
                     size="sm"
                     disabled={
-                      updating ||
-                      addingVariantId !== null ||
-                      !item.variant.purchasable
+                      addingVariantId !== null || !item.variant.purchasable
                     }
                     onClick={async () => {
                       setAddingVariantId(item.variant_id);

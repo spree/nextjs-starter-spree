@@ -11,7 +11,7 @@ const BASE = "/us/en";
 
 test("guest is redirected to account when clicking wishlist on PDP", async ({
   page,
-}) => {
+}): Promise<void> => {
   await page.goto(`${BASE}/products`);
 
   const firstProduct = page.locator('a[href*="/products/"]').first();
@@ -31,7 +31,7 @@ test("guest is redirected to account when clicking wishlist on PDP", async ({
 
 test("authenticated user can add and remove a wishlist item", async ({
   page,
-}) => {
+}): Promise<void> => {
   const email = `wishlist-e2e-${Date.now()}@example.com`;
   const password = "Password123!";
 
@@ -67,7 +67,11 @@ test("authenticated user can add and remove a wishlist item", async ({
   ).toBeVisible({ timeout: 10_000 });
 });
 
-async function registerUser(page: Page, email: string, password: string) {
+async function registerUser(
+  page: Page,
+  email: string,
+  password: string,
+): Promise<void> {
   await page.goto(`${BASE}/account/register`);
 
   await page.getByLabel(/^first name$/i).fill("Wishlist");

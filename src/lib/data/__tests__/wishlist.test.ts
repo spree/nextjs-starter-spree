@@ -1,3 +1,4 @@
+import type { Wishlist } from "@spree/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockClient = {
@@ -64,7 +65,7 @@ const wishlistFixture = {
       },
     },
   ],
-} as never;
+} as unknown as Wishlist;
 
 describe("wishlist server actions", () => {
   beforeEach(() => {
@@ -96,7 +97,10 @@ describe("wishlist server actions", () => {
       .mockResolvedValueOnce({ ...wishlistFixture, items: [] })
       .mockResolvedValueOnce({
         ...wishlistFixture,
-        items: [...wishlistFixture.items, { id: "wi_2", variant_id: "var_2" }],
+        items: [
+          ...(wishlistFixture.items ?? []),
+          { id: "wi_2", variant_id: "var_2" },
+        ],
       });
 
     const result = await addWishlistItem("var_2", 1);

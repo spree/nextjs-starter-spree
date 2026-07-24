@@ -1,3 +1,4 @@
+import type { Wishlist } from "@spree/sdk";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -50,7 +51,7 @@ const wishlistFixture = {
       variant: { id: "var_1", price: { display_amount: "$10.00" } },
     },
   ],
-} as never;
+} as unknown as Wishlist;
 
 function wrapper({ children }: { children: ReactNode }) {
   return <WishlistProvider>{children}</WishlistProvider>;
@@ -77,8 +78,11 @@ describe("WishlistContext", () => {
   it("adds an item and updates state", async () => {
     const updatedWishlist = {
       ...wishlistFixture,
-      items: [...wishlistFixture.items, { id: "wi_2", variant_id: "var_2" }],
-    } as never;
+      items: [
+        ...(wishlistFixture.items ?? []),
+        { id: "wi_2", variant_id: "var_2" },
+      ],
+    } as unknown as Wishlist;
 
     mockAddWishlistItem.mockResolvedValue({
       success: true,

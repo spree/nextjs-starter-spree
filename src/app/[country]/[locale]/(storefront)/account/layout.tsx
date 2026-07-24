@@ -163,10 +163,18 @@ export default function AccountLayout({
   ]);
   const isAuthPage = authPagePaths.has(pathname);
   const isMainAccountPage = pathname === `${basePath}/account`;
+  const isGuestAccessibleAccountPage =
+    pathname === `${basePath}/account/wishlist`;
 
   // Redirect to login if not authenticated and trying to access protected sub-pages
   useEffect(() => {
-    if (!loading && !isAuthenticated && !isAuthPage && !isMainAccountPage) {
+    if (
+      !loading &&
+      !isAuthenticated &&
+      !isAuthPage &&
+      !isMainAccountPage &&
+      !isGuestAccessibleAccountPage
+    ) {
       router.replace(`${basePath}/account`);
     }
   }, [
@@ -174,12 +182,19 @@ export default function AccountLayout({
     isAuthenticated,
     isAuthPage,
     isMainAccountPage,
+    isGuestAccessibleAccountPage,
     basePath,
     router,
   ]);
 
   // Show loading or redirect-in-progress skeleton
-  if (loading || (!isAuthenticated && !isAuthPage && !isMainAccountPage)) {
+  if (
+    loading ||
+    (!isAuthenticated &&
+      !isAuthPage &&
+      !isMainAccountPage &&
+      !isGuestAccessibleAccountPage)
+  ) {
     if (isAuthPage || isMainAccountPage) {
       return (
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16">
