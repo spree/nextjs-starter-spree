@@ -41,7 +41,7 @@
     "openSearch": "Suche öffnen",
     "closeSearch": "Suche schließen",
     "myAccount": "Mein Konto",
-    "wishlist": "Wunschliste"
+    "wishlist": "Wunschliste",
     "wholesale": "Großhandel"
   },
   "regionPreferences": {
@@ -68,7 +68,7 @@
     "policies": "Richtlinien",
     "poweredBy": "Betrieben von",
     "copyright": "© {year} {storeName}. Unterstützt durch Spree Commerce.",
-    "wishlist": "Wunschliste"
+    "wishlist": "Wunschliste",
     "wholesale": "Handel & Großhandel"
   },
   "home": {
@@ -569,6 +569,7 @@
     "refresh": "Aktualisieren",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  },
   "wholesale": {
     "portalTitle": "Großhandelsportal",
     "portalName": "Großhandelsportal",

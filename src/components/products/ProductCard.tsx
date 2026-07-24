@@ -65,9 +65,9 @@ export const ProductCard = memo(function ProductCard({
     <div className="group relative block">
       <Link
         href={`${basePath}/products/${product.slug}${categoryId ? `?category_id=${categoryId}` : ""}`}
+        className="group block"
         onClick={handleClick}
       >
-        {/* Image */}
         <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden">
           <ProductImage
             src={imageUrl}
@@ -81,59 +81,24 @@ export const ProductCard = memo(function ProductCard({
           {onSale && (
             <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
               {t("sale")}
-    <Link
-      href={`${basePath}/products/${product.slug}${categoryId ? `?category_id=${categoryId}` : ""}`}
-      className="group block"
-      onClick={handleClick}
-    >
-      {/* Image */}
-      <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden">
-        <ProductImage
-          src={imageUrl}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 300px"
-          iconClassName="w-16 h-16"
-          fetchPriority={fetchPriority}
-        />
-        {onSale && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
-            {t("sale")}
-          </span>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
-          {product.name}
-        </h3>
-
-        <div className="mt-2 flex items-center gap-2">
-          {displayPrice ? (
-            <span className="text-lg font-semibold text-gray-900">
-              {displayPrice}
             </span>
-          ) : (
-            // Null price: a deliberate hide inside a HiddenPricingProvider
-            // (renders a sign-in prompt), otherwise renders nothing.
-            <HiddenPricePrompt />
           )}
         </div>
 
-        {/* Content */}
         <div className="p-4">
           <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
             {product.name}
           </h3>
 
           <div className="mt-2 flex items-center gap-2">
-            {displayPrice && (
+            {displayPrice ? (
               <span className="text-lg font-semibold text-gray-900">
                 {displayPrice}
               </span>
+            ) : (
+              <HiddenPricePrompt />
             )}
+
             {onSale && strikethroughPrice && (
               <span className="text-sm text-gray-500 line-through">
                 {strikethroughPrice}

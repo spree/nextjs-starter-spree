@@ -12,7 +12,6 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetFooter,
   SheetTitle,
 } from "@/components/ui/sheet";
 
@@ -274,21 +273,11 @@ export function MobileMenu({
               </div>
             </nav>
 
-            {/* Footer: Country switcher (mobile + tablet) + Account (mobile only) */}
-            <SheetFooter className="lg:hidden border-t border-gray-200 pt-4 gap-2">
-              <button
-                type="button"
-                onClick={() => pushPanel({ kind: "country" })}
-                className="flex items-center gap-2 px-4 py-2.5 text-base text-gray-700 hover:bg-gray-50 rounded-lg transition-colors w-full"
-              >
-                <span className="text-lg leading-none">
-                  {countryToFlag(country)}
-                </span>
-                <span className="font-medium">{country.toUpperCase()}</span>
-                <span className="text-gray-400">|</span>
-                <span>{currency}</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 ml-auto" />
-              </button>
+            {/* Footer: region preferences and account links on mobile */}
+            <div className="lg:hidden border-t border-gray-200 pt-4">
+              <div className="mx-4 mb-3">
+                <RegionPreferences variant="menu" />
+              </div>
 
               <div className="md:hidden space-y-2 mx-4 mb-2">
                 <SheetClose asChild>
@@ -299,20 +288,17 @@ export function MobileMenu({
                     <span>{t("wishlist")}</span>
                   </Link>
                 </SheetClose>
+
                 <SheetClose asChild>
                   <Link
                     href={`${basePath}/account`}
                     className="flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-base font-medium hover:bg-gray-800 transition-colors"
                   >
-                    <User className="size-5" />
                     <span>{t("myAccount")}</span>
                   </Link>
                 </SheetClose>
               </div>
-            {/* Footer: centered Region and language control (mobile only) */}
-            <SheetFooter className="lg:hidden items-center border-t border-gray-200 pt-4 gap-2">
-              <RegionPreferences variant="menu" />
-            </SheetFooter>
+            </div>
           </div>
 
           {/* Category sub-panels — one for each level in the stack */}

@@ -41,7 +41,7 @@
     "openSearch": "Abrir busqueda",
     "closeSearch": "Cerrar busqueda",
     "myAccount": "Mi cuenta",
-    "wishlist": "Lista de deseos"
+    "wishlist": "Lista de deseos",
     "wholesale": "Mayorista"
   },
   "regionPreferences": {
@@ -68,7 +68,7 @@
     "policies": "Politicas",
     "poweredBy": "Impulsado por",
     "copyright": "© {year} {storeName}. Impulsado por Spree Commerce.",
-    "wishlist": "Lista de deseos"
+    "wishlist": "Lista de deseos",
     "wholesale": "Comercio y venta al por mayor"
   },
   "home": {
@@ -337,7 +337,6 @@
     "policyConsentRequired": "Debes aceptar las politicas de la tienda para crear una cuenta",
     "wishlist": "Lista de deseos",
     "wishlistDescription": "Gestiona tus productos guardados"
-    "policyConsentRequired": "Debes aceptar las politicas de la tienda para crear una cuenta"
   },
   "register": {
     "createAccount": "Crear cuenta",
@@ -570,6 +569,7 @@
     "refresh": "Actualizar",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  },
   "wholesale": {
     "portalTitle": "Portal mayorista",
     "portalName": "Portal mayorista",

@@ -41,7 +41,7 @@
     "openSearch": "Otwórz wyszukiwanie",
     "closeSearch": "Zamknij wyszukiwanie",
     "myAccount": "Moje konto",
-    "wishlist": "Lista życzeń"
+    "wishlist": "Lista życzeń",
     "wholesale": "Hurt"
   },
   "regionPreferences": {
@@ -68,7 +68,7 @@
     "policies": "Regulaminy",
     "poweredBy": "Zasilany przez",
     "copyright": "© {year} {storeName}. Zasilany przez Spree Commerce.",
-    "wishlist": "Lista życzeń"
+    "wishlist": "Lista życzeń",
     "wholesale": "Handel i sprzedaż hurtowa"
   },
   "home": {
@@ -569,6 +569,7 @@
     "refresh": "Odśwież",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  },
   "wholesale": {
     "portalTitle": "Portal hurtowy",
     "portalName": "Portal hurtowy",

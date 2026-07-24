@@ -41,7 +41,7 @@
     "openSearch": "Open search",
     "closeSearch": "Close search",
     "myAccount": "My Account",
-    "wishlist": "Wishlist"
+    "wishlist": "Wishlist",
     "wholesale": "Wholesale"
   },
   "regionPreferences": {
@@ -68,7 +68,7 @@
     "policies": "Policies",
     "poweredBy": "Powered by",
     "copyright": "© {year} {storeName}. Powered by Spree Commerce.",
-    "wishlist": "Wishlist"
+    "wishlist": "Wishlist",
     "wholesale": "Trade & Wholesale"
   },
   "home": {
@@ -569,6 +569,7 @@
     "refresh": "Refresh",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  },
   "wholesale": {
     "portalTitle": "Wholesale Portal",
     "portalName": "Wholesale Portal",

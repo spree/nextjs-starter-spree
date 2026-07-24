@@ -11,7 +11,6 @@ import { MediaGallery } from "@/components/products/MediaGallery";
 import { ProductCustomFields } from "@/components/products/ProductCustomFields";
 import { VariantPicker } from "@/components/products/VariantPicker";
 import { Button } from "@/components/ui/button";
-import { QuantityPicker } from "@/components/ui/quantity-picker";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { useCart } from "@/contexts/CartContext";
 import { useHiddenPricing } from "@/contexts/HiddenPricingContext";
@@ -192,22 +191,22 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
           {/* Quantity & Add to Cart */}
           <div className="mt-8">
             {pricesHidden ? (
-              // Guest on a prices-hidden channel: no pricing, no ordering —
-              // route them through the wholesale sign-in first.
-              <Button asChild size="lg">
-                <Link href={hiddenPricing.signInHref}>
-                  {tw("hiddenPrice.signInToOrder")}
-                </Link>
-              </Button>
-
-              {selectedVariantId && (
-                <WishlistButton
-                  variantId={selectedVariantId}
-                  size="lg"
-                  className="min-w-55"
-                />
-              )}
-            </div>
+              <div className="flex gap-4">
+                {/* // Guest on a prices-hidden channel: no pricing, no ordering — */}
+                {/* // route them through the wholesale sign-in first. */}
+                <Button asChild size="lg">
+                  <Link href={hiddenPricing.signInHref}>
+                    {tw("hiddenPrice.signInToOrder")}
+                  </Link>
+                </Button>
+                {selectedVariantId && (
+                  <WishlistButton
+                    variantId={selectedVariantId}
+                    size="lg"
+                    className="min-w-55"
+                  />
+                )}
+              </div>
             ) : (
               <div className="flex gap-4">
                 <QuantityPickerField

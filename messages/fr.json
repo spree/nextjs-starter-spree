@@ -41,7 +41,7 @@
     "openSearch": "Ouvrir la recherche",
     "closeSearch": "Fermer la recherche",
     "myAccount": "Mon compte",
-    "wishlist": "Liste d'envies"
+    "wishlist": "Liste d'envies",
     "wholesale": "Vente en gros"
   },
   "regionPreferences": {
@@ -68,7 +68,7 @@
     "policies": "Politiques",
     "poweredBy": "Propulse par",
     "copyright": "© {year} {storeName}. Propulse par Spree Commerce.",
-    "wishlist": "Liste d'envies"
+    "wishlist": "Liste d'envies",
     "wholesale": "Professionnels & vente en gros"
   },
   "home": {
@@ -569,6 +569,7 @@
     "refresh": "Actualiser",
     "outlineHeart": "♡",
     "filledHeart": "♥"
+  },
   "wholesale": {
     "portalTitle": "Portail grossiste",
     "portalName": "Portail grossiste",
