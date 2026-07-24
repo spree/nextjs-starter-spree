@@ -19,7 +19,7 @@ import { WHOLESALE_MIN_QUANTITY } from "@/lib/wholesale";
  * (checkout) flow, which resolves the wholesale surface from the cart id.
  */
 export function WholesaleCartView() {
-  const { cart, loading, updateItem, removeItem } = useCart();
+  const { cart, loading, updating, updateItem, removeItem } = useCart();
   const pathname = usePathname();
   // extractBasePath strips to /{country}/{locale}; the shared checkout lives there.
   const storeBase = extractBasePath(pathname);
@@ -125,6 +125,7 @@ export function WholesaleCartView() {
                     onQuantityChange={(quantity) =>
                       updateItem(item.id, quantity)
                     }
+                    disabled={updating}
                   />
                   <Button
                     variant="destructive"

@@ -86,7 +86,11 @@ npx @spree/cli sample-data
 # The keys reach Ruby via the container environment (-e pass-through from
 # this script's env) rather than heredoc interpolation, so the Ruby source
 # never embeds them — the heredoc delimiter is quoted on purpose.
-echo "==> Configuring Stripe payment gateway on the default store"
+#
+# The wholesale channel posture is set in the same runner: each `bin/rails
+# runner` boots the whole application inside the container, so the two
+# snippets share one boot (and one `Spree::Store.default` lookup).
+echo "==> Configuring Stripe payment gateway and wholesale channel"
 docker compose exec -T -e STRIPE_PUBLISHABLE_KEY -e STRIPE_SECRET_KEY web bin/rails runner - <<'RUBY'
 store = Spree::Store.default
 gateway = Spree::PaymentMethod.where(type: 'SpreeStripe::Gateway', name: 'E2E Stripe').first_or_initialize
@@ -105,7 +109,6 @@ gateway.assign_attributes(
 # when checkout creates a PaymentIntent.
 gateway.save!(validate: false)
 puts "OK: gateway #{gateway.id} (#{gateway.name})"
-RUBY
 
 # The wholesale suite (e2e/wholesale.spec.ts) runs the seeded gated channel
 # in its `prices_hidden` posture — guests browse the catalog with prices
@@ -113,9 +116,6 @@ RUBY
 # `login_required` default (guest browse, sign-in-for-pricing prompts, the
 # dedicated sign-in page), while ordering surfaces wall guests off under
 # either posture. Idempotent: find_or_create + reassign converges.
-echo "==> Setting the wholesale channel to prices_hidden"
-docker compose exec -T web bin/rails runner - <<'RUBY'
-store = Spree::Store.default
 channel = store.channels.find_or_create_by!(code: 'wholesale') do |c|
   c.name = 'Wholesale'
   c.preferred_guest_checkout = false

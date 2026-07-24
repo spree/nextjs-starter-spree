@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { getCustomer } from "@/lib/data/customer";
 import { getWholesaleChannel } from "@/lib/data/wholesale";
+import { safeRedirectPath } from "@/lib/utils/path";
 import { WholesaleSignInWall } from "../_components/WholesaleSignInWall";
 
 interface WholesaleSignInPageProps {
   params: Promise<{ country: string; locale: string }>;
-  searchParams: Promise<{ redirect?: string }>;
+  // Repeated query keys arrive as an array, so accept what Next.js can deliver.
+  searchParams: Promise<{ redirect?: string | string[] }>;
 }
 
 /**
@@ -31,12 +33,7 @@ export default async function WholesaleSignInPage({
   ]);
 
   if (customer) {
-    // Same open-redirect guard as the wall: relative, single-slash paths only.
-    const target =
-      redirectParam?.startsWith("/") && !redirectParam.startsWith("//")
-        ? redirectParam
-        : `${basePath}/wholesale`;
-    redirect(target);
+    redirect(safeRedirectPath(redirectParam, `${basePath}/wholesale`));
   }
 
   return (

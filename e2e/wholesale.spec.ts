@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { clickUntilUrl, waitForHydration } from "./helpers";
 
 /**
  * Wholesale portal E2E.
@@ -62,6 +63,14 @@ test("guest browses the prices-hidden catalog without prices or hydration errors
   ).toBeVisible();
   await expect(page.getByRole("link", { name: /quick order/i })).toHaveCount(0);
 
+  // Everything asserted above is server-rendered and visible before React
+  // takes over, so the checks below are only meaningful once hydration has run.
+  await waitForHydration(page);
+  // Invalid nesting shows up two ways once the client owns the tree: React
+  // logs a hydration error, and the client-rendered DOM really does contain
+  // the nested links that the server HTML could never express (the parser
+  // silently splits them apart, which is what breaks hydration).
+  await expect(page.locator("a a")).toHaveCount(0);
   expect(hydrationErrors).toEqual([]);
 });
 
@@ -81,14 +90,8 @@ test("sign-in prompts lead to the sign-in page without nesting redirect params",
   await expect(prompt).toBeVisible({ timeout: 30_000 });
   // The prompt sits above the card's stretched link — this click also
   // regresses the stacking: were the overlay on top, we'd land on the PDP
-  // instead of the sign-in page. A click mid-hydration can be swallowed,
-  // so click-then-navigate is a bounded retry.
-  await expect(async () => {
-    if (!/\/wholesale\/sign-in/.test(page.url())) {
-      await prompt.click({ timeout: 5_000 });
-    }
-    await page.waitForURL(/\/wholesale\/sign-in/, { timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  // instead of the sign-in page.
+  await clickUntilUrl(page, prompt, /\/wholesale\/sign-in/);
 
   // The dedicated sign-in page shows the wall with the request-account
   // link, and the return target is the catalog itself — exactly once.
@@ -126,12 +129,7 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
   // sign-in prompts point at /wholesale/sign-in, so they don't match.
   const firstProduct = page.locator('a[href*="/wholesale/products/"]').first();
   await expect(firstProduct).toBeVisible({ timeout: 30_000 });
-  await expect(async () => {
-    if (!/\/wholesale\/products\/[^/]+/.test(page.url())) {
-      await firstProduct.click({ timeout: 5_000 });
-    }
-    await page.waitForURL(/\/wholesale\/products\/[^/]+/, { timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  await clickUntilUrl(page, firstProduct, /\/wholesale\/products\/[^/]+/);
 
   const pdpPath = new URL(page.url()).pathname;
   const productName =
@@ -146,12 +144,7 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
   // A guest can look but not order.
   const signInToOrder = page.getByRole("link", { name: /sign in to order/i });
   await expect(signInToOrder).toBeVisible({ timeout: 15_000 });
-  await expect(async () => {
-    if (!/\/wholesale\/sign-in/.test(page.url())) {
-      await signInToOrder.click({ timeout: 5_000 });
-    }
-    await page.waitForURL(/\/wholesale\/sign-in/, { timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  await clickUntilUrl(page, signInToOrder, /\/wholesale\/sign-in/);
 
   // Sign in as the seeded approved buyer; the ?redirect= contract returns
   // the buyer to the exact product page they came from.
@@ -199,12 +192,7 @@ test("guest applies for an account and lands in the under-review state", async (
   await page.goto(`${WHOLESALE_HOME}/sign-in`);
   const applyLink = page.getByRole("link", { name: /apply for access/i });
   await expect(applyLink).toBeVisible({ timeout: 30_000 });
-  await expect(async () => {
-    if (!/\/wholesale\/apply/.test(page.url())) {
-      await applyLink.click({ timeout: 5_000 });
-    }
-    await page.waitForURL(/\/wholesale\/apply/, { timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  await clickUntilUrl(page, applyLink, /\/wholesale\/apply/);
 
   // Unique email per run — the backend keeps earlier applicants.
   const email = `e2e-wholesale-${Date.now()}@example.com`;

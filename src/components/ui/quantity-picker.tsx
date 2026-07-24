@@ -75,6 +75,10 @@ export function QuantityPicker({
             e.preventDefault();
             e.currentTarget.blur();
           } else if (e.key === "Escape") {
+            // While editing, Escape cancels the edit and nothing else — the
+            // picker can sit inside a dialog (the cart drawer) that would
+            // otherwise dismiss on the same keypress.
+            if (draft !== null) e.stopPropagation();
             setDraft(null);
           }
         }}
