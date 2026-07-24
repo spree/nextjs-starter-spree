@@ -240,7 +240,7 @@ export default function WholesaleApplyPage() {
           <p className="text-sm text-muted-foreground">
             {t("apply.alreadyMember")}{" "}
             <Link
-              href={wholesaleBase}
+              href={`${wholesaleBase}/sign-in`}
               className="font-medium text-slate-900 hover:underline"
             >
               {t("signInWall.submit")}

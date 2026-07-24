@@ -124,7 +124,7 @@ export function WholesaleHeader({
               size="sm"
               className="bg-white text-slate-900 hover:bg-slate-100"
             >
-              <Link href={signInHref ?? `${wholesaleBase}`}>
+              <Link href={signInHref ?? `${wholesaleBase}/sign-in`}>
                 {t("nav.signIn")}
               </Link>
             </Button>

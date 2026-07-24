@@ -61,11 +61,7 @@ export const ProductCard = memo(function ProductCard({
   };
 
   return (
-    <Link
-      href={`${basePath}/products/${product.slug}${categoryId ? `?category_id=${categoryId}` : ""}`}
-      className="group block"
-      onClick={handleClick}
-    >
+    <div className="group relative">
       {/* Image */}
       <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden">
         <ProductImage
@@ -87,7 +83,16 @@ export const ProductCard = memo(function ProductCard({
       {/* Content */}
       <div className="p-4">
         <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
-          {product.name}
+          {/* Stretched link: the ::after overlay keeps the whole card clickable
+              without wrapping the content in an <a> — HiddenPricePrompt renders
+              its own link, and anchors can't nest. */}
+          <Link
+            href={`${basePath}/products/${product.slug}${categoryId ? `?category_id=${categoryId}` : ""}`}
+            className="after:absolute after:inset-0"
+            onClick={handleClick}
+          >
+            {product.name}
+          </Link>
         </h3>
 
         <div className="mt-2 flex items-center gap-2">
@@ -111,6 +116,6 @@ export const ProductCard = memo(function ProductCard({
           <span className="mt-2 text-sm text-gray-500">{t("outOfStock")}</span>
         )}
       </div>
-    </Link>
+    </div>
   );
 });

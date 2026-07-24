@@ -4,6 +4,7 @@ import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useHiddenPricing } from "@/contexts/HiddenPricingContext";
+import { cn } from "@/lib/utils";
 
 /**
  * Rendered in place of a price when the viewer isn't entitled to see it (a guest
@@ -18,12 +19,15 @@ export function HiddenPricePrompt({ className }: { className?: string }) {
   if (!hiddenPricing) return null;
 
   return (
+    // `relative z-10` lifts this link above a card's stretched-link overlay
+    // (ProductCard) so it stays clickable on its own.
     <Link
       href={hiddenPricing.signInHref}
-      className={
+      className={cn(
+        "relative z-10",
         className ??
-        "inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 underline underline-offset-4 hover:text-slate-900"
-      }
+          "inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 underline underline-offset-4 hover:text-slate-900",
+      )}
       onClick={(e) => e.stopPropagation()}
     >
       <Lock className="h-3.5 w-3.5" />

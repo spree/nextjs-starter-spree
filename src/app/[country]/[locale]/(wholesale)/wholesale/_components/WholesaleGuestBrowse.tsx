@@ -26,10 +26,14 @@ export function WholesaleGuestBrowse({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Return the buyer to exactly where they were, query string included.
-  const query = searchParams.toString();
+  // Return the buyer to exactly where they were, query string included — but
+  // drop any `redirect` already present (a stale sign-in return target) so
+  // repeated round-trips can't nest redirects inside redirects.
+  const returnParams = new URLSearchParams(searchParams);
+  returnParams.delete("redirect");
+  const query = returnParams.toString();
   const returnTo = query ? `${pathname}?${query}` : pathname;
-  const signInHref = `${wholesaleBase}?redirect=${encodeURIComponent(returnTo)}`;
+  const signInHref = `${wholesaleBase}/sign-in?redirect=${encodeURIComponent(returnTo)}`;
 
   return (
     <HiddenPricingProvider value={{ signInHref }}>
