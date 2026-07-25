@@ -79,7 +79,7 @@ describe("wishlist server actions", () => {
       name: "Sample Product",
       slug: "sample-product",
       thumbnail_url: "https://example.com/sample-product.jpg",
-      images: [],
+      primary_media: null,
     });
   });
 
@@ -106,11 +106,7 @@ describe("wishlist server actions", () => {
     expect(mockClient.wishlists.get).toHaveBeenCalledWith(
       "wl_1",
       {
-        expand: [
-          "items.variant",
-          "items.variant.product",
-          "items.variant.images",
-        ],
+        expand: ["items.variant", "items.variant.product"],
       },
       { token: "jwt" },
     );

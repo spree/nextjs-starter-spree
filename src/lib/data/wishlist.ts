@@ -16,6 +16,15 @@ type WishlistItemWithVariantProductId = NonNullable<
   thumbnail_url?: string | null;
 };
 
+type ProductWithPrimaryMedia = {
+  name?: string;
+  slug?: string;
+  thumbnail_url?: string | null;
+  primary_media?: {
+    original_url?: string | null;
+  } | null;
+};
+
 async function enrichWishlistItems(
   wishlist: Wishlist,
   token: string,
@@ -37,11 +46,11 @@ async function enrichWishlistItems(
 
   const products = await Promise.all(
     productIds.map(async (id) => {
-      const product = await getClient().products.get(
+      const product = (await getClient().products.get(
         id,
-        { expand: ["images"] },
+        { expand: ["primary_media"] },
         { token },
-      );
+      )) as ProductWithPrimaryMedia;
       return [id, product] as const;
     }),
   );
@@ -61,10 +70,7 @@ async function enrichWishlistItems(
     nextItem.thumbnail_url =
       nextItem.thumbnail_url ||
       product.thumbnail_url ||
-      product.images?.[0]?.styles?.product ||
-      product.images?.[0]?.styles?.large ||
-      product.images?.[0]?.styles?.small ||
-      product.images?.[0]?.url ||
+      product.primary_media?.original_url ||
       null;
 
     return nextItem;
@@ -77,11 +83,7 @@ async function fetchWishlistById(id: string, token: string): Promise<Wishlist> {
   const wishlist = await getClient().wishlists.get(
     id,
     {
-      expand: [
-        "items.variant",
-        "items.variant.product",
-        "items.variant.images",
-      ],
+      expand: ["items.variant", "items.variant.product"],
     },
     { token },
   );

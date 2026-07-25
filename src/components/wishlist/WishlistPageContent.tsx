@@ -19,22 +19,13 @@ type VariantWithProduct = Variant & {
   slug?: string;
   product_name?: string;
   product_slug?: string;
-  images?: Array<{
-    url?: string | null;
-    original_url?: string | null;
-    styles?: {
-      large?: string | null;
-      product?: string | null;
-      small?: string | null;
-    };
-  }>;
-  option_values?: Array<{
-    image_url?: string | null;
-  }>;
   product?: {
     name?: string;
     slug?: string;
     thumbnail_url?: string | null;
+    primary_media?: {
+      original_url?: string | null;
+    } | null;
     attributes?: {
       name?: string;
       slug?: string;
@@ -53,15 +44,9 @@ type WishlistItemWithDisplay = WishlistItem & {
     name?: string;
     slug?: string;
     thumbnail_url?: string | null;
-    images?: Array<{
-      url?: string | null;
+    primary_media?: {
       original_url?: string | null;
-      styles?: {
-        large?: string | null;
-        product?: string | null;
-        small?: string | null;
-      };
-    }>;
+    } | null;
     attributes?: {
       name?: string;
       slug?: string;
@@ -105,22 +90,12 @@ function getDisplayFields(item: WishlistItem) {
 
   const imageUrl =
     variant.thumbnail_url ||
-    variant.option_values?.find((value) => Boolean(value.image_url))
-      ?.image_url ||
-    variant.images?.[0]?.styles?.product ||
-    variant.images?.[0]?.styles?.large ||
-    variant.images?.[0]?.styles?.small ||
-    variant.images?.[0]?.url ||
-    variant.images?.[0]?.original_url ||
-    wishlistItem.thumbnail_url ||
     itemProduct?.thumbnail_url ||
+    wishlistItem.thumbnail_url ||
     itemProductAttributes?.thumbnail_url ||
-    itemProduct?.images?.[0]?.styles?.product ||
-    itemProduct?.images?.[0]?.styles?.large ||
-    itemProduct?.images?.[0]?.styles?.small ||
-    itemProduct?.images?.[0]?.url ||
-    itemProduct?.images?.[0]?.original_url ||
+    itemProduct?.primary_media?.original_url ||
     product?.thumbnail_url ||
+    product?.primary_media?.original_url ||
     productAttributes?.thumbnail_url ||
     null;
 
