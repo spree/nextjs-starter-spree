@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { getCachedCategory } from "@/lib/data/cached";
-import { buildCanonicalUrl } from "@/lib/seo";
+import { cachedGetCategory } from "@/lib/data/categories";
+import {
+  buildLocalizedAlternates,
+  translationFingerprint,
+} from "@/lib/metadata/alternates";
 import { getStoreUrl } from "@/lib/store";
 
 export interface CategoryMetadataParams {
@@ -33,22 +37,43 @@ export async function generateCategoryMetadata({
     `Browse ${category.name} products.`;
 
   const storeUrl = getStoreUrl();
-  const canonicalUrl = storeUrl
-    ? buildCanonicalUrl(
+  const localizedAlternates = storeUrl
+    ? await buildLocalizedAlternates({
         storeUrl,
-        `/${country}/${locale}/c/${category.permalink}`,
-      )
+        country,
+        locale,
+        path: `/c/${category.permalink}`,
+        currentResourceFingerprint: categoryTranslationFingerprint(category),
+        resolvePath: async (target) => {
+          const localizedCategory = await cachedGetCategory(
+            category.id,
+            undefined,
+            { country: target.country, locale: target.locale },
+          );
+          return {
+            path: `/c/${localizedCategory.permalink}`,
+            fingerprint: categoryTranslationFingerprint(localizedCategory),
+          };
+        },
+      })
     : undefined;
 
   return {
     title,
     description,
     ...(category.meta_keywords ? { keywords: category.meta_keywords } : {}),
-    ...(canonicalUrl ? { alternates: { canonical: canonicalUrl } } : {}),
+    ...(localizedAlternates
+      ? {
+          alternates: {
+            canonical: localizedAlternates.canonical,
+            languages: localizedAlternates.languages,
+          },
+        }
+      : {}),
     openGraph: {
       title,
       description,
-      ...(canonicalUrl ? { url: canonicalUrl } : {}),
+      ...(localizedAlternates ? { url: localizedAlternates.canonical } : {}),
       type: "website",
       ...(category.image_url
         ? { images: [{ url: category.image_url, alt: category.name }] }
@@ -61,4 +86,24 @@ export async function generateCategoryMetadata({
       ...(category.image_url ? { images: [category.image_url] } : {}),
     },
   };
+}
+
+function categoryTranslationFingerprint(category: {
+  name: string;
+  permalink: string;
+  description: string;
+  description_html: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+}): string {
+  return translationFingerprint(
+    category.name,
+    category.permalink,
+    category.description,
+    category.description_html,
+    category.meta_title,
+    category.meta_description,
+    category.meta_keywords,
+  );
 }

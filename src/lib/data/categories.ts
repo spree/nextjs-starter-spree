@@ -14,12 +14,15 @@ async function cachedListCategories(
   return getClient().categories.list(params, options);
 }
 
-export async function getCategories(params?: CategoryListParams) {
-  const options = await getLocaleOptions();
-  return cachedListCategories(params, options);
+export async function getCategories(
+  params?: CategoryListParams,
+  options?: { locale?: string; country?: string },
+) {
+  const localeOptions = options ?? (await getLocaleOptions());
+  return cachedListCategories(params, localeOptions);
 }
 
-async function cachedGetCategory(
+export async function cachedGetCategory(
   idOrPermalink: string,
   params: { expand?: string[] } | undefined,
   options: { locale?: string; country?: string },

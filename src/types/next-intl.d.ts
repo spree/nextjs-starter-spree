@@ -1,9 +1,10 @@
+import type { SupportedLocale } from "@/i18n/locales";
 import type messages from "../../messages/en.json";
 
 type Messages = typeof messages;
 
 declare global {
-  type Locale = "en" | "de" | "pl" | "es" | "fr";
+  type Locale = SupportedLocale;
   interface IntlMessages extends Messages {}
 }
 

@@ -1,42 +1,55 @@
-import type { Category, Media, Product } from "@spree/sdk";
-import { getClient } from "@/lib/spree";
-import { getDefaultCountry, getDefaultLocale, getStoreUrl } from "@/lib/store";
-
-type ProductWithMedia = Product & {
-  media?: Media[];
-  updated_at?: string;
-};
-
-type CategoryWithTimestamp = Category & {
-  updated_at?: string;
-};
-
 import type { MetadataRoute } from "next";
+import { DEFAULT_LOCALE, resolveSupportedLocale } from "@/i18n/locales";
+import {
+  getMarketLocaleTargets,
+  type MarketLocaleTarget,
+} from "@/i18n/markets";
+import {
+  getSitemapCategoryPage,
+  getSitemapMarkets,
+  getSitemapProductPage,
+  getSitemapResourceCount,
+  type SitemapCategory,
+  type SitemapProduct,
+} from "@/lib/data/sitemap";
+import { getDefaultCountry, getDefaultLocale, getStoreUrl } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-interface CountryLocale {
-  country: string;
-  locale: string;
-}
+type CountryLocale = MarketLocaleTarget;
 
 interface LocaleOptions {
   locale: string;
   country: string;
 }
 
-/** Google's limit is 50,000 URLs per sitemap file. */
-const URLS_PER_SITEMAP = 50_000;
+interface LocaleCatalog extends LocaleOptions {
+  marketId: string;
+  productCount: number;
+  categoryCount: number;
+}
+
+interface PageCaches {
+  products: Map<string, Promise<SitemapProduct[]>>;
+  categories: Map<string, Promise<SitemapCategory[]>>;
+}
+
+/**
+ * Google permits 50,000 URLs, but 10,000 keeps each request below roughly 100
+ * Store API pages and avoids long-running sitemap responses on large catalogs.
+ */
+const URLS_PER_SITEMAP = 10_000;
 const STATIC_PAGES_PER_LOCALE = 3;
 const ITEMS_PER_PAGE = 100;
 const MAX_PAGES = 1000;
+const MAX_CONCURRENT_PAGE_REQUESTS = 8;
+const MAX_CONCURRENT_CATALOG_REQUESTS = 4;
 /** Maximum items we can actually fetch, given pagination limits. */
 const MAX_FETCHABLE_ITEMS = ITEMS_PER_PAGE * MAX_PAGES;
 
 /**
- * Default locale options for build-time API calls.
- * During build (generateSitemaps / sitemap), cookies() is not available,
- * so we pass explicit locale options to bypass the cookie-based resolution.
+ * Default locale options for build-time API calls. During build, cookies() is
+ * not available, so sitemap requests always pass explicit locale options.
  */
 function getDefaultLocaleOptions(): LocaleOptions {
   return {
@@ -45,97 +58,62 @@ function getDefaultLocaleOptions(): LocaleOptions {
   };
 }
 
-/**
- * Module-level caches so that multiple sitemap({id}) calls during the same
- * `next build` process reuse already-fetched data instead of hitting the
- * API O(chunks) times.
- *
- * Products and categories are cached per locale:country because Spree
- * returns locale-dependent slugs/permalinks.
- */
-const cachedProductsByLocale = new Map<string, Promise<ProductWithMedia[]>>();
-const cachedCategoriesByLocale = new Map<
-  string,
-  Promise<CategoryWithTimestamp[]>
->();
-let cachedCountryLocales: Promise<CountryLocale[]> | null = null;
+async function resolveLocaleCatalogs(
+  countryLocales: CountryLocale[],
+): Promise<Map<string, LocaleCatalog>> {
+  const uniqueTargets = new Map<string, CountryLocale>();
 
-function localeCacheKey(locale: string, country: string): string {
-  return `${locale}:${country}`;
+  for (const target of countryLocales) {
+    const key = catalogKey(target);
+    if (!uniqueTargets.has(key)) uniqueTargets.set(key, target);
+  }
+
+  const targets = Array.from(uniqueTargets.entries());
+  const entries: Array<readonly [string, LocaleCatalog]> = [];
+  for (
+    let offset = 0;
+    offset < targets.length;
+    offset += MAX_CONCURRENT_CATALOG_REQUESTS
+  ) {
+    const batch = targets.slice(
+      offset,
+      offset + MAX_CONCURRENT_CATALOG_REQUESTS,
+    );
+    entries.push(
+      ...(await Promise.all(
+        batch.map(
+          async ([key, target]) =>
+            [key, await buildLocaleCatalog(target)] as const,
+        ),
+      )),
+    );
+  }
+  return new Map(entries);
 }
 
-function getCachedProducts(
-  localeOpts: LocaleOptions,
-): Promise<ProductWithMedia[]> {
-  const key = localeCacheKey(localeOpts.locale, localeOpts.country);
-  let cached = cachedProductsByLocale.get(key);
-  if (!cached) {
-    cached = fetchAllProducts(localeOpts).catch((err) => {
-      cachedProductsByLocale.delete(key);
-      throw err;
-    });
-    cachedProductsByLocale.set(key, cached);
-  }
-  return cached;
-}
-
-function getCachedCategories(
-  localeOpts: LocaleOptions,
-): Promise<CategoryWithTimestamp[]> {
-  const key = localeCacheKey(localeOpts.locale, localeOpts.country);
-  let cached = cachedCategoriesByLocale.get(key);
-  if (!cached) {
-    cached = fetchAllCategories(localeOpts).catch((err) => {
-      cachedCategoriesByLocale.delete(key);
-      throw err;
-    });
-    cachedCategoriesByLocale.set(key, cached);
-  }
-  return cached;
-}
-
-function getCachedCountryLocales(): Promise<CountryLocale[]> {
-  if (!cachedCountryLocales) {
-    cachedCountryLocales = resolveCountryLocales().catch((err) => {
-      cachedCountryLocales = null;
-      throw err;
-    });
-  }
-  return cachedCountryLocales;
+function catalogKey(target: { marketId: string; locale: string }): string {
+  return `${target.marketId}:${target.locale.toLowerCase()}`;
 }
 
 /**
- * Splits the sitemap into multiple files when the total URL count
- * exceeds 50,000 (Google's per-sitemap limit).
- *
- * Next.js generates /sitemap/0.xml, /sitemap/1.xml, etc.
- * robots.ts references all chunks via generateSitemaps().
- *
- * @see https://nextjs.org/docs/app/api-reference/functions/generate-sitemaps
+ * Splits the sitemap into bounded files. Counts are fetched once per
+ * Market/locale pair: countries in one Market share an inventory, while two
+ * Markets using the same locale may expose entirely different catalogs.
  */
 export async function generateSitemaps(): Promise<Array<{ id: number }>> {
   try {
-    const countryLocales = await getCachedCountryLocales();
-
-    // Lightweight count — fetch only 1 record per request to read meta.count.
-    // Category count is approximate (includes root categories filtered out during generation),
-    // so we may produce one extra sitemap file at most — harmless for SEO.
-    const [productCount, categoryCount] = await Promise.all([
-      fetchTotalCount("products"),
-      fetchTotalCount("categories"),
-    ]);
-
-    const urlsPerLocale =
-      STATIC_PAGES_PER_LOCALE +
-      Math.min(productCount, MAX_FETCHABLE_ITEMS) +
-      Math.min(categoryCount, MAX_FETCHABLE_ITEMS);
-    const totalUrls = urlsPerLocale * countryLocales.length;
+    const countryLocales = await resolveCountryLocales();
+    const catalogs = await resolveLocaleCatalogs(countryLocales);
+    const totalUrls = countryLocales.reduce((total, target) => {
+      const catalog = catalogs.get(catalogKey(target));
+      return total + (catalog ? catalogSize(catalog) : 0);
+    }, 0);
     const sitemapCount = Math.max(1, Math.ceil(totalUrls / URLS_PER_SITEMAP));
 
-    return Array.from({ length: sitemapCount }, (_, i) => ({ id: i }));
+    return Array.from({ length: sitemapCount }, (_, id) => ({ id }));
   } catch {
-    // API may be unavailable at build time — return a single sitemap chunk
-    // that will be populated at request time.
+    // API may be unavailable at build time. Return a single sitemap chunk that
+    // will be populated on demand when the API recovers.
     return [{ id: 0 }];
   }
 }
@@ -144,197 +122,326 @@ export default async function sitemap(props: {
   id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
   const id = Number(await props.id);
+  if (!Number.isSafeInteger(id) || id < 0) return [];
 
+  const baseUrl = resolveBaseUrl();
+  if (!baseUrl) return [];
+
+  let countryLocales: CountryLocale[];
+  let catalogs: Map<string, LocaleCatalog>;
+
+  try {
+    countryLocales = await resolveCountryLocales();
+    catalogs = await resolveLocaleCatalogs(countryLocales);
+  } catch (error) {
+    console.error("Sitemap generation failed: API unavailable.", error);
+    return [];
+  }
+
+  const chunkStart = id * URLS_PER_SITEMAP;
+  const chunkEnd = chunkStart + URLS_PER_SITEMAP;
+  const entries: MetadataRoute.Sitemap = [];
+  const pageCaches: PageCaches = {
+    products: new Map(),
+    categories: new Map(),
+  };
+  let targetStart = 0;
+
+  for (const target of countryLocales) {
+    const catalog = catalogs.get(catalogKey(target));
+    if (!catalog) continue;
+
+    const targetEnd = targetStart + catalogSize(catalog);
+    if (targetEnd <= chunkStart) {
+      targetStart = targetEnd;
+      continue;
+    }
+    if (targetStart >= chunkEnd) break;
+
+    const basePath = `${baseUrl}/${target.country}/${target.locale}`;
+    appendStaticEntries(entries, basePath, targetStart, chunkStart, chunkEnd);
+
+    const productStart = targetStart + STATIC_PAGES_PER_LOCALE;
+    const productEnd = productStart + catalog.productCount;
+    const categoryStart = productEnd;
+    const categoryEnd = categoryStart + catalog.categoryCount;
+
+    const productRange = intersectRange(
+      productStart,
+      productEnd,
+      chunkStart,
+      chunkEnd,
+    );
+    const categoryRange = intersectRange(
+      categoryStart,
+      categoryEnd,
+      chunkStart,
+      chunkEnd,
+    );
+
+    const [products, categories] = await Promise.allSettled([
+      productRange
+        ? fetchProductRange(
+            catalog,
+            productRange.start - productStart,
+            productRange.end - productStart,
+            pageCaches,
+          )
+        : Promise.resolve([]),
+      categoryRange
+        ? fetchCategoryRange(
+            catalog,
+            categoryRange.start - categoryStart,
+            categoryRange.end - categoryStart,
+            pageCaches,
+          )
+        : Promise.resolve([]),
+    ]);
+
+    if (products.status === "fulfilled") {
+      appendProductEntries(entries, basePath, products.value);
+    } else {
+      console.error(
+        `Sitemap: skipping products for ${target.country}/${target.locale}.`,
+        products.reason,
+      );
+    }
+    if (categories.status === "fulfilled") {
+      appendCategoryEntries(entries, basePath, categories.value);
+    } else {
+      console.error(
+        `Sitemap: skipping categories for ${target.country}/${target.locale}.`,
+        categories.reason,
+      );
+    }
+
+    targetStart = targetEnd;
+  }
+
+  return entries;
+}
+
+function resolveBaseUrl(): string | undefined {
   const candidate = (getStoreUrl() || "").replace(/\/$/, "");
 
-  let baseUrl: string;
   try {
     const parsed = new URL(candidate);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       throw new Error(`Unsupported protocol: ${parsed.protocol}`);
     }
-    baseUrl = parsed.origin + parsed.pathname.replace(/\/$/, "");
+    return parsed.origin + parsed.pathname.replace(/\/$/, "");
   } catch {
     console.error(
       "Sitemap generation skipped: neither NEXT_PUBLIC_SITE_URL nor " +
         "NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL is set or valid. " +
         "Sitemaps require absolute http(s) URLs.",
     );
-    return [];
+    return undefined;
   }
-
-  let countryLocales: CountryLocale[];
-
-  try {
-    countryLocales = await getCachedCountryLocales();
-  } catch (err) {
-    console.error("Sitemap generation failed: API unavailable.", err);
-    return [];
-  }
-
-  // Build entries for all locales, then slice to the requested chunk.
-  // For most stores (< 50k URLs) this produces a single chunk so no slicing occurs.
-  const entries: MetadataRoute.Sitemap = [];
-
-  for (const { country, locale } of countryLocales) {
-    const basePath = `${baseUrl}/${country}/${locale}`;
-    const localeOpts: LocaleOptions = { locale, country };
-
-    let products: ProductWithMedia[];
-    let categories: CategoryWithTimestamp[];
-
-    try {
-      [products, categories] = await Promise.all([
-        getCachedProducts(localeOpts),
-        getCachedCategories(localeOpts),
-      ]);
-    } catch (err) {
-      console.error(`Sitemap: skipping ${country}/${locale} — API error.`, err);
-      continue;
-    }
-
-    const nonRootCategories = categories.filter((c) => !c.is_root);
-
-    // Static pages — no reliable publish timestamp, omit lastModified
-    entries.push(
-      {
-        url: basePath,
-        changeFrequency: "daily",
-        priority: 1,
-      },
-      {
-        url: `${basePath}/products`,
-        changeFrequency: "daily",
-        priority: 0.8,
-      },
-      {
-        url: `${basePath}/c`,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      },
-    );
-
-    // Product pages with image sitemaps (locale-aware slugs)
-    for (const product of products) {
-      entries.push({
-        url: `${basePath}/products/${product.slug}`,
-        ...(product.updated_at
-          ? { lastModified: new Date(product.updated_at) }
-          : {}),
-        changeFrequency: "weekly",
-        priority: 0.6,
-        ...(product.media && product.media.length > 0
-          ? {
-              images: product.media
-                .map((img: Media) => img.original_url || img.large_url)
-                .filter((url: string | null): url is string => url != null),
-            }
-          : {}),
-      });
-    }
-
-    // Category pages (locale-aware permalinks)
-    for (const category of nonRootCategories) {
-      entries.push({
-        url: `${basePath}/c/${category.permalink}`,
-        ...(category.updated_at
-          ? { lastModified: new Date(category.updated_at) }
-          : {}),
-        changeFrequency: "weekly",
-        priority: 0.5,
-      });
-    }
-  }
-
-  // Return only the slice for this sitemap chunk
-  if (id === 0 && entries.length <= URLS_PER_SITEMAP) {
-    return entries;
-  }
-  const start = id * URLS_PER_SITEMAP;
-  return entries.slice(start, start + URLS_PER_SITEMAP);
 }
 
-/**
- * Resolves the list of country/locale pairs to include in the sitemap
- * by fetching all markets from the Spree API. Each market contains its
- * countries and default locale, so no env-based configuration is needed.
- */
+function catalogSize(catalog: LocaleCatalog): number {
+  return STATIC_PAGES_PER_LOCALE + catalog.productCount + catalog.categoryCount;
+}
+
+function intersectRange(
+  rangeStart: number,
+  rangeEnd: number,
+  chunkStart: number,
+  chunkEnd: number,
+): { start: number; end: number } | undefined {
+  const start = Math.max(rangeStart, chunkStart);
+  const end = Math.min(rangeEnd, chunkEnd);
+  return start < end ? { start, end } : undefined;
+}
+
+function appendStaticEntries(
+  entries: MetadataRoute.Sitemap,
+  basePath: string,
+  targetStart: number,
+  chunkStart: number,
+  chunkEnd: number,
+): void {
+  const staticEntries: MetadataRoute.Sitemap = [
+    { url: basePath, changeFrequency: "daily", priority: 1 },
+    {
+      url: `${basePath}/products`,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    { url: `${basePath}/c`, changeFrequency: "weekly", priority: 0.7 },
+  ];
+
+  for (const [offset, entry] of staticEntries.entries()) {
+    const position = targetStart + offset;
+    if (position >= chunkStart && position < chunkEnd) entries.push(entry);
+  }
+}
+
+function appendProductEntries(
+  entries: MetadataRoute.Sitemap,
+  basePath: string,
+  products: SitemapProduct[],
+): void {
+  for (const product of products) {
+    entries.push({
+      url: `${basePath}/products/${product.slug}`,
+      ...(product.updated_at
+        ? { lastModified: new Date(product.updated_at) }
+        : {}),
+      changeFrequency: "weekly",
+      priority: 0.6,
+      ...(product.media && product.media.length > 0
+        ? {
+            images: product.media
+              .map((image) => image.original_url || image.large_url)
+              .filter((url: string | null): url is string => url != null),
+          }
+        : {}),
+    });
+  }
+}
+
+function appendCategoryEntries(
+  entries: MetadataRoute.Sitemap,
+  basePath: string,
+  categories: SitemapCategory[],
+): void {
+  for (const category of categories) {
+    if (category.is_root) continue;
+    entries.push({
+      url: `${basePath}/c/${category.permalink}`,
+      ...(category.updated_at
+        ? { lastModified: new Date(category.updated_at) }
+        : {}),
+      changeFrequency: "weekly",
+      priority: 0.5,
+    });
+  }
+}
+
+/** Resolve every valid country/locale URL exposed by configured Markets. */
 async function resolveCountryLocales(): Promise<CountryLocale[]> {
   const localeOptions = getDefaultLocaleOptions();
-  const { data: markets } = await getClient().markets.list(localeOptions);
+  const markets = await getSitemapMarkets(localeOptions);
+  const targets = getMarketLocaleTargets(markets);
 
-  const seen = new Set<string>();
-  const result: CountryLocale[] = [];
+  return targets.length > 0
+    ? targets
+    : [
+        {
+          marketId: "default",
+          country: localeOptions.country,
+          locale:
+            resolveSupportedLocale(localeOptions.locale) ?? DEFAULT_LOCALE,
+        },
+      ];
+}
 
-  for (const market of markets) {
-    for (const country of market.countries ?? []) {
-      const iso = country.iso.toLowerCase();
-      if (seen.has(iso)) continue;
-      seen.add(iso);
-      result.push({
-        country: iso,
-        locale: market.default_locale || localeOptions.locale,
-      });
-    }
+async function buildLocaleCatalog(
+  target: CountryLocale,
+): Promise<LocaleCatalog> {
+  const localeOptions = { locale: target.locale, country: target.country };
+  const [productCount, categoryCount] = await Promise.all([
+    getSitemapResourceCount("products", target.marketId, localeOptions),
+    getSitemapResourceCount("categories", target.marketId, localeOptions),
+  ]);
+
+  return {
+    marketId: target.marketId,
+    ...localeOptions,
+    productCount: Math.min(productCount, MAX_FETCHABLE_ITEMS),
+    categoryCount: Math.min(categoryCount, MAX_FETCHABLE_ITEMS),
+  };
+}
+
+async function fetchProductRange(
+  catalog: LocaleCatalog,
+  start: number,
+  end: number,
+  pageCaches: PageCaches,
+): Promise<SitemapProduct[]> {
+  return fetchItemRange(start, end, (page) =>
+    getCachedProductPage(catalog, page, pageCaches.products),
+  );
+}
+
+async function fetchCategoryRange(
+  catalog: LocaleCatalog,
+  start: number,
+  end: number,
+  pageCaches: PageCaches,
+): Promise<SitemapCategory[]> {
+  return fetchItemRange(start, end, (page) =>
+    getCachedCategoryPage(catalog, page, pageCaches.categories),
+  );
+}
+
+async function fetchItemRange<T>(
+  start: number,
+  end: number,
+  loadPage: (page: number) => Promise<T[]>,
+): Promise<T[]> {
+  if (start >= end) return [];
+
+  const firstPage = Math.floor(start / ITEMS_PER_PAGE) + 1;
+  const lastPage = Math.ceil(end / ITEMS_PER_PAGE);
+  const pages = Array.from(
+    { length: lastPage - firstPage + 1 },
+    (_, index) => firstPage + index,
+  );
+  const items: T[] = [];
+
+  for (
+    let offset = 0;
+    offset < pages.length;
+    offset += MAX_CONCURRENT_PAGE_REQUESTS
+  ) {
+    const batch = pages.slice(offset, offset + MAX_CONCURRENT_PAGE_REQUESTS);
+    const results = await Promise.all(batch.map(loadPage));
+    for (const result of results) items.push(...result);
   }
 
-  return result.length > 0
-    ? result
-    : [{ country: localeOptions.country, locale: localeOptions.locale }];
+  const loadedRangeStart = (firstPage - 1) * ITEMS_PER_PAGE;
+  return items.slice(start - loadedRangeStart, end - loadedRangeStart);
 }
 
-/**
- * Fetches only the total count for products or categories without loading all data.
- * Used by generateSitemaps() to calculate the number of sitemap files needed.
- */
-async function fetchTotalCount(
-  resource: "products" | "categories",
-): Promise<number> {
-  const localeOptions = getDefaultLocaleOptions();
-  const client = getClient();
-  const response =
-    resource === "products"
-      ? await client.products.list({ page: 1, limit: 1 }, localeOptions)
-      : await client.categories.list({ page: 1, limit: 1 }, localeOptions);
-  return response.meta.count;
+function getCachedProductPage(
+  catalog: LocaleCatalog,
+  page: number,
+  cache: PageCaches["products"],
+): Promise<SitemapProduct[]> {
+  const key = `${catalogKey(catalog)}:${page}`;
+  let cached = cache.get(key);
+  if (!cached) {
+    cached = getSitemapProductPage(catalog.marketId, page, ITEMS_PER_PAGE, {
+      locale: catalog.locale,
+      country: catalog.country,
+    }).catch((error) => {
+      cache.delete(key);
+      throw error;
+    });
+    cache.set(key, cached);
+  }
+  return cached;
 }
 
-async function fetchAllProducts(
-  localeOptions: LocaleOptions,
-): Promise<ProductWithMedia[]> {
-  const allProducts: ProductWithMedia[] = [];
-  let page = 1;
-  let totalPages = 1;
-
-  do {
-    const response = await getClient().products.list(
-      { page, limit: ITEMS_PER_PAGE, expand: ["media"] },
-      localeOptions,
-    );
-    allProducts.push(...(response.data as ProductWithMedia[]));
-    totalPages = response.meta.pages;
-    page++;
-  } while (page <= totalPages && page <= MAX_PAGES);
-
-  return allProducts;
-}
-
-async function fetchAllCategories(
-  localeOptions: LocaleOptions,
-): Promise<CategoryWithTimestamp[]> {
-  const allCategories: CategoryWithTimestamp[] = [];
-  let page = 1;
-  let totalPages = 1;
-
-  do {
-    const response = await getClient().categories.list(
-      { page, limit: ITEMS_PER_PAGE },
-      localeOptions,
-    );
-    allCategories.push(...response.data);
-    totalPages = response.meta.pages;
-    page++;
-  } while (page <= totalPages && page <= MAX_PAGES);
-
-  return allCategories;
+function getCachedCategoryPage(
+  catalog: LocaleCatalog,
+  page: number,
+  cache: PageCaches["categories"],
+): Promise<SitemapCategory[]> {
+  const key = `${catalogKey(catalog)}:${page}`;
+  let cached = cache.get(key);
+  if (!cached) {
+    cached = getSitemapCategoryPage(catalog.marketId, page, ITEMS_PER_PAGE, {
+      locale: catalog.locale,
+      country: catalog.country,
+    }).catch((error) => {
+      cache.delete(key);
+      throw error;
+    });
+    cache.set(key, cached);
+  }
+  return cached;
 }

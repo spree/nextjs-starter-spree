@@ -95,6 +95,8 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
         : price?.display_compare_at_amount) ?? null)
     : null;
 
+  const sku = selectedVariant?.sku ?? product.default_variant?.sku;
+
   // Purchasability
   const isPurchasable = hasVariants
     ? (selectedVariant?.purchasable ?? false)
@@ -272,12 +274,10 @@ export function ProductDetails({ product, basePath }: ProductDetailsProps) {
               {t("details")}
             </h2>
             <dl className="space-y-3">
-              {selectedVariant?.sku && (
+              {sku && (
                 <div className="flex">
                   <dt className="w-32 text-gray-500 text-sm">{t("sku")}</dt>
-                  <dd className="text-gray-900 text-sm">
-                    {selectedVariant.sku}
-                  </dd>
+                  <dd className="text-gray-900 text-sm">{sku}</dd>
                 </div>
               )}
               {selectedVariant?.options_text && (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildHreflangLanguages } from "@/lib/metadata/alternates";
 import { buildCanonicalUrl } from "@/lib/seo";
 import { getStoreUrl } from "@/lib/store";
 
@@ -15,11 +16,26 @@ export async function generateCategoriesMetadata({
   const canonicalUrl = storeUrl
     ? buildCanonicalUrl(storeUrl, `/${country}/${locale}/c`)
     : undefined;
+  const languages = storeUrl
+    ? await buildHreflangLanguages({
+        storeUrl,
+        country,
+        locale,
+        path: "/c",
+      })
+    : undefined;
 
   return {
     title: "Categories",
     description: "Browse all product categories.",
-    ...(canonicalUrl ? { alternates: { canonical: canonicalUrl } } : {}),
+    ...(canonicalUrl
+      ? {
+          alternates: {
+            canonical: canonicalUrl,
+            ...(languages ? { languages } : {}),
+          },
+        }
+      : {}),
     openGraph: {
       title: "Categories",
       description: "Browse all product categories.",

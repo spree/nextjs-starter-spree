@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import type { ReactNode } from "react";
 import { CartButton } from "@/components/layout/CartButton";
 import { SearchToggle } from "@/components/layout/SearchToggle";
 import { WishlistNavButton } from "@/components/layout/WishlistNavButton";
@@ -36,15 +37,33 @@ const LazyRegionPreferences = dynamic(
 const storeName = getStoreName();
 
 interface HeaderProps {
-  rootCategories: Category[];
   basePath: string;
   locale: Locale;
+  mobileNavigation: ReactNode;
+}
+
+interface HeaderMobileMenuProps {
+  rootCategories: Category[];
+  basePath: string;
+}
+
+export function HeaderMobileMenu({
+  rootCategories,
+  basePath,
+}: HeaderMobileMenuProps) {
+  return (
+    <LazyMobileMenu
+      rootCategories={rootCategories}
+      basePath={basePath}
+      wholesaleEnabled={isWholesaleEnabled()}
+    />
+  );
 }
 
 export async function Header({
-  rootCategories,
   basePath,
   locale,
+  mobileNavigation,
 }: HeaderProps) {
   const t = await getTranslations({ locale, namespace: "header" });
   const wholesaleEnabled = isWholesaleEnabled();
@@ -52,13 +71,7 @@ export async function Header({
   return (
     <SearchToggle
       basePath={basePath}
-      left={
-        <LazyMobileMenu
-          rootCategories={rootCategories}
-          basePath={basePath}
-          wholesaleEnabled={wholesaleEnabled}
-        />
-      }
+      left={mobileNavigation}
       center={
         <Link href={basePath || "/"} className="flex items-center min-w-0">
           <Image

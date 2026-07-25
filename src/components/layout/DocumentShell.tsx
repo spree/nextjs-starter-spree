@@ -1,11 +1,9 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import "./globals.css";
 import { Suspense } from "react";
-import { getStoreDescription, getStoreName } from "@/lib/store";
+import { localeDirection } from "@/i18n/locales";
 
 const gtmId = process.env.GTM_ID;
 const spreeApiOrigin = (() => {
@@ -24,23 +22,16 @@ const geist = Geist({
   display: "swap",
 });
 
-const rootStoreName = getStoreName();
-
-export const metadata: Metadata = {
-  title: {
-    template: `%s | ${rootStoreName}`,
-    default: rootStoreName,
-  },
-  description: getStoreDescription(),
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface DocumentShellProps {
   children: React.ReactNode;
-}>) {
+  locale: string;
+}
+
+/** Shared document markup for each root layout. */
+export function DocumentShell({ children, locale }: DocumentShellProps) {
   return (
-    <html lang="en">
+    <html lang={locale} dir={localeDirection(locale)} suppressHydrationWarning>
+      {/* biome-ignore lint/style/noHeadElement: this shell is used only by Next.js root layouts */}
       <head>
         {spreeApiOrigin && (
           <>
