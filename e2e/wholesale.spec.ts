@@ -157,8 +157,11 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
   // ordering-only nav is back.
   const addToCart = page.getByRole("button", { name: /add to cart/i });
   await expect(addToCart).toBeEnabled({ timeout: 30_000 });
+  // Only the PDP's own gate affordance: a soft navigation can leave the
+  // catalog's tree mounted, and its cards carry "sign in for pricing"
+  // prompts that say nothing about whether this product is orderable.
   await expect(
-    page.getByText(/sign in for pricing|sign in to order/i),
+    page.getByRole("link", { name: /sign in to order/i }),
   ).toHaveCount(0);
   await expect(page.getByRole("link", { name: /quick order/i })).toBeVisible();
 
@@ -189,10 +192,11 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
 test("guest applies for an account and lands in the under-review state", async ({
   page,
 }) => {
-  await page.goto(`${WHOLESALE_HOME}/sign-in`);
-  const applyLink = page.getByRole("link", { name: /apply for access/i });
-  await expect(applyLink).toBeVisible({ timeout: 30_000 });
-  await clickUntilUrl(page, applyLink, /\/wholesale\/apply/);
+  // Loaded directly rather than clicked through from the sign-in wall: a soft
+  // navigation leaves the wall's tree mounted, and its Email/Password fields
+  // would then collide with the apply form's. The wall's link to this page is
+  // already asserted by the sign-in test above.
+  await page.goto(`${WHOLESALE_HOME}/apply`);
 
   // Unique email per run — the backend keeps earlier applicants.
   const email = `e2e-wholesale-${Date.now()}@example.com`;
