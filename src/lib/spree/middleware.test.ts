@@ -83,4 +83,56 @@ describe("Spree locale middleware", () => {
       response.headers.get("x-middleware-request-x-spree-request-search"),
     ).toBe("?sort=price");
   });
+
+  it("redirects an anonymous protected account request to sign in", () => {
+    const response = middleware(
+      new NextRequest(
+        "https://store.example/us/en/account/orders?state=complete",
+      ),
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      "https://store.example/us/en/account?redirect=%2Fus%2Fen%2Faccount%2Forders%3Fstate%3Dcomplete",
+    );
+  });
+
+  it.each([
+    "/us/en/account",
+    "/us/en/account/register",
+    "/us/en/account/forgot-password",
+    "/us/en/account/reset-password?token=reset-token",
+  ])("keeps the public account route accessible: %s", (pathname) => {
+    const response = middleware(
+      new NextRequest(`https://store.example${pathname}`),
+    );
+
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it.each([
+    "_spree_jwt",
+    "_spree_refresh_token",
+  ])("allows a protected account request with a %s session cookie", (cookieName) => {
+    const request = new NextRequest(
+      "https://store.example/us/en/account/orders",
+    );
+    request.cookies.set(cookieName, "session-token");
+
+    const response = middleware(request);
+
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("does not treat an empty auth cookie as a session credential", () => {
+    const request = new NextRequest(
+      "https://store.example/us/en/account/orders",
+    );
+    request.cookies.set("_spree_jwt", "");
+
+    const response = middleware(request);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain("/us/en/account?");
+  });
 });

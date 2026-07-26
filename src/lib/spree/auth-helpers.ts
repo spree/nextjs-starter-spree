@@ -96,7 +96,16 @@ export async function withAuthRefresh<T>(
  */
 export async function ensureFreshSession(): Promise<SessionState> {
   const token = await getAccessToken();
-  if (!token) return "anonymous";
+  if (!token) {
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) return "anonymous";
+
+    const newToken = await tryRefresh();
+    if (newToken) return "refreshed";
+
+    const survivingRefreshToken = await getRefreshToken();
+    return survivingRefreshToken ? "stale" : "expired";
+  }
 
   if (!isJwtExpired(token, 30)) return "valid";
 

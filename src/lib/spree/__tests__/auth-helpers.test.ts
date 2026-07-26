@@ -99,4 +99,18 @@ describe("ensureFreshSession refresh resilience", () => {
     expect(second).toBe("refreshed");
     expect(mockClient.auth.refresh).toHaveBeenCalledTimes(1);
   });
+
+  it("recovers a refresh-only session after the access cookie expires", async () => {
+    mockCookieState.access = undefined;
+    mockClient.auth.refresh.mockResolvedValueOnce({
+      token: "new-jwt",
+      refresh_token: "rt-2",
+    });
+
+    const state = await ensureFreshSession();
+
+    expect(state).toBe("refreshed");
+    expect(mockCookieState.access).toBe("new-jwt");
+    expect(mockCookieState.refresh).toBe("rt-2");
+  });
 });
