@@ -1,28 +1,19 @@
 "use server";
 
-import type { Wishlist } from "@spree/sdk";
+import type { Product, Wishlist, WishlistItem } from "@spree/sdk";
 import { updateTag } from "next/cache";
 import { getClient, isAuthError, withAuthRefresh } from "@/lib/spree";
 import { actionResult } from "./utils";
 
-type WishlistItemWithVariantProductId = NonNullable<
-  Wishlist["items"]
->[number] & {
+type EnrichedWishlistItem = WishlistItem & {
+  product_id?: string;
+  product?: Product;
   variant?: {
     product_id?: string;
   };
   product_name?: string;
   product_slug?: string;
   thumbnail_url?: string | null;
-};
-
-type ProductWithPrimaryMedia = {
-  name?: string;
-  slug?: string;
-  thumbnail_url?: string | null;
-  primary_media?: {
-    original_url?: string | null;
-  } | null;
 };
 
 async function enrichWishlistItems(
@@ -34,10 +25,14 @@ async function enrichWishlistItems(
   const productIds = Array.from(
     new Set(
       wishlist.items
-        .map(
-          (item) =>
-            (item as WishlistItemWithVariantProductId).variant?.product_id,
-        )
+        .map((item) => {
+          const enrichedItem = item as EnrichedWishlistItem;
+          return (
+            enrichedItem.product_id ||
+            enrichedItem.variant?.product_id ||
+            enrichedItem.product?.id
+          );
+        })
         .filter((id): id is string => Boolean(id)),
     ),
   );
@@ -48,9 +43,9 @@ async function enrichWishlistItems(
     productIds.map(async (id) => {
       const product = (await getClient().products.get(
         id,
-        { expand: ["primary_media"] },
+        {},
         { token },
-      )) as ProductWithPrimaryMedia;
+      )) as Product;
       return [id, product] as const;
     }),
   );
@@ -58,8 +53,11 @@ async function enrichWishlistItems(
   const productMap = new Map(products);
 
   const items = wishlist.items.map((item) => {
-    const nextItem = { ...item } as WishlistItemWithVariantProductId;
-    const productId = nextItem.variant?.product_id;
+    const nextItem = { ...item } as EnrichedWishlistItem;
+    const productId =
+      nextItem.product_id ||
+      nextItem.variant?.product_id ||
+      nextItem.product?.id;
     if (!productId) return nextItem;
 
     const product = productMap.get(productId);
@@ -68,10 +66,7 @@ async function enrichWishlistItems(
     nextItem.product_name = nextItem.product_name || product.name;
     nextItem.product_slug = nextItem.product_slug || product.slug;
     nextItem.thumbnail_url =
-      nextItem.thumbnail_url ||
-      product.thumbnail_url ||
-      product.primary_media?.original_url ||
-      null;
+      nextItem.thumbnail_url || product.thumbnail_url || null;
 
     return nextItem;
   });
