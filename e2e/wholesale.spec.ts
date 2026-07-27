@@ -24,6 +24,11 @@ const BUYER_PASSWORD = "spree123";
  * gated pages). Anchored regexes keep "Show password" and the header's
  * sign-in link from matching. */
 async function submitSignInWall(page: Page, email: string, password: string) {
+  // The wall's inputs are controlled and its submit is a React handler, so
+  // interacting before hydration is silently lost: the typed values never
+  // reach React state, and the click falls through to a native form submit
+  // that just reloads the page.
+  await waitForHydration(page);
   await page.getByLabel(/^email$/i).fill(email);
   await page.getByLabel(/^password$/i).fill(password);
   await page.getByRole("button", { name: /^sign in$/i }).click();
@@ -206,6 +211,11 @@ test.describe("wholesale application", () => {
     // would then collide with the apply form's. The wall's link to this page is
     // already asserted by the sign-in test above.
     await page.goto(`${WHOLESALE_HOME}/apply`);
+    // The form's inputs are controlled and its submit is a React handler, so
+    // interacting before hydration is silently lost: the typed values never
+    // reach React state, and the click falls through to a native form submit
+    // that just reloads the page — no account, no error, nothing to assert on.
+    await waitForHydration(page);
 
     // Unique email per run — the backend keeps earlier applicants.
     const email = `e2e-wholesale-${Date.now()}@example.com`;
