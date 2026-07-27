@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAccountLoginHref,
+  rebaseAccountRedirect,
+  rebaseAccountRedirectSearch,
   resolveAccountRedirect,
 } from "../account-redirect";
 
@@ -42,5 +44,39 @@ describe("buildAccountLoginHref", () => {
     expect(buildAccountLoginHref("/us/en", "https://example.com")).toBe(
       "/us/en/account",
     );
+  });
+});
+
+describe("rebaseAccountRedirect", () => {
+  it("moves a localized target while preserving its suffix and query", () => {
+    expect(
+      rebaseAccountRedirect(
+        "/pl/de/account/orders?state=complete#latest",
+        "/pl/de",
+        "/us/en",
+      ),
+    ).toBe("/us/en/account/orders?state=complete#latest");
+  });
+
+  it("updates the redirect parameter and preserves other search params", () => {
+    expect(
+      rebaseAccountRedirectSearch(
+        "?redirect=%2Fpl%2Fde%2Faccount%2Forders%3Fstate%3Dcomplete&source=login",
+        "/pl/de",
+        "/fr/fr",
+      ),
+    ).toBe(
+      "?redirect=%2Ffr%2Ffr%2Faccount%2Forders%3Fstate%3Dcomplete&source=login",
+    );
+  });
+
+  it("drops an invalid redirect instead of carrying it across markets", () => {
+    expect(
+      rebaseAccountRedirectSearch(
+        "?redirect=https%3A%2F%2Fevil.example%2Faccount&source=login",
+        "/pl/de",
+        "/us/en",
+      ),
+    ).toBe("?source=login");
   });
 });

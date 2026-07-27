@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import type { CountryWithMarket } from "@/contexts/StoreContext";
 import { updateCartMarket } from "@/lib/data/checkout";
+import { rebaseAccountRedirectSearch } from "@/lib/utils/account-redirect";
 import { setStoreCookies } from "@/lib/utils/cookies";
 import { getPathWithoutPrefix } from "@/lib/utils/path";
 
@@ -57,6 +58,8 @@ export function useCountrySwitch({
     const newCurrency = entry.currency;
     const pathRest = getPathWithoutPrefix(pathname);
     const newPath = `/${nextCountry}/${newLocale}${pathRest}`;
+    const currentBasePath = `/${activeCountry}/${currentLocale}`;
+    const nextBasePath = `/${nextCountry}/${newLocale}`;
 
     try {
       if (
@@ -77,9 +80,12 @@ export function useCountrySwitch({
 
       setStoreCookies(nextCountry, newLocale);
       onBeforeNavigate?.();
-      window.location.assign(
-        `${newPath}${window.location.search}${window.location.hash}`,
+      const nextSearch = rebaseAccountRedirectSearch(
+        window.location.search,
+        currentBasePath,
+        nextBasePath,
       );
+      window.location.assign(`${newPath}${nextSearch}${window.location.hash}`);
       return true;
     } catch {
       return false;

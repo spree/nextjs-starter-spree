@@ -22,6 +22,10 @@ vi.mock("@/lib/utils/cookies", () => ({
   setStoreCookies: vi.fn(),
 }));
 
+vi.mock("@/lib/utils/account-redirect", () => ({
+  rebaseAccountRedirectSearch: vi.fn((search: string) => search),
+}));
+
 const mockUseCart = vi.mocked(useCart);
 const mockUpdateCartMarket = vi.mocked(updateCartMarket);
 const mockSetStoreCookies = vi.mocked(setStoreCookies);
@@ -115,5 +119,42 @@ describe("useCountrySwitch", () => {
     expect(refreshCart).toHaveBeenCalledOnce();
     expect(mockSetStoreCookies).toHaveBeenCalledWith("de", "de");
     expect(mockAssign).toHaveBeenCalledWith("/de/de/products");
+  });
+
+  it("rebases a login return target when switching market", async () => {
+    const { rebaseAccountRedirectSearch } = await import(
+      "@/lib/utils/account-redirect"
+    );
+    vi.mocked(rebaseAccountRedirectSearch).mockReturnValueOnce(
+      "?redirect=%2Fde%2Fde%2Faccount%2Forders",
+    );
+
+    const { result } = renderHook(() =>
+      useCountrySwitch({
+        currentCountry: "us",
+        currentLocale: "en",
+      }),
+    );
+    const mockAssign = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        assign: mockAssign,
+        hash: "",
+        search: "?redirect=%2Fus%2Fen%2Faccount%2Forders",
+      },
+    });
+
+    await act(async () => {
+      await result.current.handleCountrySelect(targetCountry, "de");
+    });
+
+    expect(rebaseAccountRedirectSearch).toHaveBeenCalledWith(
+      "?redirect=%2Fus%2Fen%2Faccount%2Forders",
+      "/us/en",
+      "/de/de",
+    );
+    expect(mockAssign).toHaveBeenCalledWith(
+      "/de/de/products?redirect=%2Fde%2Fde%2Faccount%2Forders",
+    );
   });
 });
