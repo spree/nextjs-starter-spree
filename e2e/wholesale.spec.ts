@@ -189,32 +189,52 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
   await expect(page.getByRole("button", { name: /sign out/i })).toBeVisible();
 });
 
-test("guest applies for an account and lands in the under-review state", async ({
-  page,
-}) => {
-  // Loaded directly rather than clicked through from the sign-in wall: a soft
-  // navigation leaves the wall's tree mounted, and its Email/Password fields
-  // would then collide with the apply form's. The wall's link to this page is
-  // already asserted by the sign-in test above.
-  await page.goto(`${WHOLESALE_HOME}/apply`);
+// Registration is rate limited server-side (3 per IP per minute), so retrying
+// this spec would just replay into a 429 and bury whatever failed the first
+// time. One attempt, and the rejection reason is reported below.
+test.describe("wholesale application", () => {
+  test.describe.configure({ retries: 0 });
 
-  // Unique email per run — the backend keeps earlier applicants.
-  const email = `e2e-wholesale-${Date.now()}@example.com`;
-  await page.getByLabel(/first name/i).fill("Wendy");
-  await page.getByLabel(/last name/i).fill("Applicant");
-  await page.getByLabel(/company name/i).fill("E2E Trading Co.");
-  await page.getByLabel(/^email$/i).fill(email);
-  await page.getByLabel(/^password$/i).fill("spree123");
-  await page.getByRole("button", { name: /submit application/i }).click();
+  test("guest applies for an account and lands in the under-review state", async ({
+    page,
+  }) => {
+    // Loaded directly rather than clicked through from the sign-in wall: a soft
+    // navigation leaves the wall's tree mounted, and its Email/Password fields
+    // would then collide with the apply form's. The wall's link to this page is
+    // already asserted by the sign-in test above.
+    await page.goto(`${WHOLESALE_HOME}/apply`);
 
-  await expect(page.getByText(/application received/i)).toBeVisible({
-    timeout: 30_000,
-  });
+    // Unique email per run — the backend keeps earlier applicants.
+    const email = `e2e-wholesale-${Date.now()}@example.com`;
+    await page.getByLabel(/first name/i).fill("Wendy");
+    await page.getByLabel(/last name/i).fill("Applicant");
+    await page.getByLabel(/company name/i).fill("E2E Trading Co.");
+    await page.getByLabel(/^email$/i).fill(email);
+    await page.getByLabel(/^password$/i).fill("spree123");
+    await page.getByRole("button", { name: /submit application/i }).click();
 
-  // Registration signs the applicant in, but they're not in the Wholesale
-  // group yet — the portal shows the under-review state, not the catalog.
-  await page.getByRole("link", { name: /go to portal/i }).click();
-  await expect(page.getByText(/application is under review/i)).toBeVisible({
-    timeout: 30_000,
+    // The form reports a rejected application in its own alert, and that text is
+    // the only place the reason (validation, rate limit) appears — surface it
+    // rather than failing with a bare "element not found".
+    // Scoped to the form's own Alert — a bare role=alert also matches the
+    // always-present, empty toast region.
+    const rejection = page.locator('[data-slot="alert"]');
+    await expect(async () => {
+      if (await rejection.count()) {
+        throw new Error(
+          `Application rejected: ${(await rejection.first().textContent())?.trim()}`,
+        );
+      }
+      await expect(page.getByText(/application received/i)).toBeVisible({
+        timeout: 2_000,
+      });
+    }).toPass({ timeout: 30_000 });
+
+    // Registration signs the applicant in, but they're not in the Wholesale
+    // group yet — the portal shows the under-review state, not the catalog.
+    await page.getByRole("link", { name: /go to portal/i }).click();
+    await expect(page.getByText(/application is under review/i)).toBeVisible({
+      timeout: 30_000,
+    });
   });
 });
