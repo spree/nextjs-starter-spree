@@ -51,17 +51,6 @@ export function resolveLocalPath(
 }
 
 /**
- * Resolve a `?redirect=` value into a safe same-origin path, falling back when
- * it points anywhere else.
- */
-export function safeRedirectPath(
-  value: string | string[] | undefined | null,
-  fallback: string,
-): string {
-  return resolveLocalPath(value) ?? fallback;
-}
-
-/**
  * Get the path portion after the /country/locale prefix.
  * e.g. "/us/en/products/shoes" -> "/products/shoes"
  */

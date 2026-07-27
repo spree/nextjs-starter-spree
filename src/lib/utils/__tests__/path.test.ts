@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveLocalPath, safeRedirectPath } from "../path";
+import { resolveLocalPath } from "../path";
 
 describe("resolveLocalPath", () => {
   it.each([
@@ -32,19 +32,5 @@ describe("resolveLocalPath", () => {
 
   it.each([null, undefined, []])("rejects %s", (value) => {
     expect(resolveLocalPath(value)).toBeNull();
-  });
-});
-
-describe("safeRedirectPath", () => {
-  const fallback = "/us/en/wholesale";
-
-  it("returns the resolved path when it is local", () => {
-    expect(safeRedirectPath("/us/en/wholesale/cart", fallback)).toBe(
-      "/us/en/wholesale/cart",
-    );
-  });
-
-  it("returns the fallback when the value points elsewhere", () => {
-    expect(safeRedirectPath("https://example.com", fallback)).toBe(fallback);
   });
 });

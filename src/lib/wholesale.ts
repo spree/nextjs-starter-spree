@@ -25,6 +25,29 @@ export function isWholesaleApproved(customer: Customer | null): boolean {
 }
 
 /**
+ * Resolve a `?redirect=` value for the portal's sign-in flow into a path inside
+ * the portal, or the portal root. Buyers only ever reach sign-in from wholesale
+ * surfaces, so a target outside them is someone else's crafted link rather than
+ * a real return target — and the sign-in page itself would bounce forever.
+ */
+export function wholesaleRedirectPath(
+  value: string | string[] | undefined | null,
+  basePath: string,
+): string {
+  const portalRoot = `${basePath}/wholesale`;
+  const target = resolveLocalPath(value);
+  if (!target) return portalRoot;
+
+  const { pathname } = new URL(target, INTERNAL_ORIGIN);
+  const insidePortal =
+    pathname === portalRoot || pathname.startsWith(`${portalRoot}/`);
+
+  return insidePortal && pathname !== `${portalRoot}/sign-in`
+    ? target
+    : portalRoot;
+}
+
+/**
  * The portal's sign-in destination, optionally carrying `returnTo` as the
  * `?redirect=` target. On a `prices_hidden` channel the catalog root renders for
  * guests, so sign-in affordances need this dedicated page — pointing them at the
