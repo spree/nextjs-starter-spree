@@ -1,7 +1,9 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { HiddenPricingProvider } from "@/contexts/HiddenPricingContext";
+import { wholesaleSignInHref } from "@/lib/wholesale";
 import { WholesaleHeader } from "./WholesaleHeader";
 
 interface WholesaleGuestBrowseProps {
@@ -22,21 +24,21 @@ export function WholesaleGuestBrowse({
   basePath,
   children,
 }: WholesaleGuestBrowseProps) {
-  const wholesaleBase = `${basePath}/wholesale`;
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Return the buyer to exactly where they were, query string included — but
-  // drop any `redirect` already present (a stale sign-in return target) so
-  // repeated round-trips can't nest redirects inside redirects.
-  const returnParams = new URLSearchParams(searchParams);
-  returnParams.delete("redirect");
-  const query = returnParams.toString();
-  const returnTo = query ? `${pathname}?${query}` : pathname;
-  const signInHref = `${wholesaleBase}/sign-in?redirect=${encodeURIComponent(returnTo)}`;
+  // Return the buyer to exactly where they were, query string included.
+  const signInHref = useMemo(() => {
+    const query = searchParams.toString();
+    return wholesaleSignInHref(
+      basePath,
+      query ? `${pathname}?${query}` : pathname,
+    );
+  }, [basePath, pathname, searchParams]);
+  const hiddenPricing = useMemo(() => ({ signInHref }), [signInHref]);
 
   return (
-    <HiddenPricingProvider value={{ signInHref }}>
+    <HiddenPricingProvider value={hiddenPricing}>
       <WholesaleHeader
         basePath={basePath}
         authenticated={false}

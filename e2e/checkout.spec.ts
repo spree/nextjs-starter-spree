@@ -1,4 +1,5 @@
 import { expect, type FrameLocator, type Page, test } from "@playwright/test";
+import { clickUntilUrl } from "./helpers";
 
 /**
  * Checkout golden-path E2E.
@@ -24,18 +25,10 @@ test("guest can complete a checkout with a Stripe test card", async ({
   // headroom beyond the config's 120s budget.
   test.setTimeout(300_000);
   // 1. Open the products listing and pick the first available product.
-  //    A click landing mid-hydration can be swallowed with the page staying
-  //    put — so the click-then-navigate pair is a bounded retry, not one
-  //    unbounded wait.
   await page.goto("/us/en/products");
   const firstProduct = page.locator('a[href*="/products/"]').first();
   await expect(firstProduct).toBeVisible({ timeout: 15_000 });
-  await expect(async () => {
-    if (!/\/products\/[^/]+/.test(page.url())) {
-      await firstProduct.click({ timeout: 5_000 });
-    }
-    await page.waitForURL(/\/products\/[^/]+/, { timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  await clickUntilUrl(page, firstProduct, /\/products\/[^/]+/);
 
   // 2. Add to cart from the PDP. The cart drawer opens automatically after
   // the server action resolves and the cart cookie is set — wait for the

@@ -102,12 +102,8 @@ export const ProductCard = memo(function ProductCard({
             </span>
           ) : (
             // Null price: a deliberate hide inside a HiddenPricingProvider
-            // (renders a sign-in prompt), otherwise renders nothing. The
-            // wrapper lifts it above this card's stretched-link overlay so it
-            // stays independently clickable.
-            <span className="relative z-10">
-              <HiddenPricePrompt />
-            </span>
+            // (renders a sign-in prompt), otherwise renders nothing.
+            <HiddenPricePrompt />
           )}
           {onSale && strikethroughPrice && (
             <span className="text-sm text-gray-500 line-through">

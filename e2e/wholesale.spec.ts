@@ -4,14 +4,12 @@ import { clickUntilUrl, waitForHydration } from "./helpers";
 /**
  * Wholesale portal E2E.
  *
- * The bootstrap script (scripts/e2e/bootstrap-spree.sh) enables the portal
- * (SPREE_WHOLESALE_CHANNEL=wholesale) and puts the seeded gated channel in
- * its `prices_hidden` posture — guests can browse the catalog with prices
- * nulled. That posture exercises the most portal UI: guest browse with
- * sign-in-for-pricing prompts, the dedicated /wholesale/sign-in page and
- * its `?redirect=` return contract, the sign-in wall on ordering surfaces,
- * the apply → under-review flow, and the approved buyer's portal (sample
- * data seeds wholesale@example.com in the Wholesale customer group).
+ * Runs against the `prices_hidden` channel posture set by the bootstrap script
+ * (scripts/e2e/bootstrap-spree.sh), covering guest browse with
+ * sign-in-for-pricing prompts, the dedicated /wholesale/sign-in page and its
+ * `?redirect=` return contract, the sign-in wall on ordering surfaces, the
+ * apply → under-review flow, and the approved buyer's portal (sample data
+ * seeds wholesale@example.com in the Wholesale customer group).
  *
  * Run with: pnpm run e2e:up && pnpm run test:e2e
  */
@@ -24,10 +22,6 @@ const BUYER_PASSWORD = "spree123";
  * gated pages). Anchored regexes keep "Show password" and the header's
  * sign-in link from matching. */
 async function submitSignInWall(page: Page, email: string, password: string) {
-  // The wall's inputs are controlled and its submit is a React handler, so
-  // interacting before hydration is silently lost: the typed values never
-  // reach React state, and the click falls through to a native form submit
-  // that just reloads the page.
   await waitForHydration(page);
   await page.getByLabel(/^email$/i).fill(email);
   await page.getByLabel(/^password$/i).fill(password);
@@ -58,8 +52,6 @@ test("guest browses the prices-hidden catalog without prices or hydration errors
     page.getByRole("heading", { name: /wholesale catalog/i }),
   ).toBeVisible({ timeout: 30_000 });
 
-  // Prices are hidden for guests: cards carry sign-in prompts, and the
-  // header offers sign-in while hiding the ordering-only Quick Order nav.
   await expect(
     page.getByRole("link", { name: /sign in for pricing/i }).first(),
   ).toBeVisible({ timeout: 15_000 });
@@ -98,8 +90,6 @@ test("sign-in prompts lead to the sign-in page without nesting redirect params",
   // instead of the sign-in page.
   await clickUntilUrl(page, prompt, /\/wholesale\/sign-in/);
 
-  // The dedicated sign-in page shows the wall with the request-account
-  // link, and the return target is the catalog itself — exactly once.
   await expect(
     page.getByRole("heading", { name: /trade pricing for approved buyers/i }),
   ).toBeVisible({ timeout: 15_000 });
@@ -158,8 +148,6 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
     timeout: 30_000,
   });
 
-  // The gate re-evaluated: ordering is unlocked, prompts are gone, and the
-  // ordering-only nav is back.
   const addToCart = page.getByRole("button", { name: /add to cart/i });
   await expect(addToCart).toBeEnabled({ timeout: 30_000 });
   // Only the PDP's own gate affordance: a soft navigation can leave the
@@ -170,20 +158,13 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
   ).toHaveCount(0);
   await expect(page.getByRole("link", { name: /quick order/i })).toBeVisible();
 
-  // Add to cart lands in the wholesale cart drawer. The click can be lost to
-  // hydration, so it is retried — but only until one lands: the drawer can
-  // render behind a click that already succeeded, and clicking again would
-  // add the item twice.
-  let clicked = false;
-  await expect(async () => {
-    if (!clicked) {
-      await addToCart.click({ timeout: 5_000 });
-      clicked = true;
-    }
-    await expect(
-      page.getByRole("dialog").getByText(productName).first(),
-    ).toBeVisible({ timeout: 10_000 });
-  }).toPass({ timeout: 45_000 });
+  // Add to cart lands in the wholesale cart drawer. Clicked exactly once: the
+  // drawer can render well behind a click that already succeeded, and a second
+  // click would add the item twice.
+  await addToCart.click();
+  await expect(
+    page.getByRole("dialog").getByText(productName).first(),
+  ).toBeVisible({ timeout: 45_000 });
 
   // An authenticated buyer landing on the sign-in page is bounced straight
   // into the portal instead of seeing the wall again.
@@ -211,10 +192,6 @@ test.describe("wholesale application", () => {
     // would then collide with the apply form's. The wall's link to this page is
     // already asserted by the sign-in test above.
     await page.goto(`${WHOLESALE_HOME}/apply`);
-    // The form's inputs are controlled and its submit is a React handler, so
-    // interacting before hydration is silently lost: the typed values never
-    // reach React state, and the click falls through to a native form submit
-    // that just reloads the page — no account, no error, nothing to assert on.
     await waitForHydration(page);
 
     // Unique email per run — the backend keeps earlier applicants.
@@ -229,7 +206,9 @@ test.describe("wholesale application", () => {
     // A refused application is reported in the form's own alert, and that text
     // is the only place the reason (validation, rate limit) appears — surface
     // it rather than failing with a bare timeout below. Scoped to the form's
-    // Alert; a bare role=alert also matches the empty toast region.
+    // Alert; a bare role=alert also matches the empty toast region. The wait
+    // doubles as the settle window that keeps the navigation below from
+    // aborting the in-flight registration.
     const rejection = page.locator('[data-slot="alert"]').first();
     const refused = await rejection
       .waitFor({ state: "visible", timeout: 5_000 })

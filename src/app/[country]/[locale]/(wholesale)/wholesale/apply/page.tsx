@@ -25,6 +25,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { extractBasePath } from "@/lib/utils/path";
+import { wholesaleSignInHref } from "@/lib/wholesale";
 
 /**
  * Wholesale application form. Registers a customer via the shared register flow
@@ -240,7 +241,7 @@ export default function WholesaleApplyPage() {
           <p className="text-sm text-muted-foreground">
             {t("apply.alreadyMember")}{" "}
             <Link
-              href={`${wholesaleBase}/sign-in`}
+              href={wholesaleSignInHref(storeBase)}
               className="font-medium text-slate-900 hover:underline"
             >
               {t("signInWall.submit")}

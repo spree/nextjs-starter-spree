@@ -87,9 +87,8 @@ npx @spree/cli sample-data
 # this script's env) rather than heredoc interpolation, so the Ruby source
 # never embeds them — the heredoc delimiter is quoted on purpose.
 #
-# The wholesale channel posture is set in the same runner: each `bin/rails
-# runner` boots the whole application inside the container, so the two
-# snippets share one boot (and one `Spree::Store.default` lookup).
+# The wholesale channel posture rides the same runner: a `bin/rails runner`
+# boots the whole application, so a second one would cost another full boot.
 echo "==> Configuring Stripe payment gateway and wholesale channel"
 docker compose exec -T -e STRIPE_PUBLISHABLE_KEY -e STRIPE_SECRET_KEY web bin/rails runner - <<'RUBY'
 store = Spree::Store.default

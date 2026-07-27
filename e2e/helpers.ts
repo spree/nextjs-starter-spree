@@ -1,9 +1,17 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** How long a single click / navigation attempt may take before retrying. */
-const ATTEMPT_TIMEOUT = 5_000;
+/** How long a single click attempt may take before retrying. */
+const CLICK_TIMEOUT = 5_000;
+/**
+ * How long a navigation may run before its click is retried. Generous, because
+ * the first hit of a route against `next dev` pays on-demand compilation:
+ * re-clicking a navigation that is merely slow just issues it a second time.
+ */
+const NAVIGATION_TIMEOUT = 15_000;
 /** How long to keep retrying the click-then-navigate pair overall. */
-const NAVIGATION_TIMEOUT = 30_000;
+const TOTAL_TIMEOUT = 30_000;
+/** How long to wait for React to claim the server-rendered tree. */
+const HYDRATION_TIMEOUT = 30_000;
 
 /**
  * Click `locator` until the page lands on `url`.
@@ -22,18 +30,21 @@ export async function clickUntilUrl(
     // search() rather than test(): it ignores a caller's `g` flag instead of
     // advancing lastIndex, which would make repeated attempts alternate.
     if (page.url().search(url) === -1) {
-      await locator.click({ timeout: ATTEMPT_TIMEOUT });
+      await locator.click({ timeout: CLICK_TIMEOUT });
     }
-    await page.waitForURL(url, { timeout: ATTEMPT_TIMEOUT });
-  }).toPass({ timeout: NAVIGATION_TIMEOUT });
+    await page.waitForURL(url, { timeout: NAVIGATION_TIMEOUT });
+  }).toPass({ timeout: TOTAL_TIMEOUT });
 }
 
 /**
  * Resolve once React has taken ownership of the rendered page.
  *
- * Server-rendered content is visible long before the client takes over, so any
- * assertion about hydration itself (invalid markup, mismatched trees) has to
- * wait for this first or it passes vacuously. React attaches a
+ * Two reasons to wait. Assertions about hydration itself (invalid markup,
+ * mismatched trees) pass vacuously before it, because server-rendered content
+ * is visible long before the client takes over. And forms here are controlled
+ * inputs submitting through React handlers, so interacting early is silently
+ * lost: typed values never reach React state, and the click falls through to a
+ * native form submit that just reloads the page. React attaches a
  * `__reactFiber$<id>` property to each DOM node as it claims it — checking the
  * last link on the page means React has walked past the content above it.
  * (The container's `__reactContainer$` property is set when hydration *starts*,
@@ -50,6 +61,6 @@ export async function waitForHydration(page: Page): Promise<void> {
       );
     },
     undefined,
-    { timeout: 30_000 },
+    { timeout: HYDRATION_TIMEOUT },
   );
 }
