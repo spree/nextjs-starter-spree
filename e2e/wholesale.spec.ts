@@ -216,26 +216,27 @@ test.describe("wholesale application", () => {
     await page.getByLabel(/^password$/i).fill("spree123");
     await page.getByRole("button", { name: /submit application/i }).click();
 
-    // The form reports a rejected application in its own alert, and that text is
-    // the only place the reason (validation, rate limit) appears — surface it
-    // rather than failing with a bare "element not found".
-    // Scoped to the form's own Alert — a bare role=alert also matches the
-    // always-present, empty toast region.
-    const rejection = page.locator('[data-slot="alert"]');
-    await expect(async () => {
-      if (await rejection.count()) {
-        throw new Error(
-          `Application rejected: ${(await rejection.first().textContent())?.trim()}`,
-        );
-      }
-      await expect(page.getByText(/application received/i)).toBeVisible({
-        timeout: 2_000,
-      });
-    }).toPass({ timeout: 30_000 });
+    // A refused application is reported in the form's own alert, and that text
+    // is the only place the reason (validation, rate limit) appears — surface
+    // it rather than failing with a bare timeout below. Scoped to the form's
+    // Alert; a bare role=alert also matches the empty toast region.
+    const rejection = page.locator('[data-slot="alert"]').first();
+    const refused = await rejection
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (refused) {
+      throw new Error(
+        `Application refused: ${(await rejection.textContent())?.trim()}`,
+      );
+    }
 
-    // Registration signs the applicant in, but they're not in the Wholesale
-    // group yet — the portal shows the under-review state, not the catalog.
-    await page.getByRole("link", { name: /go to portal/i }).click();
+    // Registration signs the applicant in without adding them to the Wholesale
+    // group, so the portal gates them as pending — which also proves the
+    // account was created. Asserted here rather than on the post-submit
+    // confirmation card: that card is local state on a form that the
+    // registration's own refresh remounts, so it isn't reliably observable.
+    await page.goto(WHOLESALE_HOME);
     await expect(page.getByText(/application is under review/i)).toBeVisible({
       timeout: 30_000,
     });
