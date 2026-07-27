@@ -118,8 +118,8 @@ puts "OK: gateway #{gateway.id} (#{gateway.name})"
 # either posture. Idempotent: find_or_create + reassign converges.
 channel = store.channels.find_or_create_by!(code: 'wholesale') do |c|
   c.name = 'Wholesale'
-  c.preferred_guest_checkout = false
 end
+channel.preferred_guest_checkout = false
 channel.preferred_storefront_access = 'prices_hidden'
 channel.save!
 puts "OK: channel #{channel.code} storefront_access=#{channel.resolved_storefront_access}"

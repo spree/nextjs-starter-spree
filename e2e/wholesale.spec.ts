@@ -165,16 +165,19 @@ test("buyer signs in from a product page and returns to it with ordering unlocke
   ).toHaveCount(0);
   await expect(page.getByRole("link", { name: /quick order/i })).toBeVisible();
 
-  // Add to cart lands in the wholesale cart drawer. The click can be lost
-  // to hydration — retry until the drawer shows the line item.
+  // Add to cart lands in the wholesale cart drawer. The click can be lost to
+  // hydration, so it is retried — but only until one lands: the drawer can
+  // render behind a click that already succeeded, and clicking again would
+  // add the item twice.
+  let clicked = false;
   await expect(async () => {
-    const drawer = page.getByRole("dialog");
-    if (!(await drawer.isVisible().catch(() => false))) {
+    if (!clicked) {
       await addToCart.click({ timeout: 5_000 });
+      clicked = true;
     }
-    await expect(drawer.getByText(productName).first()).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(
+      page.getByRole("dialog").getByText(productName).first(),
+    ).toBeVisible({ timeout: 10_000 });
   }).toPass({ timeout: 45_000 });
 
   // An authenticated buyer landing on the sign-in page is bounced straight

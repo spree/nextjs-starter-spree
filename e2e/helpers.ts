@@ -19,7 +19,9 @@ export async function clickUntilUrl(
   url: RegExp,
 ): Promise<void> {
   await expect(async () => {
-    if (!url.test(page.url())) {
+    // search() rather than test(): it ignores a caller's `g` flag instead of
+    // advancing lastIndex, which would make repeated attempts alternate.
+    if (page.url().search(url) === -1) {
       await locator.click({ timeout: ATTEMPT_TIMEOUT });
     }
     await page.waitForURL(url, { timeout: ATTEMPT_TIMEOUT });

@@ -132,6 +132,7 @@ export function WholesaleCartView() {
                     size="sm"
                     aria-label={t("removeItemLabel", { name: item.name })}
                     onClick={() => handleRemove(item)}
+                    disabled={updating}
                   >
                     {tc("remove")}
                   </Button>
