@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCustomer } from "@/lib/data/customer";
 import { getWholesaleChannel } from "@/lib/data/wholesale";
-import { wholesaleRedirectPath } from "@/lib/wholesale";
+import { safeRedirectPath } from "@/lib/utils/path";
 import { WholesaleSignInWall } from "../_components/WholesaleSignInWall";
 
 interface WholesaleSignInPageProps {
@@ -33,7 +33,7 @@ export default async function WholesaleSignInPage({
   ]);
 
   if (customer) {
-    redirect(wholesaleRedirectPath(redirectParam, basePath));
+    redirect(safeRedirectPath(redirectParam, `${basePath}/wholesale`));
   }
 
   return (

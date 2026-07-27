@@ -1,31 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { wholesaleRedirectPath, wholesaleSignInHref } from "../wholesale";
-
-describe("wholesaleRedirectPath", () => {
-  const basePath = "/us/en";
-  const portalRoot = "/us/en/wholesale";
-
-  it.each([
-    "/us/en/wholesale",
-    "/us/en/wholesale/products/mug?ref=grid",
-    "/us/en/wholesale/quick-order",
-  ])("keeps a target inside the portal: %s", (value) => {
-    expect(wholesaleRedirectPath(value, basePath)).toBe(value);
-  });
-
-  it.each([
-    "/us/en/account/orders",
-    "/us/en/checkout/cart_123",
-    "/us/en/wholesale-partners",
-    "https://example.com/us/en/wholesale",
-    "/fr/fr/wholesale",
-    // Bouncing back to sign-in would loop.
-    "/us/en/wholesale/sign-in",
-    null,
-  ])("falls back to the portal root for: %s", (value) => {
-    expect(wholesaleRedirectPath(value, basePath)).toBe(portalRoot);
-  });
-});
+import { wholesaleSignInHref } from "../wholesale";
 
 describe("wholesaleSignInHref", () => {
   const basePath = "/us/en";

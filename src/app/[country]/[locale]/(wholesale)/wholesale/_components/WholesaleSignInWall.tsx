@@ -18,7 +18,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { wholesaleRedirectPath } from "@/lib/wholesale";
+import { safeRedirectPath } from "@/lib/utils/path";
 
 interface WholesaleSignInWallProps {
   basePath: string;
@@ -42,9 +42,9 @@ export function WholesaleSignInWall({
   const { login } = useAuth();
 
   const wholesaleBase = `${basePath}/wholesale`;
-  const redirectUrl = wholesaleRedirectPath(
+  const redirectUrl = safeRedirectPath(
     searchParams.get("redirect"),
-    basePath,
+    wholesaleBase,
   );
 
   const [email, setEmail] = useState("");
