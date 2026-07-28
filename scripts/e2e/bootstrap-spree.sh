@@ -86,10 +86,7 @@ npx @spree/cli sample-data
 # The keys reach Ruby via the container environment (-e pass-through from
 # this script's env) rather than heredoc interpolation, so the Ruby source
 # never embeds them — the heredoc delimiter is quoted on purpose.
-#
-# The wholesale channel posture rides the same runner: a `bin/rails runner`
-# boots the whole application, so a second one would cost another full boot.
-echo "==> Configuring Stripe payment gateway and wholesale channel"
+echo "==> Configuring Stripe payment gateway on the default store"
 docker compose exec -T -e STRIPE_PUBLISHABLE_KEY -e STRIPE_SECRET_KEY web bin/rails runner - <<'RUBY'
 store = Spree::Store.default
 gateway = Spree::PaymentMethod.where(type: 'SpreeStripe::Gateway', name: 'E2E Stripe').first_or_initialize
@@ -108,20 +105,6 @@ gateway.assign_attributes(
 # when checkout creates a PaymentIntent.
 gateway.save!(validate: false)
 puts "OK: gateway #{gateway.id} (#{gateway.name})"
-
-# The wholesale suite (e2e/wholesale.spec.ts) runs the seeded gated channel
-# in its `prices_hidden` posture — guests browse the catalog with prices
-# nulled — which exercises strictly more portal UI than the seed's
-# `login_required` default (guest browse, sign-in-for-pricing prompts, the
-# dedicated sign-in page), while ordering surfaces wall guests off under
-# either posture. Idempotent: find_or_create + reassign converges.
-channel = store.channels.find_or_create_by!(code: 'wholesale') do |c|
-  c.name = 'Wholesale'
-end
-channel.preferred_guest_checkout = false
-channel.preferred_storefront_access = 'prices_hidden'
-channel.save!
-puts "OK: channel #{channel.code} storefront_access=#{channel.resolved_storefront_access}"
 RUBY
 
 echo "==> Creating publishable API key (spree api-key create)"
@@ -139,8 +122,6 @@ cat >"$ENV_FILE" <<EOF
 SPREE_API_URL=$SPREE_URL
 SPREE_PUBLISHABLE_KEY=$publishable_key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY
-# Enables the wholesale portal against the seeded gated channel.
-SPREE_WHOLESALE_CHANNEL=wholesale
 EOF
 
 echo
