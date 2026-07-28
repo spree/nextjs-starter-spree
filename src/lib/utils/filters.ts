@@ -67,6 +67,14 @@ export function getSortLabel(key: string, t?: (key: string) => string): string {
   return SORT_FALLBACK[normalized] || key;
 }
 
+export function getSortOptionLabel(
+  option: { id: string; label?: string },
+  t?: (key: string) => string,
+): string {
+  if (option.label) return option.label;
+  return getSortLabel(option.id, t);
+}
+
 /** Maps availability API values to translation message keys in the "products" namespace. */
 const AVAILABILITY_KEY_TO_MESSAGE: Record<string, string> = {
   in_stock: "inStock",
