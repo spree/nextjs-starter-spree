@@ -4,6 +4,7 @@ import type { Channel, ProductListParams } from "@spree/sdk";
 import {
   getAccessToken,
   getWholesaleClient,
+  isWholesaleEnabled,
   withAuthRefresh,
 } from "@/lib/spree";
 import {
@@ -17,8 +18,17 @@ import { withFallback } from "./utils";
  * Fetch the wholesale channel's resolved configuration (access posture, guest
  * checkout). Reachable without authentication even on the gated channel so the
  * portal can render a sign-in wall.
+ *
+ * Returns null when the wholesale addon is off. The `(wholesale)` layout 404s
+ * those routes, but Next.js renders layouts and pages concurrently — during
+ * static generation the page below it still runs, so this must not throw when
+ * the addon is disabled. Null is already the "channel unreachable" value every
+ * caller handles, so a DTC-only build degrades to the sign-in wall rather than
+ * failing the build.
  */
 export async function getWholesaleChannel(): Promise<Channel | null> {
+  if (!isWholesaleEnabled()) return null;
+
   return withFallback(async () => getWholesaleClient().channel.get(), null);
 }
 
