@@ -1,6 +1,6 @@
 "use server";
 
-import type { Product, Wishlist, WishlistItem } from "@spree/sdk";
+import type { Wishlist, WishlistItem } from "@spree/sdk";
 import { updateTag } from "next/cache";
 import { getClient, isAuthError, withAuthRefresh } from "@/lib/spree";
 import { actionResult } from "./utils";
@@ -11,34 +11,12 @@ type EnrichedWishlistItem = WishlistItem & {
   thumbnail_url?: string | null;
 };
 
-async function enrichWishlistItems(
-  wishlist: Wishlist,
-  token: string,
-): Promise<Wishlist> {
+async function enrichWishlistItems(wishlist: Wishlist): Promise<Wishlist> {
   if (!wishlist.items?.length) return wishlist;
-
-  const productIds = Array.from(
-    new Set(wishlist.items.map((item) => item.product_id).filter(Boolean)),
-  );
-
-  if (productIds.length === 0) return wishlist;
-
-  const products = await Promise.all(
-    productIds.map(async (id) => {
-      const product = (await getClient().products.get(
-        id,
-        {},
-        { token },
-      )) as Product;
-      return [id, product] as const;
-    }),
-  );
-
-  const productMap = new Map(products);
 
   const items = wishlist.items.map((item) => {
     const nextItem = { ...item } as EnrichedWishlistItem;
-    const product = productMap.get(nextItem.product_id);
+    const product = nextItem.product;
     if (!product) return nextItem;
 
     nextItem.product_name = nextItem.product_name || product.name;
@@ -56,12 +34,12 @@ async function fetchWishlistById(id: string, token: string): Promise<Wishlist> {
   const wishlist = await getClient().wishlists.get(
     id,
     {
-      expand: ["items.variant", "items.variant.product"],
+      expand: ["items.product"],
     },
     { token },
   );
 
-  return enrichWishlistItems(wishlist, token);
+  return enrichWishlistItems(wishlist);
 }
 
 async function getOrCreateDefaultWishlist(token: string): Promise<Wishlist> {

@@ -2,9 +2,6 @@ import type { Wishlist } from "@spree/sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockClient = {
-  products: {
-    get: vi.fn(),
-  },
   wishlists: {
     list: vi.fn(),
     get: vi.fn(),
@@ -48,6 +45,12 @@ const wishlistFixture = {
       variant_id: "var_1",
       wishlist_id: "wl_1",
       quantity: 1,
+      product: {
+        id: "prod_1",
+        name: "Sample Product",
+        slug: "sample-product",
+        thumbnail_url: "https://example.com/sample-product.jpg",
+      },
       variant: {
         id: "var_1",
         product_id: "prod_1",
@@ -75,13 +78,6 @@ describe("wishlist server actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockWithAuthRefresh.mockImplementation(async (fn) => fn({ token: "jwt" }));
-    mockClient.products.get.mockResolvedValue({
-      id: "prod_1",
-      name: "Sample Product",
-      slug: "sample-product",
-      thumbnail_url: "https://example.com/sample-product.jpg",
-      primary_media: null,
-    });
   });
 
   it("returns wishlist for authenticated users", async () => {
@@ -107,7 +103,7 @@ describe("wishlist server actions", () => {
     expect(mockClient.wishlists.get).toHaveBeenCalledWith(
       "wl_1",
       {
-        expand: ["items.variant", "items.variant.product"],
+        expand: ["items.product"],
       },
       { token: "jwt" },
     );
