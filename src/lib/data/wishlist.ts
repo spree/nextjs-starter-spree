@@ -6,11 +6,6 @@ import { getClient, isAuthError, withAuthRefresh } from "@/lib/spree";
 import { actionResult } from "./utils";
 
 type EnrichedWishlistItem = WishlistItem & {
-  product_id?: string;
-  product?: Product;
-  variant?: {
-    product_id?: string;
-  };
   product_name?: string;
   product_slug?: string;
   thumbnail_url?: string | null;
@@ -23,18 +18,7 @@ async function enrichWishlistItems(
   if (!wishlist.items?.length) return wishlist;
 
   const productIds = Array.from(
-    new Set(
-      wishlist.items
-        .map((item) => {
-          const enrichedItem = item as EnrichedWishlistItem;
-          return (
-            enrichedItem.product_id ||
-            enrichedItem.variant?.product_id ||
-            enrichedItem.product?.id
-          );
-        })
-        .filter((id): id is string => Boolean(id)),
-    ),
+    new Set(wishlist.items.map((item) => item.product_id).filter(Boolean)),
   );
 
   if (productIds.length === 0) return wishlist;
@@ -54,13 +38,7 @@ async function enrichWishlistItems(
 
   const items = wishlist.items.map((item) => {
     const nextItem = { ...item } as EnrichedWishlistItem;
-    const productId =
-      nextItem.product_id ||
-      nextItem.variant?.product_id ||
-      nextItem.product?.id;
-    if (!productId) return nextItem;
-
-    const product = productMap.get(productId);
+    const product = productMap.get(nextItem.product_id);
     if (!product) return nextItem;
 
     nextItem.product_name = nextItem.product_name || product.name;

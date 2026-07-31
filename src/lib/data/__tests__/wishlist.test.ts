@@ -44,6 +44,7 @@ const wishlistFixture = {
   items: [
     {
       id: "wi_1",
+      product_id: "prod_1",
       variant_id: "var_1",
       wishlist_id: "wl_1",
       quantity: 1,
