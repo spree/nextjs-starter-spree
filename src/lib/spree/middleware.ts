@@ -6,9 +6,12 @@ import {
   negotiateLocale,
 } from "@/i18n/normalize";
 import { REQUEST_PATHNAME_HEADER, REQUEST_SEARCH_HEADER } from "@/i18n/routing";
+import { buildAccountLoginHref } from "@/lib/utils/account-redirect";
 
 const COUNTRY_COOKIE = "spree_country";
 const LOCALE_COOKIE = "spree_locale";
+const ACCESS_TOKEN_COOKIE = "_spree_jwt";
+const REFRESH_TOKEN_COOKIE = "_spree_refresh_token";
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
 const HAS_COUNTRY_LOCALE =
@@ -23,6 +26,27 @@ export interface SpreeMiddlewareConfig {
   supportedLocales?: readonly string[];
   /** Routes to skip — prefixes matched with startsWith (default: ['/_next', '/api', '/favicon.ico']) */
   staticRoutes?: string[];
+  /** JWT cookie used to identify a potentially authenticated account request. */
+  accessTokenCookieName?: string;
+  /** Refresh-token cookie used to preserve recoverable account sessions. */
+  refreshTokenCookieName?: string;
+}
+
+const PUBLIC_ACCOUNT_PATHS = new Set([
+  "/account",
+  "/account/register",
+  "/account/forgot-password",
+  "/account/reset-password",
+]);
+
+function isProtectedAccountPath(pathname: string, localizedPrefix: string) {
+  const localizedPath = pathname.slice(localizedPrefix.length);
+  const normalizedPath = localizedPath.replace(/\/+$/, "") || "/";
+
+  return (
+    normalizedPath.startsWith("/account/") &&
+    !PUBLIC_ACCOUNT_PATHS.has(normalizedPath)
+  );
 }
 
 /**
@@ -86,6 +110,10 @@ export function createSpreeMiddleware(
     "/dev",
     "/favicon.ico",
   ];
+  const accessTokenCookieName =
+    config.accessTokenCookieName ?? ACCESS_TOKEN_COOKIE;
+  const refreshTokenCookieName =
+    config.refreshTokenCookieName ?? REFRESH_TOKEN_COOKIE;
 
   return function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -127,6 +155,22 @@ export function createSpreeMiddleware(
         const url = request.nextUrl.clone();
         url.pathname = `${canonicalPrefix}${pathname.slice(originalPrefix.length)}`;
         const response = NextResponse.redirect(url);
+        setLocaleCookies(response, country, locale);
+        return response;
+      }
+
+      if (
+        isProtectedAccountPath(pathname, canonicalPrefix) &&
+        !request.cookies.get(accessTokenCookieName)?.value &&
+        !request.cookies.get(refreshTokenCookieName)?.value
+      ) {
+        const loginHref = buildAccountLoginHref(
+          canonicalPrefix,
+          `${pathname}${request.nextUrl.search}`,
+        );
+        const response = NextResponse.redirect(
+          new URL(loginHref, request.nextUrl),
+        );
         setLocaleCookies(response, country, locale);
         return response;
       }

@@ -1,7 +1,9 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { HiddenPricingProvider } from "@/contexts/HiddenPricingContext";
+import { wholesaleSignInHref } from "@/lib/wholesale";
 import { WholesaleHeader } from "./WholesaleHeader";
 
 interface WholesaleGuestBrowseProps {
@@ -22,17 +24,21 @@ export function WholesaleGuestBrowse({
   basePath,
   children,
 }: WholesaleGuestBrowseProps) {
-  const wholesaleBase = `${basePath}/wholesale`;
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // Return the buyer to exactly where they were, query string included.
-  const query = searchParams.toString();
-  const returnTo = query ? `${pathname}?${query}` : pathname;
-  const signInHref = `${wholesaleBase}?redirect=${encodeURIComponent(returnTo)}`;
+  const signInHref = useMemo(() => {
+    const query = searchParams.toString();
+    return wholesaleSignInHref(
+      basePath,
+      query ? `${pathname}?${query}` : pathname,
+    );
+  }, [basePath, pathname, searchParams]);
+  const hiddenPricing = useMemo(() => ({ signInHref }), [signInHref]);
 
   return (
-    <HiddenPricingProvider value={{ signInHref }}>
+    <HiddenPricingProvider value={hiddenPricing}>
       <WholesaleHeader
         basePath={basePath}
         authenticated={false}

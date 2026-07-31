@@ -5,10 +5,10 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import { getSortLabel } from "@/lib/utils/filters";
+import { getSortOptionLabel } from "@/lib/utils/filters";
 
 interface SortDropdownContentProps {
-  sortOptions: { id: string }[];
+  sortOptions: { id: string; label?: string }[];
   activeSortBy?: string;
   onSortChange: (sortBy: string) => void;
 }
@@ -24,7 +24,7 @@ export function SortDropdownContent({
     <DropdownMenuRadioGroup value={activeSortBy} onValueChange={onSortChange}>
       {sortOptions.map((option) => (
         <DropdownMenuRadioItem key={option.id} value={option.id}>
-          {getSortLabel(option.id, t)}
+          {getSortOptionLabel(option, t)}
         </DropdownMenuRadioItem>
       ))}
     </DropdownMenuRadioGroup>

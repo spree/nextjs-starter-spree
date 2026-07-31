@@ -23,7 +23,7 @@ const ExpressCheckoutButton = dynamic(
 );
 
 export default function CartPage() {
-  const { cart, loading, updateItem, removeItem } = useCart();
+  const { cart, loading, updating, updateItem, removeItem } = useCart();
   const [expressProcessing, setExpressProcessing] = useState(false);
   const pathname = usePathname();
   const basePath = extractBasePath(pathname);
@@ -135,12 +135,14 @@ export default function CartPage() {
                     onQuantityChange={(quantity) =>
                       updateItem(item.id, quantity)
                     }
+                    disabled={updating}
                   />
                   <Button
                     variant="destructive"
                     size="sm"
                     aria-label={t("removeItemLabel", { name: item.name })}
                     onClick={() => handleRemove(item)}
+                    disabled={updating}
                   >
                     {tc("remove")}
                   </Button>

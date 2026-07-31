@@ -18,6 +18,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { safeRedirectPath } from "@/lib/utils/path";
 
 interface WholesaleSignInWallProps {
   basePath: string;
@@ -41,13 +42,10 @@ export function WholesaleSignInWall({
   const { login } = useAuth();
 
   const wholesaleBase = `${basePath}/wholesale`;
-  // Only follow same-origin relative paths after login. Reject absolute URLs
-  // and protocol-relative values ("//host") to avoid an open redirect.
-  const redirectParam = searchParams.get("redirect");
-  const redirectUrl =
-    redirectParam?.startsWith("/") && !redirectParam.startsWith("//")
-      ? redirectParam
-      : wholesaleBase;
+  const redirectUrl = safeRedirectPath(
+    searchParams.get("redirect"),
+    wholesaleBase,
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

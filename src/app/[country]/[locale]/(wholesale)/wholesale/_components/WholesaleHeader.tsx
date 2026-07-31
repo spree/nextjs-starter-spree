@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { wholesaleSignInHref } from "@/lib/wholesale";
 
 interface WholesaleHeaderProps {
   basePath: string;
@@ -124,7 +125,7 @@ export function WholesaleHeader({
               size="sm"
               className="bg-white text-slate-900 hover:bg-slate-100"
             >
-              <Link href={signInHref ?? `${wholesaleBase}`}>
+              <Link href={signInHref ?? wholesaleSignInHref(basePath)}>
                 {t("nav.signIn")}
               </Link>
             </Button>
