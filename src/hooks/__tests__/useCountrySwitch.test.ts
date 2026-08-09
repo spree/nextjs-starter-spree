@@ -151,6 +151,47 @@ describe("useCountrySwitch", () => {
     expect(mockAssign).toHaveBeenCalledWith("/gb/en-gb/products");
   });
 
+  it("updates a cart that still has the legacy regional locale casing", async () => {
+    const refreshCart = vi.fn().mockResolvedValue(undefined);
+    const regionalCountry = {
+      iso: "GB",
+      currency: "GBP",
+      default_locale: "en-GB",
+      supported_locales: [],
+    } as unknown as CountryWithMarket;
+    mockUseCart.mockReturnValue({
+      cart: {
+        id: "cart-1",
+        currency: "GBP",
+        locale: "en-GB",
+      } as never,
+      loading: false,
+      refreshCart,
+    } as never);
+
+    const { result } = renderHook(() =>
+      useCountrySwitch({
+        currentCountry: "gb",
+        currentLocale: "en-gb",
+      }),
+    );
+    const mockAssign = vi.fn();
+    vi.stubGlobal("window", {
+      location: { assign: mockAssign, hash: "", search: "" },
+    });
+
+    await act(async () => {
+      await result.current.handleCountrySelect(regionalCountry, "en-gb");
+    });
+
+    expect(mockUpdateCartMarket).toHaveBeenCalledWith("cart-1", {
+      currency: "GBP",
+      locale: "en-gb",
+    });
+    expect(refreshCart).toHaveBeenCalledOnce();
+    expect(mockAssign).toHaveBeenCalledWith("/gb/en-gb/products");
+  });
+
   it("rebases a login return target when switching market", async () => {
     const { rebaseAccountRedirectSearch } = await import(
       "@/lib/utils/account-redirect"

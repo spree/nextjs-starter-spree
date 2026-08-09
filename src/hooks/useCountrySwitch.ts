@@ -43,12 +43,19 @@ export function useCountrySwitch({
     const newLocale =
       toRouteLocale(locale || entry.default_locale || "en") ?? "en";
     const activeLocale = toRouteLocale(currentLocale) ?? currentLocale;
+    const newCurrency = entry.currency;
+    const cartMatchesTarget =
+      !cart || (cart.currency === newCurrency && cart.locale === newLocale);
 
     if (isCountryNavigating) {
       return false;
     }
 
-    if (nextCountry === activeCountry && newLocale === activeLocale) {
+    if (
+      nextCountry === activeCountry &&
+      newLocale === activeLocale &&
+      cartMatchesTarget
+    ) {
       return true;
     }
 
@@ -58,7 +65,6 @@ export function useCountrySwitch({
 
     setIsCountryNavigating(true);
 
-    const newCurrency = entry.currency;
     const pathRest = getPathWithoutPrefix(pathname);
     const newPath = `/${nextCountry}/${newLocale}${pathRest}`;
     const currentBasePath = `/${activeCountry}/${activeLocale}`;
