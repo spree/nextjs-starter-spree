@@ -48,6 +48,14 @@ const countries = [
     supported_locales: ["en", "fr"],
     marketId: "market-ca",
   },
+  {
+    iso: "GB",
+    name: "United Kingdom",
+    currency: "GBP",
+    default_locale: "en-GB",
+    supported_locales: [],
+    marketId: "market-gb",
+  },
 ] as CountryWithMarket[];
 
 describe("RegionPreferences", () => {
@@ -95,6 +103,30 @@ describe("RegionPreferences", () => {
     );
 
     expect(handleCountrySelect).toHaveBeenCalledWith(countries[1], "en");
+  });
+
+  it("uses a lowercase regional locale in the language selector", async () => {
+    const user = userEvent.setup();
+    const handleCountrySelect = vi.fn().mockResolvedValue(true);
+    mockUseCountrySwitch.mockReturnValue({
+      handleCountrySelect,
+      isCartLoading: false,
+      isCountryNavigating: false,
+    });
+
+    render(<RegionPreferences variant="header" />);
+    await user.click(
+      screen.getByRole("button", { name: "Region and language" }),
+    );
+    await user.selectOptions(screen.getByLabelText("Region"), "gb");
+
+    expect(screen.getByLabelText("Language")).toHaveValue("en-gb");
+
+    await user.click(
+      screen.getByRole("button", { name: "Update preferences" }),
+    );
+
+    expect(handleCountrySelect).toHaveBeenCalledWith(countries[2], "en-gb");
   });
 
   it("disables submission while the cart is loading", async () => {

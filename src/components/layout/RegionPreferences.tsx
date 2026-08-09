@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/native-select";
 import { type CountryWithMarket, useStore } from "@/contexts/StoreContext";
 import { useCountrySwitch } from "@/hooks/useCountrySwitch";
+import { toRouteLocale } from "@/i18n/normalize";
 import { cn } from "@/lib/utils";
 
 interface RegionPreferencesProps {
@@ -65,9 +66,20 @@ function getCountry(
 }
 
 function getSupportedLocales(entry: CountryWithMarket): string[] {
-  return entry.supported_locales.length > 0
-    ? entry.supported_locales
-    : [entry.default_locale];
+  const locales =
+    entry.supported_locales.length > 0
+      ? entry.supported_locales
+      : [entry.default_locale];
+
+  return Array.from(
+    new Set(
+      locales.map(
+        (locale) =>
+          toRouteLocale(locale) ??
+          locale.trim().replaceAll("_", "-").toLowerCase(),
+      ),
+    ),
+  );
 }
 
 export function RegionPreferences({ variant }: RegionPreferencesProps) {
@@ -88,7 +100,7 @@ export function RegionPreferences({ variant }: RegionPreferencesProps) {
     getCountry(countries, draftCountry) ?? getCountry(countries, country);
   const localeOptions = selectedCountry
     ? getSupportedLocales(selectedCountry)
-    : [locale];
+    : [toRouteLocale(locale) ?? locale];
   const languageDisplayNames = useMemo(() => {
     try {
       return new Intl.DisplayNames([locale], { type: "language" });
@@ -113,9 +125,11 @@ export function RegionPreferences({ variant }: RegionPreferencesProps) {
     const supportedLocales = getSupportedLocales(entry);
     setDraftCountry(nextCountry);
     setDraftLocale((currentLocale) =>
-      supportedLocales.includes(currentLocale)
-        ? currentLocale
-        : entry.default_locale || supportedLocales[0],
+      supportedLocales.includes(
+        toRouteLocale(currentLocale) ?? currentLocale.toLowerCase(),
+      )
+        ? (toRouteLocale(currentLocale) ?? currentLocale.toLowerCase())
+        : supportedLocales[0],
     );
     setSwitchError(false);
   }
