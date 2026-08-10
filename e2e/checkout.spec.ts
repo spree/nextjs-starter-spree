@@ -114,10 +114,10 @@ test("guest can complete a checkout with a Stripe test card", async ({
   //      so the card form's frame must be re-resolved every attempt — a
   //      fill aimed at the wrong frame "succeeds" silently while the real
   //      card field stays empty.
-  //    - PaymentSection recreates the payment session whenever the cart
-  //      total changes (e.g. the shipping-rate save landing after the
-  //      Payment Element mounted), which remounts the Element and wipes
-  //      anything already typed.
+    //    - PaymentSection updates the payment session in place whenever the
+    //      cart total changes (e.g. the shipping-rate save landing after the
+    //      Payment Element mounted). If the provider hands back fresh
+    //      identifiers the Element still remounts and wipes typed card data.
   //    Only values that still sit in the form after a settle pause are
   //    really in the form Pay Now will submit — anything else means a
   //    remount raced the fill, and the attempt runs again.

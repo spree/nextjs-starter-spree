@@ -172,7 +172,9 @@ export function PaymentSection({
   >(null);
   const initRef = useRef(false);
   const sessionRequestIdRef = useRef(0);
+  const paymentSessionIdRef = useRef<string | null>(null);
   const completionInFlightRef = useRef(false);
+  const checkoutAmount = cart.amount_due ?? cart.total;
 
   const handleGatewayReady = useCallback(
     (
@@ -187,29 +189,79 @@ export function PaymentSection({
   );
 
   // ── Session management ──────────────────────────────────────────────
-  const createSession = useCallback(
-    async (cardId: string | null, method: PaymentMethod) => {
+  const applySession = useCallback(
+    (session: {
+      id: string;
+      external_id?: string | null;
+      external_data?: Record<string, unknown> | null;
+    }) => {
+      const extData = session.external_data;
+      if (extData && Object.keys(extData).length > 0) {
+        const next = {
+          ...extData,
+          _external_id: session.external_id,
+        };
+        setSessionExternalData((prev) =>
+          JSON.stringify(prev) === JSON.stringify(next) ? prev : next,
+        );
+        setPaymentSessionId(session.id);
+        paymentSessionIdRef.current = session.id;
+      } else {
+        setGatewayError(t("failedToInitPayment"));
+      }
+    },
+    [t],
+  );
+
+  const syncPaymentSession = useCallback(
+    async (
+      cardId: string | null,
+      method: PaymentMethod,
+      options?: { forceCreate?: boolean },
+    ) => {
       const currentGatewayId = resolveGatewayId(method.type);
       const requestId = ++sessionRequestIdRef.current;
+      const amount = checkoutAmount ?? undefined;
+      const existingSessionId = paymentSessionIdRef.current;
+
+      const basePath = extractBasePath(window.location.pathname);
+      const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}`;
+
+      const externalData: Record<string, unknown> = {
+        return_url: returnUrl,
+      };
+
+      if (currentGatewayId === "stripe" && cardId) {
+        externalData.stripe_payment_method_id = cardId;
+      }
 
       setLoading(true);
       setGatewayError(null);
-      setSessionExternalData(null);
-      setPaymentSessionId(null);
-      gatewayHandleRef.current = null;
 
       try {
-        // Build gateway-specific external_data
-        const basePath = extractBasePath(window.location.pathname);
-        const returnUrl = `${window.location.origin}${basePath}/confirm-payment/${cart.id}`;
+        if (!options?.forceCreate && existingSessionId) {
+          try {
+            const result = await updateCheckoutPaymentSession(
+              cart.id,
+              existingSessionId,
+              { amount, external_data: externalData },
+            );
 
-        const externalData: Record<string, unknown> = {
-          return_url: returnUrl,
-        };
+            if (requestId !== sessionRequestIdRef.current) return;
 
-        if (currentGatewayId === "stripe" && cardId) {
-          externalData.stripe_payment_method_id = cardId;
+            if (result.success && result.session) {
+              applySession(result.session);
+              return;
+            }
+          } catch {
+            if (requestId !== sessionRequestIdRef.current) return;
+          }
         }
+
+        setSessionExternalData(null);
+        setPaymentSessionId(null);
+        paymentSessionIdRef.current = null;
+        gatewayHandleRef.current = null;
 
         const result = await createCheckoutPaymentSession(
           cart.id,
@@ -220,18 +272,7 @@ export function PaymentSection({
         if (requestId !== sessionRequestIdRef.current) return;
 
         if (result.success && result.session) {
-          const extData = result.session.external_data;
-          if (extData && Object.keys(extData).length > 0) {
-            // Include external_id so gateway forms can access the
-            // provider-side session/order ID (e.g. Adyen session ID).
-            setSessionExternalData({
-              ...extData,
-              _external_id: result.session.external_id,
-            });
-            setPaymentSessionId(result.session.id);
-          } else {
-            setGatewayError(t("failedToInitPayment"));
-          }
+          applySession(result.session);
         } else if (!result.success) {
           setGatewayError(result.error || t("failedToCreateSession"));
         }
@@ -244,11 +285,10 @@ export function PaymentSection({
         }
       }
     },
-    [cart.id, t],
+    [cart.id, checkoutAmount, applySession, t],
   );
 
-  // Track the cart total so we can recreate the session when it changes
-  const lastTotalRef = useRef<string | null>(null);
+  const lastAmountRef = useRef<string | null>(null);
   const selectedCardRef = useRef<string | null>(null);
 
   // On mount: load saved cards (if authenticated + session method), then create initial session
@@ -285,9 +325,9 @@ export function PaymentSection({
       }
 
       selectedCardRef.current = initialCardId;
-      lastTotalRef.current = cart.total;
+      lastAmountRef.current = checkoutAmount;
 
-      await createSession(initialCardId, selectedMethod);
+      await syncPaymentSession(initialCardId, selectedMethod);
     };
 
     init();
@@ -295,68 +335,22 @@ export function PaymentSection({
     selectedMethod,
     isSessionBased,
     isAuthenticated,
-    createSession,
-    cart.total,
+    syncPaymentSession,
+    checkoutAmount,
     isZeroAmount,
   ]);
 
-  // When the cart total changes, sync the live payment session with the
-  // provider in place. Recreating it instead would unmount the gateway form
-  // (fresh session ⇒ new client secret ⇒ new `key`) and silently wipe
-  // whatever the customer already typed — e.g. when a shipping-rate save
-  // lands while they enter card details.
+  // When the payable amount changes, sync the live payment session in place.
+  // Recreating it would unmount the gateway form and wipe card details the
+  // customer already typed (e.g. when a shipping-rate save lands late).
   useEffect(() => {
     if (!initRef.current) return;
     if (!isSessionBased || !selectedMethod) return;
-    if (lastTotalRef.current === cart.total) return;
+    if (lastAmountRef.current === checkoutAmount) return;
 
-    lastTotalRef.current = cart.total;
-
-    if (!paymentSessionId) {
-      createSession(selectedCardRef.current, selectedMethod);
-      return;
-    }
-
-    const method = selectedMethod;
-    const sync = async () => {
-      try {
-        const result = await updateCheckoutPaymentSession(
-          cart.id,
-          paymentSessionId,
-          { amount: cart.total ?? undefined },
-        );
-        if (!result.success || !result.session) {
-          throw new Error("session update rejected");
-        }
-        // Providers that can't update in place hand back fresh identifiers;
-        // adopting them remounts the form (the `key` changes), which is the
-        // unavoidable case. Identical data keeps the mounted form untouched.
-        const extData = result.session.external_data;
-        if (extData && Object.keys(extData).length > 0) {
-          const next = {
-            ...extData,
-            _external_id: result.session.external_id,
-          };
-          setSessionExternalData((prev) =>
-            JSON.stringify(prev) === JSON.stringify(next) ? prev : next,
-          );
-          setPaymentSessionId(result.session.id);
-        }
-      } catch {
-        // Gateway doesn't support in-place updates — fall back to the
-        // destructive recreate rather than paying against a stale amount.
-        createSession(selectedCardRef.current, method);
-      }
-    };
-    sync();
-  }, [
-    cart.id,
-    cart.total,
-    createSession,
-    isSessionBased,
-    paymentSessionId,
-    selectedMethod,
-  ]);
+    lastAmountRef.current = checkoutAmount;
+    syncPaymentSession(selectedCardRef.current, selectedMethod);
+  }, [checkoutAmount, syncPaymentSession, isSessionBased, selectedMethod]);
 
   const [billStates, isPendingBill] = useCountryStates(
     billAddress.country_iso,
@@ -376,7 +370,7 @@ export function PaymentSection({
     if (!selectedMethod) return;
     setSelectedCardId(cardId);
     selectedCardRef.current = cardId;
-    createSession(cardId, selectedMethod);
+    syncPaymentSession(cardId, selectedMethod);
   };
 
   const handleMethodSelect = (methodId: string) => {
@@ -414,17 +408,21 @@ export function PaymentSection({
           }
 
           selectedCardRef.current = cardId;
-          lastTotalRef.current = cart.total;
-          await createSession(cardId, newMethod);
+          lastAmountRef.current = checkoutAmount;
+          await syncPaymentSession(cardId, newMethod);
         };
         init();
       } else {
-        createSession(selectedCardRef.current, newMethod);
+        lastAmountRef.current = checkoutAmount;
+        syncPaymentSession(selectedCardRef.current, newMethod, {
+          forceCreate: true,
+        });
       }
     } else {
       // Switching to a direct method: invalidate any in-flight session
-      // request so a late-resolving createSession won't repopulate state.
+      // request so a late-resolving sync won't repopulate state.
       sessionRequestIdRef.current += 1;
+      paymentSessionIdRef.current = null;
       setSessionExternalData(null);
       setPaymentSessionId(null);
       setGatewayError(null);
