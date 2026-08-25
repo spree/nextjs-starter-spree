@@ -7,10 +7,14 @@
 // accident.
 //
 // The Spree monorepo's worktree tooling sets SPREE_SDK_PATH to <worktree>/packages/sdk
-// and runs the SDK's build in watch mode alongside `next dev`.
+// and re-runs the install whenever the SDK is rebuilt.
 //
-// `link:` rather than `file:` — pnpm symlinks the directory instead of copying
-// it, so a rebuilt SDK is picked up without reinstalling.
+// `file:` rather than `link:`. A symlink is the tempting choice — it would pick
+// up SDK rebuilds with no reinstall — but this project pins module resolution
+// to its own directory (`turbopack.root`, `output: "standalone"`) and lists
+// @spree/sdk in `transpilePackages`, so a package symlinked to somewhere
+// outside the project simply does not resolve. `file:` copies it into
+// node_modules, where all three of those settings can see it.
 
 const SDK_PACKAGE = '@spree/sdk'
 
@@ -24,7 +28,7 @@ function readPackage(pkg) {
 
   for (const field of ['dependencies', 'devDependencies']) {
     if (pkg[field]?.[SDK_PACKAGE]) {
-      pkg[field][SDK_PACKAGE] = `link:${sdkPath}`
+      pkg[field][SDK_PACKAGE] = `file:${sdkPath}`
     }
   }
 
