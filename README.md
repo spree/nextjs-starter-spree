@@ -144,7 +144,7 @@ To develop against unreleased Store API features, point the storefront at a `@sp
 SPREE_SDK_PATH=/path/to/spree/packages/sdk pnpm install --no-frozen-lockfile
 ```
 
-`.pnpmfile.cjs` rewrites the dependency to a symlink only when `SPREE_SDK_PATH` is set, so the default install is unaffected and nothing local ever reaches `package.json`. The SDK must be built (`pnpm build` in the monorepo, or `--watch` while you work). The install rewrites `pnpm-lock.yaml` with the local path — do not commit that change.
+`.pnpmfile.cjs` redirects the dependency at the local path only when `SPREE_SDK_PATH` is set, so the default install is unaffected and nothing local ever reaches `package.json`. Two things follow from it copying the package rather than symlinking it (this project pins module resolution to its own directory, so a symlink outside it would not resolve): build the SDK first (`pnpm build` in the monorepo), and re-run the install above after each rebuild to pick the new build up. The install also rewrites `pnpm-lock.yaml` with the local path — do not commit that change.
 
 From a Spree monorepo worktree, `pnpm wt:storefront` does all of this for you, including the API URL and publishable key.
 
