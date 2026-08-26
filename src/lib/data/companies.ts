@@ -159,7 +159,7 @@ export async function createCompanyAddress(
 export async function updateCompanyAddress(
   companyId: string,
   id: string,
-  address: CompanyAddressParams,
+  address: Partial<CompanyAddressParams>,
 ) {
   return actionResult(async () => {
     const result = await withAuthRefresh(async (options) => {
