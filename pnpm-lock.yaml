@@ -16,8 +16,8 @@ overrides:
   mute-stream: ^3.0.0
   nanoid: ^3.3.18
   postcss: ^8.5.28
-  postcss-selector-parser: ^7.1.6
   qs: ^6.16.0
+  shadcn>postcss-selector-parser: ^7.1.6
   sharp: ^0.35.3
   socket.io-parser: ^4.2.7
   undici: ^7.29.1
@@ -4048,6 +4048,10 @@ packages:
   postal-mime@2.7.4:
     resolution: {integrity: sha512-0WdnFQYUrPGGTFu1uOqD2s7omwua8xaeYGdO6rb88oD5yJ/4pPHDA4sdWqfD8wQVfCny563n/HQS7zTFft+f/g==}
 
+  postcss-selector-parser@6.0.10:
+    resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
+    engines: {node: '>=4'}
+
   postcss-selector-parser@7.1.6:
     resolution: {integrity: sha512-7qASPzhKF2l2KLboRZux8CCTRMdGiV08vWmyKzPz22qZ7ZjQBOeY7rNzNoCLSUiftJ7HUq0GERHmxw/t0dCdMw==}
     engines: {node: '>=4'}
@@ -6923,7 +6927,7 @@ snapshots:
 
   '@tailwindcss/typography@0.5.20(tailwindcss@4.3.0)':
     dependencies:
-      postcss-selector-parser: 7.1.6
+      postcss-selector-parser: 6.0.10
       tailwindcss: 4.3.0
 
   '@testing-library/dom@10.4.1':
@@ -8432,6 +8436,11 @@ snapshots:
   po-parser@2.1.1: {}
 
   postal-mime@2.7.4: {}
+
+  postcss-selector-parser@6.0.10:
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
 
   postcss-selector-parser@7.1.6:
     dependencies:

@@ -1,9 +1,10 @@
 # Dependabot configuration.
 #
-# NOTE: this file only controls *version* updates. Dependabot *security*
-# updates (the PRs that fix an open security alert) are a repository setting,
-# not config — enable them under:
+# NOTE: Dependabot *security* updates — the PRs that fix an open security
+# alert — are switched on in repository settings, not here:
 #   Settings → Code security → Dependabot security updates
+# This file configures update *behaviour*: version updates below, and (via a
+# group with `applies-to: security-updates`) how security PRs are grouped.
 #
 # Most of this project's advisories land on transitive dependencies that
 # Dependabot cannot bump on its own, because no parent release requires the
@@ -20,6 +21,11 @@ updates:
     versioning-strategy: increase
     # Roll routine updates into a few PRs instead of one per package.
     groups:
+      # Bundle all security fixes into a single PR rather than one per alert.
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
       next:
         patterns:
           - "next"
