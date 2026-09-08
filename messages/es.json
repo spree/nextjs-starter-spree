@@ -628,5 +628,17 @@
       "signInForPricing": "Inicia sesión para ver precios",
       "signInToOrder": "Inicia sesión para pedir"
     }
+  },
+  "freight": {
+    "title": "Envío",
+    "units": "Unidades",
+    "cartons": "Cajas",
+    "pallets": "Palés",
+    "volume": "Volumen",
+    "weight": "Peso bruto",
+    "cbm": "{value} m³",
+    "kg": "{value} kg",
+    "incomplete": "Algunos artículos no están medidos, así que estas cifras son un mínimo y no un total.",
+    "quotedLater": "Se cotiza tras revisión"
   }
 }

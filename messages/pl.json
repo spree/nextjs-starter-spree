@@ -628,5 +628,17 @@
       "signInForPricing": "Zaloguj się, aby zobaczyć ceny",
       "signInToOrder": "Zaloguj się, aby zamówić"
     }
+  },
+  "freight": {
+    "title": "Przesyłka",
+    "units": "Sztuki",
+    "cartons": "Kartony",
+    "pallets": "Palety",
+    "volume": "Objętość",
+    "weight": "Waga brutto",
+    "cbm": "{value} m³",
+    "kg": "{value} kg",
+    "incomplete": "Część towaru nie ma wymiarów, więc te liczby to wartość minimalna, a nie suma.",
+    "quotedLater": "Wycena po weryfikacji"
   }
 }

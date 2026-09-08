@@ -628,5 +628,17 @@
       "signInForPricing": "Sign in for pricing",
       "signInToOrder": "Sign in to order"
     }
+  },
+  "freight": {
+    "title": "Shipment",
+    "units": "Units",
+    "cartons": "Cartons",
+    "pallets": "Pallets",
+    "volume": "Volume",
+    "weight": "Gross weight",
+    "cbm": "{value} CBM",
+    "kg": "{value} kg",
+    "incomplete": "Some items are not measured, so these figures are a minimum rather than a total.",
+    "quotedLater": "Quoted after review"
   }
 }

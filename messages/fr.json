@@ -628,5 +628,17 @@
       "signInForPricing": "Connectez-vous pour voir les prix",
       "signInToOrder": "Connectez-vous pour commander"
     }
+  },
+  "freight": {
+    "title": "Expédition",
+    "units": "Unités",
+    "cartons": "Cartons",
+    "pallets": "Palettes",
+    "volume": "Volume",
+    "weight": "Poids brut",
+    "cbm": "{value} m³",
+    "kg": "{value} kg",
+    "incomplete": "Certains articles ne sont pas mesurés : ces chiffres sont un minimum, pas un total.",
+    "quotedLater": "Devis après examen"
   }
 }

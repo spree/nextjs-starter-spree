@@ -628,5 +628,17 @@
       "signInForPricing": "Zur Preisanzeige anmelden",
       "signInToOrder": "Zum Bestellen anmelden"
     }
+  },
+  "freight": {
+    "title": "Sendung",
+    "units": "Einheiten",
+    "cartons": "Kartons",
+    "pallets": "Paletten",
+    "volume": "Volumen",
+    "weight": "Bruttogewicht",
+    "cbm": "{value} m³",
+    "kg": "{value} kg",
+    "incomplete": "Einige Artikel sind nicht vermessen. Diese Werte sind daher ein Mindestwert, keine Gesamtsumme.",
+    "quotedLater": "Angebot nach Prüfung"
   }
 }

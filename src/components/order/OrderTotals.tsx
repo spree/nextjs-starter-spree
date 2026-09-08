@@ -9,6 +9,14 @@ interface OrderTotalsProps {
 
 export function OrderTotals({ order }: OrderTotalsProps) {
   const t = useTranslations("common");
+  const tf = useTranslations("freight");
+  // Only when the whole order is awaiting a quote: a mixed order also
+  // carries a real parcel charge, and hiding the amount would understate
+  // what the buyer is charged today.
+  const fulfillments = order.fulfillments ?? [];
+  const awaitingQuote =
+    fulfillments.length > 0 &&
+    fulfillments.every((fulfillment) => fulfillment.unpriced);
 
   return (
     <div className="space-y-2">
@@ -19,7 +27,11 @@ export function OrderTotals({ order }: OrderTotalsProps) {
 
       <div className="flex justify-between text-sm">
         <span className="text-gray-500">{t("shipping")}</span>
-        <span className="text-gray-900">{order.display_delivery_total}</span>
+        {/* Freight still to be quoted contributes nothing, and a zero amount
+            here reads as free shipping. */}
+        <span className="text-gray-900">
+          {awaitingQuote ? tf("quotedLater") : order.display_delivery_total}
+        </span>
       </div>
 
       {order.discount_total &&

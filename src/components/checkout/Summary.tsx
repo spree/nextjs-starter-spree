@@ -2,6 +2,7 @@
 
 import type { Cart } from "@spree/sdk";
 import { useTranslations } from "next-intl";
+import { FreightSummaryPanel } from "@/components/checkout/FreightSummaryPanel";
 import { ProductImage } from "@/components/ui/product-image";
 
 interface SummaryProps {
@@ -11,6 +12,16 @@ interface SummaryProps {
 export function Summary({ cart }: SummaryProps) {
   const tc = useTranslations("common");
   const t = useTranslations("checkout");
+  const tf = useTranslations("freight");
+  const freight = cart.freight_summary;
+  // A rate whose price comes after the merchant reviews the order.
+  // Only when the whole order is awaiting a quote: a mixed order also
+  // carries a real parcel charge, and hiding the amount would understate
+  // what the buyer is charged today.
+  const fulfillments = cart.fulfillments ?? [];
+  const awaitingQuote =
+    fulfillments.length > 0 &&
+    fulfillments.every((fulfillment) => fulfillment.unpriced);
   const items = cart.items || [];
   const hasShipping = (cart.fulfillments?.length ?? 0) > 0;
 
@@ -59,12 +70,16 @@ export function Summary({ cart }: SummaryProps) {
 
         <div className="flex justify-between text-sm">
           <span className="text-gray-700">{tc("shipping")}</span>
-          {hasShipping ? (
-            <span className="text-gray-900">{cart.display_delivery_total}</span>
-          ) : (
+          {!hasShipping ? (
             <span className="text-xs text-gray-500">
               {t("enterShippingAddress")}
             </span>
+          ) : awaitingQuote ? (
+            // Freight the forwarder has yet to price contributes nothing to
+            // the total, and a zero amount here reads as free shipping.
+            <span className="text-xs text-gray-500">{tf("quotedLater")}</span>
+          ) : (
+            <span className="text-gray-900">{cart.display_delivery_total}</span>
           )}
         </div>
 
@@ -137,6 +152,12 @@ export function Summary({ cart }: SummaryProps) {
             </div>
           )}
       </div>
+
+      {freight && (
+        <div className="mt-4">
+          <FreightSummaryPanel summary={freight} />
+        </div>
+      )}
     </div>
   );
 }
